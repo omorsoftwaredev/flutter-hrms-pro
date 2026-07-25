@@ -13,17 +13,16 @@ final GoRouter appRouter = GoRouter(
 
     final isLoginRoute = state.matchedLocation == '/login';
 
-    // User is NOT logged in
+    // Not logged in → only login page is allowed
     if (!loggedIn) {
       return isLoginRoute ? null : '/login';
     }
 
-    // User IS logged in
+    // Already logged in → prevent going back to login
     if (loggedIn && isLoginRoute) {
       return '/dashboard';
     }
 
-    // Allow access
     return null;
   },
 
@@ -38,14 +37,36 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
+    // Login
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
     ),
 
+    // Dashboard (Protected)
     GoRoute(
       path: '/dashboard',
       builder: (context, state) => const DashboardPage(),
+
+      routes: [
+        // Employee Module
+        GoRoute(
+          path: 'employees',
+          builder: (context, state) => const DashboardPage(),
+        ),
+
+        // Attendance Module
+        GoRoute(
+          path: 'attendance',
+          builder: (context, state) => const DashboardPage(),
+        ),
+
+        // Leave Module
+        GoRoute(
+          path: 'leave',
+          builder: (context, state) => const DashboardPage(),
+        ),
+      ],
     ),
   ],
 );
