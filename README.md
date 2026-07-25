@@ -21,7 +21,7 @@ Status : ✅ COMPLETED
 
 ---
 
-## Sprint 02 — Project Architecture ✅
+## Sprint 02 — Architecture ✅
 
 ### Project Structure
 
@@ -32,10 +32,11 @@ Status : ✅ COMPLETED
 
 ### Core
 
-- [x] Constants
-- [x] Router
+- [x] App Router
 - [x] Services
-- [x] Providers Ready
+- [x] Providers
+- [x] Constants
+- [x] Theme Ready
 
 Status : ✅ COMPLETED
 
@@ -58,7 +59,7 @@ Status : ✅ COMPLETED
 - [x] shifts
 - [x] employees
 
-### Database Relationships
+### Relationships
 
 - [x] Department → Company
 - [x] Designation → Department
@@ -71,59 +72,37 @@ Status : ✅ COMPLETED
 
 ---
 
-# Sprint 04 — Authentication ✅
-
-### Authentication
-
-- [x] Supabase Initialization
-- [x] Authentication Repository
-- [x] Riverpod Provider
-- [x] Login Controller
-
-### UI
-
-- [x] Login Screen
-- [x] Professional Login UI
+# Sprint 04 — Authentication 🟡
 
 ### Features
 
+- [x] Supabase Authentication
+- [x] Professional Login UI
 - [x] Login API
+- [x] Session Management
+- [x] Auto Login
 - [x] Dashboard Navigation
-- [x] Session Restore (Auto Login)
+- [x] Logout
 
 ### Remaining
 
-- [ ] Logout
 - [ ] Route Guard
+- [ ] Protected Routes
 - [ ] Forgot Password
 - [ ] User Roles
 - [ ] User Profile
 
-Status : 🟡 75% COMPLETED
+Status : 🟡 85% COMPLETED
 
 ---
 
 # Sprint 05 — Employee Management
 
-### Company
-
-- [ ] CRUD
-
-### Department
-
-- [ ] CRUD
-
-### Designation
-
-- [ ] CRUD
-
-### Shift
-
-- [ ] CRUD
-
-### Employee
-
-- [ ] CRUD
+- [ ] Company CRUD
+- [ ] Department CRUD
+- [ ] Designation CRUD
+- [ ] Shift CRUD
+- [ ] Employee CRUD
 
 Status : ⏳ NOT STARTED
 
@@ -131,9 +110,8 @@ Status : ⏳ NOT STARTED
 
 # Sprint 06 — Attendance Management
 
-- [ ] Check In
-- [ ] Check Out
-- [ ] Mobile Attendance
+- [ ] Mobile Check In
+- [ ] Mobile Check Out
 - [ ] Attendance History
 - [ ] Attendance Report
 
@@ -143,11 +121,10 @@ Status : ⏳ NOT STARTED
 
 # Sprint 07 — Leave Management
 
-- [ ] Leave Type
 - [ ] Leave Apply
 - [ ] Leave Approval
-- [ ] IOU / Official Movement
 - [ ] Holiday Management
+- [ ] IOU / Official Movement
 
 Status : ⏳ NOT STARTED
 
@@ -155,9 +132,9 @@ Status : ⏳ NOT STARTED
 
 # Sprint 08 — Employee Monitoring
 
-- [ ] Background Location
+- [ ] Background Location Tracking
 - [ ] Google Maps
-- [ ] Live Employee Location
+- [ ] Live Employee Monitoring
 - [ ] Location History
 
 Status : ⏳ NOT STARTED
@@ -167,19 +144,19 @@ Status : ⏳ NOT STARTED
 # Sprint 09 — Dashboard & Reports
 
 - [ ] Dashboard
-- [ ] Attendance Report
-- [ ] Leave Report
-- [ ] Employee Report
+- [ ] Attendance Reports
+- [ ] Leave Reports
+- [ ] Employee Reports
 
 Status : ⏳ NOT STARTED
 
 ---
 
-# Sprint 10 — Notification
+# Sprint 10 — Notification System
 
-- [ ] In App Notification
-- [ ] Announcement
+- [ ] In-App Notification
 - [ ] Department Notification
+- [ ] Company Announcement
 
 Status : ⏳ NOT STARTED
 
@@ -190,40 +167,57 @@ Status : ⏳ NOT STARTED
 - [ ] Face Attendance
 - [ ] Face Recognition
 - [ ] Push Notification
-- [ ] Payroll
-- [ ] Salary Management
+- [ ] Payroll Management
 - [ ] Performance Management
-- [ ] Recruitment
+- [ ] Recruitment Module
 - [ ] Web Admin Panel
 
 ---
 
 # Current Progress
 
-✅ Project Foundation
-
-✅ Project Architecture
-
-✅ Supabase Integration
-
-✅ Database Design
-
-🟡 Authentication (75%)
-
-⏳ Employee Management
-
-⏳ Attendance
-
-⏳ Leave
-
-⏳ Employee Monitoring
-
-⏳ Dashboard
-
-⏳ Notification
+| Module | Status |
+|---------|--------|
+| Project Foundation | ✅ Completed |
+| Project Architecture | ✅ Completed |
+| Supabase Setup | ✅ Completed |
+| Database Design | ✅ Completed |
+| Authentication | 🟡 85% |
+| Employee Management | ⏳ Pending |
+| Attendance | ⏳ Pending |
+| Leave | ⏳ Pending |
+| Employee Monitoring | ⏳ Pending |
+| Dashboard & Reports | ⏳ Pending |
+| Notification System | ⏳ Pending |
 
 ---
 
 # GitHub Repository
 
 https://github.com/omorsoftwaredev/flutter_hrms_pro
+
+---
+
+## Development Workflow
+
+Every feature follows this process:
+
+```
+Code
+↓
+Run
+↓
+Error Fix
+↓
+Success
+↓
+README Update
+↓
+Git Commit
+↓
+Git Push
+↓
+Next Step
+```
+
+This ensures the project remains stable, well-documented, and ready for production and CodeCanyon submission.
