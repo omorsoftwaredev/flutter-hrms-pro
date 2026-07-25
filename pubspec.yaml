@@ -34,6 +34,91 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  # =========================
+  # State Management
+  # =========================
+  flutter_riverpod: ^2.6.1
+
+  # =========================
+  # Navigation
+  # =========================
+  go_router: ^16.0.0
+
+  # =========================
+  # Backend (Supabase)
+  # =========================
+  supabase_flutter: ^2.9.1
+
+  # =========================
+  # Network
+  # =========================
+  dio: ^5.9.0
+  internet_connection_checker_plus: ^2.7.2
+
+  # =========================
+  # Location
+  # =========================
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  permission_handler: ^12.0.1
+
+  # =========================
+  # Google Maps
+  # =========================
+  google_maps_flutter: ^2.12.3
+
+  # =========================
+  # Local Storage
+  # =========================
+  flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.5.3
+
+  # =========================
+  # Background Service
+  # =========================
+  flutter_background_service: ^5.1.0
+
+  # =========================
+  # JSON
+  # =========================
+  json_annotation: ^4.9.0
+
+  # =========================
+  # UUID
+  # =========================
+  uuid: ^4.5.1
+
+  # =========================
+  # Date & Time
+  # =========================
+  intl: ^0.20.2
+
+  # =========================
+  # UI
+  # =========================
+  flutter_svg: ^2.2.0
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+
+  # =========================
+  # Loading
+  # =========================
+  flutter_easyloading: ^3.0.5
+
+  # =========================
+  # Toast
+  # =========================
+  fluttertoast: ^8.2.12
+
+  # =========================
+  # Logger
+  # =========================
+  logger: ^2.6.1
+
+  # =========================
+  # Equatable
+  # =========================
+  equatable: ^2.0.7
 
 dev_dependencies:
   flutter_test:
