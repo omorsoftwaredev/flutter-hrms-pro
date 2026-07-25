@@ -1,9 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../core/services/supabase_service.dart';
-
 class AuthRepository {
-  final SupabaseClient _client = SupabaseService.client;
+  final SupabaseClient _client = Supabase.instance.client;
+
+  User? get currentUser => _client.auth.currentUser;
 
   Future<AuthResponse> signIn({
     required String email,
@@ -18,9 +18,4 @@ class AuthRepository {
   Future<void> signOut() async {
     await _client.auth.signOut();
   }
-
-  User? get currentUser => _client.auth.currentUser;
-
-  Stream<AuthState> get authStateChanges =>
-      _client.auth.onAuthStateChange;
 }
