@@ -8,13 +8,10 @@ import 'app/app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load Environment Variables
-  await dotenv.load(fileName: ".env");
 
-  // Initialize Supabase
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: 'https://cehyujegqldehjefzmtm.supabase.co',
+    anonKey: 'sb_publishable_6VxHhIYul1CCpKmHDjbzcw_O_Z43yDf',
   );
 
   runApp(

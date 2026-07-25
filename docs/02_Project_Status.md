@@ -36,3 +36,13 @@ Authentication
 
 Next:
 Database Design
+
+## Sprint 03
+
+- [x] Supabase Project Created
+- [x] API Keys Configured
+- [x] .env Created
+- [x] Environment Loaded
+
+Next:
+Database Design
