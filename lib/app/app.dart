@@ -8,15 +8,14 @@ class HrmsApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter HRMS Pro',
+      themeMode: ThemeMode.light,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.indigo,
+      ),
       home: const Scaffold(
         body: Center(
-          child: Text(
-            'Flutter HRMS Pro',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: Text("Flutter HRMS Pro"),
         ),
       ),
     );
