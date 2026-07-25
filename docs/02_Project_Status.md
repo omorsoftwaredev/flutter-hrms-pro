@@ -16,3 +16,13 @@
 ## Next Sprint
 
 Authentication Module
+
+## Sprint 02
+
+- [x] Core Folder Structure
+- [x] Feature Structure
+- [x] Assets Structure
+- [x] Environment Ready
+
+Next:
+Authentication
