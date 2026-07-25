@@ -2,39 +2,39 @@
 
 A modern, scalable and production-ready **Human Resource Management System (HRMS)** built with **Flutter** and **Supabase**.
 
-The project follows **Clean Architecture**, **Feature-First Development**, and **Documentation-Driven Workflow** with the goal of publishing a high-quality HRMS solution on **CodeCanyon**.
+The project follows **Clean Architecture**, **Feature-First Development**, and **Documentation-Driven Workflow**. It is being developed with the goal of publishing a production-ready HRMS on **CodeCanyon**.
 
 ---
 
-## Version
+# Version
 
 **Current Version:** `0.1.0`
 
-**Project Status:** 🟡 Active Development
+**Status:** 🟡 Active Development
 
 ---
 
 # Technology Stack
 
-### Frontend
+## Frontend
 
 - Flutter
 - Dart
 
-### Backend
+## Backend
 
 - Supabase
 - PostgreSQL
 
-### State Management
+## State Management
 
 - Riverpod
 
-### Navigation
+## Navigation
 
 - GoRouter
 
-### Environment
+## Environment
 
 - flutter_dotenv
 
@@ -44,12 +44,12 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 ## ✅ Sprint 01 — Project Foundation
 
-- GitHub Repository
 - Flutter Project
+- GitHub Repository
 - Clean Architecture
 - Riverpod Setup
 - GoRouter Setup
-- Supabase Package
+- Supabase Integration
 - Foundation Ready
 
 **Status:** ✅ Completed
@@ -62,9 +62,9 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 - Feature Structure
 - Assets Structure
 - Theme
+- Router
 - Services
 - Providers
-- Router
 
 **Status:** ✅ Completed
 
@@ -77,6 +77,7 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 - Project Created
 - Environment Configured
 - API Keys Configured
+- Supabase Initialized
 
 ### Database
 
@@ -111,15 +112,17 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 - Dashboard Navigation
 - Logout
 - Route Guard
+- Forgot Password Navigation
+- Forgot Password API
 
 ### Remaining
 
+- Reset Password (Deep Link)
 - Protected Routes
-- Forgot Password
 - User Roles
 - User Profile
 
-**Status:** 🟡 90% Complete
+**Status:** 🟡 95% Complete
 
 ---
 
@@ -156,8 +159,8 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 ## Sprint 08 — Employee Monitoring
 
 - Background Location Tracking
-- Live Employee Monitoring
 - Google Maps Integration
+- Live Employee Monitoring
 - Location History
 
 ---
@@ -191,9 +194,27 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 ---
 
+# Project Progress
+
+| Module | Status |
+|---------|--------|
+| Project Foundation | ✅ Completed |
+| Architecture | ✅ Completed |
+| Supabase Setup | ✅ Completed |
+| Database Design | ✅ Completed |
+| Authentication | 🟡 95% |
+| Employee Management | ⏳ Pending |
+| Attendance Management | ⏳ Pending |
+| Leave Management | ⏳ Pending |
+| Employee Monitoring | ⏳ Pending |
+| Dashboard & Reports | ⏳ Pending |
+| Notification System | ⏳ Pending |
+
+---
+
 # Documentation
 
-Detailed project documentation is available in the `docs` directory.
+Project documentation is available in the `docs/` folder.
 
 - 01_Project_Roadmap.md
 - 02_Project_Status.md
@@ -204,44 +225,28 @@ Detailed project documentation is available in the `docs` directory.
 
 ---
 
-# Project Progress
-
-| Module | Status |
-|---------|--------|
-| Project Foundation | ✅ Completed |
-| Architecture | ✅ Completed |
-| Supabase Setup | ✅ Completed |
-| Database Design | ✅ Completed |
-| Authentication | 🟡 90% |
-| Employee Management | ⏳ Pending |
-| Attendance Management | ⏳ Pending |
-| Leave Management | ⏳ Pending |
-| Employee Monitoring | ⏳ Pending |
-| Dashboard & Reports | ⏳ Pending |
-| Notification System | ⏳ Pending |
-
----
-
 # Development Workflow
 
-Every feature follows the same workflow:
+Every completed feature follows this workflow:
 
 ```text
-Planning
-    ↓
-Development
-    ↓
+Plan
+↓
+Code
+↓
 Run
-    ↓
-Error Fix
-    ↓
-Testing
-    ↓
-Documentation Update
-    ↓
+↓
+Fix Errors
+↓
+Test
+↓
+Update Documentation
+↓
 Git Commit
-    ↓
+↓
 Git Push
+↓
+Next Sprint
 ```
 
 ---
@@ -254,15 +259,18 @@ https://github.com/omorsoftwaredev/flutter_hrms_pro
 
 # Current Target
 
-Complete **Version 1.0** with:
+### Sprint 04.7 — Authentication Finalization
 
-- Production-ready architecture
-- Stable authentication
-- Employee Management
-- Attendance Management
-- Leave Management
-- Employee Monitoring
-- Dashboard & Reports
-- Notification System
+- [ ] Reset Password (Deep Link)
+- [ ] Reset Password API
+- [ ] Protected Routes
+- [ ] User Roles
+- [ ] User Profile
 
-The project is being developed incrementally with small, tested, and documented milestones to ensure long-term maintainability and CodeCanyon readiness.
+After completing Authentication, development will continue with **Sprint 05 — Employee Management**.
+
+---
+
+# License
+
+This project is under active development and is planned for future **CodeCanyon** release.

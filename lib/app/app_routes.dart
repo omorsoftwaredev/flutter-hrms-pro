@@ -3,23 +3,29 @@ import 'package:go_router/go_router.dart';
 import '../core/services/supabase_service.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
-
+import '../features/auth/presentation/pages/forgot_password_page.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
 
   redirect: (context, state) {
-    final loggedIn =
-        SupabaseService.client.auth.currentUser != null;
+    final loggedIn = SupabaseService.client.auth.currentUser != null;
 
     final isLoginRoute = state.matchedLocation == '/login';
+    final isForgotPasswordRoute =
+        state.matchedLocation == '/forgot-password';
 
-    // Not logged in → only login page is allowed
+    // Allow login & forgot password when logged out
     if (!loggedIn) {
-      return isLoginRoute ? null : '/login';
+      if (isLoginRoute || isForgotPasswordRoute) {
+        return null;
+      }
+
+      return '/login';
     }
 
-    // Already logged in → prevent going back to login
-    if (loggedIn && isLoginRoute) {
+    // Prevent logged-in users from visiting auth pages
+    if (loggedIn &&
+        (isLoginRoute || isForgotPasswordRoute)) {
       return '/dashboard';
     }
 
@@ -41,6 +47,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
+    ),
+    // forgot
+    GoRoute(
+      path: '/forgot-password',
+      builder: (context, state) => const ForgotPasswordPage(),
     ),
 
     // Dashboard (Protected)

@@ -88,15 +88,17 @@
 - [x] Dashboard Navigation
 - [x] Logout
 - [x] Route Guard
+- [x] Forgot Password Navigation
+- [x] Forgot Password API
 
-### Pending
+### Remaining
 
+- [ ] Reset Password (Deep Link)
 - [ ] Protected Routes
-- [ ] Forgot Password
 - [ ] User Roles
 - [ ] User Profile
 
-**Status:** 🟡 90% COMPLETED
+**Status:** 🟡 95% COMPLETED
 
 ---
 
@@ -209,7 +211,7 @@
 | Sprint 01 | ✅ Completed |
 | Sprint 02 | ✅ Completed |
 | Sprint 03 | ✅ Completed |
-| Sprint 04 | 🟡 90% Complete |
+| Sprint 04 | 🟡 95% Complete |
 | Sprint 05 | ⏳ Pending |
 | Sprint 06 | ⏳ Pending |
 | Sprint 07 | ⏳ Pending |
@@ -222,10 +224,11 @@
 
 ## Next Task
 
-Sprint 04.5
+### Sprint 04.7 — Authentication Finalization
 
+- [ ] Reset Password (Deep Link)
+- [ ] Reset Password API
 - [ ] Protected Routes
-- [ ] Forgot Password
 - [ ] User Roles
 - [ ] User Profile
 

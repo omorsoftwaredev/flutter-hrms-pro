@@ -129,6 +129,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    context.push('/forgot-password');
+                  },
+                  child: const Text('Forgot Password'),
+                ),
+                const SizedBox(height: 16),
                 const Text(
                   "Version 0.1.0",
                   textAlign: TextAlign.center,
