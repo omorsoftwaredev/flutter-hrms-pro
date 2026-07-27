@@ -1,20 +1,33 @@
 import 'package:go_router/go_router.dart';
 
 import '../core/services/supabase_service.dart';
-import '../features/auth/presentation/pages/login_page.dart';
-import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/auth/presentation/pages/forgot_password_page.dart';
+import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/update_password_page.dart';
+import '../features/dashboard/presentation/pages/dashboard_page.dart';
+
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
 
   redirect: (context, state) {
-    final loggedIn = SupabaseService.client.auth.currentUser != null;
+    final loggedIn =
+        SupabaseService.client.auth.currentUser != null;
 
-    final isLoginRoute = state.matchedLocation == '/login';
+    final location = state.matchedLocation;
+
+    final isLoginRoute = location == '/login';
     final isForgotPasswordRoute =
-        state.matchedLocation == '/forgot-password';
+        location == '/forgot-password';
+    final isUpdatePasswordRoute =
+        location == '/update-password';
 
-    // Allow login & forgot password when logged out
+    /// Always allow Update Password page.
+    /// This is required for Supabase Password Recovery.
+    if (isUpdatePasswordRoute) {
+      return null;
+    }
+
+    /// User is NOT logged in
     if (!loggedIn) {
       if (isLoginRoute || isForgotPasswordRoute) {
         return null;
@@ -23,7 +36,7 @@ final GoRouter appRouter = GoRouter(
       return '/login';
     }
 
-    // Prevent logged-in users from visiting auth pages
+    /// User IS logged in
     if (loggedIn &&
         (isLoginRoute || isForgotPasswordRoute)) {
       return '/dashboard';
@@ -33,49 +46,65 @@ final GoRouter appRouter = GoRouter(
   },
 
   routes: [
+    /// Root
     GoRoute(
       path: '/',
       redirect: (context, state) {
         final loggedIn =
             SupabaseService.client.auth.currentUser != null;
 
-        return loggedIn ? '/dashboard' : '/login';
+        return loggedIn
+            ? '/dashboard'
+            : '/login';
       },
     ),
 
-    // Login
+    /// Login
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
     ),
-    // forgot
+
+    /// Forgot Password
     GoRoute(
       path: '/forgot-password',
-      builder: (context, state) => const ForgotPasswordPage(),
+      builder: (context, state) =>
+      const ForgotPasswordPage(),
     ),
 
-    // Dashboard (Protected)
+    /// Update Password
+    GoRoute(
+      path: '/update-password',
+      builder: (context, state) =>
+      const UpdatePasswordPage(),
+    ),
+
+    /// Dashboard (Protected)
     GoRoute(
       path: '/dashboard',
-      builder: (context, state) => const DashboardPage(),
+      builder: (context, state) =>
+      const DashboardPage(),
 
       routes: [
-        // Employee Module
+        /// Employees
         GoRoute(
           path: 'employees',
-          builder: (context, state) => const DashboardPage(),
+          builder: (context, state) =>
+          const DashboardPage(),
         ),
 
-        // Attendance Module
+        /// Attendance
         GoRoute(
           path: 'attendance',
-          builder: (context, state) => const DashboardPage(),
+          builder: (context, state) =>
+          const DashboardPage(),
         ),
 
-        // Leave Module
+        /// Leave
         GoRoute(
           path: 'leave',
-          builder: (context, state) => const DashboardPage(),
+          builder: (context, state) =>
+          const DashboardPage(),
         ),
       ],
     ),

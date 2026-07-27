@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/services/supabase_service.dart';
-import '../../../../core/services/supabase_service.dart';
+
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
 
   @override
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  State<ForgotPasswordPage> createState() =>
+      _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  final _emailController = TextEditingController();
+class _ForgotPasswordPageState
+    extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
 
   bool _loading = false;
 
@@ -20,6 +23,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     _emailController.dispose();
     super.dispose();
   }
+
   Future<void> _resetPassword() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -30,6 +34,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       await SupabaseService.client.auth.resetPasswordForEmail(
         _emailController.text.trim(),
+        redirectTo: 'hrmspro://reset-password',
       );
 
       if (!mounted) return;
@@ -108,12 +113,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return "Email is required";
                     }
 
                     if (!value.contains("@")) {
-                      return "Invalid email";
+                      return "Invalid email address";
                     }
 
                     return null;
@@ -126,9 +131,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _loading ? null : _resetPassword,
+                    onPressed:
+                    _loading ? null : _resetPassword,
                     child: _loading
-                        ? const CircularProgressIndicator()
+                        ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                      ),
+                    )
                         : const Text(
                       "Send Reset Link",
                     ),

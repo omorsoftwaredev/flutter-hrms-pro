@@ -110,6 +110,8 @@ dependencies:
   # =========================
   equatable: ^2.0.7
   flutter_dotenv: ^5.2.1
+  app_links: ^6.4.0
+
 
 dev_dependencies:
   flutter_test:
