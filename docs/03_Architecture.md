@@ -2,15 +2,23 @@
 
 # Project Architecture
 
-Version: 1.0
+**Version:** `0.2.0`
 
 ---
 
 # Architecture Overview
 
-Flutter HRMS Pro follows a **Feature-First Clean Architecture**. The project is designed to be scalable, maintainable, reusable, and production-ready.
+Flutter HRMS Pro follows a **Feature-First Clean Architecture** using Flutter and Supabase.
 
-The application is built using Flutter for the frontend and Supabase as the backend.
+The project is designed to be:
+
+- Lightweight
+- Modular
+- Maintainable
+- Scalable
+- Production Ready
+
+The primary target is **small and medium businesses (5–30 employees)**.
 
 ---
 
@@ -20,10 +28,15 @@ The application is built using Flutter for the frontend and Supabase as the back
 
 - Flutter
 - Dart
+- Material 3
 
 ## Backend
 
 - Supabase
+
+## Database
+
+- PostgreSQL
 
 ## State Management
 
@@ -33,10 +46,6 @@ The application is built using Flutter for the frontend and Supabase as the back
 
 - GoRouter
 
-## Database
-
-- PostgreSQL (Supabase)
-
 ## Environment
 
 - flutter_dotenv
@@ -45,37 +54,46 @@ The application is built using Flutter for the frontend and Supabase as the back
 
 # Project Structure
 
-```
+```text
 lib/
 
-app/
-core/
-features/
-shared/
-
-main.dart
+├── app/
+├── core/
+├── features/
+├── shared/
+└── main.dart
 ```
 
 ---
 
 # Folder Structure
 
-```
+```text
 lib/
 
 app/
 │
 ├── app.dart
-├── router.dart
-└── theme.dart
+├── router/
+├── theme/
+└── bootstrap.dart
 
 core/
 │
+├── config/
 ├── constants/
+├── extensions/
 ├── providers/
 ├── services/
 ├── utils/
 └── widgets/
+
+shared/
+│
+├── models/
+├── widgets/
+├── dialogs/
+└── extensions/
 
 features/
 │
@@ -84,211 +102,212 @@ features/
 ├── employee/
 ├── attendance/
 ├── leave/
-├── monitoring/
+├── work_note/
+├── task/
 ├── notification/
-└── reports/
-
-shared/
+└── profile/
 
 main.dart
 ```
 
 ---
 
-# Feature Structure
+# Feature Architecture
 
 Every feature follows the same structure.
 
-```
-feature_name/
+```text
+feature/
 
 data/
-│
-├── datasource/
+├── datasources/
 ├── models/
 └── repositories/
 
 domain/
-│
 ├── entities/
 ├── repositories/
 └── usecases/
 
 presentation/
-│
 ├── pages/
 ├── providers/
-└── widgets/
+├── widgets/
+└── controllers/
 ```
 
 ---
 
-# Routing Flow
+# Application Flow
 
-```
+```text
 Splash
-   │
-   ▼
+    │
+    ▼
 Login
-   │
-   ▼
+    │
+    ▼
 Authentication
-   │
-   ▼
+    │
+    ▼
 Dashboard
-   │
-   ├── Employee
-   ├── Attendance
-   ├── Leave
-   ├── Monitoring
-   ├── Reports
-   └── Notification
+    │
+    ├── Employee
+    ├── Attendance
+    ├── Leave
+    ├── Work Notes
+    ├── Tasks
+    ├── Notifications
+    └── Profile
 ```
 
 ---
 
 # Authentication Flow
 
-```
-Login
-
-↓
-
-Supabase Authentication
-
-↓
-
+```text
+User Login
+      │
+      ▼
+Supabase Auth
+      │
+      ▼
 Session Created
-
-↓
-
-Auto Login
-
-↓
-
+      │
+      ▼
+Employee Loaded
+      │
+      ▼
 Dashboard
-
-↓
-
+      │
+      ▼
 Logout
-
-↓
-
-Session Removed
 ```
 
 ---
 
 # Database Architecture
 
-```
+```text
 companies
-      │
-      ▼
-departments
-      │
-      ▼
-designations
-
-employees
-│
-├── company_id
-├── department_id
-├── designation_id
-└── shift_id
-
-shifts
+    │
+    ├──────────────┐
+    ▼              │
+departments        │
+    │              │
+    ▼              │
+designations       │
+                   │
+employees──────────┘
+    │
+    ├── shift
+    ├── attendance
+    ├── leave_requests
+    ├── work_notes
+    ├── tasks
+    ├── notifications
+    └── documents
 ```
 
 ---
 
 # State Management
 
-Riverpod is used throughout the application.
+Riverpod manages application state.
 
-Responsibilities:
+Providers include:
 
-- Authentication State
-- User Session
-- Employee State
-- Attendance State
-- Leave State
-- Dashboard State
+- Authentication
+- Session
+- Company
+- Employee
+- Attendance
+- Leave
+- Work Notes
+- Tasks
+- Notifications
+- Dashboard
 
 ---
 
 # Navigation
 
-Navigation is managed using GoRouter.
+Navigation is handled using GoRouter.
 
-Current Routes
-
-```
+```text
 /
 
-/login
-
-/dashboard
-
-/dashboard/employees
-
-/dashboard/attendance
-
-/dashboard/leave
+├── splash
+├── login
+├── dashboard
+│
+├── employees
+├── attendance
+├── leave
+├── work-notes
+├── tasks
+├── notifications
+├── profile
+└── settings
 ```
 
-Future routes will be added module by module.
+---
+
+# Backend Architecture
+
+Flutter
+
+↓
+
+Repository
+
+↓
+
+Supabase Service
+
+↓
+
+Supabase API
+
+↓
+
+PostgreSQL
 
 ---
 
 # Design Principles
 
 - Clean Architecture
-- Feature-First Development
+- Feature-First Structure
 - SOLID Principles
-- Modular Design
-- Reusable Components
-- Error-Free Development
-- Git Version Control
+- Material 3 Design
+- Reusable Widgets
+- Responsive UI
+- Lightweight Database
+- Simple Business Logic
 - Documentation Driven Development
 
 ---
 
 # Development Workflow
 
-```
+```text
 Requirement
-
-↓
-
-Architecture
-
-↓
-
+      ↓
+Planning
+      ↓
+UI Design
+      ↓
 Development
-
-↓
-
-Run
-
-↓
-
-Error Fix
-
-↓
-
+      ↓
 Testing
-
-↓
-
-Documentation Update
-
-↓
-
+      ↓
+Bug Fix
+      ↓
+Documentation
+      ↓
 Git Commit
-
-↓
-
+      ↓
 Git Push
 ```
 
@@ -296,8 +315,13 @@ Git Push
 
 # Supported Platforms
 
+## Current
+
 - Android
 - iOS
+
+## Future
+
 - Web
 - Windows
 - macOS
@@ -307,11 +331,25 @@ Git Push
 
 # Architecture Status
 
-- Clean Architecture Implemented
-- Feature-First Structure Ready
-- Riverpod Configured
-- GoRouter Configured
-- Supabase Connected
-- Environment Configured
+| Component | Status |
+|-----------|--------|
+| Clean Architecture | ✅ |
+| Feature-First Structure | ✅ |
+| Riverpod | ✅ |
+| GoRouter | ✅ |
+| Supabase | ✅ |
+| Database | ✅ |
+| Authentication | 🟡 |
+| UI Development | ⏳ |
 
-Status: ✅ ACTIVE
+---
+
+# Architecture Goals
+
+- Simple to Understand
+- Easy to Maintain
+- Fast Development
+- Reusable Components
+- Minimal Boilerplate
+- Production Ready
+- CodeCanyon Ready

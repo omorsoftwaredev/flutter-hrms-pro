@@ -2,87 +2,198 @@
 
 # Changelog
 
-All notable changes to this project will be documented here.
+All notable changes to this project will be documented in this file.
+
+The format follows semantic versioning principles.
 
 ---
 
-# Version 0.1.0
+# Version 0.2.0
 
-## Sprint 01 — Project Foundation
+**Release Date:** _(In Development)_
 
-### Added
+## Added
 
-- Flutter project created
+### Project Foundation
+
+- Flutter project initialized
 - GitHub repository created
 - Clean Architecture
-- Riverpod
-- GoRouter
-- flutter_dotenv
-- Foundation completed
+- Feature-First Structure
+- Riverpod integration
+- GoRouter integration
+- flutter_dotenv integration
+- Material 3 foundation
 
 ---
 
-## Sprint 02 — Architecture
+### Supabase
 
-### Added
-
-- Core structure
-- Feature-first architecture
-- Theme foundation
-- Services
-- Providers
-- Router
-
----
-
-## Sprint 03 — Supabase & Database
-
-### Added
-
-- Supabase integration
+- Supabase project configured
 - Environment configuration
-- Database schema
-- Companies table
-- Departments table
-- Designations table
-- Shifts table
-- Employees table
+- Authentication setup
+- Storage buckets
+- Storage policies
 
 ---
 
-## Sprint 04 — Authentication
+### Database
 
-### Added
+#### Schema
 
-- Professional Login UI
-- Login API
+- Companies
+- Departments
+- Designations
+- Shifts
+- Employees
+- Attendance
+- Attendance Logs
+- Leave Types
+- Leave Requests
+- Holidays
+- Work Notes
+- Tasks
+- Task Comments
+- Notifications
+- Notification Receivers
+- Employee Documents
+- Company Documents
+- Attachments
+- Activity Logs
+
+#### Database Features
+
+- UUID primary keys
+- Foreign key constraints
+- Indexes
+- Views
+- Triggers
+- Seed data
+- Validation scripts
+- Verification scripts
+
+#### Security
+
+- Row Level Security (RLS)
+- Storage Policies
+- Authentication Helper Functions
+
+---
+
+### Authentication
+
+#### Completed
+
+- Login
+- Logout
 - Session Management
 - Auto Login
-- Logout
 - Route Guard
-- Forgot Password UI
-- Forgot Password Navigation
-- Forgot Password API
-- Update Password UI
-- Deep Link Foundation
-- Android Deep Link Configuration
-- Supabase Redirect URL
+- Forgot Password
+- Update Password
+- Deep Link Configuration
 
-### In Progress
+#### In Progress
 
-- Reset Password Deep Link
-- Protected Routes
-- User Roles
+- Reset Password Flow
 - User Profile
+- Role-Based Navigation
 
 ---
 
-## Upcoming
+### Documentation
 
-### Sprint 05
+Updated project documentation:
+
+- README.md
+- 01_Project_Roadmap.md
+- 02_Project_Status.md
+- 03_Architecture.md
+- 04_Database.md
+- 05_API.md
+- 06_Development_Guide.md
+
+---
+
+# Upcoming
+
+## Version 0.3.0
+
+### Dashboard
+
+- Dashboard Overview
+- Statistics Cards
+- Attendance Summary
+- Leave Summary
+- Task Summary
+- Charts
+- Quick Actions
+
+---
+
+### Employee Management
 
 - Company CRUD
 - Department CRUD
 - Designation CRUD
 - Shift CRUD
 - Employee CRUD
+- Employee Documents
+
+---
+
+### Attendance
+
+- Check In
+- Check Out
+- Attendance History
+- Attendance Reports
+
+---
+
+### Leave
+
+- Leave Types
+- Apply Leave
+- Leave Approval
+- Holiday Calendar
+
+---
+
+### Work Notes
+
+- Daily Work Notes
+- Manager Review
+
+---
+
+### Tasks
+
+- Task Management
+- Task Comments
+
+---
+
+### Notifications
+
+- In-App Notifications
+- Company Notifications
+
+---
+
+### Profile
+
+- My Profile
+- Change Password
+- Settings
+
+---
+
+## Future (v1.0)
+
+- Production-ready Android release
+- Play Store package
+- CodeCanyon package
+- Performance optimization
+- Complete documentation
+- Bug fixes

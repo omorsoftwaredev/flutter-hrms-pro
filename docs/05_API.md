@@ -2,42 +2,51 @@
 
 # API Documentation
 
-Version: 1.0
+**Version:** `0.2.0`
 
 ---
 
 # Overview
 
-Flutter HRMS Pro uses **Supabase** as the backend platform.
+Flutter HRMS Pro uses **Supabase** as its backend platform.
 
-Currently, all data operations are performed through the Supabase Flutter SDK. No custom REST API is used in Version 1.0.
+Version **1.0** does **not** use custom REST APIs. All backend communication is performed through the official **Supabase Flutter SDK**.
 
-Future versions may expose REST APIs for third-party integrations.
+The architecture follows:
+
+```
+Flutter
+    ↓
+Repository
+    ↓
+Supabase Service
+    ↓
+Supabase SDK
+    ↓
+PostgreSQL
+```
 
 ---
 
 # Backend
 
-- Platform : Supabase
-- Database : PostgreSQL
-- Authentication : Supabase Auth
-- Storage : Supabase Storage (Future)
-- Realtime : Supabase Realtime (Future)
+| Component | Technology |
+|-----------|------------|
+| Backend | Supabase |
+| Database | PostgreSQL |
+| Authentication | Supabase Auth |
+| Storage | Supabase Storage |
+| Security | Row Level Security (RLS) |
+| Realtime | Optional (Future) |
 
 ---
 
-# Authentication API
+# Authentication
 
 ## Login
 
-Method
-
-Supabase Authentication
-
-Example
-
 ```dart
-await Supabase.instance.client.auth.signInWithPassword(
+await supabase.auth.signInWithPassword(
   email: email,
   password: password,
 );
@@ -51,10 +60,8 @@ Status
 
 ## Logout
 
-Example
-
 ```dart
-await Supabase.instance.client.auth.signOut();
+await supabase.auth.signOut();
 ```
 
 Status
@@ -65,10 +72,8 @@ Status
 
 ## Current User
 
-Example
-
 ```dart
-final user = Supabase.instance.client.auth.currentUser;
+final user = supabase.auth.currentUser;
 ```
 
 Status
@@ -77,23 +82,11 @@ Status
 
 ---
 
-## Session
-
-Example
+## Current Session
 
 ```dart
-final session = Supabase.instance.client.auth.currentSession;
+final session = supabase.auth.currentSession;
 ```
-
-Status
-
-✅ Completed
-
----
-
-## Auto Login
-
-Supabase automatically restores the previous session.
 
 Status
 
@@ -103,17 +96,31 @@ Status
 
 ## Forgot Password
 
-Example
-
 ```dart
-await Supabase.instance.client.auth.resetPasswordForEmail(
+await supabase.auth.resetPasswordForEmail(
   email,
 );
 ```
 
 Status
 
-⏳ Pending
+🟡 In Progress
+
+---
+
+## Update Password
+
+```dart
+await supabase.auth.updateUser(
+  UserAttributes(
+    password: newPassword,
+  ),
+);
+```
+
+Status
+
+🟡 In Progress
 
 ---
 
@@ -122,7 +129,7 @@ Status
 ## Select
 
 ```dart
-await Supabase.instance.client
+await supabase
     .from('employees')
     .select();
 ```
@@ -132,7 +139,7 @@ await Supabase.instance.client
 ## Insert
 
 ```dart
-await Supabase.instance.client
+await supabase
     .from('employees')
     .insert(data);
 ```
@@ -142,7 +149,7 @@ await Supabase.instance.client
 ## Update
 
 ```dart
-await Supabase.instance.client
+await supabase
     .from('employees')
     .update(data)
     .eq('id', id);
@@ -153,7 +160,7 @@ await Supabase.instance.client
 ## Delete
 
 ```dart
-await Supabase.instance.client
+await supabase
     .from('employees')
     .delete()
     .eq('id', id);
@@ -161,134 +168,137 @@ await Supabase.instance.client
 
 ---
 
-# Current Database APIs
+# Storage Operations
 
-## Companies
+## Upload
 
-- Create
-- Read
-- Update
-- Delete
+```dart
+await supabase.storage
+    .from('employee-photos')
+    .upload(path, file);
+```
+
+---
+
+## Download URL
+
+```dart
+supabase.storage
+    .from('employee-photos')
+    .getPublicUrl(path);
+```
+
+---
+
+## Delete
+
+```dart
+await supabase.storage
+    .from('employee-photos')
+    .remove([path]);
+```
+
+---
+
+# Authentication Helper Functions
+
+Available Database Functions
+
+- hrms_current_employee()
+- hrms_current_employee_id()
+- hrms_current_company_id()
+- hrms_current_role()
+- hrms_is_super_admin()
+- hrms_is_company_admin()
 
 Status
 
-⏳ Pending
+✅ Completed
 
 ---
 
-## Departments
+# Planned Repositories
 
-- Create
-- Read
-- Update
-- Delete
+## Authentication
 
-Status
-
-⏳ Pending
-
----
-
-## Designations
-
-- Create
-- Read
-- Update
-- Delete
-
-Status
-
-⏳ Pending
-
----
-
-## Shifts
-
-- Create
-- Read
-- Update
-- Delete
-
-Status
-
-⏳ Pending
-
----
-
-## Employees
-
-- Create
-- Read
-- Update
-- Delete
-
-Status
-
-⏳ Pending
-
----
-
-# Upcoming APIs
-
-## Attendance
-
-- Check In
-- Check Out
-- Attendance History
-- Attendance Report
-
----
-
-## Leave
-
-- Leave Apply
-- Leave Approval
-- Leave History
-
----
-
-## Monitoring
-
-- Upload Live Location
-- Location History
-- Route History
-
----
-
-## Notification
-
-- Send Notification
-- Read Notification
-- Mark as Read
+- Login
+- Logout
+- Forgot Password
+- Update Password
+- User Profile
 
 ---
 
 ## Dashboard
 
 - Dashboard Summary
-- Employee Statistics
-- Attendance Statistics
+- Statistics
+- Recent Activities
 
 ---
 
-# Response Handling
+## Employee
 
-Every API call should return:
+- Company CRUD
+- Department CRUD
+- Designation CRUD
+- Shift CRUD
+- Employee CRUD
+- Employee Documents
 
-- Success
-- Error
-- Message
-- Data (if available)
+---
 
-Example
+## Attendance
+
+- Check In
+- Check Out
+- Attendance History
+- Attendance Reports
+
+---
+
+## Leave
+
+- Leave Types
+- Apply Leave
+- Leave Approval
+- Holiday Calendar
+
+---
+
+## Work Notes
+
+- Create Note
+- Update Note
+- Delete Note
+
+---
+
+## Tasks
+
+- Create Task
+- Assign Task
+- Update Progress
+- Task Comments
+
+---
+
+## Notifications
+
+- Notification List
+- Mark as Read
+
+---
+
+# Response Pattern
+
+Every repository should return a consistent result.
 
 ```dart
-try {
-  final response = await Supabase.instance.client
-      .from('employees')
-      .select();
-} catch (e) {
-  debugPrint(e.toString());
+class ApiResult<T> {
+  final bool success;
+  final String message;
+  final T? data;
 }
 ```
 
@@ -299,45 +309,73 @@ try {
 Rules
 
 - Use try-catch
-- Show user-friendly messages
-- Log errors in debug mode
-- Prevent application crash
+- Return readable error messages
+- Log exceptions in debug mode
+- Prevent application crashes
+
+Example
+
+```dart
+try {
+  final data = await supabase
+      .from('employees')
+      .select();
+} on PostgrestException catch (e) {
+  debugPrint(e.message);
+} catch (e) {
+  debugPrint(e.toString());
+}
+```
 
 ---
 
 # Security
 
+Implemented
+
 - Supabase Authentication
+- Row Level Security (RLS)
+- Storage Policies
 - Protected Routes
-- User Roles (Upcoming)
-- Row Level Security (Future)
+- Role-Based Access (Application Level)
+
+Status
+
+✅ Completed
 
 ---
 
 # API Status
 
-| API | Status |
-|------|--------|
-| Authentication | 🟡 In Progress |
-| Companies | ⏳ Pending |
-| Departments | ⏳ Pending |
-| Designations | ⏳ Pending |
-| Shifts | ⏳ Pending |
-| Employees | ⏳ Pending |
-| Attendance | ⏳ Pending |
-| Leave | ⏳ Pending |
-| Monitoring | ⏳ Pending |
-| Notification | ⏳ Pending |
-| Dashboard | ⏳ Pending |
+| Module | Status |
+|---------|--------|
+| Authentication | 🟡 |
+| Dashboard | ⏳ |
+| Employee | ⏳ |
+| Attendance | ⏳ |
+| Leave | ⏳ |
+| Work Notes | ⏳ |
+| Tasks | ⏳ |
+| Notifications | ⏳ |
+
+---
+
+# Future (v2.x)
+
+- Supabase Edge Functions
+- Push Notifications
+- Realtime Attendance
+- Public REST API (Optional)
 
 ---
 
 # Notes
 
-- All backend communication uses the official Supabase Flutter SDK.
-- REST API is not required for Version 1.0.
-- Every new service or repository should be documented here before implementation.
+- Uses the official Supabase Flutter SDK.
+- No custom REST API is required for Version 1.0.
+- Repository Pattern is used for all database operations.
+- Business logic remains inside Flutter, keeping the backend lightweight.
 
 ---
 
-Status: 🟡 ACTIVE
+**Status:** 🟡 Active Development

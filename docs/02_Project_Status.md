@@ -1,77 +1,103 @@
 # Flutter HRMS Pro
 
-## Version
+# Project Status
 
-0.1.0
+**Version:** `0.2.0`
+
+**Status:** 🟡 Active Development
 
 ---
 
-# Project Status
+# Overall Progress
 
-- [x] GitHub Repository Created
-- [x] Flutter Project Created
-- [x] Clean Architecture Implemented
-- [x] Riverpod Integrated
-- [x] GoRouter Integrated
-- [x] Supabase Integrated
-- [x] Foundation Completed
+| Area | Status |
+|------|--------|
+| Project Foundation | ✅ Completed |
+| Architecture | ✅ Completed |
+| Supabase Setup | ✅ Completed |
+| Database | ✅ Completed |
+| Authentication | 🟡 95% |
+| Employee Module | ⏳ Pending |
+| Attendance Module | ⏳ Pending |
+| Leave Module | ⏳ Pending |
+| Work Notes | ⏳ Pending |
+| Task Management | ⏳ Pending |
+| Dashboard | ⏳ Pending |
+| Notifications | ⏳ Pending |
 
 ---
 
 # Sprint 01 — Project Foundation ✅
 
-### Completed
+## Completed
 
 - [x] Flutter Project
 - [x] GitHub Repository
-- [x] Clean Architecture Folder Structure
+- [x] Clean Architecture
+- [x] Feature First Structure
 - [x] Assets Structure
-- [x] Core Structure
-- [x] Feature Structure
-- [x] Environment Ready
-- [x] Riverpod Setup
-- [x] GoRouter Setup
-- [x] Supabase Package
-- [x] Flutter Dotenv
+- [x] Core Layer
+- [x] Shared Layer
+- [x] Environment Setup
+- [x] Riverpod Integration
+- [x] GoRouter Integration
+- [x] flutter_dotenv
 - [x] Foundation Ready
 
 **Status:** ✅ COMPLETED
 
 ---
 
-# Sprint 02 — Supabase Configuration ✅
+# Sprint 02 — Supabase Setup ✅
 
-### Completed
+## Completed
 
-- [x] Supabase Project Created
-- [x] API URL Configured
-- [x] Anon Key Configured
-- [x] .env Created
-- [x] Environment Loaded
-- [x] Supabase Initialized
+- [x] Supabase Project
+- [x] Environment Configuration
+- [x] API URL
+- [x] Anon Key
+- [x] Authentication Setup
+- [x] Storage Setup
+- [x] Flutter Integration
 
 **Status:** ✅ COMPLETED
 
 ---
 
-# Sprint 03 — Database Foundation ✅
+# Sprint 03 — Database ✅
 
-### Tables Created
+## Database Design
 
-- [x] companies
-- [x] departments
-- [x] designations
-- [x] shifts
-- [x] employees
+- [x] Database Schema
+- [x] Relationships
+- [x] Foreign Keys
+- [x] Indexes
+- [x] Views
+- [x] Triggers
+- [x] Seed Data
+- [x] Validation Scripts
+- [x] Verification Scripts
 
-### Foreign Keys
+## Security
 
-- [x] Department → Company
-- [x] Designation → Department
-- [x] Employee → Company
-- [x] Employee → Department
-- [x] Employee → Designation
-- [x] Employee → Shift
+- [x] Row Level Security (RLS)
+- [x] Storage Policies
+- [x] Authentication Helper Functions
+
+## Core Modules
+
+- [x] Companies
+- [x] Departments
+- [x] Designations
+- [x] Shifts
+- [x] Employees
+- [x] Attendance
+- [x] Leave
+- [x] Work Notes
+- [x] Tasks
+- [x] Notifications
+- [x] Documents
+- [x] Attachments
 
 **Status:** ✅ COMPLETED
 
@@ -79,194 +105,207 @@
 
 # Sprint 04 — Authentication 🟡
 
-### Completed
+## Completed
 
-- [x] Professional Login UI
-- [x] Supabase Authentication
-- [x] Login API
+- [x] Login
+- [x] Logout
 - [x] Session Management
 - [x] Auto Login
-- [x] Dashboard Navigation
-- [x] Logout
 - [x] Route Guard
-- [x] Protected Route Foundation
-- [x] Forgot Password UI
-- [x] Forgot Password Navigation
-- [x] Forgot Password API
-- [x] Update Password UI
-- [x] Deep Link Foundation
-- [x] Android Deep Link Configuration
-- [x] Supabase Redirect URL Configuration
-- [x] Deep Link Debug Logging
+- [x] Forgot Password
+- [x] Update Password
+- [x] Deep Link Configuration
+- [x] Protected Routes
+- [x] Authentication Helpers
 
-### Remaining
+## Remaining
 
-- [ ] Deep Link Navigation Fix
-- [ ] Reset Password API
-- [ ] User Roles
+- [ ] Reset Password Flow
 - [ ] User Profile
+- [ ] Role-Based Navigation
 
-**Status:** 🟡 97% COMPLETED
+**Status:** 🟡 95% COMPLETED
 
 ---
 
-# Sprint 05 — Employee Management
+# Sprint 05 — Dashboard
 
-### Todo
+## Todo
+
+- [ ] Dashboard Overview
+- [ ] Statistics Cards
+- [ ] Attendance Summary
+- [ ] Leave Summary
+- [ ] Task Summary
+- [ ] Charts
+- [ ] Recent Activities
+- [ ] Quick Actions
+
+**Status:** ⏳ NOT STARTED
+
+---
+
+# Sprint 06 — Employee Management
+
+## Todo
 
 - [ ] Company CRUD
 - [ ] Department CRUD
 - [ ] Designation CRUD
 - [ ] Shift CRUD
 - [ ] Employee CRUD
+- [ ] Employee Documents
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 06 — Attendance Management
+# Sprint 07 — Attendance
 
-### Todo
+## Todo
 
-- [ ] Mobile Check In
-- [ ] Mobile Check Out
-- [ ] GPS Location
-- [ ] Address Detection
+- [ ] Check In
+- [ ] Check Out
+- [ ] GPS Validation
 - [ ] Attendance History
-- [ ] Attendance Report
+- [ ] Attendance Reports
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 07 — Leave Management
+# Sprint 08 — Leave
 
-### Todo
+## Todo
 
-- [ ] Leave Type
+- [ ] Leave Types
 - [ ] Apply Leave
 - [ ] Leave Approval
-- [ ] Holiday Management
-- [ ] IOU / Official Movement
+- [ ] Holiday Calendar
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 08 — Employee Monitoring
+# Sprint 09 — Work Notes & Tasks
 
-### Todo
+## Todo
 
-- [ ] Background Location Tracking
-- [ ] Live Employee Tracking
-- [ ] Google Maps Integration
-- [ ] Location History
-- [ ] Employee Route History
+### Work Notes
 
-**Status:** ⏳ NOT STARTED
+- [ ] Daily Work Notes
+- [ ] Progress
+- [ ] Review
 
----
+### Tasks
 
-# Sprint 09 — Dashboard & Reports
-
-### Todo
-
-- [ ] Admin Dashboard
-- [ ] Employee Dashboard
-- [ ] Attendance Reports
-- [ ] Leave Reports
-- [ ] Employee Reports
-- [ ] Analytics
+- [ ] Create Task
+- [ ] Assign Task
+- [ ] Update Progress
+- [ ] Task Comments
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 10 — Notification System
+# Sprint 10 — Notifications
 
-### Todo
+## Todo
 
-- [ ] In-App Notification
-- [ ] Department Notification
-- [ ] Company Announcement
-- [ ] Broadcast Notification
+- [ ] In-App Notifications
+- [ ] Company Notifications
+- [ ] Department Notifications
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 11 — CodeCanyon Release
+# Sprint 11 — Profile & Settings
 
-### Todo
+## Todo
 
-- [ ] Complete Documentation
+- [ ] My Profile
+- [ ] Change Password
+- [ ] Company Settings
+- [ ] App Settings
+
+**Status:** ⏳ NOT STARTED
+
+---
+
+# Sprint 12 — Release
+
+## Todo
+
+- [ ] Testing
+- [ ] Bug Fixes
+- [ ] Performance Optimization
+- [ ] Documentation
 - [ ] Screenshots
 - [ ] Demo Video
-- [ ] README Final
+- [ ] README
 - [ ] CHANGELOG
 - [ ] LICENSE
-- [ ] Code Optimization
-- [ ] Publish to CodeCanyon
+- [ ] Android Release
+- [ ] Play Store Ready
+- [ ] CodeCanyon Package
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Current Progress
+# Current Milestone
 
-| Sprint | Status |
-|---------|--------|
-| Sprint 01 | ✅ Completed |
-| Sprint 02 | ✅ Completed |
-| Sprint 03 | ✅ Completed |
-| Sprint 04 | 🟡 97% Complete |
-| Sprint 05 | ⏳ Pending |
-| Sprint 06 | ⏳ Pending |
-| Sprint 07 | ⏳ Pending |
-| Sprint 08 | ⏳ Pending |
-| Sprint 09 | ⏳ Pending |
-| Sprint 10 | ⏳ Pending |
-| Sprint 11 | ⏳ Pending |
+🎯 Authentication (100%)
 
----
+↓
 
-# Next Task
+🚀 Dashboard
 
-## Sprint 04.8 — Authentication Finalization
+↓
 
-- [ ] Deep Link Navigation Fix
-- [ ] Reset Password API
-- [ ] User Roles
-- [ ] User Profile
+🚀 Employee Management
 
-### Next Milestone
+↓
 
-✅ Authentication Module — 100% Complete
-
-⬇
-
-🚀 Sprint 05 — Employee Management
+🚀 Attendance
 
 ---
 
 # Development Workflow
 
 ```text
-Plan
-↓
-Code
-↓
-Run
-↓
-Fix Errors
-↓
-Test
-↓
-Update Documentation
-↓
+Planning
+    ↓
+UI Design
+    ↓
+Development
+    ↓
+Testing
+    ↓
+Bug Fix
+    ↓
+Documentation
+    ↓
 Git Commit
-↓
+    ↓
 Git Push
-↓
+    ↓
 Next Sprint
 ```
+
+---
+
+# Next Priority
+
+1. Complete Authentication
+2. Dashboard UI
+3. Employee Management
+4. Attendance Module
+5. Leave Module
+
+---
+
+# Version 1.0 Goal
+
+A lightweight, beautiful, and production-ready Flutter HRMS application for small and medium-sized businesses (5–30 employees), powered by Flutter and Supabase.

@@ -1,14 +1,16 @@
 # Flutter HRMS Pro
 
-A modern, scalable and production-ready **Human Resource Management System (HRMS)** built with **Flutter** and **Supabase**.
+A modern, lightweight and production-ready **Human Resource Management System (HRMS)** built with **Flutter** and **Supabase**.
 
-The project follows **Clean Architecture**, **Feature-First Development**, and **Documentation-Driven Workflow**. It is being developed with the goal of publishing a production-ready HRMS on **CodeCanyon**.
+Designed for **small and medium businesses (5–30 employees)** with a focus on **beautiful UI**, **fast performance**, and **simple management**.
+
+The project follows **Clean Architecture**, **Feature-First Development**, and **Documentation-Driven Workflow**.
 
 ---
 
 # Version
 
-**Current Version:** `0.1.0`
+**Current Version:** `0.2.0`
 
 **Status:** 🟡 Active Development
 
@@ -20,6 +22,7 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 - Flutter
 - Dart
+- Material 3
 
 ## Backend
 
@@ -37,6 +40,18 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 ## Environment
 
 - flutter_dotenv
+
+---
+
+# Project Goals
+
+- Lightweight HRMS
+- Beautiful Flutter UI
+- Fast Performance
+- Simple Database
+- Small Business Friendly
+- Production Ready
+- CodeCanyon Ready
 
 ---
 
@@ -58,13 +73,14 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 ## ✅ Sprint 02 — Architecture
 
-- Core Folder Structure
-- Feature Structure
-- Assets Structure
-- Theme
+- Feature First Structure
+- Core Layer
+- Shared Widgets
+- Theme System
 - Router
 - Services
 - Providers
+- Repositories
 
 **Status:** ✅ Completed
 
@@ -76,25 +92,39 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 - Project Created
 - Environment Configured
-- API Keys Configured
-- Supabase Initialized
+- Authentication Ready
+- Storage Ready
 
 ### Database
 
-- companies
-- departments
-- designations
-- shifts
-- employees
+Completed Modules
 
-### Relationships
+- Companies
+- Departments
+- Designations
+- Employees
+- Shifts
+- Attendance
+- Leave
+- Work Notes
+- Tasks
+- Notifications
+- Documents
+- Attachments
+- Activity Logs
 
-- Department → Company
-- Designation → Department
-- Employee → Company
-- Employee → Department
-- Employee → Designation
-- Employee → Shift
+### Database Features
+
+- Relationships
+- Indexes
+- Views
+- Triggers
+- Seed Data
+- Validation Scripts
+- Verification Scripts
+- Simple RLS
+- Storage Policies
+- Authentication Helpers
 
 **Status:** ✅ Completed
 
@@ -104,114 +134,94 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 ### Completed
 
-- ✅ Professional Login UI
-- ✅ Supabase Authentication
-- ✅ Login API
-- ✅ Session Management
-- ✅ Auto Login
-- ✅ Dashboard Navigation
-- ✅ Logout
-- ✅ Route Guard
-- ✅ Protected Route Foundation
-- ✅ Forgot Password UI
-- ✅ Forgot Password Navigation
-- ✅ Forgot Password API
-- ✅ Update Password UI
-- ✅ Deep Link Foundation
-- ✅ Android Deep Link Configuration
-- ✅ Supabase Redirect URL Configuration
-- ✅ Deep Link Debug Logging
+- Login
+- Logout
+- Session Management
+- Auto Login
+- Route Guard
+- Forgot Password
+- Update Password
+- Deep Link Configuration
+- User Authentication Helpers
 
 ### Remaining
 
-- ⏳ Deep Link Navigation Fix
-- ⏳ Reset Password API
-- ⏳ User Roles
-- ⏳ User Profile
+- Reset Password Flow
+- User Profile
+- Role Based Navigation
 
-**Status:** 🟡 97% Complete
-
----
-
-# Upcoming Modules
-
-## Sprint 05 — Employee Management
-
-- Company CRUD
-- Department CRUD
-- Designation CRUD
-- Shift CRUD
-- Employee CRUD
-
-**Status:** ⏳ Pending
+**Status:** 🟡 95%
 
 ---
 
-## Sprint 06 — Attendance Management
+# Upcoming Sprints
 
-- Mobile Check In
-- Mobile Check Out
+## 🚀 Sprint 05 — Employee Management
+
+- Employee List
+- Employee Details
+- Add Employee
+- Update Employee
+- Employee Documents
+
+---
+
+## 🚀 Sprint 06 — Attendance
+
+- Check In
+- Check Out
 - Attendance History
 - Attendance Report
 
-**Status:** ⏳ Pending
-
 ---
 
-## Sprint 07 — Leave Management
+## 🚀 Sprint 07 — Leave
 
-- Leave Apply
+- Apply Leave
 - Leave Approval
-- Holiday Management
-- IOU / Official Movement
-
-**Status:** ⏳ Pending
+- Holiday Calendar
 
 ---
 
-## Sprint 08 — Employee Monitoring
+## 🚀 Sprint 08 — Work Notes & Tasks
 
-- Background Location Tracking
-- Google Maps Integration
-- Live Employee Monitoring
-- Location History
-
-**Status:** ⏳ Pending
+- Daily Work Notes
+- Task Management
+- Task Comments
 
 ---
 
-## Sprint 09 — Dashboard & Reports
+## 🚀 Sprint 09 — Dashboard
 
 - Dashboard
-- Attendance Reports
-- Leave Reports
-- Employee Reports
-
-**Status:** ⏳ Pending
-
----
-
-## Sprint 10 — Notification System
-
-- In-App Notification
-- Department Notification
-- Company Announcement
-
-**Status:** ⏳ Pending
+- Statistics
+- Charts
+- Quick Actions
+- Recent Activities
 
 ---
 
-# Version 2.0 Roadmap
+## 🚀 Sprint 10 — Notifications
 
-- Face Attendance
-- Face Recognition
-- Push Notification
-- Payroll Management
-- Performance Management
-- Recruitment Module
-- Web Admin Panel
+- In-App Notifications
+- Company Notifications
+- Department Notifications
 
-**Status:** 📋 Planned
+---
+
+# Flutter Roadmap
+
+- Splash Screen
+- Login
+- Dashboard
+- Employee
+- Attendance
+- Leave
+- Work Notes
+- Tasks
+- Notifications
+- Profile
+- Settings
 
 ---
 
@@ -219,84 +229,94 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 | Module | Status |
 |---------|--------|
-| Project Foundation | ✅ Completed |
-| Architecture | ✅ Completed |
-| Supabase Setup | ✅ Completed |
-| Database Design | ✅ Completed |
-| Authentication | 🟡 97% |
-| Employee Management | ⏳ Pending |
-| Attendance Management | ⏳ Pending |
-| Leave Management | ⏳ Pending |
-| Employee Monitoring | ⏳ Pending |
-| Dashboard & Reports | ⏳ Pending |
-| Notification System | ⏳ Pending |
+| Project Foundation | ✅ |
+| Architecture | ✅ |
+| Supabase | ✅ |
+| Database | ✅ |
+| Authentication | 🟡 |
+| Employee | ⏳ |
+| Attendance | ⏳ |
+| Leave | ⏳ |
+| Work Notes | ⏳ |
+| Tasks | ⏳ |
+| Dashboard | ⏳ |
+| Notifications | ⏳ |
 
 ---
 
 # Documentation
 
-Project documentation is available in the `docs/` folder.
-
-- 01_Project_Roadmap.md
-- 02_Project_Status.md
-- 03_Architecture.md
-- 04_Database.md
-- 05_API.md
-- 06_Development_Guide.md
+```
+docs/
+├── 01_Project_Roadmap.md
+├── 02_Project_Status.md
+├── 03_Architecture.md
+├── 04_Database.md
+├── 05_API.md
+└── 06_Development_Guide.md
+```
 
 ---
 
 # Development Workflow
 
-Every completed feature follows this workflow:
-
 ```text
 Plan
-↓
+ ↓
+Design
+ ↓
 Code
-↓
+ ↓
 Run
-↓
-Fix Errors
-↓
+ ↓
 Test
-↓
+ ↓
+Fix
+ ↓
 Update Documentation
-↓
+ ↓
 Git Commit
-↓
+ ↓
 Git Push
-↓
-Next Sprint
 ```
 
 ---
 
-# GitHub Repository
+# GitHub
 
 https://github.com/omorsoftwaredev/flutter_hrms_pro
 
 ---
 
-# Current Target
+# Current Milestone
 
-## Sprint 04.8 — Authentication Finalization
+🎯 Complete Authentication
 
-- [ ] Deep Link Navigation Fix
-- [ ] Reset Password API
-- [ ] User Roles
-- [ ] User Profile
+↓
 
-### Next Milestone
+🚀 Employee Module
 
-✅ Authentication Module (100%)
+↓
 
-⬇
+🚀 Attendance Module
 
-🚀 Sprint 05 — Employee Management
+↓
+
+🚀 Dashboard
+
+---
+
+# Future Version (v2.x)
+
+- Face Attendance
+- Push Notifications
+- Live Location Tracking
+- Web Admin Panel
 
 ---
 
 # License
 
-This project is under active development and is planned for a future **CodeCanyon** release.
+This project is currently under active development.
+
+The goal is to release a production-ready Flutter HRMS application on CodeCanyon.

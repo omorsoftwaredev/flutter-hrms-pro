@@ -2,56 +2,50 @@
 
 # Development Guide
 
-Version: 1.0
+**Version:** `0.2.0`
 
 ---
 
-# Project Goal
+# Development Philosophy
 
-Develop a production-ready Human Resource Management System (HRMS) using Flutter and Supabase.
+Flutter HRMS Pro is developed with one simple principle:
 
-The project must be:
+> **Build a beautiful, lightweight, production-ready HRMS for small and medium businesses using Flutter and Supabase.**
 
-- Clean
-- Modular
-- Scalable
-- Error-Free
-- CodeCanyon Ready
+The project prioritizes:
+
+- Simple Architecture
+- Clean Code
+- Beautiful UI
+- Reusable Components
+- Stable Database
+- Fast Development
 
 ---
 
 # Development Workflow
 
-Every feature must follow the same workflow.
+Every feature follows the same workflow.
 
-```
+```text
+Requirement
+      ↓
 Planning
-    │
-    ▼
-Documentation
-    │
-    ▼
+      ↓
+UI Design
+      ↓
 Development
-    │
-    ▼
+      ↓
 Run
-    │
-    ▼
-Error Fix
-    │
-    ▼
+      ↓
 Testing
-    │
-    ▼
-README Update
-    │
-    ▼
-Docs Update
-    │
-    ▼
+      ↓
+Bug Fix
+      ↓
+Documentation
+      ↓
 Git Commit
-    │
-    ▼
+      ↓
 Git Push
 ```
 
@@ -59,19 +53,19 @@ Git Push
 
 # Sprint Workflow
 
-Every Sprint follows the same process.
+Each Sprint must follow these steps.
 
-1. Plan the feature
-2. Write the code
-3. Run the project
-4. Fix all errors
-5. Test successfully
-6. Update documentation
-7. Commit to Git
-8. Push to GitHub
-9. Start the next Sprint
+1. Plan
+2. Design
+3. Develop
+4. Test
+5. Fix
+6. Update Documentation
+7. Git Commit
+8. Git Push
+9. Next Sprint
 
-No Sprint is considered complete until all steps are finished.
+A Sprint is not complete until all steps are finished.
 
 ---
 
@@ -79,55 +73,95 @@ No Sprint is considered complete until all steps are finished.
 
 ## Rule 01
 
-Work on **one feature at a time**.
+Develop **one screen at a time**.
+
+Example
+
+```text
+Splash
+
+↓
+
+Login
+
+↓
+
+Dashboard
+
+↓
+
+Employee
+```
 
 ---
 
 ## Rule 02
 
-Never develop multiple dependent modules together.
+Finish one feature before starting another.
 
-Finish one module before starting the next.
+Do not leave partially completed modules.
 
 ---
 
 ## Rule 03
 
-Every step must compile successfully before continuing.
+Keep the project buildable at all times.
+
+Every commit should compile successfully.
 
 ---
 
 ## Rule 04
 
-Keep commits small and meaningful.
+Use reusable widgets.
 
-Example:
+Examples
 
-```
-feat(auth): login completed
-fix(router): route guard fixed
-docs: update authentication status
-```
+- AppButton
+- AppTextField
+- AppCard
+- StatCard
+- EmployeeTile
+- EmptyWidget
+- LoadingWidget
 
 ---
 
 ## Rule 05
 
-Every completed feature must be documented.
+Keep business logic outside UI.
+
+Use:
+
+- Repository
+- Service
+- Provider
+
+UI should only display data.
 
 ---
 
 ## Rule 06
 
-Keep the project always in a runnable state.
+Keep widgets small.
+
+If a widget exceeds ~250 lines, consider splitting it into smaller widgets.
+
+---
+
+## Rule 07
+
+Avoid duplicate code.
+
+If the same code appears multiple times, move it into a reusable widget or utility.
 
 ---
 
 # Documentation Rules
 
-Project documentation consists of only six files.
+Maintain only these documents.
 
-```
+```text
 README.md
 
 docs/
@@ -140,15 +174,15 @@ docs/
 06_Development_Guide.md
 ```
 
-Do not create additional documentation files unless absolutely necessary.
+Keep documentation synchronized with the implementation.
 
 ---
 
 # Git Workflow
 
-Every completed task follows:
+After every completed feature:
 
-```
+```bash
 git add .
 
 git commit -m "Meaningful message"
@@ -156,77 +190,109 @@ git commit -m "Meaningful message"
 git push
 ```
 
-Commit after every successful feature.
+Examples
 
-Do not accumulate multiple unfinished changes.
+```text
+feat(auth): complete login module
 
----
+feat(employee): add employee repository
 
-# Coding Standards
+fix(router): protect dashboard routes
 
-- Use Clean Architecture
-- Use Feature-First Structure
-- Keep widgets small and reusable
-- Avoid duplicate code
-- Follow consistent naming conventions
-- Write readable code
-- Prefer composition over duplication
-
----
-
-# Folder Rules
-
-Every new module must follow the same structure.
-
+docs: update project documentation
 ```
+
+---
+
+# Flutter Coding Standards
+
+- Clean Architecture
+- Feature-First Structure
+- Riverpod
+- GoRouter
+- Material 3
+- Responsive Layout
+- Reusable Widgets
+- Null Safety
+- Meaningful Naming
+
+---
+
+# Folder Structure
+
+Every feature follows:
+
+```text
 feature/
 
 data/
+│
+├── datasources/
+├── models/
+└── repositories/
+
 domain/
+│
+├── entities/
+├── repositories/
+└── usecases/
+
 presentation/
+│
+├── controllers/
+├── pages/
+├── providers/
+└── widgets/
 ```
 
-Do not mix code between modules.
+---
+
+# Database Guidelines
+
+- UUID Primary Keys
+- Foreign Keys
+- snake_case Naming
+- created_at
+- updated_at
+- Soft Delete where appropriate
+- Company isolation using RLS
+
+---
+
+# API Guidelines
+
+Use only the official Supabase Flutter SDK.
+
+Repositories should:
+
+- Catch exceptions
+- Return consistent results
+- Avoid SQL inside UI
+- Keep business logic centralized
 
 ---
 
 # Error Handling
 
-Always:
+Always
 
-- Run before committing
-- Fix errors immediately
-- Never ignore warnings without reason
-- Keep the project stable
-
----
-
-# README Update Rules
-
-Update README only when:
-
-- Sprint completed
-- Major feature completed
-- Project progress changes
-- Version changes
+- Use try-catch
+- Show friendly messages
+- Log debug errors
+- Never crash the application
 
 ---
 
-# Database Rules
+# UI Guidelines
 
-- Use UUID as Primary Key
-- Use Foreign Keys
-- Keep naming consistent
-- Document every schema change
+Every screen should:
 
----
-
-# API Rules
-
-- Use Supabase SDK
-- Handle exceptions with try-catch
-- Show user-friendly error messages
-- Keep services reusable
+- Follow Material 3
+- Support different screen sizes
+- Show loading indicators
+- Handle empty states
+- Display proper error states
+- Use consistent spacing and typography
 
 ---
 
@@ -234,51 +300,62 @@ Update README only when:
 
 Before marking a feature complete:
 
-- Code compiles successfully
-- No build errors
-- Navigation works
-- Database works
-- Authentication works
-- Documentation updated
-- Git committed
-- Git pushed
+- [ ] Builds successfully
+- [ ] No analyzer errors
+- [ ] No critical warnings
+- [ ] UI matches design
+- [ ] Repository implemented
+- [ ] Database connected
+- [ ] Documentation updated
+- [ ] Git committed
+- [ ] Git pushed
+
+---
+
+# Version 1.0 Development Order
+
+1. Authentication
+2. Dashboard
+3. Employee Management
+4. Attendance
+5. Leave
+6. Work Notes
+7. Tasks
+8. Notifications
+9. Profile
+10. Settings
+11. Testing
+12. Release
+
+---
+
+# Version 1.0 Success Criteria
+
+Version 1.0 is complete when:
+
+- Authentication is stable
+- Dashboard is complete
+- Employee module is complete
+- Attendance module is complete
+- Leave module is complete
+- Work Notes and Tasks are complete
+- Notifications work correctly
+- Documentation is up to date
+- Application is production-ready
+- Android release build is successful
 
 ---
 
 # Project Principles
 
-- Minimal Documentation
-- Maximum Development
-- Small Incremental Changes
-- Error-Free Progress
-- Production-Ready Code
-- CodeCanyon Standard
+- Flutter First
+- Database Second
+- Simple over Complex
+- Reusable over Duplicate
+- Lightweight over Enterprise
+- Quality over Quantity
+- Complete Features over Half-Finished Features
 
 ---
 
-# Current Development Order
-
-1. Authentication
-2. Employee Management
-3. Attendance Management
-4. Leave Management
-5. Employee Monitoring
-6. Dashboard & Reports
-7. Notification System
-8. CodeCanyon Release
-
----
-
-# Success Criteria
-
-Version 1.0 will be considered complete when:
-
-- All planned modules are implemented.
-- The application runs without critical errors.
-- Documentation is complete.
-- GitHub repository is fully updated.
-- The project is ready for CodeCanyon submission.
-
----
-
-Status: ✅ ACTIVE
+**Status:** ✅ Active Development

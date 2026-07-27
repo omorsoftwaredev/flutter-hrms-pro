@@ -2,7 +2,7 @@
 
 # Database Documentation
 
-Version: 1.0
+**Version:** `0.2.0`
 
 ---
 
@@ -10,58 +10,79 @@ Version: 1.0
 
 Flutter HRMS Pro uses **Supabase PostgreSQL** as the primary database.
 
-The database is designed to support a scalable Human Resource Management System (HRMS) with multi-company support, modular architecture, and future enterprise features.
+The database is designed for a **lightweight multi-company HRMS** targeting **small and medium businesses (5–30 employees)**.
+
+Key goals:
+
+- Lightweight
+- Secure
+- Scalable
+- Easy to Maintain
+- Flutter Friendly
 
 ---
 
 # Database Technology
 
-- Database : PostgreSQL
-- Platform : Supabase
+- PostgreSQL
+- Supabase
 - UUID Primary Keys
-- Foreign Key Constraints
-- Timestamp Support
-- Row Level Security (Future)
+- Foreign Keys
+- Indexes
+- Views
+- Triggers
+- Seed Data
+- Row Level Security (RLS)
+- Storage Policies
 
 ---
 
-# Database Tables
+# Database Modules
 
-## Master Tables
-
-| Table | Status |
-|--------|--------|
-| companies | ✅ Created |
-| departments | ✅ Created |
-| designations | ✅ Created |
-| shifts | ✅ Created |
-| employees | ✅ Created |
+| Module | Status |
+|---------|--------|
+| Companies | ✅ |
+| Departments | ✅ |
+| Designations | ✅ |
+| Shifts | ✅ |
+| Employees | ✅ |
+| Attendance | ✅ |
+| Leave | ✅ |
+| Work Notes | ✅ |
+| Tasks | ✅ |
+| Notifications | ✅ |
+| Documents | ✅ |
+| Attachments | ✅ |
+| Activity Logs | ✅ |
 
 ---
 
-# Relationship Diagram
+# Database Relationships
 
-```
+```text
 companies
-     │
-     ▼
-departments
-     │
-     ▼
-designations
-
-employees
-├── company_id
-├── department_id
-├── designation_id
-└── shift_id
-
-shifts
+    │
+    ├──────────────┐
+    ▼              │
+departments        │
+    │              │
+    ▼              │
+designations       │
+                   │
+employees──────────┘
+    │
+    ├── shift
+    ├── attendance
+    ├── leave_requests
+    ├── work_notes
+    ├── tasks
+    ├── notifications
+    └── employee_documents
 ```
 
 ---
 
-# Table Details
+# Core Tables
 
 ## companies
 
@@ -69,16 +90,23 @@ Purpose
 
 Stores company information.
 
-Main Fields
+Important Columns
 
 - id
-- company_name
-- company_code
-- address
+- code
+- name
 - phone
 - email
-- status
+- website
+- address
+- contact_person
+- owner_employee_id
+- created_by
+- updated_by
+- is_deleted
+- deleted_at
 - created_at
+- updated_at
 
 Status
 
@@ -90,20 +118,17 @@ Status
 
 Purpose
 
-Stores department information for each company.
+Stores department information.
 
-Main Fields
+Important Columns
 
 - id
 - company_id
-- department_name
-- department_code
-- status
-- created_at
-
-Relationship
-
-departments.company_id → companies.id
+- code
+- name
+- manager_name
+- phone
+- email
 
 Status
 
@@ -115,20 +140,17 @@ Status
 
 Purpose
 
-Stores employee designation information.
+Stores designation information.
 
-Main Fields
+Important Columns
 
 - id
+- company_id
 - department_id
-- designation_name
-- designation_code
-- status
-- created_at
-
-Relationship
-
-designations.department_id → departments.id
+- code
+- name
+- grade
+- base_salary
 
 Status
 
@@ -140,17 +162,17 @@ Status
 
 Purpose
 
-Stores office shift schedules.
+Stores employee shift information.
 
-Main Fields
+Important Columns
 
 - id
-- shift_name
-- check_in_time
-- check_out_time
-- late_allow_minutes
-- status
-- created_at
+- company_id
+- code
+- name
+- start_time
+- end_time
+- break_minutes
 
 Status
 
@@ -162,32 +184,28 @@ Status
 
 Purpose
 
-Stores employee profile information.
+Stores employee profile and authentication mapping.
 
-Main Fields
+Important Columns
 
 - id
-- employee_id
+- user_id
 - company_id
 - department_id
 - designation_id
 - shift_id
+- employee_code
 - full_name
+- mobile
 - email
-- phone
-- joining_date
-- status
+- role
+- is_super_admin
+- is_company_admin
+- last_login_at
+- created_by
+- updated_by
 - created_at
-
-Relationships
-
-employees.company_id → companies.id
-
-employees.department_id → departments.id
-
-employees.designation_id → designations.id
-
-employees.shift_id → shifts.id
+- updated_at
 
 Status
 
@@ -195,14 +213,16 @@ Status
 
 ---
 
-# Current Foreign Keys
+# Security
 
-- Department → Company
-- Designation → Department
-- Employee → Company
-- Employee → Department
-- Employee → Designation
-- Employee → Shift
+Implemented
+
+- UUID Primary Keys
+- Foreign Keys
+- Indexes
+- RLS Policies
+- Storage Policies
+- Auth Helper Functions
 
 Status
 
@@ -210,78 +230,68 @@ Status
 
 ---
 
-# Upcoming Tables
+# Storage Buckets
 
-## Authentication
-
-- users
-- user_profiles
-- user_roles
-
----
-
-## Attendance Module
-
-- attendance
-- attendance_logs
-- attendance_locations
+| Bucket | Access |
+|---------|--------|
+| employee-photos | Public |
+| company-logos | Public |
+| employee-documents | Authenticated |
+| attachments | Authenticated |
 
 ---
 
-## Leave Module
+# Authentication
 
-- leave_types
-- leave_requests
-- leave_approvals
-- holidays
-- official_movements
+Authentication is handled by Supabase Auth.
 
----
+Employees are linked using:
 
-## Employee Monitoring
+```text
+auth.users.id
+        │
+        ▼
+employees.user_id
+```
 
-- live_locations
-- location_history
+Helper Functions
 
----
-
-## Notes Module
-
-- notes
-- note_comments
-- attachments
-
----
-
-## Notification Module
-
-- notifications
-- notification_logs
+- hrms_current_employee()
+- hrms_current_employee_id()
+- hrms_current_company_id()
+- hrms_current_role()
+- hrms_is_super_admin()
+- hrms_is_company_admin()
 
 ---
 
-# Database Rules
+# Database Standards
 
-- Use UUID as Primary Key
-- Use Foreign Keys for Relationships
-- Avoid Duplicate Data
-- Use created_at and updated_at
-- Use status field for Active/Inactive records
-- Follow Naming Convention (snake_case)
+- UUID Primary Keys
+- snake_case Naming
+- Foreign Keys
+- created_at
+- updated_at
+- Soft Delete (where required)
+- Company Isolation using RLS
 
 ---
 
-# Migration History
+# Migration Summary
 
-## Sprint 03
+Completed
 
-Created
-
-- companies
-- departments
-- designations
-- shifts
-- employees
+- Schema Creation
+- Foreign Keys
+- Indexes
+- Views
+- Triggers
+- Seed Data
+- Validation Scripts
+- Verification Scripts
+- RLS
+- Storage Policies
+- Authentication Helpers
 
 Status
 
@@ -291,25 +301,37 @@ Status
 
 # Current Database Status
 
-| Module | Status |
-|---------|--------|
-| Database Setup | ✅ Completed |
-| Master Tables | ✅ Completed |
-| Relationships | ✅ Completed |
-| Authentication Tables | ⏳ Pending |
-| Attendance Tables | ⏳ Pending |
-| Leave Tables | ⏳ Pending |
-| Monitoring Tables | ⏳ Pending |
-| Notification Tables | ⏳ Pending |
+| Component | Status |
+|-----------|--------|
+| Schema | ✅ |
+| Relationships | ✅ |
+| Indexes | ✅ |
+| Views | ✅ |
+| Triggers | ✅ |
+| Seed Data | ✅ |
+| Validation | ✅ |
+| RLS | ✅ |
+| Storage | ✅ |
+| Authentication | ✅ |
+
+---
+
+# Future Improvements (v2.x)
+
+- Face Attendance
+- QR Attendance
+- Live Location Tracking
+- Advanced Reporting
 
 ---
 
 # Notes
 
-- All SQL scripts are executed directly in Supabase SQL Editor.
-- Database changes should be version-controlled through Git documentation.
-- Every new table or relationship must be documented in this file before implementation.
+- Database is optimized for Flutter + Supabase.
+- Designed for small and medium businesses.
+- Avoid unnecessary ERP complexity.
+- Keep schema lightweight and maintainable.
 
 ---
 
-Status: 🟡 ACTIVE
+**Status:** ✅ Stable Foundation

@@ -2,49 +2,64 @@
 
 # Code Review Checklist
 
-Before every Git Commit, verify the following checklist.
+**Version:** `0.2.0`
+
+Use this checklist before every Git commit or feature completion.
 
 ---
 
 # Project Structure
 
 - [ ] Clean Architecture maintained
-- [ ] Feature-first structure maintained
-- [ ] No duplicate code
+- [ ] Feature-First structure followed
 - [ ] Proper folder organization
+- [ ] No duplicate code
+- [ ] Reusable widgets used
+- [ ] Business logic separated from UI
 
 ---
 
 # Code Quality
 
+- [ ] Flutter analyzer shows no errors
+- [ ] No unused imports
+- [ ] No unnecessary comments
 - [ ] No debug print statements
-- [ ] No commented code
-- [ ] No TODO left unintentionally
-- [ ] Proper naming conventions
+- [ ] No unfinished TODOs
+- [ ] Meaningful variable and method names
 - [ ] Null safety maintained
-- [ ] Error handling implemented
+- [ ] Consistent code formatting
 
 ---
 
 # UI / UX
 
-- [ ] Responsive on Mobile
-- [ ] Responsive on Tablet
-- [ ] Responsive on Web/Desktop
-- [ ] Light Theme verified
-- [ ] Dark Theme verified
+- [ ] UI matches design
+- [ ] Responsive on Android phones
+- [ ] Responsive on tablets
+- [ ] Material 3 guidelines followed
 - [ ] Loading state implemented
 - [ ] Empty state implemented
 - [ ] Error state implemented
+- [ ] Validation messages displayed correctly
+
+---
+
+# Navigation
+
+- [ ] Navigation works correctly
+- [ ] Route Guard verified
+- [ ] Back navigation behaves correctly
+- [ ] Unauthorized access blocked
 
 ---
 
 # Functionality
 
-- [ ] CRUD fully working
-- [ ] Validation completed
-- [ ] Search working
-- [ ] Navigation working
+- [ ] Feature works as expected
+- [ ] Form validation completed
+- [ ] CRUD operations verified
+- [ ] Search works correctly (if applicable)
 - [ ] Session handling verified
 - [ ] Logout verified
 
@@ -52,40 +67,64 @@ Before every Git Commit, verify the following checklist.
 
 # Database
 
-- [ ] Supabase queries optimized
-- [ ] RLS verified
-- [ ] Foreign keys maintained
-- [ ] No unnecessary queries
+- [ ] Supabase queries tested
+- [ ] Repository methods verified
+- [ ] RLS policies validated
+- [ ] Storage policies verified (if used)
+- [ ] No unnecessary database calls
 
 ---
 
 # Performance
 
-- [ ] No unnecessary rebuilds
-- [ ] No memory leaks
-- [ ] Loading optimized
+- [ ] No unnecessary widget rebuilds
+- [ ] Proper use of const widgets
 - [ ] Images optimized
+- [ ] Lists use lazy loading where appropriate
+- [ ] No noticeable UI lag
 
 ---
 
 # Documentation
 
-- [ ] README updated
+- [ ] README updated (if required)
 - [ ] Project Status updated
-- [ ] Roadmap updated (if needed)
-- [ ] API documentation updated (if needed)
+- [ ] Changelog updated
+- [ ] API documentation updated (if required)
+- [ ] Database documentation updated (if required)
 
 ---
 
-# Git
+# Git Checklist
 
-- [ ] Flutter Analyze
-- [ ] Flutter Test (when applicable)
-- [ ] Git Commit
-- [ ] Git Push
+- [ ] flutter pub get
+- [ ] dart format .
+- [ ] flutter analyze
+- [ ] flutter test (when applicable)
+- [ ] Git commit completed
+- [ ] Git push completed
+
+---
+
+# Release Checklist
+
+- [ ] Debug build successful
+- [ ] Release build successful
+- [ ] No critical bugs
+- [ ] Version updated (if required)
 
 ---
 
 # Final Review
 
-Project is ready for merge.
+Before marking a feature as complete:
+
+- [ ] Code is clean
+- [ ] UI is polished
+- [ ] Feature is fully functional
+- [ ] Documentation is updated
+- [ ] Project builds successfully
+
+---
+
+**Ready for Merge:** ✅
