@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_spacing.dart';
+import 'app_drawer.dart';
+
 class AppScaffold extends StatelessWidget {
   const AppScaffold({
     super.key,
@@ -7,45 +10,105 @@ class AppScaffold extends StatelessWidget {
     required this.body,
     this.actions,
     this.floatingActionButton,
-    this.drawer,
-    this.bottomNavigationBar,
-    this.showBackButton = false,
-    this.padding = const EdgeInsets.all(20),
   });
 
   final String title;
   final Widget body;
-
   final List<Widget>? actions;
   final Widget? floatingActionButton;
-  final Widget? drawer;
-  final Widget? bottomNavigationBar;
-
-  final bool showBackButton;
-  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: drawer,
+    final width = MediaQuery.sizeOf(context).width;
 
+    // Desktop
+    if (width >= 1000) {
+      return Scaffold(
+        body: Row(
+          children: [
+            const SizedBox(
+              width: 260,
+              child: AppDrawer(),
+            ),
+
+            Expanded(
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    _DesktopAppBar(
+                      title: title,
+                      actions: actions,
+                    ),
+
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: body,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: floatingActionButton,
+      );
+    }
+
+    // Mobile & Tablet
+    return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        centerTitle: false,
-        automaticallyImplyLeading: showBackButton,
         title: Text(title),
         actions: actions,
       ),
-
-      floatingActionButton: floatingActionButton,
-
-      bottomNavigationBar: bottomNavigationBar,
-
+      drawer: const Drawer(
+        child: AppDrawer(),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: padding,
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: body,
         ),
+      ),
+      floatingActionButton: floatingActionButton,
+    );
+  }
+}
+
+class _DesktopAppBar extends StatelessWidget {
+  const _DesktopAppBar({
+    required this.title,
+    this.actions,
+  });
+
+  final String title;
+  final List<Widget>? actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+
+          const Spacer(),
+
+          ...?actions,
+        ],
       ),
     );
   }

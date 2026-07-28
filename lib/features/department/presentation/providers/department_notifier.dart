@@ -1,30 +1,29 @@
-// lib/features/company/presentation/providers/company_notifier.dart
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/company_entity.dart';
-import '../../domain/repositories/company_repository.dart';
-import 'company_state.dart';
+import '../../domain/entities/department_entity.dart';
+import '../../domain/repositories/department_repository.dart';
+import 'department_state.dart';
 
-class CompanyNotifier extends StateNotifier<CompanyState> {
-  CompanyNotifier(this._repository)
-      : super(const CompanyState());
+class DepartmentNotifier
+    extends StateNotifier<DepartmentState> {
+  DepartmentNotifier(this._repository)
+      : super(const DepartmentState());
 
-  final CompanyRepository _repository;
+  final DepartmentRepository _repository;
 
-  Future<void> loadCompanies() async {
+  Future<void> loadDepartments() async {
     try {
       state = state.copyWith(
         isLoading: true,
         error: null,
       );
 
-      final companies =
-      await _repository.getCompanies();
+      final departments =
+      await _repository.getDepartments();
 
       state = state.copyWith(
-        companies: companies,
-        filteredCompanies: companies,
+        departments: departments,
+        filteredDepartments: departments,
         isLoading: false,
       );
     } catch (e) {
@@ -36,11 +35,11 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
   }
 
   Future<void> refresh() async {
-    await loadCompanies();
+    await loadDepartments();
   }
 
-  Future<void> createCompany(
-      CompanyEntity company,
+  Future<void> createDepartment(
+      DepartmentEntity department,
       ) async {
     try {
       state = state.copyWith(
@@ -48,13 +47,15 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
         error: null,
       );
 
-      await _repository.createCompany(company);
+      await _repository.createDepartment(
+        department,
+      );
 
       state = state.copyWith(
         isSaving: false,
       );
 
-      await loadCompanies();
+      await loadDepartments();
     } catch (e) {
       state = state.copyWith(
         isSaving: false,
@@ -63,8 +64,8 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
     }
   }
 
-  Future<void> updateCompany(
-      CompanyEntity company,
+  Future<void> updateDepartment(
+      DepartmentEntity department,
       ) async {
     try {
       state = state.copyWith(
@@ -72,13 +73,15 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
         error: null,
       );
 
-      await _repository.updateCompany(company);
+      await _repository.updateDepartment(
+        department,
+      );
 
       state = state.copyWith(
         isSaving: false,
       );
 
-      await loadCompanies();
+      await loadDepartments();
     } catch (e) {
       state = state.copyWith(
         isSaving: false,
@@ -87,13 +90,13 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
     }
   }
 
-  Future<void> deleteCompany(
+  Future<void> deleteDepartment(
       String id,
       ) async {
     try {
-      await _repository.deleteCompany(id);
+      await _repository.deleteDepartment(id);
 
-      await loadCompanies();
+      await loadDepartments();
     } catch (e) {
       state = state.copyWith(
         error: e.toString(),
@@ -101,15 +104,15 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
     }
   }
 
-  Future<void> getCompanyById(
+  Future<void> getDepartmentById(
       String id,
       ) async {
     try {
-      final company =
-      await _repository.getCompanyById(id);
+      final department =
+      await _repository.getDepartmentById(id);
 
       state = state.copyWith(
-        selectedCompany: company,
+        selectedDepartment: department,
       );
     } catch (e) {
       state = state.copyWith(
@@ -124,35 +127,31 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
     if (query.isEmpty) {
       state = state.copyWith(
         search: '',
-        filteredCompanies: state.companies,
+        filteredDepartments:
+        state.departments,
       );
       return;
     }
 
-    final filtered = state.companies.where((company) {
-      return company.name
+    final filtered =
+    state.departments.where((department) {
+      return department.name
           .toLowerCase()
           .contains(query) ||
-          company.code
-              .toLowerCase()
-              .contains(query) ||
-          company.email
-              .toLowerCase()
-              .contains(query) ||
-          company.phone
+          department.code
               .toLowerCase()
               .contains(query);
     }).toList();
 
     state = state.copyWith(
       search: query,
-      filteredCompanies: filtered,
+      filteredDepartments: filtered,
     );
   }
 
   void clearSelection() {
     state = state.copyWith(
-      selectedCompany: null,
+      selectedDepartment: null,
     );
   }
 }

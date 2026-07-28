@@ -19,7 +19,7 @@ class HrmsApp extends ConsumerWidget {
 
       theme: AppTheme.light,
 
-      darkTheme: AppTheme.dark,
+      darkTheme: AppTheme.light,
 
       themeMode: themeMode,
 

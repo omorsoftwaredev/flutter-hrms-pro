@@ -1,73 +1,57 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import 'app_card.dart';
+
 class AppStatCard extends StatelessWidget {
   const AppStatCard({
     super.key,
     required this.title,
     required this.value,
     required this.icon,
-    this.color,
+    this.color = AppColors.primary,
+    this.onTap,
   });
 
   final String title;
   final String value;
   final IconData icon;
-  final Color? color;
+  final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    return AppCard(
+      onTap: onTap,
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: color.withOpacity(.12),
+            child: Icon(icon, color: color),
+          ),
 
-    return Card(
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
+          const SizedBox(width: AppSpacing.md),
 
-            CircleAvatar(
-              radius: 28,
-              backgroundColor:
-              (color ?? theme.colorScheme.primary)
-                  .withOpacity(.12),
-              child: Icon(
-                icon,
-                color:
-                color ?? theme.colorScheme.primary,
-              ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: AppTextStyles.headlineSmall,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: AppTextStyles.bodySmall,
+                ),
+              ],
             ),
-
-            const SizedBox(width: 16),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
-
-                  Text(
-                    title,
-                    style:
-                    theme.textTheme.bodyMedium,
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Text(
-                    value,
-                    style: theme
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(
-                      fontWeight:
-                      FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

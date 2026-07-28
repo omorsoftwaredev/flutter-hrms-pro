@@ -1,6 +1,7 @@
+// lib/features/company/data/repositories/company_repository_impl.dart
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../core/services/supabase_service.dart';
 import '../../domain/entities/company_entity.dart';
 import '../../domain/repositories/company_repository.dart';
 import '../models/company_model.dart';
@@ -8,53 +9,35 @@ import '../models/company_model.dart';
 class CompanyRepositoryImpl implements CompanyRepository {
   CompanyRepositoryImpl();
 
-  final SupabaseClient _client = SupabaseService.client;
-
-  static const String _table = 'companies';
+  final SupabaseClient _client = Supabase.instance.client;
 
   @override
   Future<List<CompanyEntity>> getCompanies() async {
-    try {
-      final response = await _client
-          .from(_table)
-          .select()
-          .order('name', ascending: true);
+    final response = await _client
+        .from('companies')
+        .select()
+        .order('name');
 
-      return (response as List)
-          .map(
-            (e) => CompanyModel.fromMap(
-          e as Map<String, dynamic>,
-        ),
-      )
-          .toList();
-    } on PostgrestException catch (e) {
-      throw Exception(e.message);
-    } catch (e) {
-      throw Exception(
-        'Failed to fetch companies.\n$e',
-      );
-    }
+    return (response as List)
+        .map(
+          (json) => CompanyModel.fromJson(
+        json as Map<String, dynamic>,
+      ),
+    )
+        .toList();
   }
 
   @override
-  Future<CompanyEntity> getCompanyById(
-      String id,
-      ) async {
-    try {
-      final response = await _client
-          .from(_table)
-          .select()
-          .eq('id', id)
-          .single();
+  Future<CompanyEntity> getCompanyById(String id) async {
+    final response = await _client
+        .from('companies')
+        .select()
+        .eq('id', id)
+        .single();
 
-      return CompanyModel.fromMap(response);
-    } on PostgrestException catch (e) {
-      throw Exception(e.message);
-    } catch (e) {
-      throw Exception(
-        'Failed to fetch company.\n$e',
-      );
-    }
+    return CompanyModel.fromJson(
+      response as Map<String, dynamic>,
+    );
   }
 
   @override
@@ -62,17 +45,24 @@ class CompanyRepositoryImpl implements CompanyRepository {
       CompanyEntity company,
       ) async {
     try {
-      final model = CompanyModel.fromEntity(company);
-
-      await _client
-          .from(_table)
-          .insert(model.toMap());
+      await _client.from('companies').insert({
+        'code': company.code,
+        'name': company.name,
+        'phone': company.phone,
+        'email': company.email,
+        'website': company.website,
+        'address': company.address,
+        'contact_person': company.contactPerson,
+        'logo_url': company.logoUrl,
+        'tax_number': company.taxNumber,
+        'registration_number': company.registrationNumber,
+        'notes': company.notes,
+        'is_active': company.isActive,
+      }).select();
     } on PostgrestException catch (e) {
       throw Exception(e.message);
     } catch (e) {
-      throw Exception(
-        'Failed to create company.\n$e',
-      );
+      rethrow;
     }
   }
 
@@ -80,37 +70,31 @@ class CompanyRepositoryImpl implements CompanyRepository {
   Future<void> updateCompany(
       CompanyEntity company,
       ) async {
-    try {
-      final model = CompanyModel.fromEntity(company);
-
-      await _client
-          .from(_table)
-          .update(model.toMap())
-          .eq('id', company.id);
-    } on PostgrestException catch (e) {
-      throw Exception(e.message);
-    } catch (e) {
-      throw Exception(
-        'Failed to update company.\n$e',
-      );
-    }
+    await _client
+        .from('companies')
+        .update({
+      'name': company.name,
+      'code': company.code,
+      'email': company.email,
+      'phone': company.phone,
+      'address': company.address,
+      'logo_url': company.logoUrl,
+      'website': company.website,
+      'contact_person': company.contactPerson,
+      'tax_number': company.taxNumber,
+      'registration_number':
+      company.registrationNumber,
+      'notes': company.notes,
+      'is_active': company.isActive,
+    })
+        .eq('id', company.id);
   }
 
   @override
-  Future<void> deleteCompany(
-      String id,
-      ) async {
-    try {
-      await _client
-          .from(_table)
-          .delete()
-          .eq('id', id);
-    } on PostgrestException catch (e) {
-      throw Exception(e.message);
-    } catch (e) {
-      throw Exception(
-        'Failed to delete company.\n$e',
-      );
-    }
+  Future<void> deleteCompany(String id) async {
+    await _client
+        .from('companies')
+        .delete()
+        .eq('id', id);
   }
 }
