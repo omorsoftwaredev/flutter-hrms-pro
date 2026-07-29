@@ -2,23 +2,25 @@
 
 # Project Architecture
 
-**Version:** `0.2.0`
+**Version:** `0.5.0`
 
 ---
 
 # Architecture Overview
 
-Flutter HRMS Pro follows a **Feature-First Clean Architecture** using Flutter and Supabase.
+Flutter HRMS Pro follows a **Feature-First Clean Architecture** using **Flutter**, **Riverpod**, **GoRouter**, and **Supabase**.
 
 The project is designed to be:
 
-- Lightweight
+- Clean
 - Modular
-- Maintainable
 - Scalable
+- Maintainable
+- Responsive
 - Production Ready
+- CodeCanyon Ready
 
-The primary target is **small and medium businesses (5–30 employees)**.
+The architecture is built around independent feature modules so every module follows the same structure and coding standards.
 
 ---
 
@@ -40,7 +42,7 @@ The primary target is **small and medium businesses (5–30 employees)**.
 
 ## State Management
 
-- Riverpod
+- Flutter Riverpod
 
 ## Navigation
 
@@ -57,108 +59,188 @@ The primary target is **small and medium businesses (5–30 employees)**.
 ```text
 lib/
 
-├── app/
 ├── core/
 ├── features/
-├── shared/
-└── main.dart
+├── main.dart
 ```
 
 ---
 
-# Folder Structure
+# Core Structure
 
 ```text
-lib/
-
-app/
-│
-├── app.dart
-├── router/
-├── theme/
-└── bootstrap.dart
-
 core/
-│
-├── config/
-├── constants/
-├── extensions/
-├── providers/
-├── services/
-├── utils/
-└── widgets/
 
-shared/
-│
-├── models/
-├── widgets/
-├── dialogs/
-└── extensions/
-
-features/
-│
-├── auth/
-├── dashboard/
-├── employee/
-├── attendance/
-├── leave/
-├── work_note/
-├── task/
-├── notification/
-└── profile/
-
-main.dart
+constants/
+extensions/
+providers/
+router/
+services/
+theme/
+utils/
+widgets/
 ```
+
+Core contains shared resources used throughout the application.
 
 ---
 
-# Feature Architecture
+# Feature Structure
 
-Every feature follows the same structure.
+Every module follows exactly the same architecture.
 
 ```text
 feature/
 
 data/
-├── datasources/
-├── models/
-└── repositories/
 
 domain/
-├── entities/
-├── repositories/
-└── usecases/
 
 presentation/
-├── pages/
-├── providers/
-├── widgets/
-└── controllers/
 ```
+
+---
+
+# Data Layer
+
+Responsible for communication with Supabase.
+
+```text
+data/
+
+datasources/
+
+models/
+
+repositories/
+```
+
+Contains
+
+- Supabase datasource
+- DTO / Models
+- Repository implementation
+
+---
+
+# Domain Layer
+
+Contains business logic.
+
+```text
+domain/
+
+entities/
+
+repositories/
+```
+
+Contains
+
+- Entity
+- Repository Contract
+
+---
+
+# Presentation Layer
+
+Contains UI and State Management.
+
+```text
+presentation/
+
+pages/
+
+providers/
+
+widgets/
+```
+
+Contains
+
+- Pages
+- Riverpod Provider
+- State
+- Notifier
+- Reusable Widgets
+
+---
+
+# Current Feature Modules
+
+```text
+features/
+
+auth/
+
+company/
+
+department/
+
+designation/
+
+shift/
+
+employee/
+
+dashboard/
+
+attendance/
+
+leave/
+```
+
+Completed
+
+- Authentication
+- Company
+- Department
+- Designation
+- Shift
+- Employee
+
+Upcoming
+
+- Attendance
+- Leave
+- Dashboard
+- Reports
+- Settings
 
 ---
 
 # Application Flow
 
 ```text
-Splash
-    │
-    ▼
-Login
-    │
-    ▼
+Application
+
+↓
+
 Authentication
-    │
-    ▼
+
+↓
+
 Dashboard
-    │
-    ├── Employee
-    ├── Attendance
-    ├── Leave
-    ├── Work Notes
-    ├── Tasks
-    ├── Notifications
-    └── Profile
+
+↓
+
+Master Data
+
+↓
+
+Attendance
+
+↓
+
+Leave
+
+↓
+
+Reports
+
+↓
+
+Settings
 ```
 
 ---
@@ -166,96 +248,282 @@ Dashboard
 # Authentication Flow
 
 ```text
-User Login
-      │
-      ▼
-Supabase Auth
-      │
-      ▼
-Session Created
-      │
-      ▼
-Employee Loaded
-      │
-      ▼
+User
+
+↓
+
+Login
+
+↓
+
+Supabase Authentication
+
+↓
+
+Session
+
+↓
+
+Route Guard
+
+↓
+
 Dashboard
-      │
-      ▼
+
+↓
+
 Logout
 ```
+
+---
+
+# CRUD Flow
+
+Every CRUD module follows exactly the same workflow.
+
+```text
+UI
+
+↓
+
+Provider
+
+↓
+
+Repository
+
+↓
+
+Supabase
+
+↓
+
+Database
+```
+
+This architecture is used for
+
+- Company
+- Department
+- Designation
+- Shift
+- Employee
+
+and will be reused for every future module.
 
 ---
 
 # Database Architecture
 
 ```text
-companies
-    │
-    ├──────────────┐
-    ▼              │
-departments        │
-    │              │
-    ▼              │
-designations       │
-                   │
-employees──────────┘
-    │
-    ├── shift
-    ├── attendance
-    ├── leave_requests
-    ├── work_notes
-    ├── tasks
-    ├── notifications
-    └── documents
+Company
+
+│
+
+├──────────────┐
+
+▼              │
+
+Department     │
+
+               │
+
+Designation    │
+
+               │
+
+Shift          │
+
+               │
+
+Employee───────┘
+
+      │
+
+      ├── Attendance
+
+      ├── Leave
+
+      ├── Documents
+
+      ├── Notifications
+
+      ├── Reports
 ```
 
 ---
 
-# State Management
+# Riverpod Architecture
 
-Riverpod manages application state.
+Each feature contains its own provider.
 
-Providers include:
+```text
+Feature
 
-- Authentication
-- Session
-- Company
-- Employee
-- Attendance
-- Leave
-- Work Notes
-- Tasks
-- Notifications
-- Dashboard
+↓
+
+State
+
+↓
+
+Notifier
+
+↓
+
+Repository
+
+↓
+
+Supabase
+```
+
+Advantages
+
+- Independent
+- Testable
+- Reusable
+- Easy Maintenance
 
 ---
 
-# Navigation
+# Routing Architecture
 
-Navigation is handled using GoRouter.
+GoRouter handles navigation.
 
 ```text
 /
 
-├── splash
-├── login
-├── dashboard
-│
-├── employees
-├── attendance
-├── leave
-├── work-notes
-├── tasks
-├── notifications
-├── profile
-└── settings
+login
+
+forgot-password
+
+update-password
+
+dashboard
+
+dashboard/companies
+
+dashboard/departments
+
+dashboard/designations
+
+dashboard/shifts
+
+dashboard/employees
+
+dashboard/attendance
+
+dashboard/leave
+```
+
+---
+
+# Responsive Architecture
+
+The application is designed for every Flutter platform.
+
+### Mobile
+
+- Navigation Drawer
+
+### Tablet
+
+- Navigation Rail
+
+### Desktop
+
+- Permanent Sidebar
+
+Same business logic is reused on every platform.
+
+---
+
+# Theme Architecture
+
+Future implementation
+
+```text
+Theme
+
+↓
+
+Light
+
+Dark
+
+System
+
+↓
+
+Accent Color
+
+↓
+
+Material 3
+```
+
+---
+
+# Permission Architecture
+
+Future implementation
+
+```text
+Super Admin
+
+↓
+
+Company Admin
+
+↓
+
+HR
+
+↓
+
+Manager
+
+↓
+
+Employee
+```
+
+Permission Service
+
+```text
+Permission
+
+↓
+
+Company
+
+Department
+
+Designation
+
+Shift
+
+Employee
+
+Attendance
+
+Leave
+
+Reports
+
+Settings
 ```
 
 ---
 
 # Backend Architecture
 
-Flutter
+```text
+Flutter UI
+
+↓
+
+Riverpod
 
 ↓
 
@@ -272,20 +540,57 @@ Supabase API
 ↓
 
 PostgreSQL
+```
 
 ---
 
-# Design Principles
+# Folder Naming Convention
+
+Each feature follows identical naming.
+
+```text
+feature/
+
+entity.dart
+
+model.dart
+
+repository.dart
+
+repository_impl.dart
+
+provider.dart
+
+state.dart
+
+notifier.dart
+
+card.dart
+
+form.dart
+
+list_page.dart
+
+form_page.dart
+```
+
+This keeps every module consistent and easy to maintain.
+
+---
+
+# Development Principles
 
 - Clean Architecture
-- Feature-First Structure
+- Feature First Development
 - SOLID Principles
-- Material 3 Design
-- Reusable Widgets
+- Repository Pattern
+- Riverpod
+- GoRouter
+- Material 3
 - Responsive UI
-- Lightweight Database
-- Simple Business Logic
+- Reusable Widgets
 - Documentation Driven Development
+- Git Version Control
 
 ---
 
@@ -293,21 +598,37 @@ PostgreSQL
 
 ```text
 Requirement
-      ↓
-Planning
-      ↓
-UI Design
-      ↓
-Development
-      ↓
+
+↓
+
+Database Design
+
+↓
+
+Architecture
+
+↓
+
+Flutter Development
+
+↓
+
 Testing
-      ↓
+
+↓
+
 Bug Fix
-      ↓
+
+↓
+
 Documentation
-      ↓
+
+↓
+
 Git Commit
-      ↓
+
+↓
+
 Git Push
 ```
 
@@ -319,13 +640,16 @@ Git Push
 
 - Android
 - iOS
-
-## Future
-
-- Web
 - Windows
-- macOS
 - Linux
+- macOS
+- Web
+
+Responsive Layout
+
+- Mobile
+- Tablet
+- Desktop
 
 ---
 
@@ -334,22 +658,31 @@ Git Push
 | Component | Status |
 |-----------|--------|
 | Clean Architecture | ✅ |
-| Feature-First Structure | ✅ |
+| Feature First Structure | ✅ |
 | Riverpod | ✅ |
 | GoRouter | ✅ |
 | Supabase | ✅ |
 | Database | ✅ |
-| Authentication | 🟡 |
-| UI Development | ⏳ |
+| Authentication | 🟡 95% |
+| Company Module | ✅ |
+| Department Module | ✅ |
+| Designation Module | ✅ |
+| Shift Module | ✅ |
+| Employee Module | ✅ |
+| Responsive Foundation | 🟡 |
+| Attendance Module | ⏳ |
 
 ---
 
 # Architecture Goals
 
-- Simple to Understand
-- Easy to Maintain
-- Fast Development
+- Modular Development
+- Feature Isolation
 - Reusable Components
+- Scalable Codebase
 - Minimal Boilerplate
+- Responsive Design
+- Easy Maintenance
+- Enterprise Ready
 - Production Ready
 - CodeCanyon Ready

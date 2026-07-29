@@ -2,7 +2,7 @@
 
 # Project Status
 
-**Version:** `0.2.0`
+**Version:** `0.5.0`
 
 **Status:** 🟡 Active Development
 
@@ -17,13 +17,18 @@
 | Supabase Setup | ✅ Completed |
 | Database | ✅ Completed |
 | Authentication | 🟡 95% |
-| Employee Module | ⏳ Pending |
-| Attendance Module | ⏳ Pending |
-| Leave Module | ⏳ Pending |
-| Work Notes | ⏳ Pending |
-| Task Management | ⏳ Pending |
-| Dashboard | ⏳ Pending |
-| Notifications | ⏳ Pending |
+| Company Management | ✅ Completed |
+| Department Management | ✅ Completed |
+| Designation Management | ✅ Completed |
+| Shift Management | ✅ Completed |
+| Employee Management | ✅ Completed |
+| Attendance Module | ⏳ Next Sprint |
+| Leave Module | ⏳ Planned |
+| Dashboard | ⏳ Planned |
+| Reports | ⏳ Planned |
+| Settings | ⏳ Planned |
+| Role & Permission | ⏳ Planned |
+| Notifications | ⏳ Planned |
 
 ---
 
@@ -37,7 +42,7 @@
 - [x] Feature First Structure
 - [x] Assets Structure
 - [x] Core Layer
-- [x] Shared Layer
+- [x] Shared Widgets
 - [x] Environment Setup
 - [x] Riverpod Integration
 - [x] GoRouter Integration
@@ -48,56 +53,51 @@
 
 ---
 
-# Sprint 02 — Supabase Setup ✅
+# Sprint 02 — Architecture ✅
 
 ## Completed
 
-- [x] Supabase Project
-- [x] Environment Configuration
-- [x] API URL
-- [x] Anon Key
-- [x] Authentication Setup
-- [x] Storage Setup
-- [x] Flutter Integration
+- [x] Feature First Structure
+- [x] Core Services
+- [x] Theme
+- [x] Router
+- [x] Repository Pattern
+- [x] Shared Widgets
+- [x] Providers
+- [x] Clean Folder Structure
 
 **Status:** ✅ COMPLETED
 
 ---
 
-# Sprint 03 — Database ✅
+# Sprint 03 — Supabase & Database ✅
 
-## Database Design
+## Supabase
 
-- [x] Database Schema
-- [x] Relationships
-- [x] Foreign Keys
-- [x] Indexes
-- [x] Views
-- [x] Triggers
-- [x] Seed Data
-- [x] Validation Scripts
-- [x] Verification Scripts
+- [x] Supabase Project
+- [x] Environment Configuration
+- [x] API URL
+- [x] Anon Key
+- [x] Authentication
+- [x] Storage
 
-## Security
-
-- [x] Row Level Security (RLS)
-- [x] Storage Policies
-- [x] Authentication Helper Functions
-
-## Core Modules
+## Database
 
 - [x] Companies
 - [x] Departments
 - [x] Designations
 - [x] Shifts
 - [x] Employees
-- [x] Attendance
-- [x] Leave
-- [x] Work Notes
-- [x] Tasks
-- [x] Notifications
-- [x] Documents
-- [x] Attachments
+
+## Database Features
+
+- [x] Relationships
+- [x] Foreign Keys
+- [x] Indexes
+- [x] Triggers
+- [x] Validation
+- [x] RLS Policies
+- [x] Storage Policies
 
 **Status:** ✅ COMPLETED
 
@@ -115,119 +115,169 @@
 - [x] Forgot Password
 - [x] Update Password
 - [x] Deep Link Configuration
-- [x] Protected Routes
-- [x] Authentication Helpers
 
 ## Remaining
 
-- [ ] Reset Password Flow
 - [ ] User Profile
-- [ ] Role-Based Navigation
+- [ ] Role Based Navigation
 
 **Status:** 🟡 95% COMPLETED
 
 ---
 
-# Sprint 05 — Dashboard
+# Sprint 05 — Master Data ✅
 
-## Todo
+## Company
 
-- [ ] Dashboard Overview
-- [ ] Statistics Cards
-- [ ] Attendance Summary
-- [ ] Leave Summary
-- [ ] Task Summary
-- [ ] Charts
-- [ ] Recent Activities
-- [ ] Quick Actions
-
-**Status:** ⏳ NOT STARTED
+- [x] Company CRUD
+- [x] Search
+- [x] Validation
+- [x] Active / Inactive
 
 ---
 
-# Sprint 06 — Employee Management
+## Department
 
-## Todo
-
-- [ ] Company CRUD
-- [ ] Department CRUD
-- [ ] Designation CRUD
-- [ ] Shift CRUD
-- [ ] Employee CRUD
-- [ ] Employee Documents
-
-**Status:** ⏳ NOT STARTED
+- [x] Department CRUD
+- [x] Company Dropdown
+- [x] Search
+- [x] Validation
 
 ---
 
-# Sprint 07 — Attendance
+## Designation
+
+- [x] Designation CRUD
+- [x] Company Dropdown
+- [x] Search
+- [x] Validation
+
+---
+
+## Shift
+
+- [x] Shift CRUD
+- [x] Shift Time
+- [x] Break Time
+- [x] Grace Time
+- [x] Weekly Off
+- [x] Flexible Shift
+
+---
+
+## Employee
+
+- [x] Employee CRUD
+- [x] Company Dropdown
+- [x] Department Dropdown
+- [x] Designation Dropdown
+- [x] Shift Dropdown
+- [x] Search
+- [x] Active / Inactive
+
+**Status:** ✅ COMPLETED
+
+---
+
+# Sprint 06 — Attendance 🚀
 
 ## Todo
 
 - [ ] Check In
 - [ ] Check Out
-- [ ] GPS Validation
 - [ ] Attendance History
-- [ ] Attendance Reports
+- [ ] Attendance Report
+- [ ] Monthly Attendance
+- [ ] Overtime
+- [ ] Late Attendance
+- [ ] Manual Attendance
 
-**Status:** ⏳ NOT STARTED
+**Status:** ⏳ NEXT SPRINT
 
 ---
 
-# Sprint 08 — Leave
+# Sprint 07 — Leave
 
 ## Todo
 
 - [ ] Leave Types
 - [ ] Apply Leave
 - [ ] Leave Approval
+- [ ] Leave Balance
 - [ ] Holiday Calendar
+- [ ] Official Movement
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 09 — Work Notes & Tasks
+# Sprint 08 — Dashboard
 
 ## Todo
 
-### Work Notes
-
-- [ ] Daily Work Notes
-- [ ] Progress
-- [ ] Review
-
-### Tasks
-
-- [ ] Create Task
-- [ ] Assign Task
-- [ ] Update Progress
-- [ ] Task Comments
+- [ ] Dashboard Overview
+- [ ] Statistics Cards
+- [ ] Charts
+- [ ] Attendance Summary
+- [ ] Employee Summary
+- [ ] Leave Summary
+- [ ] Quick Actions
+- [ ] Recent Activities
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 10 — Notifications
+# Sprint 09 — Reports
 
 ## Todo
 
-- [ ] In-App Notifications
-- [ ] Company Notifications
-- [ ] Department Notifications
+- [ ] Employee Report
+- [ ] Attendance Report
+- [ ] Leave Report
+- [ ] Shift Report
 
 **Status:** ⏳ NOT STARTED
 
 ---
 
-# Sprint 11 — Profile & Settings
+# Sprint 10 — Settings
 
 ## Todo
 
-- [ ] My Profile
-- [ ] Change Password
 - [ ] Company Settings
-- [ ] App Settings
+- [ ] Attendance Settings
+- [ ] Leave Settings
+- [ ] Theme
+- [ ] Language
+- [ ] Notification Settings
+- [ ] Backup
+
+**Status:** ⏳ NOT STARTED
+
+---
+
+# Sprint 11 — Role & Permission
+
+## Roles
+
+- [ ] Super Admin
+- [ ] Company Admin
+- [ ] HR
+- [ ] Manager
+- [ ] Employee
+
+## Permissions
+
+- [ ] Company
+- [ ] Department
+- [ ] Designation
+- [ ] Shift
+- [ ] Employee
+- [ ] Attendance
+- [ ] Leave
+- [ ] Reports
+- [ ] Settings
 
 **Status:** ⏳ NOT STARTED
 
@@ -238,16 +288,18 @@
 ## Todo
 
 - [ ] Testing
-- [ ] Bug Fixes
+- [ ] Bug Fix
 - [ ] Performance Optimization
+- [ ] Responsive Testing
 - [ ] Documentation
-- [ ] Screenshots
-- [ ] Demo Video
 - [ ] README
 - [ ] CHANGELOG
 - [ ] LICENSE
-- [ ] Android Release
-- [ ] Play Store Ready
+- [ ] Screenshots
+- [ ] Demo Video
+- [ ] Android Build
+- [ ] Windows Build
+- [ ] Web Build
 - [ ] CodeCanyon Package
 
 **Status:** ⏳ NOT STARTED
@@ -256,19 +308,44 @@
 
 # Current Milestone
 
-🎯 Authentication (100%)
+## ✅ Completed
 
-↓
+- Authentication
+- Company CRUD
+- Department CRUD
+- Designation CRUD
+- Shift CRUD
+- Employee CRUD
 
-🚀 Dashboard
+⬇
 
-↓
+## 🚀 Current Development
 
-🚀 Employee Management
+Attendance Module
 
-↓
+⬇
 
-🚀 Attendance
+Leave Module
+
+⬇
+
+Dashboard
+
+⬇
+
+Reports
+
+⬇
+
+Settings
+
+⬇
+
+Role & Permission
+
+⬇
+
+🎯 Version 1.0 Release
 
 ---
 
@@ -277,7 +354,9 @@
 ```text
 Planning
     ↓
-UI Design
+Database Design
+    ↓
+Architecture
     ↓
 Development
     ↓
@@ -298,14 +377,51 @@ Next Sprint
 
 # Next Priority
 
-1. Complete Authentication
-2. Dashboard UI
-3. Employee Management
-4. Attendance Module
-5. Leave Module
+1. Attendance Module
+2. Leave Module
+3. Dashboard
+4. Reports
+5. Settings
+6. Role & Permission
+7. Notification System
+
+---
+
+# Current Completion
+
+| Module | Progress |
+|---------|----------|
+| Foundation | 100% |
+| Architecture | 100% |
+| Database | 100% |
+| Authentication | 95% |
+| Master Data | 100% |
+| Attendance | 0% |
+| Leave | 0% |
+| Dashboard | 0% |
+| Reports | 0% |
+| Settings | 0% |
+| Role Permission | 0% |
 
 ---
 
 # Version 1.0 Goal
 
-A lightweight, beautiful, and production-ready Flutter HRMS application for small and medium-sized businesses (5–30 employees), powered by Flutter and Supabase.
+Deliver a **professional, responsive, production-ready Flutter HRMS** with:
+
+- Secure Authentication
+- Company Management
+- Department Management
+- Designation Management
+- Shift Management
+- Employee Management
+- Attendance Management
+- Leave Management
+- Dashboard
+- Reports
+- Settings
+- Role & Permission
+- Responsive UI
+- Clean Architecture
+- Supabase Backend
+- CodeCanyon Quality

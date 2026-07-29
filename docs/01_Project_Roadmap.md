@@ -2,143 +2,224 @@
 
 # Project Roadmap
 
-**Version:** 1.0
+**Version:** 0.5.0
 
 ---
 
 # Project Vision
 
-Flutter HRMS Pro is a modern, lightweight, and production-ready Human Resource Management System (HRMS) built with **Flutter** and **Supabase**.
+Flutter HRMS Pro is a modern, scalable, responsive and production-ready Human Resource Management System (HRMS) built with **Flutter** and **Supabase**.
 
-The application is designed specifically for **small and medium-sized businesses (5–30 employees)**, focusing on simplicity, performance, and an excellent user experience.
+The goal is to build a **CodeCanyon-quality HRMS** that supports Android, iOS, Windows, macOS, Linux and Web from a single Flutter codebase.
 
-The project follows **Clean Architecture**, **Feature-First Development**, and **Documentation-Driven Development**, with the goal of delivering a professional HRMS application suitable for production use and future CodeCanyon publication.
+The project follows:
+
+- Clean Architecture
+- Feature-First Development
+- Documentation-Driven Development
+- Repository Pattern
+- Riverpod State Management
 
 ---
 
 # Project Goals
 
-- Lightweight HRMS
+- Production Ready HRMS
 - Beautiful Material 3 UI
-- Fast Performance
-- Simple Database Design
+- Responsive Layout
+- Clean Architecture
+- Multi Company Support
+- Role Based Permission
 - Secure Authentication
-- Multi-Company Support
+- High Performance
 - Easy Maintenance
-- Production Ready
+- CodeCanyon Ready
 
 ---
 
 # Version 1.0 Roadmap
 
-## Module 01 — Authentication
+## ✅ Module 01 — Authentication
 
-- User Login
+Completed
+
+- Login
 - Logout
-- Session Management
 - Auto Login
+- Session Management
 - Route Guard
 - Forgot Password
-- Reset Password
+- Update Password
+
+Remaining
+
 - User Profile
-- Role-Based Access
+- Role Based Navigation
 
-**Status:** 🟡 In Progress
+Status
 
----
-
-## Module 02 — Dashboard
-
-- Dashboard Overview
-- Company Summary
-- Attendance Summary
-- Leave Summary
-- Task Summary
-- Recent Activities
-- Quick Actions
-- Charts & Statistics
-
-**Status:** ⏳ Planned
+✅ 95% Completed
 
 ---
 
-## Module 03 — Employee Management
+## ✅ Module 02 — Master Data
 
-- Company Management
-- Department Management
-- Designation Management
-- Shift Management
-- Employee Management
-- Employee Documents
-- Employee Profile
+Completed
 
-**Status:** ⏳ Planned
+### Company
+
+- Company CRUD
+
+### Department
+
+- Department CRUD
+
+### Designation
+
+- Designation CRUD
+
+### Shift
+
+- Shift CRUD
+
+### Employee
+
+- Employee CRUD
+
+Status
+
+✅ Completed
 
 ---
 
-## Module 04 — Attendance Management
+## 🚀 Module 03 — Attendance Management
 
-- Mobile Check In
-- Mobile Check Out
-- Office GPS Validation
+- Check In
+- Check Out
+- Office Validation
 - Attendance History
-- Attendance Reports
+- Attendance Report
+- Monthly Attendance
+- Overtime
 
-**Status:** ⏳ Planned
+Status
+
+⏳ Next Module
 
 ---
 
-## Module 05 — Leave Management
+## 🚀 Module 04 — Leave Management
 
 - Leave Types
 - Apply Leave
 - Leave Approval
-- Leave History
-- Holiday Calendar
+- Holiday
+- Official Movement
 
-**Status:** ⏳ Planned
+Status
 
----
-
-## Module 06 — Work Notes
-
-- Daily Work Notes
-- Progress Tracking
-- Manager Review
-
-**Status:** ⏳ Planned
+⏳ Planned
 
 ---
 
-## Module 07 — Task Management
+## 🚀 Module 05 — Dashboard
 
-- Create Task
-- Assign Task
-- Update Progress
-- Task Comments
+- Dashboard Overview
+- Employee Statistics
+- Attendance Statistics
+- Leave Statistics
+- Charts
+- Reports
+- Recent Activities
+- Quick Actions
 
-**Status:** ⏳ Planned
+Status
 
----
-
-## Module 08 — Notifications
-
-- In-App Notifications
-- Company Notifications
-- Department Notifications
-
-**Status:** ⏳ Planned
+⏳ Planned
 
 ---
 
-## Module 09 — Profile & Settings
+## 🚀 Module 06 — Reports
+
+- Employee Report
+- Attendance Report
+- Leave Report
+- Shift Report
+
+Status
+
+⏳ Planned
+
+---
+
+## 🚀 Module 07 — Notification
+
+- In-App Notification
+- Company Announcement
+- Department Notification
+- Push Notification
+
+Status
+
+⏳ Planned
+
+---
+
+## 🚀 Module 08 — Settings
+
+- Company Settings
+- Attendance Settings
+- Leave Settings
+- Notification Settings
+- Theme Settings
+- User Settings
+- Backup Settings
+
+Status
+
+⏳ Planned
+
+---
+
+## 🚀 Module 09 — Profile
 
 - My Profile
 - Change Password
-- Company Settings
-- App Settings
+- Signature
+- Photo
+- Login History
 
-**Status:** ⏳ Planned
+Status
+
+⏳ Planned
+
+---
+
+## 🚀 Module 10 — Role & Permission
+
+Roles
+
+- Super Admin
+- Company Admin
+- HR
+- Manager
+- Employee
+
+Permissions
+
+- Company
+- Department
+- Designation
+- Shift
+- Employee
+- Attendance
+- Leave
+- Reports
+- Settings
+
+Status
+
+⏳ Planned
 
 ---
 
@@ -146,167 +227,267 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 ## Completed
 
-- Database Schema
+- Companies
+- Departments
+- Designations
+- Shifts
+- Employees
+
+Database Features
+
 - Relationships
 - Foreign Keys
 - Indexes
-- Views
 - Triggers
-- Seed Data
-- Validation Scripts
-- Database Verification
-- Row Level Security (RLS)
-- Storage Policies
-- Authentication Helpers
+- Views
+- Validation
+- RLS Policies
+- Authentication
+- Storage
 
-**Status:** ✅ Completed
+Status
+
+✅ Completed
 
 ---
 
-# Flutter Roadmap
+# Flutter Development Roadmap
 
-## Phase 1
+## Phase 01
 
-- Splash Screen
-- Login Screen
+- Authentication
+
+✅ Completed
+
+---
+
+## Phase 02
+
+- Company CRUD
+- Department CRUD
+- Designation CRUD
+- Shift CRUD
+- Employee CRUD
+
+✅ Completed
+
+---
+
+## Phase 03
+
+- Attendance
+
+⏳ In Progress
+
+---
+
+## Phase 04
+
+- Leave
+
+⏳ Planned
+
+---
+
+## Phase 05
+
 - Dashboard
 
----
-
-## Phase 2
-
-- Employee Module
-- Attendance Module
+⏳ Planned
 
 ---
 
-## Phase 3
+## Phase 06
 
-- Leave Module
-- Work Notes
-- Tasks
+- Reports
+
+⏳ Planned
 
 ---
 
-## Phase 4
+## Phase 07
 
-- Notifications
-- Profile
 - Settings
 
+⏳ Planned
+
 ---
 
-## Phase 5
+## Phase 08
+
+- Role Permission
+
+⏳ Planned
+
+---
+
+## Phase 09
 
 - Testing
 - Performance Optimization
-- Play Store Build
+- Bug Fixing
+- Code Refactoring
+
+⏳ Planned
 
 ---
 
 # Version 2.x Roadmap
 
-The following features are planned for future releases after Version 1.0.
-
 ## Smart Attendance
 
 - Face Recognition
-- QR Code Attendance
-- Selfie Verification
+- Face Attendance
+- QR Attendance
+- NFC Attendance
+- Biometric Attendance
 
 ---
 
-## Monitoring
+## Employee Monitoring
 
-- Background Location Tracking
-- Live Location
+- Background Location
+- Live Tracking
+- Google Maps
 - Route History
+- Geo Fence
 
 ---
 
-## Web Admin Panel
+## Payroll
 
-- Flutter Web Admin
+- Salary Processing
+- Allowance
+- Deduction
+- Bonus
+- Payslip
+
+---
+
+## Asset Management
+
+- Company Assets
+- Asset Assignment
+- Asset Return
+
+---
+
+## Recruitment
+
+- Candidate
+- Interview
+- Job Circular
+
+---
+
+## Performance
+
+- KPI
+- Appraisal
+- Performance Review
+
+---
+
+## Flutter Web Admin
+
 - Dashboard
-- Employee Management
 - Reports
+- Employee Management
+- Attendance
+- Leave
 
 ---
 
-## Future Enhancements
+# Responsive Support
 
-- Push Notifications (FCM)
-- Email Notifications
-- SMS Notifications
-- Google Maps Integration
-- Biometric Authentication
-- Advanced Reports
-
----
-
-# Supported Platforms
+Supported Platforms
 
 - Android
 - iOS
+- Windows
+- macOS
+- Linux
+- Web
 
-> Web, Windows, macOS, and Linux support may be added in future versions.
+Responsive Layout
+
+- Mobile
+- Tablet
+- Desktop
 
 ---
 
 # Development Principles
 
 - Clean Architecture
-- Feature-First Structure
+- Feature First Structure
 - Riverpod
 - GoRouter
 - Supabase
 - Material 3
-- Reusable Widgets
 - Responsive UI
-- Documentation-Driven Development
+- Reusable Widgets
+- Repository Pattern
+- SOLID Principles
+- Documentation Driven Development
 - Git Version Control
 
 ---
 
 # Current Milestone
 
-🎯 Complete Authentication
+✅ Authentication
 
-↓
+✅ Company CRUD
+
+✅ Department CRUD
+
+✅ Designation CRUD
+
+✅ Shift CRUD
+
+✅ Employee CRUD
+
+⬇
+
+🚀 Attendance Module
+
+⬇
+
+🚀 Leave Module
+
+⬇
 
 🚀 Dashboard
 
-↓
+⬇
 
-🚀 Employee Management
-
-↓
-
-🚀 Attendance Management
-
-↓
-
-🚀 Version 1.0 Release
+🎯 Version 1.0
 
 ---
 
 # Version 1.0 Success Criteria
 
-A successful Version 1.0 should provide:
-
 - Secure Authentication
+- Company Management
+- Department Management
+- Designation Management
+- Shift Management
 - Employee Management
 - Attendance Management
 - Leave Management
-- Work Notes
-- Task Management
-- Notifications
-- Beautiful Dashboard
-- Production-Ready Flutter UI
-- Stable Supabase Backend
+- Reports
+- Dashboard
+- Settings
+- Role Permission
+- Responsive UI
+- Production Ready
+- CodeCanyon Ready
 
 ---
 
 # Long-Term Vision
 
-Flutter HRMS Pro aims to become a simple, modern, and affordable HRMS solution for small businesses, providing an excellent user experience without the complexity of a full ERP system.
+Flutter HRMS Pro aims to become a modern, scalable and affordable Human Resource Management System for businesses of all sizes.
+
+The long-term goal is to provide a complete HRMS solution with Attendance, Leave, Payroll, GPS Tracking, Face Recognition, Reports, Role Permission and Responsive Flutter UI while maintaining a clean architecture and high-quality codebase suitable for commercial distribution on CodeCanyon.

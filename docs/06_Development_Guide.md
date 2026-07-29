@@ -2,24 +2,62 @@
 
 # Development Guide
 
-**Version:** `0.2.0`
+**Version:** `0.5.0`
 
 ---
 
 # Development Philosophy
 
-Flutter HRMS Pro is developed with one simple principle:
+Flutter HRMS Pro is built with one clear goal:
 
-> **Build a beautiful, lightweight, production-ready HRMS for small and medium businesses using Flutter and Supabase.**
+> **Develop a modern, lightweight, responsive, production-ready Human Resource Management System using Flutter and Supabase.**
 
-The project prioritizes:
+The project focuses on:
 
-- Simple Architecture
-- Clean Code
-- Beautiful UI
+- Clean Architecture
+- Feature-First Development
+- Responsive UI
 - Reusable Components
-- Stable Database
-- Fast Development
+- Production Quality
+- CodeCanyon Ready
+
+---
+
+# Development Goals
+
+- Lightweight Application
+- Beautiful Material 3 UI
+- Multi-Company Support
+- Responsive Layout
+- High Performance
+- Clean Database
+- Easy Maintenance
+- Scalable Architecture
+
+---
+
+# Current Development Progress
+
+Completed
+
+- Authentication
+- Company CRUD
+- Department CRUD
+- Designation CRUD
+- Shift CRUD
+- Employee CRUD
+
+In Progress
+
+- Authentication Finalization
+- Dashboard
+
+Upcoming
+
+- Attendance
+- Leave
+- Reports
+- Settings
 
 ---
 
@@ -29,23 +67,41 @@ Every feature follows the same workflow.
 
 ```text
 Requirement
-      ↓
+
+↓
+
 Planning
-      ↓
+
+↓
+
+Database Design
+
+↓
+
 UI Design
-      ↓
+
+↓
+
 Development
-      ↓
-Run
-      ↓
+
+↓
+
 Testing
-      ↓
+
+↓
+
 Bug Fix
-      ↓
+
+↓
+
 Documentation
-      ↓
+
+↓
+
 Git Commit
-      ↓
+
+↓
+
 Git Push
 ```
 
@@ -53,222 +109,331 @@ Git Push
 
 # Sprint Workflow
 
-Each Sprint must follow these steps.
+Each Sprint follows:
 
-1. Plan
-2. Design
-3. Develop
-4. Test
-5. Fix
-6. Update Documentation
-7. Git Commit
-8. Git Push
-9. Next Sprint
+```text
+Plan
 
-A Sprint is not complete until all steps are finished.
+↓
+
+Database
+
+↓
+
+Model
+
+↓
+
+Repository
+
+↓
+
+Provider
+
+↓
+
+UI
+
+↓
+
+CRUD
+
+↓
+
+Testing
+
+↓
+
+Documentation
+
+↓
+
+Git Commit
+```
+
+A Sprint is complete only after every step is finished.
 
 ---
 
-# Development Rules
+# Module Development Order
 
-## Rule 01
+## Phase 1
 
-Develop **one screen at a time**.
+✅ Authentication
 
-Example
+✅ Company
 
-```text
-Splash
+✅ Department
 
-↓
+✅ Designation
 
-Login
+✅ Shift
 
-↓
+✅ Employee
+
+---
+
+## Phase 2
 
 Dashboard
 
-↓
+Attendance
 
-Employee
-```
+Leave
 
----
-
-## Rule 02
-
-Finish one feature before starting another.
-
-Do not leave partially completed modules.
+Reports
 
 ---
 
-## Rule 03
+## Phase 3
 
-Keep the project buildable at all times.
+Notifications
 
-Every commit should compile successfully.
+Profile
 
----
+Settings
 
-## Rule 04
+Role Permission
 
-Use reusable widgets.
+Theme
 
-Examples
-
-- AppButton
-- AppTextField
-- AppCard
-- StatCard
-- EmployeeTile
-- EmptyWidget
-- LoadingWidget
+Responsive Layout
 
 ---
 
-## Rule 05
+## Phase 4
 
-Keep business logic outside UI.
+Testing
 
-Use:
+Optimization
 
-- Repository
-- Service
-- Provider
+Release
 
-UI should only display data.
+CodeCanyon Package
 
 ---
 
-## Rule 06
+# Flutter Architecture
 
-Keep widgets small.
-
-If a widget exceeds ~250 lines, consider splitting it into smaller widgets.
-
----
-
-## Rule 07
-
-Avoid duplicate code.
-
-If the same code appears multiple times, move it into a reusable widget or utility.
-
----
-
-# Documentation Rules
-
-Maintain only these documents.
-
-```text
-README.md
-
-docs/
-
-01_Project_Roadmap.md
-02_Project_Status.md
-03_Architecture.md
-04_Database.md
-05_API.md
-06_Development_Guide.md
-```
-
-Keep documentation synchronized with the implementation.
-
----
-
-# Git Workflow
-
-After every completed feature:
-
-```bash
-git add .
-
-git commit -m "Meaningful message"
-
-git push
-```
-
-Examples
-
-```text
-feat(auth): complete login module
-
-feat(employee): add employee repository
-
-fix(router): protect dashboard routes
-
-docs: update project documentation
-```
-
----
-
-# Flutter Coding Standards
-
-- Clean Architecture
-- Feature-First Structure
-- Riverpod
-- GoRouter
-- Material 3
-- Responsive Layout
-- Reusable Widgets
-- Null Safety
-- Meaningful Naming
-
----
-
-# Folder Structure
-
-Every feature follows:
+Every feature follows the same structure.
 
 ```text
 feature/
 
 data/
-│
+
+domain/
+
+presentation/
+```
+
+Detailed structure
+
+```text
+feature/
+
+data/
+
 ├── datasources/
+
 ├── models/
+
 └── repositories/
 
 domain/
-│
+
 ├── entities/
+
 ├── repositories/
+
 └── usecases/
 
 presentation/
-│
-├── controllers/
+
 ├── pages/
+
 ├── providers/
-└── widgets/
+
+├── widgets/
+
+└── controllers/
 ```
 
 ---
 
-# Database Guidelines
+# Coding Standards
 
-- UUID Primary Keys
-- Foreign Keys
-- snake_case Naming
-- created_at
-- updated_at
-- Soft Delete where appropriate
-- Company isolation using RLS
+## Naming
+
+Classes
+
+```text
+EmployeeRepository
+```
+
+Variables
+
+```dart
+employeeName
+```
+
+Files
+
+```text
+employee_repository.dart
+```
+
+Database
+
+```text
+employee_code
+created_at
+updated_at
+```
 
 ---
 
-# API Guidelines
+# Widget Rules
 
-Use only the official Supabase Flutter SDK.
+Create reusable widgets.
 
-Repositories should:
+Examples
 
-- Catch exceptions
-- Return consistent results
-- Avoid SQL inside UI
-- Keep business logic centralized
+- AppButton
+- AppCard
+- AppDialog
+- AppDropdown
+- AppTextField
+- AppSearchBar
+- AppLoading
+- AppEmpty
+- AppError
+- AppPagination
+
+---
+
+# UI Rules
+
+Every page should
+
+- Use Material 3
+- Be Responsive
+- Support Mobile
+- Support Tablet
+- Support Desktop
+- Handle Loading
+- Handle Empty State
+- Handle Error State
+
+---
+
+# Responsive Design
+
+Target Platforms
+
+✅ Android
+
+✅ iOS
+
+🟡 Web
+
+🟡 Windows
+
+🟡 macOS
+
+🟡 Linux
+
+Guidelines
+
+- Avoid fixed widths
+- Use LayoutBuilder
+- Use MediaQuery only when necessary
+- Support different resolutions
+- Support landscape mode
+
+---
+
+# Theme Guidelines
+
+Support
+
+- Light Theme
+- Dark Theme
+- System Theme
+
+Future
+
+- Custom Theme Colors
+- Company Branding
+
+---
+
+# State Management
+
+Riverpod
+
+Providers should only
+
+- Load Data
+- Update State
+- Notify UI
+
+Business logic belongs inside repositories.
+
+---
+
+# Repository Rules
+
+Repositories
+
+Must
+
+- Catch Exceptions
+- Return Typed Results
+- Never Access UI
+- Never Show Snackbars
+- Never Use BuildContext
+
+---
+
+# Service Rules
+
+Services should
+
+- Communicate with Supabase
+- Upload Files
+- Authentication
+- Storage
+- Helper Methods
+
+---
+
+# Database Rules
+
+- UUID Primary Keys
+- Foreign Keys
+- Indexes
+- Constraints
+- Triggers
+- snake_case
+- created_at
+- updated_at
+
+Never execute SQL directly inside Flutter UI.
+
+---
+
+# API Rules
+
+Use only
+
+- Supabase SDK
+
+Never
+
+- Write SQL in UI
+- Duplicate Queries
+- Mix UI and Business Logic
 
 ---
 
@@ -276,86 +441,189 @@ Repositories should:
 
 Always
 
-- Use try-catch
-- Show friendly messages
-- Log debug errors
-- Never crash the application
+```dart
+try {
+
+} on PostgrestException catch (e) {
+
+} catch (e) {
+
+}
+```
+
+Rules
+
+- Friendly Messages
+- Debug Logging
+- No Application Crash
 
 ---
 
-# UI Guidelines
+# Documentation Rules
 
-Every screen should:
+Always update
 
-- Follow Material 3
-- Support different screen sizes
-- Show loading indicators
-- Handle empty states
-- Display proper error states
-- Use consistent spacing and typography
+```text
+README.md
+
+docs/
+
+01_Project_Roadmap.md
+
+02_Project_Status.md
+
+03_Architecture.md
+
+04_Database.md
+
+05_API.md
+
+06_Development_Guide.md
+```
+
+Documentation must always match the latest implementation.
+
+---
+
+# Git Workflow
+
+After every completed feature
+
+```bash
+git add .
+
+git commit -m "Meaningful Commit"
+
+git push
+```
+
+Examples
+
+```text
+feat(company): complete company crud
+
+feat(employee): complete employee crud
+
+feat(shift): complete shift management
+
+feat(auth): complete authentication
+
+docs: update documentation
+```
 
 ---
 
 # Code Review Checklist
 
-Before marking a feature complete:
+Before merging
 
-- [ ] Builds successfully
-- [ ] No analyzer errors
-- [ ] No critical warnings
-- [ ] UI matches design
-- [ ] Repository implemented
-- [ ] Database connected
-- [ ] Documentation updated
-- [ ] Git committed
-- [ ] Git pushed
+- [ ] Flutter Analyze Passed
+- [ ] Flutter Test Passed
+- [ ] No Analyzer Errors
+- [ ] No Runtime Errors
+- [ ] Responsive UI
+- [ ] CRUD Working
+- [ ] Repository Tested
+- [ ] Database Connected
+- [ ] Documentation Updated
+- [ ] Git Commit Complete
 
 ---
 
-# Version 1.0 Development Order
+# Current Version Progress
 
-1. Authentication
+| Module | Status |
+|---------|--------|
+| Authentication | 🟡 95% |
+| Company | ✅ |
+| Department | ✅ |
+| Designation | ✅ |
+| Shift | ✅ |
+| Employee | ✅ |
+| Dashboard | ⏳ |
+| Attendance | ⏳ |
+| Leave | ⏳ |
+| Reports | ⏳ |
+| Notifications | ⏳ |
+| Settings | ⏳ |
+
+---
+
+# Version 1.0 Roadmap
+
+Remaining Development
+
+1. Authentication Finish
 2. Dashboard
-3. Employee Management
-4. Attendance
-5. Leave
-6. Work Notes
-7. Tasks
-8. Notifications
-9. Profile
-10. Settings
+3. Attendance
+4. Leave
+5. Reports
+6. Notifications
+7. Settings
+8. Theme System
+9. Role Permission
+10. Responsive Layout Finalization
 11. Testing
-12. Release
+12. Release Build
 
 ---
 
-# Version 1.0 Success Criteria
+# Version 2.x Ideas
 
-Version 1.0 is complete when:
-
-- Authentication is stable
-- Dashboard is complete
-- Employee module is complete
-- Attendance module is complete
-- Leave module is complete
-- Work Notes and Tasks are complete
-- Notifications work correctly
-- Documentation is up to date
-- Application is production-ready
-- Android release build is successful
+- Face Attendance
+- QR Attendance
+- GPS Tracking
+- Live Location
+- Payroll
+- Assets
+- Recruitment
+- Performance Review
+- Visitor Management
+- Flutter Web Admin Panel
 
 ---
 
 # Project Principles
 
 - Flutter First
-- Database Second
-- Simple over Complex
-- Reusable over Duplicate
-- Lightweight over Enterprise
-- Quality over Quantity
-- Complete Features over Half-Finished Features
+- Supabase Native
+- Clean Architecture
+- Feature-First Development
+- Responsive Design
+- Reusable Components
+- SOLID Principles
+- Documentation Driven Development
+- Production Ready
+- CodeCanyon Ready
 
 ---
 
-**Status:** ✅ Active Development
+# Success Criteria
+
+Version 1.0 will be considered complete when:
+
+- Authentication is fully complete
+- Company Management is stable
+- Department Management is stable
+- Designation Management is stable
+- Shift Management is stable
+- Employee Management is stable
+- Attendance is complete
+- Leave is complete
+- Dashboard is production ready
+- Responsive Layout works on all supported platforms
+- Theme Switching is implemented
+- Role Permission is implemented
+- Documentation is fully synchronized
+- Android Release Build succeeds
+- Project is ready for CodeCanyon submission
+
+---
+
+# Development Status
+
+✅ Active Development
+
+The project currently has a stable foundation with complete CRUD functionality for Company, Department, Designation, Shift, and Employee modules.
+
+The next major milestone is **Dashboard**, followed by **Attendance**, **Leave**, **Role & Permission**, **Theme System**, and a fully responsive UI across all supported platforms.

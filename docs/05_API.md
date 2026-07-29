@@ -2,33 +2,47 @@
 
 # API Documentation
 
-**Version:** `0.2.0`
+**Version:** `0.5.0`
 
 ---
 
 # Overview
 
-Flutter HRMS Pro uses **Supabase** as its backend platform.
+Flutter HRMS Pro uses **Supabase** as the backend platform.
 
-Version **1.0** does **not** use custom REST APIs. All backend communication is performed through the official **Supabase Flutter SDK**.
+Version **1.0** does **not** use custom REST APIs.
 
-The architecture follows:
+All backend communication is performed through the official **Supabase Flutter SDK** using the Repository Pattern.
 
-```
-Flutter
-    ↓
+Architecture
+
+```text
+Flutter UI
+
+↓
+
+Riverpod
+
+↓
+
 Repository
-    ↓
+
+↓
+
 Supabase Service
-    ↓
-Supabase SDK
-    ↓
+
+↓
+
+Supabase Flutter SDK
+
+↓
+
 PostgreSQL
 ```
 
 ---
 
-# Backend
+# Backend Stack
 
 | Component | Technology |
 |-----------|------------|
@@ -36,12 +50,12 @@ PostgreSQL
 | Database | PostgreSQL |
 | Authentication | Supabase Auth |
 | Storage | Supabase Storage |
-| Security | Row Level Security (RLS) |
-| Realtime | Optional (Future) |
+| Security | Row Level Security |
+| Realtime | Planned |
 
 ---
 
-# Authentication
+# Authentication API
 
 ## Login
 
@@ -104,7 +118,7 @@ await supabase.auth.resetPasswordForEmail(
 
 Status
 
-🟡 In Progress
+🟡 Completed (Reset Flow Remaining)
 
 ---
 
@@ -113,14 +127,118 @@ Status
 ```dart
 await supabase.auth.updateUser(
   UserAttributes(
-    password: newPassword,
+    password: password,
   ),
 );
 ```
 
 Status
 
-🟡 In Progress
+🟡 Completed
+
+---
+
+# Repository Pattern
+
+Every feature follows the same architecture.
+
+```text
+Presentation
+
+↓
+
+Provider
+
+↓
+
+Repository
+
+↓
+
+Supabase Service
+
+↓
+
+Supabase SDK
+```
+
+---
+
+# Completed Repositories
+
+## Company Repository
+
+Operations
+
+- Get Companies
+- Get Company
+- Add Company
+- Update Company
+- Delete Company
+
+Status
+
+✅ Completed
+
+---
+
+## Department Repository
+
+Operations
+
+- Get Departments
+- Add Department
+- Update Department
+- Delete Department
+
+Status
+
+✅ Completed
+
+---
+
+## Designation Repository
+
+Operations
+
+- Get Designations
+- Add Designation
+- Update Designation
+- Delete Designation
+
+Status
+
+✅ Completed
+
+---
+
+## Shift Repository
+
+Operations
+
+- Get Shifts
+- Add Shift
+- Update Shift
+- Delete Shift
+
+Status
+
+✅ Completed
+
+---
+
+## Employee Repository
+
+Operations
+
+- Get Employees
+- Add Employee
+- Update Employee
+- Delete Employee
+
+Status
+
+✅ Completed
 
 ---
 
@@ -168,7 +286,49 @@ await supabase
 
 ---
 
-# Storage Operations
+# Query Examples
+
+## Filter
+
+```dart
+.from('employees')
+.select()
+.eq('company_id', companyId);
+```
+
+---
+
+## Order
+
+```dart
+.order(
+  'created_at',
+  ascending: false,
+);
+```
+
+---
+
+## Search
+
+```dart
+.ilike(
+  'full_name',
+  '%john%',
+);
+```
+
+---
+
+## Limit
+
+```dart
+.limit(20);
+```
+
+---
+
+# Storage API
 
 ## Upload
 
@@ -180,7 +340,7 @@ await supabase.storage
 
 ---
 
-## Download URL
+## Public URL
 
 ```dart
 supabase.storage
@@ -202,7 +362,7 @@ await supabase.storage
 
 # Authentication Helper Functions
 
-Available Database Functions
+Database Functions
 
 - hrms_current_employee()
 - hrms_current_employee_id()
@@ -217,88 +377,21 @@ Status
 
 ---
 
-# Planned Repositories
+# API Response Standard
 
-## Authentication
-
-- Login
-- Logout
-- Forgot Password
-- Update Password
-- User Profile
-
----
-
-## Dashboard
-
-- Dashboard Summary
-- Statistics
-- Recent Activities
-
----
-
-## Employee
-
-- Company CRUD
-- Department CRUD
-- Designation CRUD
-- Shift CRUD
-- Employee CRUD
-- Employee Documents
-
----
-
-## Attendance
-
-- Check In
-- Check Out
-- Attendance History
-- Attendance Reports
-
----
-
-## Leave
-
-- Leave Types
-- Apply Leave
-- Leave Approval
-- Holiday Calendar
-
----
-
-## Work Notes
-
-- Create Note
-- Update Note
-- Delete Note
-
----
-
-## Tasks
-
-- Create Task
-- Assign Task
-- Update Progress
-- Task Comments
-
----
-
-## Notifications
-
-- Notification List
-- Mark as Read
-
----
-
-# Response Pattern
-
-Every repository should return a consistent result.
+Every repository should return a consistent response.
 
 ```dart
 class ApiResult<T> {
+
   final bool success;
+
   final String message;
+
   final T? data;
+
+  final Object? error;
+
 }
 ```
 
@@ -306,26 +399,42 @@ class ApiResult<T> {
 
 # Error Handling
 
-Rules
-
-- Use try-catch
-- Return readable error messages
-- Log exceptions in debug mode
-- Prevent application crashes
-
-Example
+Pattern
 
 ```dart
 try {
-  final data = await supabase
-      .from('employees')
-      .select();
+
+  final response = await repository.getAll();
+
+  return ApiResult(
+    success: true,
+    message: 'Success',
+    data: response,
+  );
+
 } on PostgrestException catch (e) {
-  debugPrint(e.message);
+
+  return ApiResult(
+    success: false,
+    message: e.message,
+  );
+
 } catch (e) {
-  debugPrint(e.toString());
+
+  return ApiResult(
+    success: false,
+    message: e.toString(),
+  );
+
 }
 ```
+
+Rules
+
+- Always use try-catch
+- Return friendly messages
+- Log only in debug mode
+- Never crash the application
 
 ---
 
@@ -334,48 +443,115 @@ try {
 Implemented
 
 - Supabase Authentication
-- Row Level Security (RLS)
-- Storage Policies
 - Protected Routes
-- Role-Based Access (Application Level)
+- Session Validation
+- Route Guard
+- Row Level Security
+- Storage Policies
+
+Future
+
+- Permission Middleware
+- Company Isolation
+- Role Permission Matrix
 
 Status
 
-✅ Completed
+🟡 In Progress
+
+---
+
+# Current API Status
+
+| Module | Status |
+|---------|--------|
+| Authentication | 🟡 95% |
+| Company | ✅ |
+| Department | ✅ |
+| Designation | ✅ |
+| Shift | ✅ |
+| Employee | ✅ |
+| Attendance | ⏳ |
+| Leave | ⏳ |
+| Dashboard | ⏳ |
+| Reports | ⏳ |
+
+---
+
+# Upcoming APIs
+
+Attendance
+
+- Check In
+- Check Out
+- Attendance History
+- Attendance Report
+
+Leave
+
+- Leave Types
+- Apply Leave
+- Leave Approval
+
+Dashboard
+
+- Statistics
+- Charts
+- Recent Activities
+
+Reports
+
+- Employee Report
+- Attendance Report
+- Leave Report
+
+Settings
+
+- User Profile
+- Theme
+- Permissions
+
+---
+
+# Version 2.x
+
+Future Backend Features
+
+- Edge Functions
+- Realtime Attendance
+- Push Notifications
+- Email Notifications
+- Payroll APIs
+- Public REST API
+- Webhooks
+
+---
+
+# API Design Principles
+
+- Repository Pattern
+- Feature Isolation
+- Strong Typing
+- Consistent Responses
+- Error Safe
+- Reusable Code
+- Lightweight Backend
+- Flutter First
+- Supabase Native
 
 ---
 
 # API Status
 
-| Module | Status |
-|---------|--------|
-| Authentication | 🟡 |
-| Dashboard | ⏳ |
-| Employee | ⏳ |
-| Attendance | ⏳ |
-| Leave | ⏳ |
-| Work Notes | ⏳ |
-| Tasks | ⏳ |
-| Notifications | ⏳ |
+✅ Stable Foundation
 
----
+Current implementation fully supports
 
-# Future (v2.x)
+- Authentication
+- Company CRUD
+- Department CRUD
+- Designation CRUD
+- Shift CRUD
+- Employee CRUD
 
-- Supabase Edge Functions
-- Push Notifications
-- Realtime Attendance
-- Public REST API (Optional)
-
----
-
-# Notes
-
-- Uses the official Supabase Flutter SDK.
-- No custom REST API is required for Version 1.0.
-- Repository Pattern is used for all database operations.
-- Business logic remains inside Flutter, keeping the backend lightweight.
-
----
-
-**Status:** 🟡 Active Development
+The next phase will introduce Attendance APIs while preserving the existing Repository architecture.

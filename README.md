@@ -1,16 +1,21 @@
 # Flutter HRMS Pro
 
-A modern, lightweight and production-ready **Human Resource Management System (HRMS)** built with **Flutter** and **Supabase**.
+A modern, scalable and production-ready **Human Resource Management System (HRMS)** built with **Flutter** and **Supabase**.
 
-Designed for **small and medium businesses (5–30 employees)** with a focus on **beautiful UI**, **fast performance**, and **simple management**.
+Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 
-The project follows **Clean Architecture**, **Feature-First Development**, and **Documentation-Driven Workflow**.
+- Clean Architecture
+- Beautiful Material 3 UI
+- High Performance
+- Responsive Layout
+- Cross Platform
+- CodeCanyon Quality
 
 ---
 
 # Version
 
-**Current Version:** `0.2.0`
+**Current Version:** `0.5.0`
 
 **Status:** 🟡 Active Development
 
@@ -31,7 +36,7 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 ## State Management
 
-- Riverpod
+- Flutter Riverpod
 
 ## Navigation
 
@@ -45,13 +50,91 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 
 # Project Goals
 
-- Lightweight HRMS
-- Beautiful Flutter UI
-- Fast Performance
-- Simple Database
-- Small Business Friendly
-- Production Ready
+- Production Ready HRMS
+- Clean Architecture
+- Feature First Development
+- Cross Platform
+- Responsive Design
+- Enterprise Ready
 - CodeCanyon Ready
+
+---
+
+# Features
+
+## Authentication
+
+- Login
+- Logout
+- Forgot Password
+- Update Password
+- Auto Login
+- Route Guard
+- Session Management
+
+---
+
+## Company Management
+
+- Company CRUD
+- Search
+- Active / Inactive
+- Validation
+
+✅ Completed
+
+---
+
+## Department Management
+
+- Department CRUD
+- Company Dropdown
+- Search
+- Active / Inactive
+
+✅ Completed
+
+---
+
+## Designation Management
+
+- Designation CRUD
+- Company Dropdown
+- Search
+- Active / Inactive
+
+✅ Completed
+
+---
+
+## Shift Management
+
+- Shift CRUD
+- Company Dropdown
+- Shift Time
+- Break Time
+- Grace Time
+- Weekly Off
+- Night Shift
+- Flexible Shift
+
+✅ Completed
+
+---
+
+## Employee Management
+
+- Employee CRUD
+- Company Dropdown
+- Department Dropdown
+- Designation Dropdown
+- Shift Dropdown
+- Personal Information
+- Employment Information
+- Salary
+- Active / Inactive
+
+✅ Completed
 
 ---
 
@@ -60,111 +143,93 @@ The project follows **Clean Architecture**, **Feature-First Development**, and *
 ## ✅ Sprint 01 — Project Foundation
 
 - Flutter Project
-- GitHub Repository
+- Git Repository
+- Riverpod
+- GoRouter
 - Clean Architecture
-- Riverpod Setup
-- GoRouter Setup
-- Supabase Integration
-- Foundation Ready
+- Supabase Setup
 
-**Status:** ✅ Completed
+Status
+
+✅ Completed
 
 ---
 
 ## ✅ Sprint 02 — Architecture
 
 - Feature First Structure
-- Core Layer
+- Core
 - Shared Widgets
-- Theme System
 - Router
+- Theme
 - Services
-- Providers
-- Repositories
+- Repository Pattern
 
-**Status:** ✅ Completed
+Status
+
+✅ Completed
 
 ---
 
 ## ✅ Sprint 03 — Supabase & Database
 
-### Supabase
-
-- Project Created
-- Environment Configured
-- Authentication Ready
-- Storage Ready
-
-### Database
-
-Completed Modules
+Completed Database Modules
 
 - Companies
 - Departments
 - Designations
-- Employees
 - Shifts
-- Attendance
-- Leave
-- Work Notes
-- Tasks
-- Notifications
-- Documents
-- Attachments
-- Activity Logs
+- Employees
 
-### Database Features
+Database Features
 
 - Relationships
 - Indexes
-- Views
 - Triggers
-- Seed Data
-- Validation Scripts
-- Verification Scripts
-- Simple RLS
-- Storage Policies
-- Authentication Helpers
+- Validation
+- RLS
+- Storage
+- Authentication
 
-**Status:** ✅ Completed
+Status
+
+✅ Completed
 
 ---
 
-## 🟡 Sprint 04 — Authentication
-
-### Completed
+## ✅ Sprint 04 — Authentication
 
 - Login
 - Logout
-- Session Management
 - Auto Login
-- Route Guard
+- Session Management
 - Forgot Password
 - Update Password
-- Deep Link Configuration
-- User Authentication Helpers
+- Route Guard
 
-### Remaining
+Status
 
-- Reset Password Flow
-- User Profile
-- Role Based Navigation
+✅ Completed
 
-**Status:** 🟡 95%
+---
+
+## ✅ Sprint 05 — Master Data
+
+Completed
+
+- Company CRUD
+- Department CRUD
+- Designation CRUD
+- Shift CRUD
+- Employee CRUD
+
+Status
+
+✅ Completed
 
 ---
 
 # Upcoming Sprints
-
-## 🚀 Sprint 05 — Employee Management
-
-- Employee List
-- Employee Details
-- Add Employee
-- Update Employee
-- Employee Documents
-
----
 
 ## 🚀 Sprint 06 — Attendance
 
@@ -172,56 +237,85 @@ Completed Modules
 - Check Out
 - Attendance History
 - Attendance Report
+- Monthly Attendance
+- Overtime
 
 ---
 
 ## 🚀 Sprint 07 — Leave
 
+- Leave Type
 - Apply Leave
 - Leave Approval
-- Holiday Calendar
+- Holiday
+- Official Movement
 
 ---
 
-## 🚀 Sprint 08 — Work Notes & Tasks
+## 🚀 Sprint 08 — Dashboard
 
-- Daily Work Notes
-- Task Management
-- Task Comments
-
----
-
-## 🚀 Sprint 09 — Dashboard
-
-- Dashboard
 - Statistics
 - Charts
+- Attendance Summary
+- Employee Summary
+- Leave Summary
 - Quick Actions
-- Recent Activities
 
 ---
 
-## 🚀 Sprint 10 — Notifications
+## 🚀 Sprint 09 — Reports
 
-- In-App Notifications
-- Company Notifications
-- Department Notifications
+- Employee Report
+- Attendance Report
+- Leave Report
+- Shift Report
 
 ---
 
-# Flutter Roadmap
+## 🚀 Sprint 10 — Settings
 
-- Splash Screen
-- Login
-- Dashboard
+- Company Settings
+- Attendance Settings
+- Leave Settings
+- Theme Settings
+- Notification Settings
+- User Settings
+
+---
+
+## 🚀 Sprint 11 — Role & Permission
+
+- Super Admin
+- Company Admin
+- HR
+- Manager
 - Employee
-- Attendance
-- Leave
-- Work Notes
-- Tasks
-- Notifications
-- Profile
-- Settings
+
+Permission Management
+
+- Company Permission
+- Employee Permission
+- Attendance Permission
+- Leave Permission
+- Reports Permission
+- Settings Permission
+
+---
+
+# Responsive Support
+
+- Android
+- iOS
+- Windows
+- macOS
+- Linux
+- Web
+
+Responsive Layout
+
+- Mobile
+- Tablet
+- Desktop
 
 ---
 
@@ -229,54 +323,86 @@ Completed Modules
 
 | Module | Status |
 |---------|--------|
-| Project Foundation | ✅ |
+| Foundation | ✅ |
 | Architecture | ✅ |
 | Supabase | ✅ |
 | Database | ✅ |
-| Authentication | 🟡 |
-| Employee | ⏳ |
+| Authentication | ✅ |
+| Company | ✅ |
+| Department | ✅ |
+| Designation | ✅ |
+| Shift | ✅ |
+| Employee | ✅ |
 | Attendance | ⏳ |
 | Leave | ⏳ |
-| Work Notes | ⏳ |
-| Tasks | ⏳ |
 | Dashboard | ⏳ |
+| Reports | ⏳ |
+| Settings | ⏳ |
+| Role Permission | ⏳ |
 | Notifications | ⏳ |
 
 ---
 
-# Documentation
+# Roadmap
 
-```
-docs/
-├── 01_Project_Roadmap.md
-├── 02_Project_Status.md
-├── 03_Architecture.md
-├── 04_Database.md
-├── 05_API.md
-└── 06_Development_Guide.md
-```
+## Version 0.6.0
+
+- Attendance Module
+
+## Version 0.7.0
+
+- Leave Module
+
+## Version 0.8.0
+
+- Dashboard
+
+## Version 0.9.0
+
+- Reports
+
+## Version 1.0.0
+
+🎉 First Stable Release
+
+---
+
+# Future Version (v2.x)
+
+- Face Attendance
+- Face Recognition
+- GPS Tracking
+- Live Location
+- Payroll
+- Loan Management
+- Asset Management
+- Recruitment
+- Training
+- Performance Evaluation
+- Mobile Attendance
+- Push Notification
 
 ---
 
 # Development Workflow
 
 ```text
-Plan
- ↓
-Design
- ↓
-Code
- ↓
-Run
- ↓
-Test
- ↓
-Fix
- ↓
-Update Documentation
- ↓
+Planning
+    ↓
+Database Design
+    ↓
+Architecture
+    ↓
+Development
+    ↓
+Testing
+    ↓
+Bug Fix
+    ↓
+Documentation
+    ↓
 Git Commit
- ↓
+    ↓
 Git Push
 ```
 
@@ -290,33 +416,36 @@ https://github.com/omorsoftwaredev/flutter_hrms_pro
 
 # Current Milestone
 
-🎯 Complete Authentication
+✅ Authentication
 
-↓
+✅ Company
 
-🚀 Employee Module
+✅ Department
 
-↓
+✅ Designation
+
+✅ Shift
+
+✅ Employee
+
+⬇
 
 🚀 Attendance Module
-
-↓
-
-🚀 Dashboard
-
----
-
-# Future Version (v2.x)
-
-- Face Attendance
-- Push Notifications
-- Live Location Tracking
-- Web Admin Panel
 
 ---
 
 # License
 
-This project is currently under active development.
+This project is under active development.
 
-The goal is to release a production-ready Flutter HRMS application on CodeCanyon.
+The goal is to build a **professional Flutter HRMS** with **Clean Architecture**, **Supabase Backend**, **Responsive UI**, and **CodeCanyon Quality**.
+
+---
+
+# Author
+
+**Omor Faruqe**
+
+Flutter Developer
+
+Built with ❤️ using Flutter & Supabase.
