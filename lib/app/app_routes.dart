@@ -21,6 +21,9 @@ import '../features/designation/presentation/pages/designation_list_page.dart';
 import '../features/shift/domain/entities/shift_entity.dart';
 import '../features/shift/presentation/pages/shift_form_page.dart';
 import '../features/shift/presentation/pages/shift_list_page.dart';
+import '../features/employee/domain/entities/employee_entity.dart';
+import '../features/employee/presentation/pages/employee_form_page.dart';
+import '../features/employee/presentation/pages/employee_list_page.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
 
@@ -222,16 +225,35 @@ final GoRouter appRouter = GoRouter(
 
 
         //=====================================
-        // EMPLOYEE
-        //=====================================
+// EMPLOYEE
+//=====================================
 
         GoRoute(
           path: 'employees',
           name: 'employees',
           builder: (context, state) =>
-          const DashboardPage(),
+          const EmployeeListPage(),
         ),
 
+        GoRoute(
+          path: 'employees/add',
+          name: 'add-employee',
+          builder: (context, state) =>
+          const EmployeeFormPage(),
+        ),
+
+        GoRoute(
+          path: 'employees/edit',
+          name: 'edit-employee',
+          builder: (context, state) {
+            final employee =
+            state.extra as EmployeeEntity;
+
+            return EmployeeFormPage(
+              employee: employee,
+            );
+          },
+        ),
         //=====================================
         // ATTENDANCE
         //=====================================

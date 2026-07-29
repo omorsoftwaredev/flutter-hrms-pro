@@ -83,7 +83,17 @@ class DashboardPage extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.people),
                 title: const Text('Employees'),
-                onTap: () {},
+                onTap: () async {
+                  Navigator.pop(context);
+
+                  await Future.delayed(
+                    const Duration(milliseconds: 200),
+                  );
+
+                  if (context.mounted) {
+                    context.go('/dashboard/employees');
+                  }
+                },
               ),
 
               ListTile(
@@ -201,9 +211,11 @@ class DashboardPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           FilledButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.person_add),
-            label: const Text('Add Employee'),
+            onPressed: () {
+              context.go('/dashboard/employees');
+            },
+            icon: const Icon(Icons.people),
+            label: const Text('Employees'),
           ),
 
           const SizedBox(height: 12),
