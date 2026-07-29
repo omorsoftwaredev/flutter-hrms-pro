@@ -66,6 +66,19 @@ class DashboardPage extends StatelessWidget {
                   });
                 },
               ),
+              ListTile(
+                leading: const Icon(
+                  Icons.badge_outlined,
+                ),
+                title: const Text(
+                  'Designations',
+                ),
+                onTap: () {
+                  context.go(
+                    '/dashboard/designations',
+                  );
+                },
+              ),
 
               ListTile(
                 leading: const Icon(Icons.people),
@@ -88,17 +101,20 @@ class DashboardPage extends StatelessWidget {
                   }
                 },
               ),
-
-              ListTile(
-                leading: const Icon(Icons.badge),
-                title: const Text('Designations'),
-                onTap: () {},
-              ),
-
               ListTile(
                 leading: const Icon(Icons.schedule),
                 title: const Text('Shifts'),
-                onTap: () {},
+                onTap: () async {
+                  Navigator.pop(context);
+
+                  await Future.delayed(
+                    const Duration(milliseconds: 200),
+                  );
+
+                  if (context.mounted) {
+                    context.go('/dashboard/shifts');
+                  }
+                },
               ),
 
               const Divider(),
@@ -210,10 +226,22 @@ class DashboardPage extends StatelessWidget {
             label: const Text('Departments'),
           ),
 
+
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () {
+              context.go('/dashboard/designations');
+            },
+            icon: const Icon(Icons.badge_outlined),
+            label: const Text('Designations'),
+          ),
+
           const SizedBox(height: 12),
 
           FilledButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              context.go('/dashboard/shifts');
+            },
             icon: const Icon(Icons.schedule),
             label: const Text('Shifts'),
           ),

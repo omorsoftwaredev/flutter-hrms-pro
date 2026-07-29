@@ -15,7 +15,12 @@ import '../features/company/presentation/pages/company_list_page.dart';
 import '../features/department/domain/entities/department_entity.dart';
 import '../features/department/presentation/pages/department_form_page.dart';
 import '../features/department/presentation/pages/department_list_page.dart';
-
+import '../features/designation/domain/entities/designation_entity.dart';
+import '../features/designation/presentation/pages/designation_form_page.dart';
+import '../features/designation/presentation/pages/designation_list_page.dart';
+import '../features/shift/domain/entities/shift_entity.dart';
+import '../features/shift/presentation/pages/shift_form_page.dart';
+import '../features/shift/presentation/pages/shift_list_page.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
 
@@ -156,6 +161,65 @@ final GoRouter appRouter = GoRouter(
             );
           },
         ),
+
+        /// ==========================
+        /// DESIGNATION
+        /// ==========================
+
+        GoRoute(
+          path: 'designations',
+          name: 'designations',
+          builder: (context, state) =>
+          const DesignationListPage(),
+        ),
+
+        GoRoute(
+          path: 'designations/add',
+          name: 'add-designation',
+          builder: (context, state) =>
+          const DesignationFormPage(),
+        ),
+
+        GoRoute(
+          path: 'designations/edit',
+          name: 'edit-designation',
+          builder: (context, state) {
+            final designation =
+            state.extra as DesignationEntity;
+
+            return DesignationFormPage(
+              designation: designation,
+            );
+          },
+        ),
+
+        GoRoute(
+          path: 'shifts',
+          name: 'shifts',
+          builder: (context, state) =>
+          const ShiftListPage(),
+        ),
+
+        GoRoute(
+          path: 'shifts/add',
+          name: 'add-shift',
+          builder: (context, state) =>
+          const ShiftFormPage(),
+        ),
+
+        GoRoute(
+          path: 'shifts/edit',
+          name: 'edit-shift',
+          builder: (context, state) {
+            final shift = state.extra as ShiftEntity;
+
+            return ShiftFormPage(
+              shift: shift,
+            );
+          },
+        ),
+
+
 
         //=====================================
         // EMPLOYEE
