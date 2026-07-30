@@ -52,6 +52,9 @@ class AttendanceEntity {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  final String? checkInAddress;
+  final String? checkOutAddress;
+
   const AttendanceEntity({
     this.id,
     this.companyId,
@@ -89,6 +92,8 @@ class AttendanceEntity {
     this.updatedBy,
     this.createdAt,
     this.updatedAt,
+    this.checkInAddress,
+    this.checkOutAddress,
   });
 
   AttendanceEntity copyWith({
@@ -128,6 +133,8 @@ class AttendanceEntity {
     String? updatedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? checkInAddress,
+    String? checkOutAddress,
   }) {
     return AttendanceEntity(
       id: id ?? this.id,
@@ -166,6 +173,11 @@ class AttendanceEntity {
       updatedBy: updatedBy ?? this.updatedBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      checkInAddress:
+      checkInAddress ?? this.checkInAddress,
+
+      checkOutAddress:
+      checkOutAddress ?? this.checkOutAddress,
     );
   }
 }

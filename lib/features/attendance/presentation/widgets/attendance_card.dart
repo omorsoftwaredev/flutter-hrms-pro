@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/attendance_entity.dart';
+import '../pages/attendance_details_page.dart';
 import 'attendance_status_chip.dart';
 
 class AttendanceCard extends StatelessWidget {
@@ -26,7 +27,16 @@ class AttendanceCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
 
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AttendanceDetailsPage(
+                attendance: attendance,
+              ),
+            ),
+          );
+        },
 
         child: Padding(
           padding: const EdgeInsets.all(16),

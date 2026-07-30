@@ -19,6 +19,26 @@ class AttendanceRemoteDataSource {
         .toList();
   }
 
+  Future<AttendanceModel?> getTodayAttendance(
+      String employeeId,
+      ) async {
+    final today =
+        DateTime.now().toIso8601String().split('T').first;
+
+    final response = await _client
+        .from('attendance')
+        .select()
+        .eq('employee_id', employeeId)
+        .eq('attendance_date', today)
+        .maybeSingle();
+
+    if (response == null) {
+      return null;
+    }
+
+    return AttendanceModel.fromMap(response);
+  }
+
   Future<AttendanceModel?> getById(String id) async {
     final response = await _client
         .from('attendance')

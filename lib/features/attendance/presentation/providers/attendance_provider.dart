@@ -129,28 +129,30 @@ class AttendanceNotifier
       return false;
     }
   }
+  ///=====================================
+  /// GET TODAY ATTENDANCE
+  ///=====================================
+  Future<AttendanceEntity?> getTodayAttendance(
+      String employeeId,
+      ) async {
+    try {
+      return await _repository.getTodayAttendance(
+        employeeId,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
   ///=====================================
   /// CHECK-IN
   ///=====================================
 
   Future<bool> checkIn({
-    required String attendanceId,
-    required DateTime checkInTime,
-    double? latitude,
-    double? longitude,
-    String? deviceName,
-    String? deviceId,
+    required AttendanceEntity attendance,
   }) async {
     try {
-      await _repository.checkIn(
-        attendanceId: attendanceId,
-        checkInTime: checkInTime,
-        latitude: latitude,
-        longitude: longitude,
-        deviceName: deviceName,
-        deviceId: deviceId,
-      );
+      await _repository.insert(attendance);
 
       await loadAttendance();
 

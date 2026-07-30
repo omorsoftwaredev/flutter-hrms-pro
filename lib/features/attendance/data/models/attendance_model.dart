@@ -38,6 +38,8 @@ class AttendanceModel extends AttendanceEntity {
     super.updatedBy,
     super.createdAt,
     super.updatedAt,
+    super.checkInAddress,
+    super.checkOutAddress,
   });
 
   factory AttendanceModel.fromMap(
@@ -101,6 +103,8 @@ class AttendanceModel extends AttendanceEntity {
       updatedAt: map['updated_at'] != null
           ? DateTime.parse(map['updated_at'])
           : null,
+      checkInAddress: map['check_in_address'],
+      checkOutAddress: map['check_out_address'],
     );
   }
 
@@ -147,6 +151,8 @@ class AttendanceModel extends AttendanceEntity {
       createdAt?.toIso8601String(),
       'updated_at':
       updatedAt?.toIso8601String(),
+      'check_in_address': checkInAddress,
+      'check_out_address': checkOutAddress,
     };
   }
 
@@ -197,6 +203,8 @@ class AttendanceModel extends AttendanceEntity {
       updatedBy: entity.updatedBy,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      checkInAddress: entity.checkInAddress,
+      checkOutAddress: entity.checkOutAddress,
     );
   }
 }

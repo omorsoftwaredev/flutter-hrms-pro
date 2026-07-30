@@ -222,4 +222,84 @@ class AttendanceRepository {
 
     return response.length;
   }
+  ///==============================
+  /// Attendance History
+  ///==============================
+
+  Future<List<AttendanceEntity>> getAttendanceHistory() async {
+    final response = await _supabase
+        .from('attendance')
+        .select()
+        .order(
+      'attendance_date',
+      ascending: false,
+    );
+
+    return response
+        .map<AttendanceEntity>(
+          (json) => AttendanceModel.fromMap(json),
+    )
+        .toList();
+  }
+
+  ///==============================
+  /// Today's Attendance
+  ///==============================
+
+  Future<AttendanceEntity?> getTodayAttendance(
+      String employeeId,
+      ) async {
+    final today = DateTime.now().toIso8601String().split('T').first;
+
+    final response = await _supabase
+        .from(_table)
+        .select()
+        .eq('employee_id', employeeId)
+        .eq('attendance_date', today)
+        .maybeSingle();
+
+    if (response == null) {
+      return null;
+    }
+
+    return AttendanceModel.fromMap(response);
+  }
+
+
+  ///==============================
+  /// Already Checked In ?
+  ///==============================
+
+  Future<bool> alreadyCheckedIn(
+      String employeeId,
+      ) async {
+    final attendance = await getTodayAttendance(employeeId);
+
+    return attendance != null;
+  }
+
+  ///==============================
+  /// Already Checked Out ?
+  ///==============================
+
+  Future<bool> alreadyCheckedOut(
+      String employeeId,
+      ) async {
+    final attendance = await getTodayAttendance(employeeId);
+
+    if (attendance == null) {
+      return false;
+    }
+
+    return attendance.checkOutTime != null;
+  }
+  ///==============================
+  /// Refresh Today Attendance
+  ///==============================
+
+  Future<AttendanceEntity?> refreshTodayAttendance(
+      String employeeId,
+      ) async {
+    return await getTodayAttendance(employeeId);
+  }
 }
