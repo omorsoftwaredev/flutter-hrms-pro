@@ -38,6 +38,8 @@ dependencies:
   # State Management
   # =========================
   flutter_riverpod: ^2.6.1
+  device_info_plus: ^11.5.0
+  connectivity_plus: ^7.0.0
 
   # =========================
   # Navigation

@@ -192,6 +192,11 @@ class EmployeeModel extends EmployeeEntity {
       ),
     );
   }
+  factory EmployeeModel.fromMap(
+      Map<String, dynamic> map,
+      ) {
+    return EmployeeModel.fromJson(map);
+  }
 
   Map<String, dynamic> toJson() {
     return {

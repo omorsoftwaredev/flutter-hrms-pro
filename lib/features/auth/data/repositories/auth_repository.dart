@@ -1,9 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
-  final SupabaseClient _client = Supabase.instance.client;
+  AuthRepository();
 
-  User? get currentUser => _client.auth.currentUser;
+  final SupabaseClient _client =
+      Supabase.instance.client;
+
+  ///=====================================
+  /// LOGIN
+  ///=====================================
 
   Future<AuthResponse> signIn({
     required String email,
@@ -15,7 +20,55 @@ class AuthRepository {
     );
   }
 
+  ///=====================================
+  /// LOGOUT
+  ///=====================================
+
   Future<void> signOut() async {
     await _client.auth.signOut();
+  }
+
+  ///=====================================
+  /// CURRENT USER
+  ///=====================================
+
+  User? currentUser() {
+    return _client.auth.currentUser;
+  }
+
+  ///=====================================
+  /// CURRENT SESSION
+  ///=====================================
+
+  Session? currentSession() {
+    return _client.auth.currentSession;
+  }
+
+  ///=====================================
+  /// IS LOGGED IN
+  ///=====================================
+
+  bool isLoggedIn() {
+    return _client.auth.currentUser != null;
+  }
+
+  ///=====================================
+  /// REFRESH SESSION
+  ///=====================================
+
+  Future<AuthResponse> refreshSession() async {
+    return await _client.auth.refreshSession();
+  }
+
+  ///=====================================
+  /// RESET PASSWORD
+  ///=====================================
+
+  Future<void> resetPassword(
+      String email,
+      ) async {
+    await _client.auth.resetPasswordForEmail(
+      email,
+    );
   }
 }

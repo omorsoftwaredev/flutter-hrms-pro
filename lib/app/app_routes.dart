@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/services/supabase_service.dart';
 
+import '../features/attendance/presentation/pages/attendance_mobile_page.dart';
 import '../features/auth/presentation/pages/forgot_password_page.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/update_password_page.dart';
@@ -221,8 +222,15 @@ final GoRouter appRouter = GoRouter(
             );
           },
         ),
+        //=====================================
+// Mobile - Attendance
+//=====================================
 
-
+        GoRoute(
+          path: 'mobile-attendance',
+          builder: (context, state) =>
+          const AttendanceMobilePage(),
+        ),
 
         //=====================================
 // EMPLOYEE
