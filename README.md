@@ -15,7 +15,7 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 
 # Version
 
-**Current Version:** `0.6.0`
+**Current Version:** `0.6.1`
 
 **Status:** 🟢 Active Development
 
@@ -50,6 +50,7 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 
 - Geolocator
 - Geocoding
+- Google Maps Flutter
 
 ---
 
@@ -148,6 +149,8 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 - Attendance CRUD
 - Employee Attendance
 - Today Attendance
+- Attendance History
+- Attendance Details
 - Search
 - Filter
 
@@ -160,6 +163,21 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 - Employee Mapping
 - Duplicate Check-In Protection
 - Duplicate Check-Out Protection
+
+### Attendance UI
+
+- Attendance History Page
+- Attendance Details Page
+- Attendance Summary Card
+- Employee Information Card
+- Company Information Card
+- Shift Information Card
+- Device Information Card
+- Attendance Timeline
+- Attendance Analytics
+- Google Map Preview
+- Open in Google Maps
+- Reusable Attendance Widgets
 
 ✅ Completed
 
@@ -257,14 +275,24 @@ Status
 Completed
 
 - Attendance CRUD
+- Attendance History
+- Attendance Details
 - Mobile Attendance
 - GPS Location
 - Address Detection
+- Google Map Integration
 - Employee Mapping
 - Check In
 - Check Out
 - Duplicate Check In
 - Duplicate Check Out
+- Timeline
+- Analytics
+- Device Information
+- Company Information
+- Employee Information
+- Attendance Summary
+- Reusable Widgets
 - Supabase Integration
 
 Status
@@ -277,9 +305,8 @@ Status
 
 ## 🚀 Sprint 07 — Attendance Dashboard
 
-- Today Attendance
-- My Attendance
-- Attendance History
+- Today Attendance Dashboard
+- My Attendance Dashboard
 - Attendance Calendar
 - Dashboard Statistics
 - Working Hour
@@ -379,8 +406,11 @@ Responsive Layout
 | Shift | ✅ |
 | Employee | ✅ |
 | Attendance CRUD | ✅ |
+| Attendance History | ✅ |
+| Attendance Details | ✅ |
 | Mobile Attendance | ✅ |
 | GPS Location | ✅ |
+| Google Maps | ✅ |
 | Employee Mapping | ✅ |
 | Dashboard | ⏳ |
 | Leave | ⏳ |
@@ -395,8 +425,8 @@ Responsive Layout
 ## Version 0.7.0
 
 - Attendance Dashboard
-- Attendance History
 - Attendance Statistics
+- Attendance Calendar
 
 ## Version 0.8.0
 
@@ -474,9 +504,15 @@ https://github.com/omorsoftwaredev/flutter_hrms_pro
 
 ✅ Attendance CRUD
 
+✅ Attendance History
+
+✅ Attendance Details
+
 ✅ Mobile Attendance
 
 ✅ GPS Location
+
+✅ Google Map Integration
 
 ✅ Employee Mapping
 
@@ -486,7 +522,7 @@ https://github.com/omorsoftwaredev/flutter_hrms_pro
 
 ⬇
 
-🚀 Attendance Dashboard & History
+🚀 Attendance Dashboard
 
 ---
 

@@ -2,184 +2,211 @@
 
 # Project Roadmap
 
-**Version:** 0.6.0
+**Version:** 0.6.5
 
 ---
 
 # Project Vision
 
-Flutter HRMS Pro is a modern, scalable, responsive and production-ready Human Resource Management System (HRMS) built with **Flutter** and **Supabase**.
+Flutter HRMS Pro is a modern, scalable, responsive, and production-ready Human Resource Management System (HRMS) built with Flutter and Supabase.
 
-The goal is to build a **CodeCanyon-quality HRMS** supporting Android, iOS, Windows, macOS, Linux and Web from a single Flutter codebase.
+The goal is to build a commercial-grade, CodeCanyon-quality HRMS supporting Android, iOS, Windows, macOS, Linux, and Web from a single Flutter codebase.
 
-The project follows:
+Architecture Principles
 
 - Clean Architecture
 - Feature-First Development
-- Documentation-Driven Development
 - Repository Pattern
 - Riverpod State Management
 - Supabase Backend
+- Documentation-Driven Development
 
 ---
 
-# Project Goals
+# Current Progress
 
-- Production Ready HRMS
-- Beautiful Material 3 UI
-- Responsive Layout
-- Clean Architecture
-- Multi Company Support
-- Role Based Permission
-- Secure Authentication
-- GPS Based Attendance
-- High Performance
-- Easy Maintenance
-- CodeCanyon Ready
+Overall Progress
+
+🟢 Approximately 65%
+
+Current Version
+
+0.6.5
+
+Current Sprint
+
+Sprint 06 — Attendance Module
+
+Status
+
+🟢 Near Completion
 
 ---
 
-# Version 1.0 Roadmap
+# Module 01 — Authentication
 
-## ✅ Module 01 — Authentication
+Status
 
-Completed
+✅ 100% Completed
+
+Features
 
 - Login
 - Logout
 - Auto Login
-- Session Management
 - Route Guard
+- Session Management
 - Forgot Password
 - Update Password
 - Current Employee Mapping
 
-Remaining
+Future Improvements
 
-- User Profile
 - Remember Me
+- Profile Management
 - Multi Company Login
 
-Status
-
-✅ Completed
-
 ---
 
-## ✅ Module 02 — Master Data
-
-Completed
-
-### Company
-
-- CRUD
-
-### Department
-
-- CRUD
-
-### Designation
-
-- CRUD
-
-### Shift
-
-- CRUD
-
-### Employee
-
-- CRUD
-- Employee Mapping
-- User Mapping
-- Role
+# Module 02 — Master Data
 
 Status
 
-✅ Completed
+✅ 100% Completed
+
+Completed Modules
+
+- Company
+- Department
+- Designation
+- Shift
+- Employee
+
+Features
+
+- CRUD
+- Search
+- Active / Inactive
+- Relationship Mapping
 
 ---
 
-## ✅ Module 03 — Attendance Management
+# Module 03 — Attendance Management
 
-Completed
+Status
 
-### Admin
+🟢 95% Completed
 
-- Attendance CRUD
-- Attendance Search
-- Attendance Filter
+Completed Features
 
-### Mobile Attendance
+## Attendance CRUD
 
-- GPS Location
-- Address Detection
-- Employee Mapping
+- Create
+- Update
+- Delete
+- Search
+
+## Mobile Attendance
+
 - Check In
 - Check Out
-- Duplicate Check In Protection
-- Duplicate Check Out Protection
+- GPS Capture
+- Reverse Geocoding
+- Employee Mapping
+- Duplicate Check-In Protection
+- Duplicate Check-Out Protection
+
+## Attendance History
+
+- History Page
+- Search
+- Refresh
+- Detail Navigation
+
+## Attendance Details
+
+- Employee Summary
+- Employee Avatar
+- Attendance Summary
+- Attendance Analytics
+- Attendance Timeline
+- Shift Information
+- Company Information
+- Device Information
+- Google Map Preview
+- Open in Google Maps
+- Location Card
+- Remarks Card
+- Basic Information Card
+- Bottom Action Bar
 
 Remaining
 
-- Attendance History
-- Attendance Calendar
-- Working Hour Calculation
-- Late Calculation
-- Overtime Calculation
-- Monthly Attendance
-
-Status
-
-🟢 80% Completed
+- PDF Export
+- Print
+- Share
+- Calendar View
 
 ---
 
-## 🚀 Module 04 — Attendance Dashboard
+# Module 04 — Attendance Dashboard
 
-- Today's Attendance
-- My Attendance
-- Attendance Summary
+Status
+
+🚀 Next Sprint
+
+Planned Features
+
 - Dashboard Statistics
-- Recent Attendance
-- Attendance Cards
-
-Status
-
-⏳ Next Module
+- My Attendance
+- Today's Attendance
+- Monthly Attendance
+- Recent Activities
+- Attendance Overview Cards
+- Charts
 
 ---
 
-## 🚀 Module 05 — Leave Management
+# Module 05 — Leave Management
+
+Status
+
+⏳ Planned
+
+Features
 
 - Leave Types
-- Apply Leave
+- Leave Application
 - Leave Approval
-- Holiday
+- Holidays
 - Official Movement
 
+---
+
+# Module 06 — Dashboard
+
 Status
 
 ⏳ Planned
 
----
+Features
 
-## 🚀 Module 06 — Dashboard
-
-- Dashboard Overview
-- Employee Statistics
-- Attendance Statistics
-- Leave Statistics
+- Employee Summary
+- Attendance Summary
+- Leave Summary
+- Company Statistics
 - Charts
-- Reports
 - Quick Actions
 
+---
+
+# Module 07 — Reports
+
 Status
 
 ⏳ Planned
 
----
-
-## 🚀 Module 07 — Reports
+Features
 
 - Attendance Report
 - Employee Report
@@ -188,55 +215,60 @@ Status
 - PDF Export
 - Excel Export
 
+---
+
+# Module 08 — Notifications
+
 Status
 
 ⏳ Planned
 
----
+Features
 
-## 🚀 Module 08 — Notification
-
-- In-App Notification
 - Company Announcement
 - Department Notification
+- In-App Notification
 - Push Notification
+
+---
+
+# Module 09 — Settings
 
 Status
 
 ⏳ Planned
 
----
-
-## 🚀 Module 09 — Settings
+Features
 
 - Company Settings
 - Attendance Settings
 - Leave Settings
 - Notification Settings
-- Theme
-- User Settings
+- Theme Settings
+
+---
+
+# Module 10 — Profile
 
 Status
 
 ⏳ Planned
 
----
-
-## 🚀 Module 10 — Profile
+Features
 
 - My Profile
-- Change Password
 - Signature
-- Photo
+- Profile Photo
 - Login History
+- Password Change
+
+---
+
+# Module 11 — Role & Permission
 
 Status
 
 ⏳ Planned
-
----
-
-## 🚀 Module 11 — Role & Permission
 
 Roles
 
@@ -256,17 +288,14 @@ Permissions
 - Attendance
 - Leave
 - Reports
+- Dashboard
 - Settings
-
-Status
-
-⏳ Planned
 
 ---
 
-# Database Roadmap
+# Database Status
 
-## Completed Tables
+Completed Tables
 
 - Companies
 - Departments
@@ -277,8 +306,8 @@ Status
 
 Database Features
 
-- Foreign Keys
 - Relationships
+- Foreign Keys
 - Indexes
 - Triggers
 - RLS Policies
@@ -291,9 +320,9 @@ Status
 
 ---
 
-# Flutter Development Roadmap
+# Flutter Development Phases
 
-## Phase 01
+Phase 01
 
 Authentication
 
@@ -301,57 +330,39 @@ Authentication
 
 ---
 
-## Phase 02
+Phase 02
 
 Master Data
-
-- Company
-- Department
-- Designation
-- Shift
-- Employee
 
 ✅ Completed
 
 ---
 
-## Phase 03
+Phase 03
 
-Attendance
+Attendance Module
 
-- CRUD
-- Mobile Attendance
-- GPS
-- Employee Mapping
-- Check In
-- Check Out
-
-🟢 Completed
+🟢 95% Completed
 
 ---
 
-## Phase 04
+Phase 04
 
 Attendance Dashboard
 
-- Today Attendance
-- My Attendance
-- History
-- Statistics
-
-⏳ In Progress
+🚀 Next
 
 ---
 
-## Phase 05
+Phase 05
 
-Leave
+Leave Module
 
 ⏳ Planned
 
 ---
 
-## Phase 06
+Phase 06
 
 Dashboard
 
@@ -359,7 +370,7 @@ Dashboard
 
 ---
 
-## Phase 07
+Phase 07
 
 Reports
 
@@ -367,7 +378,7 @@ Reports
 
 ---
 
-## Phase 08
+Phase 08
 
 Settings
 
@@ -375,7 +386,7 @@ Settings
 
 ---
 
-## Phase 09
+Phase 09
 
 Role Permission
 
@@ -383,82 +394,71 @@ Role Permission
 
 ---
 
-## Phase 10
+Phase 10
 
-Testing
-
-- Unit Test
-- Integration Test
-- Performance
-- Bug Fix
-- Optimization
+Testing & Optimization
 
 ⏳ Planned
 
 ---
 
-# Version 2.x Roadmap
+# Version Roadmap
 
-## Smart Attendance
+## Version 0.6.5
 
-- Face Recognition
+✅ Attendance History
+
+✅ Attendance Details
+
+✅ Timeline
+
+✅ Google Map
+
+✅ Analytics
+
+✅ Location Card
+
+---
+
+## Version 0.7.0
+
+- Attendance Dashboard
+- Attendance Statistics
+- Calendar
+- Dashboard Charts
+
+---
+
+## Version 0.8.0
+
+- Leave Module
+
+---
+
+## Version 0.9.0
+
+- Reports
+
+---
+
+## Version 1.0.0
+
+Production Stable Release
+
+---
+
+# Future Version 2.x
+
 - Face Attendance
+- Face Recognition
 - QR Attendance
 - NFC Attendance
-- Biometric Attendance
-
----
-
-## Employee Monitoring
-
-- Background GPS
-- Live Tracking
-- Google Maps
-- Route History
-- Geo Fence
-
----
-
-## Payroll
-
-- Salary
-- Bonus
-- Deduction
-- Payslip
-
----
-
-## Asset Management
-
-- Company Assets
-- Assignment
-- Return
-
----
-
-## Recruitment
-
-- Candidate
-- Interview
-- Job Circular
-
----
-
-## Performance
-
-- KPI
-- Appraisal
-- Performance Review
-
----
-
-## Flutter Web Admin
-
-- Dashboard
-- Reports
-- Attendance
-- Employee
-- Leave
+- Live GPS Tracking
+- Employee Monitoring
+- Payroll
+- Recruitment
+- Performance
+- Asset Management
 
 ---
 
@@ -484,16 +484,15 @@ Layouts
 # Development Principles
 
 - Clean Architecture
+- SOLID Principles
+- Repository Pattern
 - Feature First
 - Riverpod
 - GoRouter
 - Supabase
 - Material 3
-- Responsive UI
-- Repository Pattern
-- SOLID Principles
+- Responsive Design
 - Documentation Driven Development
-- Git Version Control
 
 ---
 
@@ -501,27 +500,17 @@ Layouts
 
 ✅ Authentication
 
-✅ Company CRUD
+✅ Company Module
 
-✅ Department CRUD
+✅ Department Module
 
-✅ Designation CRUD
+✅ Designation Module
 
-✅ Shift CRUD
+✅ Shift Module
 
-✅ Employee CRUD
+✅ Employee Module
 
-✅ Attendance CRUD
-
-✅ Mobile Attendance
-
-✅ GPS Location
-
-✅ Employee Mapping
-
-✅ Check In
-
-✅ Check Out
+🟢 Attendance Module (95%)
 
 ⬇
 
@@ -529,11 +518,7 @@ Layouts
 
 ⬇
 
-🚀 Leave Management
-
-⬇
-
-🚀 Dashboard
+🚀 Leave Module
 
 ⬇
 
@@ -541,29 +526,6 @@ Layouts
 
 ---
 
-# Version 1.0 Success Criteria
-
-- Secure Authentication
-- Company Management
-- Department Management
-- Designation Management
-- Shift Management
-- Employee Management
-- Mobile Attendance
-- Attendance Dashboard
-- Leave Management
-- Reports
-- Dashboard
-- Settings
-- Role Permission
-- Responsive UI
-- Production Ready
-- CodeCanyon Ready
-
----
-
 # Long-Term Vision
 
-Flutter HRMS Pro aims to become a modern, scalable and affordable Human Resource Management System for businesses of all sizes.
-
-The long-term goal is to provide a complete HRMS solution with Mobile Attendance, GPS Tracking, Leave, Payroll, Face Recognition, Employee Monitoring, Reports, Role Permission, and Responsive Flutter UI while maintaining clean architecture and commercial-quality code suitable for CodeCanyon.
+Flutter HRMS Pro aims to become a complete, enterprise-grade Human Resource Management System with commercial-quality Flutter architecture, responsive UI, GPS attendance, employee monitoring, payroll, reports, role management, and modern dashboards suitable for real-world business deployment and CodeCanyon distribution.

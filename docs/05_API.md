@@ -6,39 +6,33 @@
 
 ---
 
-# Overview
+# API Overview
 
-Flutter HRMS Pro uses **Supabase** as the backend platform.
+Flutter HRMS Pro uses **Supabase** as its backend platform.
 
-Version **1.0** uses the official **Supabase Flutter SDK** with the **Repository Pattern**. No custom REST API server is required.
+Version **0.6.0** communicates directly with **Supabase Flutter SDK** using the **Repository Pattern** and **Clean Architecture**. No custom REST API server is required.
 
 Architecture
 
 ```text
 Flutter UI
-
-↓
-
-Riverpod
-
-↓
-
-Notifier
-
-↓
-
+      │
+      ▼
+Riverpod Provider
+      │
+      ▼
+StateNotifier
+      │
+      ▼
 Repository
-
-↓
-
+      │
+      ▼
 Supabase Service
-
-↓
-
+      │
+      ▼
 Supabase Flutter SDK
-
-↓
-
+      │
+      ▼
 PostgreSQL
 ```
 
@@ -54,6 +48,7 @@ PostgreSQL
 | Storage | Supabase Storage |
 | Security | Row Level Security (RLS) |
 | Realtime | Planned |
+| Edge Functions | Planned |
 
 ---
 
@@ -68,8 +63,6 @@ await supabase.auth.signInWithPassword(
 );
 ```
 
-Status
-
 ✅ Completed
 
 ---
@@ -80,8 +73,6 @@ Status
 await supabase.auth.signOut();
 ```
 
-Status
-
 ✅ Completed
 
 ---
@@ -89,11 +80,8 @@ Status
 ## Current User
 
 ```dart
-final user =
-    supabase.auth.currentUser;
+final user = supabase.auth.currentUser;
 ```
-
-Status
 
 ✅ Completed
 
@@ -102,11 +90,8 @@ Status
 ## Current Session
 
 ```dart
-final session =
-    supabase.auth.currentSession;
+final session = supabase.auth.currentSession;
 ```
-
-Status
 
 ✅ Completed
 
@@ -120,9 +105,7 @@ await supabase.auth.resetPasswordForEmail(
 );
 ```
 
-Status
-
-🟡 Completed
+✅ Completed
 
 ---
 
@@ -136,18 +119,16 @@ await supabase.auth.updateUser(
 );
 ```
 
-Status
-
-🟡 Completed
+✅ Completed
 
 ---
 
 # Repository Architecture
 
-Every feature follows the same architecture.
+Every module follows the same architecture.
 
 ```text
-Page
+Presentation
 
 ↓
 
@@ -163,11 +144,15 @@ Repository
 
 ↓
 
+Supabase Service
+
+↓
+
 Supabase
 
 ↓
 
-Database
+PostgreSQL
 ```
 
 ---
@@ -176,16 +161,14 @@ Database
 
 ## Authentication Repository
 
-Operations
+Implemented
 
 - Login
 - Logout
 - Current User
 - Session
-- Password Reset
+- Forgot Password
 - Update Password
-
-Status
 
 ✅ Completed
 
@@ -199,8 +182,6 @@ Status
 - Update
 - Delete
 
-Status
-
 ✅ Completed
 
 ---
@@ -211,8 +192,6 @@ Status
 - Insert
 - Update
 - Delete
-
-Status
 
 ✅ Completed
 
@@ -225,8 +204,6 @@ Status
 - Update
 - Delete
 
-Status
-
 ✅ Completed
 
 ---
@@ -238,8 +215,6 @@ Status
 - Update
 - Delete
 
-Status
-
 ✅ Completed
 
 ---
@@ -250,8 +225,7 @@ Status
 - Insert
 - Update
 - Delete
-
-Status
+- Current Employee
 
 ✅ Completed
 
@@ -259,25 +233,25 @@ Status
 
 ## Attendance Repository
 
-Implemented Operations
+Implemented
 
-- Load Attendance
+- Get All Attendance
+- Get Attendance By Id
 - Insert Attendance
 - Update Attendance
 - Delete Attendance
 - Mobile Check In
 - Mobile Check Out
 - Today's Attendance
-- Prevent Duplicate Check In
-- Prevent Duplicate Check Out
-
-Status
+- Employee Attendance
+- Duplicate Check In Prevention
+- Duplicate Check Out Prevention
 
 ✅ Completed
 
 ---
 
-# Attendance API
+# Attendance APIs
 
 ## Mobile Check In
 
@@ -287,7 +261,13 @@ await attendanceRepository.checkIn(
 );
 ```
 
-Status
+Features
+
+- Current Employee Mapping
+- GPS Coordinates
+- Address Detection
+- Device Information
+- Attendance Number Generation
 
 ✅ Completed
 
@@ -304,33 +284,34 @@ await attendanceRepository.checkOut(
 );
 ```
 
-Status
+Features
+
+- GPS Update
+- Address Update
+- Working Minutes
+- Duplicate Protection
 
 ✅ Completed
 
 ---
 
-## Load Attendance
+## Get Attendance List
 
 ```dart
 await attendanceRepository.getAll();
 ```
 
-Status
-
 ✅ Completed
 
 ---
 
-## Insert Attendance
+## Create Attendance
 
 ```dart
 await attendanceRepository.insert(
   attendance,
 );
 ```
-
-Status
 
 ✅ Completed
 
@@ -344,8 +325,6 @@ await attendanceRepository.update(
 );
 ```
 
-Status
-
 ✅ Completed
 
 ---
@@ -357,8 +336,6 @@ await attendanceRepository.delete(
   attendance.id,
 );
 ```
-
-Status
 
 ✅ Completed
 
@@ -410,7 +387,7 @@ await supabase
 
 # Query Examples
 
-## Filter
+## Company Filter
 
 ```dart
 .eq(
@@ -421,7 +398,7 @@ await supabase
 
 ---
 
-## Employee
+## Employee Filter
 
 ```dart
 .eq(
@@ -432,7 +409,7 @@ await supabase
 
 ---
 
-## Date
+## Date Filter
 
 ```dart
 .eq(
@@ -494,25 +471,18 @@ Implemented
 - hrms_is_super_admin()
 - hrms_is_company_admin()
 
-Status
-
 ✅ Completed
 
 ---
 
-# API Response Standard
+# Standard API Result
 
 ```dart
 class ApiResult<T> {
-
   final bool success;
-
   final String message;
-
   final T? data;
-
   final Object? error;
-
 }
 ```
 
@@ -535,10 +505,10 @@ try {
 Rules
 
 - Always use try-catch
-- Friendly messages
+- Friendly error messages
 - Never crash UI
 - Debug logging only
-- Return bool/result
+- Return typed results
 
 ---
 
@@ -550,13 +520,13 @@ Implemented
 - Session Validation
 - Route Guard
 - Current Employee Mapping
-- Row Level Security
 - Attendance Validation
+- Row Level Security (Development)
 
 Upcoming
 
 - Company Isolation
-- Permission Middleware
+- Department Isolation
 - Role Permission Matrix
 
 Status
@@ -578,37 +548,44 @@ Status
 | Attendance CRUD | ✅ |
 | Mobile Check In | ✅ |
 | Mobile Check Out | ✅ |
-| Leave | ⏳ |
 | Dashboard | ⏳ |
+| Leave | ⏳ |
 | Reports | ⏳ |
 
 ---
 
 # Upcoming APIs
 
-Leave
+## Dashboard
+
+- Today Attendance
+- Attendance Statistics
+- Summary Cards
+- Charts
+
+---
+
+## Leave
 
 - Leave Types
 - Apply Leave
 - Leave Approval
 
-Dashboard
+---
 
-- Statistics
-- Charts
-- Summary Cards
-
-Reports
+## Reports
 
 - Attendance Report
 - Employee Report
 - Leave Report
 
-Settings
+---
+
+## Settings
 
 - User Profile
 - Theme
-- Permissions
+- Permission Settings
 
 ---
 
@@ -619,6 +596,7 @@ Future Backend Features
 - Edge Functions
 - Realtime Attendance
 - Live GPS Tracking
+- Employee Monitoring
 - Face Attendance
 - Push Notification
 - Payroll APIs
@@ -642,34 +620,38 @@ Future Backend Features
 
 ---
 
-# API Status
+# Current Milestone
 
-✅ Stable Foundation
+✅ Authentication
 
-Completed Modules
+✅ Company CRUD
 
-- Authentication
-- Company CRUD
-- Department CRUD
-- Designation CRUD
-- Shift CRUD
-- Employee CRUD
-- Attendance CRUD
-- Mobile Check In
-- Mobile Check Out
+✅ Department CRUD
 
-Next Development
+✅ Designation CRUD
+
+✅ Shift CRUD
+
+✅ Employee CRUD
+
+✅ Attendance CRUD
+
+✅ Mobile Check In
+
+✅ Mobile Check Out
+
+⬇
+
+🚀 Attendance Dashboard
+
+⬇
+
+🚀 Attendance History
+
+⬇
 
 🚀 Leave Module
 
-↓
-
-🚀 Dashboard
-
-↓
-
-🚀 Reports
-
-↓
+⬇
 
 🎯 Version 1.0

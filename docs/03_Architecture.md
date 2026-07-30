@@ -8,19 +8,20 @@
 
 # Architecture Overview
 
-Flutter HRMS Pro follows a **Feature-First Clean Architecture** using **Flutter**, **Riverpod**, **GoRouter**, and **Supabase**.
+Flutter HRMS Pro follows a **Feature-First Clean Architecture** built with **Flutter**, **Riverpod**, **GoRouter**, and **Supabase**.
 
-The project is designed to be:
+The architecture is designed to be:
 
 - Clean
 - Modular
 - Scalable
 - Maintainable
+- Testable
 - Responsive
 - Production Ready
 - CodeCanyon Ready
 
-Every business module is isolated and follows the same folder structure, making the application easy to maintain and extend.
+Each business module is completely isolated and follows the same folder structure, making the application easy to extend and maintain.
 
 ---
 
@@ -59,6 +60,8 @@ Every business module is isolated and follows the same folder structure, making 
 - go_router
 - geolocator
 - geocoding
+- google_maps_flutter
+- url_launcher
 - intl
 - flutter_background_service (Upcoming)
 - flutter_local_notifications (Upcoming)
@@ -120,13 +123,13 @@ utils/
 widgets/
 ```
 
-Shared components live inside the **core** folder.
+Shared reusable components live inside the **core** layer.
 
 Examples
 
 - Supabase Service
 - Location Service
-- Attendance CheckIn Service
+- Authentication Service
 - Validators
 - Router
 - Theme
@@ -136,7 +139,7 @@ Examples
 
 # Feature Structure
 
-Every module follows the same architecture.
+Every feature follows the same architecture.
 
 ```
 feature/
@@ -167,6 +170,7 @@ Responsibilities
 - Supabase Communication
 - DTO / Model
 - Repository Implementation
+- CRUD Operations
 
 ---
 
@@ -184,6 +188,7 @@ Responsibilities
 
 - Business Entity
 - Repository Contract
+- Business Rules
 
 ---
 
@@ -203,9 +208,9 @@ Contains
 
 - Pages
 - Widgets
-- Riverpod State
-- Notifier
-- Provider
+- Riverpod Providers
+- Notifiers
+- UI Components
 
 ---
 
@@ -235,7 +240,7 @@ Supabase
 Database
 ```
 
-Every module follows this same flow.
+Every business module follows the same flow.
 
 ---
 
@@ -256,6 +261,7 @@ Features
 - Route Guard
 - Forgot Password
 - Update Password
+- Current Employee Mapping
 
 ---
 
@@ -303,26 +309,41 @@ Status
 
 Status
 
-🟡 In Progress
+🟢 95% Completed
 
 Completed
 
 - Attendance CRUD
-- Check In
-- Check Out
+- Attendance Repository
+- Attendance Provider
+- Attendance Entity
+- Attendance Model
+- Mobile Check In
+- Mobile Check Out
 - Duplicate Check In Prevention
 - Duplicate Check Out Prevention
 - GPS Location
-- Employee Auto Detection
-- Current Employee Repository
-- Mobile Attendance Screen
+- Address Detection
+- Current Employee Mapping
+- Attendance Summary Card
+- Attendance Details Page
+- Attendance Timeline Card
+- Attendance Analytics Card
+- Employee Info Card
+- Company Info Card
+- Shift Info Card
+- Device Info Card
+- Attendance Location Card
+- Google Map Preview
+- Open Google Map Button
+- Bottom Action Bar
 
 Upcoming
 
 - Attendance History
-- Attendance Report
-- Monthly Attendance
+- Attendance Calendar
 - Dashboard Statistics
+- Monthly Attendance
 - Office Geofence
 - Background Tracking
 
@@ -344,13 +365,14 @@ Status
 
 Completed
 
+- Dashboard Navigation
 - Dashboard UI
 - Quick Menu
-- Navigation
 
 Upcoming
 
-- Statistics
+- Attendance Dashboard
+- Attendance Statistics
 - Charts
 - Reports
 
@@ -363,7 +385,7 @@ Login
 
 ↓
 
-Supabase Auth
+Supabase Authentication
 
 ↓
 
@@ -388,38 +410,30 @@ Dashboard
 
 ```
 Employee Login
-
-↓
-
-Current Employee Repository
-
-↓
-
+        │
+        ▼
+Current Employee
+        │
+        ▼
 Location Service
-
-↓
-
-GPS
-
-↓
-
+        │
+        ▼
+GPS + Address
+        │
+        ▼
 Attendance Entity
-
-↓
-
-Attendance Provider
-
-↓
-
+        │
+        ▼
 Attendance Repository
-
-↓
-
+        │
+        ▼
 Supabase
-
-↓
-
-attendance Table
+        │
+        ▼
+Attendance Database
+        │
+        ▼
+Attendance Details UI
 ```
 
 ---
@@ -427,11 +441,11 @@ attendance Table
 # Mobile Attendance Flow
 
 ```
-Login
+Employee Login
 
 ↓
 
-Get Current Employee
+Current Employee
 
 ↓
 
@@ -439,15 +453,19 @@ Get GPS
 
 ↓
 
+Get Address
+
+↓
+
 Create Attendance
 
 ↓
 
-Insert Database
+Supabase
 
 ↓
 
-Success
+Attendance Details
 ```
 
 ---
@@ -471,6 +489,10 @@ Update GPS
 
 ↓
 
+Update Address
+
+↓
+
 Completed
 ```
 
@@ -480,23 +502,23 @@ Completed
 
 ```
 Company
-   │
-   ├──────────────┐
-   ▼              │
+      │
+      ├────────────┐
+      ▼            │
 
-Department        │
+Department         │
 
-Designation       │
+Designation        │
 
-Shift             │
+Shift              │
 
-Employee──────────┘
-     │
-     ├── Attendance
-     ├── Leave
-     ├── Holiday
-     ├── Reports
-     ├── Notification
+Employee───────────┘
+      │
+      ├── Attendance
+      ├── Leave
+      ├── Holiday
+      ├── Reports
+      ├── Notification
 ```
 
 ---
@@ -526,6 +548,8 @@ dashboard/employees
 
 dashboard/attendance
 
+dashboard/attendance/details
+
 dashboard/mobile-attendance
 
 dashboard/leave
@@ -535,19 +559,19 @@ dashboard/leave
 
 # Responsive Architecture
 
-### Mobile
+## Mobile
 
 Drawer Navigation
 
-### Tablet
+## Tablet
 
 Navigation Rail
 
-### Desktop
+## Desktop
 
 Permanent Sidebar
 
-Same business logic is shared across every platform.
+Business logic is shared across every platform.
 
 ---
 
@@ -601,7 +625,7 @@ Database
 
 ---
 
-## Permission Architecture
+# Permission Architecture
 
 ```
 Super Admin
@@ -642,7 +666,7 @@ Permission Modules
 
 - Clean Architecture
 - Feature First
-- SOLID
+- SOLID Principles
 - Repository Pattern
 - Riverpod
 - GoRouter
@@ -663,7 +687,7 @@ Permission Modules
 - macOS
 - Web
 
-Responsive
+Responsive Layout
 
 - Mobile
 - Tablet
@@ -689,6 +713,7 @@ Responsive
 | Employee | ✅ |
 | Attendance CRUD | ✅ |
 | Mobile Attendance | ✅ |
+| Attendance Details UI | ✅ |
 | Dashboard UI | 🟡 |
 | Leave | ⏳ |
 | Reports | ⏳ |
@@ -705,9 +730,11 @@ Responsive
 
 ✅ Attendance CRUD
 
-✅ Mobile Check In
+✅ Mobile Attendance
 
-✅ Mobile Check Out
+✅ Attendance Details UI
+
+✅ Google Map Integration
 
 ⬇
 
@@ -715,7 +742,7 @@ Responsive
 
 ⬇
 
-🚀 Dashboard Statistics
+🚀 Attendance Dashboard
 
 ⬇
 
@@ -732,8 +759,8 @@ Responsive
 - Secure Authentication
 - Master Data
 - Attendance Management
+- Attendance Dashboard
 - Leave Management
-- Dashboard
 - Reports
 - Role Permission
 - Responsive UI

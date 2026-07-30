@@ -10,17 +10,19 @@
 
 Flutter HRMS Pro uses **Supabase PostgreSQL** as its primary database engine.
 
-The database is designed using a **multi-company HRMS architecture** that is scalable, secure, and production-ready.
+The database follows a **multi-company HRMS architecture** designed for scalability, security, maintainability, and enterprise-grade performance.
 
 ## Objectives
 
 - Multi Company Architecture
 - UUID Based Design
+- Clean Relational Database
 - High Performance
 - Secure Authentication
-- Clean Schema
 - Scalable Structure
-- CodeCanyon Ready
+- GPS Ready
+- Mobile Attendance Ready
+- CodeCanyon Quality
 
 ---
 
@@ -30,9 +32,9 @@ The database is designed using a **multi-company HRMS architecture** that is sca
 - Supabase
 - UUID Primary Keys
 - Foreign Keys
-- Indexes
 - Constraints
-- Triggers
+- Composite Indexes
+- Trigger Functions
 - Views
 - Row Level Security (RLS)
 - Storage Buckets
@@ -49,6 +51,7 @@ The database is designed using a **multi-company HRMS architecture** that is sca
 | Shifts | ✅ Completed |
 | Employees | ✅ Completed |
 | Attendance | ✅ Completed |
+| Holidays | ⏳ Planned |
 | Leave | ⏳ Planned |
 | Dashboard | ⏳ Planned |
 | Reports | ⏳ Planned |
@@ -86,23 +89,23 @@ Employee──────────┘
 
 ## companies
 
-Status
+**Status**
 
 ✅ Completed
 
-Purpose
+**Purpose**
 
-Stores company information.
+Stores company master information.
 
 ---
 
 ## departments
 
-Status
+**Status**
 
 ✅ Completed
 
-Purpose
+**Purpose**
 
 Stores department information.
 
@@ -110,11 +113,11 @@ Stores department information.
 
 ## designations
 
-Status
+**Status**
 
 ✅ Completed
 
-Purpose
+**Purpose**
 
 Stores designation information.
 
@@ -122,52 +125,53 @@ Stores designation information.
 
 ## shifts
 
-Status
+**Status**
 
 ✅ Completed
 
-Purpose
+**Purpose**
 
-Stores office shift information.
+Stores office shift configuration.
 
 ---
 
 ## employees
 
-Status
+**Status**
 
 ✅ Completed
 
-Purpose
+**Purpose**
 
 Stores employee master information.
 
-Important Fields
+### Important Fields
 
 - company_id
 - department_id
 - designation_id
 - shift_id
 - user_id
-- role
 - employee_code
 - full_name
 - mobile
 - email
+- role
+- is_active
 
 ---
 
 ## attendance
 
-Status
+**Status**
 
 ✅ Completed
 
-Purpose
+**Purpose**
 
 Stores daily employee attendance records.
 
-Main Fields
+### Main Fields
 
 - id
 - company_id
@@ -175,44 +179,65 @@ Main Fields
 - department_id
 - designation_id
 - shift_id
+- holiday_id
+- leave_request_id
+
 - attendance_no
 - attendance_date
+
 - shift_name
 - shift_start
 - shift_end
+
 - check_in_time
 - check_out_time
+
 - work_minutes
 - overtime_minutes
 - late_minutes
 - early_exit_minutes
+
 - attendance_status
+
 - is_leave
 - is_holiday
 - is_weekend
+
 - check_in_latitude
 - check_in_longitude
+
 - check_out_latitude
 - check_out_longitude
+
+- check_in_address
+- check_out_address
+
 - device_name
 - device_id
 - ip_address
+
 - remarks
+
+- is_active
+
 - created_by
 - updated_by
 - created_at
 - updated_at
 
-Implemented Features
+### Implemented Features
 
 - Mobile Check In
 - Mobile Check Out
+- GPS Coordinates
+- Address Detection
+- Attendance Number Generation
+- Employee Mapping
+- Shift Mapping
 - Duplicate Check In Prevention
 - Duplicate Check Out Prevention
-- GPS Coordinates
-- Employee Mapping
-- Attendance Number
-- Shift Mapping
+- Device Information
+- Attendance Analytics Ready
 
 ---
 
@@ -309,7 +334,7 @@ Referenced by
 
 # Database Features
 
-Implemented
+### Implemented
 
 - UUID Primary Keys
 - Foreign Keys
@@ -320,8 +345,11 @@ Implemented
 - Validation
 - Authentication Mapping
 - Employee Mapping
+- Attendance Mapping
+- GPS Ready
+- Address Ready
 
-Status
+**Status**
 
 ✅ Completed
 
@@ -329,7 +357,7 @@ Status
 
 # Trigger Functions
 
-Implemented
+### Implemented
 
 ```
 fn_set_updated_at()
@@ -337,13 +365,13 @@ fn_set_updated_at()
 protect_employee_sensitive_fields()
 ```
 
-Attendance Trigger
+### Attendance Trigger
 
 ```
 trg_attendance_updated_at
 ```
 
-Status
+**Status**
 
 ✅ Completed
 
@@ -353,49 +381,40 @@ Status
 
 Optimized Indexes
 
-Companies
+- Companies
+- Departments
+- Designations
+- Shifts
+- Employees
+- Attendance
+- Attendance (Employee + Date)
+- Attendance Date
+- Authentication
+- Role
 
-Departments
-
-Designations
-
-Shifts
-
-Employees
-
-Attendance
-
-Attendance Employee + Date
-
-Attendance Date
-
-Authentication
-
-Role
-
-Status
+**Status**
 
 ✅ Optimized
 
 ---
 
-# Row Level Security
+# Row Level Security (RLS)
 
-Development
+### Development
 
 - SELECT
 - INSERT
 - UPDATE
 - DELETE
 
-Production (Upcoming)
+### Production (Upcoming)
 
 - Company Isolation
 - Employee Isolation
-- Role Permission
-- Department Permission
+- Department Isolation
+- Role Based Permission
 
-Status
+**Status**
 
 🟡 Development
 
@@ -403,41 +422,41 @@ Status
 
 # Storage Buckets
 
-Future
-
 | Bucket | Status |
 |---------|--------|
-| employee-photo | ⏳ |
-| employee-signature | ⏳ |
-| company-logo | ⏳ |
-| documents | ⏳ |
+| employee-photo | ⏳ Planned |
+| employee-signature | ⏳ Planned |
+| company-logo | ⏳ Planned |
+| documents | ⏳ Planned |
 
 ---
 
 # Naming Convention
 
-Tables
+### Tables
 
 snake_case
 
-Columns
+### Columns
 
 snake_case
 
-Primary Key
+### Primary Key
 
 id
 
-Foreign Keys
+### Foreign Keys
 
 - company_id
 - department_id
 - designation_id
 - shift_id
 - employee_id
+- holiday_id
+- leave_request_id
 - user_id
 
-Timestamps
+### Timestamps
 
 - created_at
 - updated_at
@@ -467,10 +486,11 @@ Timestamps
 - leave_requests
 - holidays
 - attendance_logs
+- attendance_locations
 - notifications
 - reports
 
-Status
+**Status**
 
 ⏳ Planned
 
@@ -482,6 +502,7 @@ Future Modules
 
 - Face Recognition
 - Face Attendance
+- Employee Monitoring
 - Background GPS Tracking
 - Payroll
 - Assets
@@ -494,12 +515,14 @@ Future Modules
 # Database Goals
 
 - Production Ready
+- Enterprise Ready
 - High Performance
 - Secure
 - Scalable
 - Multi Company
 - GPS Ready
-- Attendance Ready
+- Mobile Attendance Ready
+- Analytics Ready
 - CodeCanyon Ready
 
 ---
@@ -520,15 +543,15 @@ Future Modules
 
 ⬇
 
+🚀 Attendance Dashboard
+
+⬇
+
 🚀 Attendance History
 
 ⬇
 
 🚀 Leave Module
-
-⬇
-
-🚀 Dashboard
 
 ⬇
 
