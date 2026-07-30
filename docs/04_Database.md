@@ -2,7 +2,7 @@
 
 # Database Documentation
 
-**Version:** `0.5.0`
+**Version:** `0.6.0`
 
 ---
 
@@ -10,15 +10,16 @@
 
 Flutter HRMS Pro uses **Supabase PostgreSQL** as its primary database engine.
 
-The database is designed using a **multi-company HRMS architecture** that is lightweight, scalable and production-ready.
+The database is designed using a **multi-company HRMS architecture** that is scalable, secure, and production-ready.
 
-Primary Objectives
+## Objectives
 
-- Clean Schema
+- Multi Company Architecture
+- UUID Based Design
 - High Performance
-- Multi Company Support
 - Secure Authentication
-- Easy Maintenance
+- Clean Schema
+- Scalable Structure
 - CodeCanyon Ready
 
 ---
@@ -47,7 +48,7 @@ Primary Objectives
 | Designations | ✅ Completed |
 | Shifts | ✅ Completed |
 | Employees | ✅ Completed |
-| Attendance | ⏳ Planned |
+| Attendance | ✅ Completed |
 | Leave | ⏳ Planned |
 | Dashboard | ⏳ Planned |
 | Reports | ⏳ Planned |
@@ -57,212 +58,202 @@ Primary Objectives
 
 # Current Database Structure
 
-```text
+```
 Company
+   │
+   ├──────────────┐
+   ▼              │
 
-│
+Department        │
 
-├──────────────┐
+Designation       │
 
-▼              │
+Shift             │
 
-Department     │
-
-               │
-
-Designation    │
-
-               │
-
-Shift          │
-
-               │
-
-Employee───────┘
-
+Employee──────────┘
       │
-
       ├── Attendance
-
       ├── Leave
-
+      ├── Holiday
       ├── Reports
-
       ├── Notifications
-
       └── Documents
 ```
 
 ---
 
-# Current Tables
+# Database Tables
 
 ## companies
+
+Status
+
+✅ Completed
 
 Purpose
 
 Stores company information.
 
-Main Fields
+---
 
-- id
-- code
-- name
-- email
-- phone
-- website
-- address
-- is_active
-- created_at
-- updated_at
+## departments
 
 Status
 
 ✅ Completed
-
----
-
-## departments
 
 Purpose
 
 Stores department information.
 
-Main Fields
+---
 
-- id
-- company_id
-- code
-- name
-- description
-- display_order
-- is_active
+## designations
 
 Status
 
 ✅ Completed
-
----
-
-## designations
 
 Purpose
 
 Stores designation information.
 
-Main Fields
+---
 
-- id
-- company_id
-- code
-- name
-- description
-- grade
-- base_salary
-- display_order
-- is_active
+## shifts
 
 Status
 
 ✅ Completed
-
----
-
-## shifts
 
 Purpose
 
 Stores office shift information.
 
-Main Fields
+---
 
-- id
-- company_id
-- code
-- name
-- start_time
-- end_time
-- break_minutes
-- grace_in_minutes
-- grace_out_minutes
-- weekly_off_day
-- is_night_shift
-- is_flexible
-- is_active
+## employees
 
 Status
 
 ✅ Completed
-
----
-
-## employees
 
 Purpose
 
 Stores employee master information.
 
-Main Fields
+Important Fields
 
-- id
 - company_id
 - department_id
 - designation_id
 - shift_id
 - user_id
+- role
 - employee_code
-- card_no
 - full_name
 - mobile
 - email
-- joining_date
-- employment_type
-- employee_status
-- role
-- basic_salary
-- is_super_admin
-- is_company_admin
-- created_by
-- updated_by
-- created_at
-- updated_at
+
+---
+
+## attendance
 
 Status
 
 ✅ Completed
 
+Purpose
+
+Stores daily employee attendance records.
+
+Main Fields
+
+- id
+- company_id
+- employee_id
+- department_id
+- designation_id
+- shift_id
+- attendance_no
+- attendance_date
+- shift_name
+- shift_start
+- shift_end
+- check_in_time
+- check_out_time
+- work_minutes
+- overtime_minutes
+- late_minutes
+- early_exit_minutes
+- attendance_status
+- is_leave
+- is_holiday
+- is_weekend
+- check_in_latitude
+- check_in_longitude
+- check_out_latitude
+- check_out_longitude
+- device_name
+- device_id
+- ip_address
+- remarks
+- created_by
+- updated_by
+- created_at
+- updated_at
+
+Implemented Features
+
+- Mobile Check In
+- Mobile Check Out
+- Duplicate Check In Prevention
+- Duplicate Check Out Prevention
+- GPS Coordinates
+- Employee Mapping
+- Attendance Number
+- Shift Mapping
+
 ---
 
 # Database Relationships
 
-```text
+```
 Company
+   │
+   ├── Department
+   ├── Designation
+   ├── Shift
+   └── Employee
+          │
+          ├── Attendance
+          ├── Leave
+          ├── Holiday
+          └── Auth User
+```
 
-│
+---
 
-├──── Department
+# Authentication Mapping
 
-│
+```
+Supabase Auth
 
-├──── Designation
+↓
 
-│
+auth.users
 
-├──── Shift
+↓
 
-│
+employees.user_id
 
-└──── Employee
+↓
 
-        │
+Current Employee
 
-        ├── Department
+↓
 
-        ├── Designation
-
-        ├── Shift
-
-        └── Auth User
+Attendance
 ```
 
 ---
@@ -277,6 +268,7 @@ Referenced by
 - Designations
 - Shifts
 - Employees
+- Attendance
 
 ---
 
@@ -285,6 +277,7 @@ Referenced by
 Referenced by
 
 - Employees
+- Attendance
 
 ---
 
@@ -293,6 +286,7 @@ Referenced by
 Referenced by
 
 - Employees
+- Attendance
 
 ---
 
@@ -301,20 +295,15 @@ Referenced by
 Referenced by
 
 - Employees
+- Attendance
 
 ---
 
-## Authentication
+## Employee
 
-```text
-auth.users
+Referenced by
 
-      │
-
-      ▼
-
-employees.user_id
-```
+- Attendance
 
 ---
 
@@ -324,14 +313,13 @@ Implemented
 
 - UUID Primary Keys
 - Foreign Keys
-- Unique Constraints
 - Check Constraints
-- Indexes
-- Triggers
+- Unique Constraints
+- Composite Indexes
 - Updated_at Trigger
 - Validation
-- RLS
 - Authentication Mapping
+- Employee Mapping
 
 Status
 
@@ -343,10 +331,16 @@ Status
 
 Implemented
 
-```text
+```
 fn_set_updated_at()
 
 protect_employee_sensitive_fields()
+```
+
+Attendance Trigger
+
+```
+trg_attendance_updated_at
 ```
 
 Status
@@ -355,61 +349,68 @@ Status
 
 ---
 
+# Index Strategy
+
+Optimized Indexes
+
+Companies
+
+Departments
+
+Designations
+
+Shifts
+
+Employees
+
+Attendance
+
+Attendance Employee + Date
+
+Attendance Date
+
+Authentication
+
+Role
+
+Status
+
+✅ Optimized
+
+---
+
 # Row Level Security
 
-Development Policy
-
-CRUD Enabled
+Development
 
 - SELECT
 - INSERT
 - UPDATE
 - DELETE
 
-Production
-
-Future implementation
+Production (Upcoming)
 
 - Company Isolation
-- Role Based Access
-- Permission Based Security
+- Employee Isolation
+- Role Permission
+- Department Permission
 
 Status
 
-🟡 Development Mode
+🟡 Development
 
 ---
 
-# Storage
+# Storage Buckets
 
-Buckets
+Future
 
 | Bucket | Status |
-|----------|--------|
-| employee-photos | Planned |
-| company-logo | Planned |
-| employee-documents | Planned |
-
----
-
-# Index Strategy
-
-Indexes Added
-
-- Company
-- Department
-- Designation
-- Shift
-- Employee Code
-- Card Number
-- Mobile
-- Email
-- Full Name
-- Role
-
-Status
-
-✅ Optimized
+|---------|--------|
+| employee-photo | ⏳ |
+| employee-signature | ⏳ |
+| company-logo | ⏳ |
+| documents | ⏳ |
 
 ---
 
@@ -427,56 +428,19 @@ Primary Key
 
 id
 
-Foreign Key
+Foreign Keys
 
-company_id
-
-department_id
-
-designation_id
-
-shift_id
-
-user_id
+- company_id
+- department_id
+- designation_id
+- shift_id
+- employee_id
+- user_id
 
 Timestamps
 
-created_at
-
-updated_at
-
----
-
-# Authentication Mapping
-
-```text
-Supabase Auth
-
-↓
-
-auth.users
-
-↓
-
-employees.user_id
-
-↓
-
-Application User
-```
-
----
-
-# Database Standards
-
-- UUID Primary Keys
-- Foreign Keys
-- Proper Constraints
-- Indexed Search Columns
-- Trigger Based Timestamp
-- Clean Naming Convention
-- Multi Company Ready
-- Flutter Friendly
+- created_at
+- updated_at
 
 ---
 
@@ -490,15 +454,15 @@ Application User
 | Constraints | ✅ |
 | Indexes | ✅ |
 | Triggers | ✅ |
-| RLS | ✅ |
 | Authentication | ✅ |
-| CRUD Foundation | ✅ |
+| Employees | ✅ |
+| Attendance | ✅ |
+| Mobile Attendance | ✅ |
 
 ---
 
 # Upcoming Tables
 
-- attendance
 - leave_types
 - leave_requests
 - holidays
@@ -516,8 +480,9 @@ Status
 
 Future Modules
 
+- Face Recognition
 - Face Attendance
-- GPS Tracking
+- Background GPS Tracking
 - Payroll
 - Assets
 - Recruitment
@@ -528,28 +493,43 @@ Future Modules
 
 # Database Goals
 
-- Lightweight
-- Clean
+- Production Ready
 - High Performance
 - Secure
 - Scalable
-- Easy Maintenance
-- Production Ready
+- Multi Company
+- GPS Ready
+- Attendance Ready
 - CodeCanyon Ready
 
 ---
 
-# Database Status
+# Current Milestone
 
-✅ Stable Foundation
+✅ Authentication
 
-The current database foundation supports:
+✅ Master Data
 
-- Authentication
-- Company Management
-- Department Management
-- Designation Management
-- Shift Management
-- Employee Management
+✅ Employee Mapping
 
-The next phase is **Attendance Management**, which will extend the existing schema while preserving the current architecture.
+✅ Attendance Table
+
+✅ Mobile Check In
+
+✅ Mobile Check Out
+
+⬇
+
+🚀 Attendance History
+
+⬇
+
+🚀 Leave Module
+
+⬇
+
+🚀 Dashboard
+
+⬇
+
+🎯 Version 1.0

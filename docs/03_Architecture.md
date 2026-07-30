@@ -2,7 +2,7 @@
 
 # Project Architecture
 
-**Version:** `0.5.0`
+**Version:** `0.6.0`
 
 ---
 
@@ -20,7 +20,7 @@ The project is designed to be:
 - Production Ready
 - CodeCanyon Ready
 
-The architecture is built around independent feature modules so every module follows the same structure and coding standards.
+Every business module is isolated and follows the same folder structure, making the application easy to maintain and extend.
 
 ---
 
@@ -52,23 +52,62 @@ The architecture is built around independent feature modules so every module fol
 
 - flutter_dotenv
 
+## Packages
+
+- flutter_riverpod
+- supabase_flutter
+- go_router
+- geolocator
+- geocoding
+- intl
+- flutter_background_service (Upcoming)
+- flutter_local_notifications (Upcoming)
+
+---
+
+# High Level Architecture
+
+```
+Flutter UI
+      │
+      ▼
+Presentation Layer
+      │
+      ▼
+Riverpod Provider
+      │
+      ▼
+Notifier
+      │
+      ▼
+Repository
+      │
+      ▼
+Supabase
+      │
+      ▼
+PostgreSQL
+```
+
 ---
 
 # Project Structure
 
-```text
+```
 lib/
 
 ├── core/
+│
 ├── features/
+│
 ├── main.dart
 ```
 
 ---
 
-# Core Structure
+# Core Layer
 
-```text
+```
 core/
 
 constants/
@@ -81,15 +120,25 @@ utils/
 widgets/
 ```
 
-Core contains shared resources used throughout the application.
+Shared components live inside the **core** folder.
+
+Examples
+
+- Supabase Service
+- Location Service
+- Attendance CheckIn Service
+- Validators
+- Router
+- Theme
+- Shared Widgets
 
 ---
 
 # Feature Structure
 
-Every module follows exactly the same architecture.
+Every module follows the same architecture.
 
-```text
+```
 feature/
 
 data/
@@ -103,9 +152,7 @@ presentation/
 
 # Data Layer
 
-Responsible for communication with Supabase.
-
-```text
+```
 data/
 
 datasources/
@@ -115,19 +162,17 @@ models/
 repositories/
 ```
 
-Contains
+Responsibilities
 
-- Supabase datasource
-- DTO / Models
-- Repository implementation
+- Supabase Communication
+- DTO / Model
+- Repository Implementation
 
 ---
 
 # Domain Layer
 
-Contains business logic.
-
-```text
+```
 domain/
 
 entities/
@@ -135,18 +180,16 @@ entities/
 repositories/
 ```
 
-Contains
+Responsibilities
 
-- Entity
+- Business Entity
 - Repository Contract
 
 ---
 
 # Presentation Layer
 
-Contains UI and State Management.
-
-```text
+```
 presentation/
 
 pages/
@@ -159,134 +202,25 @@ widgets/
 Contains
 
 - Pages
-- Riverpod Provider
-- State
+- Widgets
+- Riverpod State
 - Notifier
-- Reusable Widgets
+- Provider
 
 ---
 
-# Current Feature Modules
+# Riverpod Flow
 
-```text
-features/
-
-auth/
-
-company/
-
-department/
-
-designation/
-
-shift/
-
-employee/
-
-dashboard/
-
-attendance/
-
-leave/
 ```
-
-Completed
-
-- Authentication
-- Company
-- Department
-- Designation
-- Shift
-- Employee
-
-Upcoming
-
-- Attendance
-- Leave
-- Dashboard
-- Reports
-- Settings
-
----
-
-# Application Flow
-
-```text
-Application
-
-↓
-
-Authentication
-
-↓
-
-Dashboard
-
-↓
-
-Master Data
-
-↓
-
-Attendance
-
-↓
-
-Leave
-
-↓
-
-Reports
-
-↓
-
-Settings
-```
-
----
-
-# Authentication Flow
-
-```text
-User
-
-↓
-
-Login
-
-↓
-
-Supabase Authentication
-
-↓
-
-Session
-
-↓
-
-Route Guard
-
-↓
-
-Dashboard
-
-↓
-
-Logout
-```
-
----
-
-# CRUD Flow
-
-Every CRUD module follows exactly the same workflow.
-
-```text
 UI
 
 ↓
 
 Provider
+
+↓
+
+Notifier
 
 ↓
 
@@ -301,96 +235,275 @@ Supabase
 Database
 ```
 
-This architecture is used for
-
-- Company
-- Department
-- Designation
-- Shift
-- Employee
-
-and will be reused for every future module.
+Every module follows this same flow.
 
 ---
 
-# Database Architecture
+# Current Modules
 
-```text
-Company
+## Authentication
 
-│
+Status
 
-├──────────────┐
+✅ Completed
 
-▼              │
+Features
 
-Department     │
+- Login
+- Logout
+- Auto Login
+- Session Management
+- Route Guard
+- Forgot Password
+- Update Password
 
-               │
+---
 
-Designation    │
+## Company
 
-               │
+Status
 
-Shift          │
+✅ Completed
 
-               │
+---
 
-Employee───────┘
+## Department
 
-      │
+Status
 
-      ├── Attendance
+✅ Completed
 
-      ├── Leave
+---
 
-      ├── Documents
+## Designation
 
-      ├── Notifications
+Status
 
-      ├── Reports
+✅ Completed
+
+---
+
+## Shift
+
+Status
+
+✅ Completed
+
+---
+
+## Employee
+
+Status
+
+✅ Completed
+
+---
+
+## Attendance
+
+Status
+
+🟡 In Progress
+
+Completed
+
+- Attendance CRUD
+- Check In
+- Check Out
+- Duplicate Check In Prevention
+- Duplicate Check Out Prevention
+- GPS Location
+- Employee Auto Detection
+- Current Employee Repository
+- Mobile Attendance Screen
+
+Upcoming
+
+- Attendance History
+- Attendance Report
+- Monthly Attendance
+- Dashboard Statistics
+- Office Geofence
+- Background Tracking
+
+---
+
+## Leave
+
+Status
+
+⏳ Planned
+
+---
+
+## Dashboard
+
+Status
+
+🟡 In Progress
+
+Completed
+
+- Dashboard UI
+- Quick Menu
+- Navigation
+
+Upcoming
+
+- Statistics
+- Charts
+- Reports
+
+---
+
+# Authentication Flow
+
+```
+Login
+
+↓
+
+Supabase Auth
+
+↓
+
+Session
+
+↓
+
+Current User
+
+↓
+
+Current Employee
+
+↓
+
+Dashboard
 ```
 
 ---
 
-# Riverpod Architecture
+# Attendance Flow
 
-Each feature contains its own provider.
-
-```text
-Feature
+```
+Employee Login
 
 ↓
 
-State
+Current Employee Repository
 
 ↓
 
-Notifier
+Location Service
 
 ↓
 
-Repository
+GPS
+
+↓
+
+Attendance Entity
+
+↓
+
+Attendance Provider
+
+↓
+
+Attendance Repository
 
 ↓
 
 Supabase
+
+↓
+
+attendance Table
 ```
-
-Advantages
-
-- Independent
-- Testable
-- Reusable
-- Easy Maintenance
 
 ---
 
-# Routing Architecture
+# Mobile Attendance Flow
 
-GoRouter handles navigation.
+```
+Login
 
-```text
+↓
+
+Get Current Employee
+
+↓
+
+Get GPS
+
+↓
+
+Create Attendance
+
+↓
+
+Insert Database
+
+↓
+
+Success
+```
+
+---
+
+# Check Out Flow
+
+```
+Employee
+
+↓
+
+Today's Attendance
+
+↓
+
+Update Check Out Time
+
+↓
+
+Update GPS
+
+↓
+
+Completed
+```
+
+---
+
+# Database Relationship
+
+```
+Company
+   │
+   ├──────────────┐
+   ▼              │
+
+Department        │
+
+Designation       │
+
+Shift             │
+
+Employee──────────┘
+     │
+     ├── Attendance
+     ├── Leave
+     ├── Holiday
+     ├── Reports
+     ├── Notification
+```
+
+---
+
+# Routing
+
+```
 /
 
 login
@@ -413,6 +526,8 @@ dashboard/employees
 
 dashboard/attendance
 
+dashboard/mobile-attendance
+
 dashboard/leave
 ```
 
@@ -420,55 +535,75 @@ dashboard/leave
 
 # Responsive Architecture
 
-The application is designed for every Flutter platform.
-
 ### Mobile
 
-- Navigation Drawer
+Drawer Navigation
 
 ### Tablet
 
-- Navigation Rail
+Navigation Rail
 
 ### Desktop
 
-- Permanent Sidebar
+Permanent Sidebar
 
-Same business logic is reused on every platform.
+Same business logic is shared across every platform.
 
 ---
 
-# Theme Architecture
+# Future Architecture
 
-Future implementation
+## Employee Monitoring
 
-```text
-Theme
-
-↓
-
-Light
-
-Dark
-
-System
+```
+Background Service
 
 ↓
 
-Accent Color
+GPS
 
 ↓
 
-Material 3
+Location History
+
+↓
+
+Google Maps
+
+↓
+
+Dashboard
 ```
 
 ---
 
-# Permission Architecture
+## Face Attendance
 
-Future implementation
+```
+Camera
 
-```text
+↓
+
+Face Detection
+
+↓
+
+Recognition
+
+↓
+
+Attendance
+
+↓
+
+Database
+```
+
+---
+
+## Permission Architecture
+
+```
 Super Admin
 
 ↓
@@ -488,101 +623,26 @@ Manager
 Employee
 ```
 
-Permission Service
+Permission Modules
 
-```text
-Permission
-
-↓
-
-Company
-
-Department
-
-Designation
-
-Shift
-
-Employee
-
-Attendance
-
-Leave
-
-Reports
-
-Settings
-```
-
----
-
-# Backend Architecture
-
-```text
-Flutter UI
-
-↓
-
-Riverpod
-
-↓
-
-Repository
-
-↓
-
-Supabase Service
-
-↓
-
-Supabase API
-
-↓
-
-PostgreSQL
-```
-
----
-
-# Folder Naming Convention
-
-Each feature follows identical naming.
-
-```text
-feature/
-
-entity.dart
-
-model.dart
-
-repository.dart
-
-repository_impl.dart
-
-provider.dart
-
-state.dart
-
-notifier.dart
-
-card.dart
-
-form.dart
-
-list_page.dart
-
-form_page.dart
-```
-
-This keeps every module consistent and easy to maintain.
+- Company
+- Department
+- Designation
+- Shift
+- Employee
+- Attendance
+- Leave
+- Dashboard
+- Reports
+- Settings
 
 ---
 
 # Development Principles
 
 - Clean Architecture
-- Feature First Development
-- SOLID Principles
+- Feature First
+- SOLID
 - Repository Pattern
 - Riverpod
 - GoRouter
@@ -590,53 +650,11 @@ This keeps every module consistent and easy to maintain.
 - Responsive UI
 - Reusable Widgets
 - Documentation Driven Development
-- Git Version Control
-
----
-
-# Development Workflow
-
-```text
-Requirement
-
-↓
-
-Database Design
-
-↓
-
-Architecture
-
-↓
-
-Flutter Development
-
-↓
-
-Testing
-
-↓
-
-Bug Fix
-
-↓
-
-Documentation
-
-↓
-
-Git Commit
-
-↓
-
-Git Push
-```
+- Git Workflow
 
 ---
 
 # Supported Platforms
-
-## Current
 
 - Android
 - iOS
@@ -645,7 +663,7 @@ Git Push
 - macOS
 - Web
 
-Responsive Layout
+Responsive
 
 - Mobile
 - Tablet
@@ -658,31 +676,66 @@ Responsive Layout
 | Component | Status |
 |-----------|--------|
 | Clean Architecture | ✅ |
-| Feature First Structure | ✅ |
+| Feature First | ✅ |
 | Riverpod | ✅ |
 | GoRouter | ✅ |
 | Supabase | ✅ |
-| Database | ✅ |
-| Authentication | 🟡 95% |
-| Company Module | ✅ |
-| Department Module | ✅ |
-| Designation Module | ✅ |
-| Shift Module | ✅ |
-| Employee Module | ✅ |
-| Responsive Foundation | 🟡 |
-| Attendance Module | ⏳ |
+| PostgreSQL | ✅ |
+| Authentication | ✅ |
+| Company | ✅ |
+| Department | ✅ |
+| Designation | ✅ |
+| Shift | ✅ |
+| Employee | ✅ |
+| Attendance CRUD | ✅ |
+| Mobile Attendance | ✅ |
+| Dashboard UI | 🟡 |
+| Leave | ⏳ |
+| Reports | ⏳ |
+| Role Permission | ⏳ |
+| Background Tracking | ⏳ |
 
 ---
 
-# Architecture Goals
+# Current Milestone
 
-- Modular Development
-- Feature Isolation
-- Reusable Components
-- Scalable Codebase
-- Minimal Boilerplate
-- Responsive Design
-- Easy Maintenance
-- Enterprise Ready
+✅ Authentication
+
+✅ Master Data
+
+✅ Attendance CRUD
+
+✅ Mobile Check In
+
+✅ Mobile Check Out
+
+⬇
+
+🚀 Attendance History
+
+⬇
+
+🚀 Dashboard Statistics
+
+⬇
+
+🚀 Leave Management
+
+⬇
+
+🎯 Version 1.0
+
+---
+
+# Version 1.0 Goals
+
+- Secure Authentication
+- Master Data
+- Attendance Management
+- Leave Management
+- Dashboard
+- Reports
+- Role Permission
+- Responsive UI
 - Production Ready
 - CodeCanyon Ready

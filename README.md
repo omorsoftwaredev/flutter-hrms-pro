@@ -15,9 +15,9 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 
 # Version
 
-**Current Version:** `0.5.0`
+**Current Version:** `0.6.0`
 
-**Status:** 🟡 Active Development
+**Status:** 🟢 Active Development
 
 ---
 
@@ -46,6 +46,11 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 
 - flutter_dotenv
 
+## Location
+
+- Geolocator
+- Geocoding
+
 ---
 
 # Project Goals
@@ -53,9 +58,8 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 - Production Ready HRMS
 - Clean Architecture
 - Feature First Development
-- Cross Platform
-- Responsive Design
 - Enterprise Ready
+- Responsive Design
 - CodeCanyon Ready
 
 ---
@@ -66,11 +70,14 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 
 - Login
 - Logout
+- Auto Login
 - Forgot Password
 - Update Password
-- Auto Login
 - Route Guard
 - Session Management
+- Current Employee Mapping
+
+✅ Completed
 
 ---
 
@@ -79,7 +86,6 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 - Company CRUD
 - Search
 - Active / Inactive
-- Validation
 
 ✅ Completed
 
@@ -90,7 +96,6 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 - Department CRUD
 - Company Dropdown
 - Search
-- Active / Inactive
 
 ✅ Completed
 
@@ -101,7 +106,6 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 - Designation CRUD
 - Company Dropdown
 - Search
-- Active / Inactive
 
 ✅ Completed
 
@@ -110,12 +114,10 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 ## Shift Management
 
 - Shift CRUD
-- Company Dropdown
 - Shift Time
-- Break Time
 - Grace Time
+- Break Time
 - Weekly Off
-- Night Shift
 - Flexible Shift
 
 ✅ Completed
@@ -125,14 +127,39 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 ## Employee Management
 
 - Employee CRUD
-- Company Dropdown
-- Department Dropdown
-- Designation Dropdown
-- Shift Dropdown
+- Company
+- Department
+- Designation
+- Shift
+- Salary
 - Personal Information
 - Employment Information
-- Salary
-- Active / Inactive
+- User Mapping
+- Employee Role
+
+✅ Completed
+
+---
+
+## Attendance Management
+
+### Admin
+
+- Attendance CRUD
+- Employee Attendance
+- Today Attendance
+- Search
+- Filter
+
+### Mobile Attendance
+
+- Employee Check In
+- Employee Check Out
+- Current GPS
+- Current Address
+- Employee Mapping
+- Duplicate Check-In Protection
+- Duplicate Check-Out Protection
 
 ✅ Completed
 
@@ -142,12 +169,11 @@ Designed for **Small, Medium and Enterprise Businesses** with a focus on:
 
 ## ✅ Sprint 01 — Project Foundation
 
-- Flutter Project
-- Git Repository
+- Flutter
 - Riverpod
 - GoRouter
+- Supabase
 - Clean Architecture
-- Supabase Setup
 
 Status
 
@@ -157,13 +183,12 @@ Status
 
 ## ✅ Sprint 02 — Architecture
 
-- Feature First Structure
-- Core
-- Shared Widgets
-- Router
-- Theme
-- Services
+- Feature First
 - Repository Pattern
+- Services
+- Widgets
+- Theme
+- Routing
 
 Status
 
@@ -171,25 +196,24 @@ Status
 
 ---
 
-## ✅ Sprint 03 — Supabase & Database
+## ✅ Sprint 03 — Database
 
-Completed Database Modules
+Completed Tables
 
 - Companies
 - Departments
 - Designations
 - Shifts
 - Employees
+- Attendance
 
-Database Features
+Completed Database Features
 
 - Relationships
 - Indexes
 - Triggers
-- Validation
-- RLS
-- Storage
 - Authentication
+- RLS Policies
 
 Status
 
@@ -201,11 +225,10 @@ Status
 
 - Login
 - Logout
+- Session
 - Auto Login
-- Session Management
-- Forgot Password
-- Update Password
 - Route Guard
+- Current Employee Mapping
 
 Status
 
@@ -217,11 +240,32 @@ Status
 
 Completed
 
-- Company CRUD
-- Department CRUD
-- Designation CRUD
-- Shift CRUD
-- Employee CRUD
+- Company
+- Department
+- Designation
+- Shift
+- Employee
+
+Status
+
+✅ Completed
+
+---
+
+## ✅ Sprint 06 — Attendance
+
+Completed
+
+- Attendance CRUD
+- Mobile Attendance
+- GPS Location
+- Address Detection
+- Employee Mapping
+- Check In
+- Check Out
+- Duplicate Check In
+- Duplicate Check Out
+- Supabase Integration
 
 Status
 
@@ -231,18 +275,20 @@ Status
 
 # Upcoming Sprints
 
-## 🚀 Sprint 06 — Attendance
+## 🚀 Sprint 07 — Attendance Dashboard
 
-- Check In
-- Check Out
+- Today Attendance
+- My Attendance
 - Attendance History
-- Attendance Report
-- Monthly Attendance
-- Overtime
+- Attendance Calendar
+- Dashboard Statistics
+- Working Hour
+- Late Calculation
+- Overtime Calculation
 
 ---
 
-## 🚀 Sprint 07 — Leave
+## 🚀 Sprint 08 — Leave
 
 - Leave Type
 - Apply Leave
@@ -252,38 +298,38 @@ Status
 
 ---
 
-## 🚀 Sprint 08 — Dashboard
+## 🚀 Sprint 09 — Dashboard
 
-- Statistics
 - Charts
-- Attendance Summary
 - Employee Summary
+- Attendance Summary
 - Leave Summary
 - Quick Actions
 
 ---
 
-## 🚀 Sprint 09 — Reports
+## 🚀 Sprint 10 — Reports
 
-- Employee Report
 - Attendance Report
+- Employee Report
 - Leave Report
 - Shift Report
+- PDF Export
+- Excel Export
 
 ---
 
-## 🚀 Sprint 10 — Settings
+## 🚀 Sprint 11 — Settings
 
 - Company Settings
 - Attendance Settings
 - Leave Settings
-- Theme Settings
 - Notification Settings
-- User Settings
+- Theme Settings
 
 ---
 
-## 🚀 Sprint 11 — Role & Permission
+## 🚀 Sprint 12 — Role & Permission
 
 - Super Admin
 - Company Admin
@@ -291,14 +337,14 @@ Status
 - Manager
 - Employee
 
-Permission Management
+Permission
 
-- Company Permission
-- Employee Permission
-- Attendance Permission
-- Leave Permission
-- Reports Permission
-- Settings Permission
+- Company
+- Employee
+- Attendance
+- Leave
+- Reports
+- Settings
 
 ---
 
@@ -322,40 +368,39 @@ Responsive Layout
 # Project Progress
 
 | Module | Status |
-|---------|--------|
+|----------|--------|
 | Foundation | ✅ |
 | Architecture | ✅ |
 | Supabase | ✅ |
-| Database | ✅ |
 | Authentication | ✅ |
 | Company | ✅ |
 | Department | ✅ |
 | Designation | ✅ |
 | Shift | ✅ |
 | Employee | ✅ |
-| Attendance | ⏳ |
-| Leave | ⏳ |
+| Attendance CRUD | ✅ |
+| Mobile Attendance | ✅ |
+| GPS Location | ✅ |
+| Employee Mapping | ✅ |
 | Dashboard | ⏳ |
+| Leave | ⏳ |
 | Reports | ⏳ |
 | Settings | ⏳ |
 | Role Permission | ⏳ |
-| Notifications | ⏳ |
 
 ---
 
 # Roadmap
 
-## Version 0.6.0
-
-- Attendance Module
-
 ## Version 0.7.0
 
-- Leave Module
+- Attendance Dashboard
+- Attendance History
+- Attendance Statistics
 
 ## Version 0.8.0
 
-- Dashboard
+- Leave Module
 
 ## Version 0.9.0
 
@@ -363,7 +408,7 @@ Responsive Layout
 
 ## Version 1.0.0
 
-🎉 First Stable Release
+- Production Stable Release
 
 ---
 
@@ -371,15 +416,14 @@ Responsive Layout
 
 - Face Attendance
 - Face Recognition
-- GPS Tracking
-- Live Location
+- Live GPS Tracking
+- Live Employee Monitoring
 - Payroll
-- Loan Management
-- Asset Management
+- Loan
 - Recruitment
+- Asset Management
 - Training
-- Performance Evaluation
-- Mobile Attendance
+- Performance
 - Push Notification
 
 ---
@@ -418,19 +462,31 @@ https://github.com/omorsoftwaredev/flutter_hrms_pro
 
 ✅ Authentication
 
-✅ Company
+✅ Company Management
 
-✅ Department
+✅ Department Management
 
-✅ Designation
+✅ Designation Management
 
-✅ Shift
+✅ Shift Management
 
-✅ Employee
+✅ Employee Management
+
+✅ Attendance CRUD
+
+✅ Mobile Attendance
+
+✅ GPS Location
+
+✅ Employee Mapping
+
+✅ Check In
+
+✅ Check Out
 
 ⬇
 
-🚀 Attendance Module
+🚀 Attendance Dashboard & History
 
 ---
 
@@ -438,7 +494,7 @@ https://github.com/omorsoftwaredev/flutter_hrms_pro
 
 This project is under active development.
 
-The goal is to build a **professional Flutter HRMS** with **Clean Architecture**, **Supabase Backend**, **Responsive UI**, and **CodeCanyon Quality**.
+The goal is to build a **Production Ready Flutter HRMS** using **Flutter**, **Supabase**, **Riverpod**, and **Clean Architecture** with enterprise-level code quality.
 
 ---
 

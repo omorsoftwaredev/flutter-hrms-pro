@@ -2,7 +2,7 @@
 
 # Project Roadmap
 
-**Version:** 0.5.0
+**Version:** 0.6.0
 
 ---
 
@@ -10,7 +10,7 @@
 
 Flutter HRMS Pro is a modern, scalable, responsive and production-ready Human Resource Management System (HRMS) built with **Flutter** and **Supabase**.
 
-The goal is to build a **CodeCanyon-quality HRMS** that supports Android, iOS, Windows, macOS, Linux and Web from a single Flutter codebase.
+The goal is to build a **CodeCanyon-quality HRMS** supporting Android, iOS, Windows, macOS, Linux and Web from a single Flutter codebase.
 
 The project follows:
 
@@ -19,6 +19,7 @@ The project follows:
 - Documentation-Driven Development
 - Repository Pattern
 - Riverpod State Management
+- Supabase Backend
 
 ---
 
@@ -31,6 +32,7 @@ The project follows:
 - Multi Company Support
 - Role Based Permission
 - Secure Authentication
+- GPS Based Attendance
 - High Performance
 - Easy Maintenance
 - CodeCanyon Ready
@@ -50,15 +52,17 @@ Completed
 - Route Guard
 - Forgot Password
 - Update Password
+- Current Employee Mapping
 
 Remaining
 
 - User Profile
-- Role Based Navigation
+- Remember Me
+- Multi Company Login
 
 Status
 
-✅ 95% Completed
+✅ Completed
 
 ---
 
@@ -68,23 +72,26 @@ Completed
 
 ### Company
 
-- Company CRUD
+- CRUD
 
 ### Department
 
-- Department CRUD
+- CRUD
 
 ### Designation
 
-- Designation CRUD
+- CRUD
 
 ### Shift
 
-- Shift CRUD
+- CRUD
 
 ### Employee
 
-- Employee CRUD
+- CRUD
+- Employee Mapping
+- User Mapping
+- Role
 
 Status
 
@@ -92,15 +99,49 @@ Status
 
 ---
 
-## 🚀 Module 03 — Attendance Management
+## ✅ Module 03 — Attendance Management
 
+Completed
+
+### Admin
+
+- Attendance CRUD
+- Attendance Search
+- Attendance Filter
+
+### Mobile Attendance
+
+- GPS Location
+- Address Detection
+- Employee Mapping
 - Check In
 - Check Out
-- Office Validation
+- Duplicate Check In Protection
+- Duplicate Check Out Protection
+
+Remaining
+
 - Attendance History
-- Attendance Report
+- Attendance Calendar
+- Working Hour Calculation
+- Late Calculation
+- Overtime Calculation
 - Monthly Attendance
-- Overtime
+
+Status
+
+🟢 80% Completed
+
+---
+
+## 🚀 Module 04 — Attendance Dashboard
+
+- Today's Attendance
+- My Attendance
+- Attendance Summary
+- Dashboard Statistics
+- Recent Attendance
+- Attendance Cards
 
 Status
 
@@ -108,7 +149,7 @@ Status
 
 ---
 
-## 🚀 Module 04 — Leave Management
+## 🚀 Module 05 — Leave Management
 
 - Leave Types
 - Apply Leave
@@ -122,7 +163,7 @@ Status
 
 ---
 
-## 🚀 Module 05 — Dashboard
+## 🚀 Module 06 — Dashboard
 
 - Dashboard Overview
 - Employee Statistics
@@ -130,7 +171,6 @@ Status
 - Leave Statistics
 - Charts
 - Reports
-- Recent Activities
 - Quick Actions
 
 Status
@@ -139,12 +179,14 @@ Status
 
 ---
 
-## 🚀 Module 06 — Reports
+## 🚀 Module 07 — Reports
 
-- Employee Report
 - Attendance Report
+- Employee Report
 - Leave Report
 - Shift Report
+- PDF Export
+- Excel Export
 
 Status
 
@@ -152,7 +194,7 @@ Status
 
 ---
 
-## 🚀 Module 07 — Notification
+## 🚀 Module 08 — Notification
 
 - In-App Notification
 - Company Announcement
@@ -165,15 +207,14 @@ Status
 
 ---
 
-## 🚀 Module 08 — Settings
+## 🚀 Module 09 — Settings
 
 - Company Settings
 - Attendance Settings
 - Leave Settings
 - Notification Settings
-- Theme Settings
+- Theme
 - User Settings
-- Backup Settings
 
 Status
 
@@ -181,7 +222,7 @@ Status
 
 ---
 
-## 🚀 Module 09 — Profile
+## 🚀 Module 10 — Profile
 
 - My Profile
 - Change Password
@@ -195,7 +236,7 @@ Status
 
 ---
 
-## 🚀 Module 10 — Role & Permission
+## 🚀 Module 11 — Role & Permission
 
 Roles
 
@@ -225,22 +266,21 @@ Status
 
 # Database Roadmap
 
-## Completed
+## Completed Tables
 
 - Companies
 - Departments
 - Designations
 - Shifts
 - Employees
+- Attendance
 
 Database Features
 
-- Relationships
 - Foreign Keys
+- Relationships
 - Indexes
 - Triggers
-- Views
-- Validation
 - RLS Policies
 - Authentication
 - Storage
@@ -255,7 +295,7 @@ Status
 
 ## Phase 01
 
-- Authentication
+Authentication
 
 ✅ Completed
 
@@ -263,11 +303,13 @@ Status
 
 ## Phase 02
 
-- Company CRUD
-- Department CRUD
-- Designation CRUD
-- Shift CRUD
-- Employee CRUD
+Master Data
+
+- Company
+- Department
+- Designation
+- Shift
+- Employee
 
 ✅ Completed
 
@@ -275,23 +317,35 @@ Status
 
 ## Phase 03
 
-- Attendance
+Attendance
 
-⏳ In Progress
+- CRUD
+- Mobile Attendance
+- GPS
+- Employee Mapping
+- Check In
+- Check Out
+
+🟢 Completed
 
 ---
 
 ## Phase 04
 
-- Leave
+Attendance Dashboard
 
-⏳ Planned
+- Today Attendance
+- My Attendance
+- History
+- Statistics
+
+⏳ In Progress
 
 ---
 
 ## Phase 05
 
-- Dashboard
+Leave
 
 ⏳ Planned
 
@@ -299,7 +353,7 @@ Status
 
 ## Phase 06
 
-- Reports
+Dashboard
 
 ⏳ Planned
 
@@ -307,7 +361,7 @@ Status
 
 ## Phase 07
 
-- Settings
+Reports
 
 ⏳ Planned
 
@@ -315,7 +369,7 @@ Status
 
 ## Phase 08
 
-- Role Permission
+Settings
 
 ⏳ Planned
 
@@ -323,10 +377,21 @@ Status
 
 ## Phase 09
 
-- Testing
-- Performance Optimization
-- Bug Fixing
-- Code Refactoring
+Role Permission
+
+⏳ Planned
+
+---
+
+## Phase 10
+
+Testing
+
+- Unit Test
+- Integration Test
+- Performance
+- Bug Fix
+- Optimization
 
 ⏳ Planned
 
@@ -346,7 +411,7 @@ Status
 
 ## Employee Monitoring
 
-- Background Location
+- Background GPS
 - Live Tracking
 - Google Maps
 - Route History
@@ -356,10 +421,9 @@ Status
 
 ## Payroll
 
-- Salary Processing
-- Allowance
-- Deduction
+- Salary
 - Bonus
+- Deduction
 - Payslip
 
 ---
@@ -367,8 +431,8 @@ Status
 ## Asset Management
 
 - Company Assets
-- Asset Assignment
-- Asset Return
+- Assignment
+- Return
 
 ---
 
@@ -392,15 +456,15 @@ Status
 
 - Dashboard
 - Reports
-- Employee Management
 - Attendance
+- Employee
 - Leave
 
 ---
 
 # Responsive Support
 
-Supported Platforms
+Platforms
 
 - Android
 - iOS
@@ -409,7 +473,7 @@ Supported Platforms
 - Linux
 - Web
 
-Responsive Layout
+Layouts
 
 - Mobile
 - Tablet
@@ -420,13 +484,12 @@ Responsive Layout
 # Development Principles
 
 - Clean Architecture
-- Feature First Structure
+- Feature First
 - Riverpod
 - GoRouter
 - Supabase
 - Material 3
 - Responsive UI
-- Reusable Widgets
 - Repository Pattern
 - SOLID Principles
 - Documentation Driven Development
@@ -448,13 +511,25 @@ Responsive Layout
 
 ✅ Employee CRUD
 
+✅ Attendance CRUD
+
+✅ Mobile Attendance
+
+✅ GPS Location
+
+✅ Employee Mapping
+
+✅ Check In
+
+✅ Check Out
+
 ⬇
 
-🚀 Attendance Module
+🚀 Attendance Dashboard
 
 ⬇
 
-🚀 Leave Module
+🚀 Leave Management
 
 ⬇
 
@@ -474,7 +549,8 @@ Responsive Layout
 - Designation Management
 - Shift Management
 - Employee Management
-- Attendance Management
+- Mobile Attendance
+- Attendance Dashboard
 - Leave Management
 - Reports
 - Dashboard
@@ -490,4 +566,4 @@ Responsive Layout
 
 Flutter HRMS Pro aims to become a modern, scalable and affordable Human Resource Management System for businesses of all sizes.
 
-The long-term goal is to provide a complete HRMS solution with Attendance, Leave, Payroll, GPS Tracking, Face Recognition, Reports, Role Permission and Responsive Flutter UI while maintaining a clean architecture and high-quality codebase suitable for commercial distribution on CodeCanyon.
+The long-term goal is to provide a complete HRMS solution with Mobile Attendance, GPS Tracking, Leave, Payroll, Face Recognition, Employee Monitoring, Reports, Role Permission, and Responsive Flutter UI while maintaining clean architecture and commercial-quality code suitable for CodeCanyon.

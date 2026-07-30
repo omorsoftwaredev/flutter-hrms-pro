@@ -2,7 +2,7 @@
 
 # API Documentation
 
-**Version:** `0.5.0`
+**Version:** `0.6.0`
 
 ---
 
@@ -10,9 +10,7 @@
 
 Flutter HRMS Pro uses **Supabase** as the backend platform.
 
-Version **1.0** does **not** use custom REST APIs.
-
-All backend communication is performed through the official **Supabase Flutter SDK** using the Repository Pattern.
+Version **1.0** uses the official **Supabase Flutter SDK** with the **Repository Pattern**. No custom REST API server is required.
 
 Architecture
 
@@ -22,6 +20,10 @@ Flutter UI
 ↓
 
 Riverpod
+
+↓
+
+Notifier
 
 ↓
 
@@ -50,7 +52,7 @@ PostgreSQL
 | Database | PostgreSQL |
 | Authentication | Supabase Auth |
 | Storage | Supabase Storage |
-| Security | Row Level Security |
+| Security | Row Level Security (RLS) |
 | Realtime | Planned |
 
 ---
@@ -87,7 +89,8 @@ Status
 ## Current User
 
 ```dart
-final user = supabase.auth.currentUser;
+final user =
+    supabase.auth.currentUser;
 ```
 
 Status
@@ -99,7 +102,8 @@ Status
 ## Current Session
 
 ```dart
-final session = supabase.auth.currentSession;
+final session =
+    supabase.auth.currentSession;
 ```
 
 Status
@@ -118,7 +122,7 @@ await supabase.auth.resetPasswordForEmail(
 
 Status
 
-🟡 Completed (Reset Flow Remaining)
+🟡 Completed
 
 ---
 
@@ -138,16 +142,20 @@ Status
 
 ---
 
-# Repository Pattern
+# Repository Architecture
 
 Every feature follows the same architecture.
 
 ```text
-Presentation
+Page
 
 ↓
 
-Provider
+Riverpod Provider
+
+↓
+
+StateNotifier
 
 ↓
 
@@ -155,26 +163,41 @@ Repository
 
 ↓
 
-Supabase Service
+Supabase
 
 ↓
 
-Supabase SDK
+Database
 ```
 
 ---
 
 # Completed Repositories
 
-## Company Repository
+## Authentication Repository
 
 Operations
 
-- Get Companies
-- Get Company
-- Add Company
-- Update Company
-- Delete Company
+- Login
+- Logout
+- Current User
+- Session
+- Password Reset
+- Update Password
+
+Status
+
+✅ Completed
+
+---
+
+## Company Repository
+
+- Get All
+- Get By Id
+- Insert
+- Update
+- Delete
 
 Status
 
@@ -184,12 +207,10 @@ Status
 
 ## Department Repository
 
-Operations
-
-- Get Departments
-- Add Department
-- Update Department
-- Delete Department
+- Get All
+- Insert
+- Update
+- Delete
 
 Status
 
@@ -199,12 +220,10 @@ Status
 
 ## Designation Repository
 
-Operations
-
-- Get Designations
-- Add Designation
-- Update Designation
-- Delete Designation
+- Get All
+- Insert
+- Update
+- Delete
 
 Status
 
@@ -214,12 +233,10 @@ Status
 
 ## Shift Repository
 
-Operations
-
-- Get Shifts
-- Add Shift
-- Update Shift
-- Delete Shift
+- Get All
+- Insert
+- Update
+- Delete
 
 Status
 
@@ -229,12 +246,117 @@ Status
 
 ## Employee Repository
 
-Operations
+- Get All
+- Insert
+- Update
+- Delete
 
-- Get Employees
-- Add Employee
-- Update Employee
-- Delete Employee
+Status
+
+✅ Completed
+
+---
+
+## Attendance Repository
+
+Implemented Operations
+
+- Load Attendance
+- Insert Attendance
+- Update Attendance
+- Delete Attendance
+- Mobile Check In
+- Mobile Check Out
+- Today's Attendance
+- Prevent Duplicate Check In
+- Prevent Duplicate Check Out
+
+Status
+
+✅ Completed
+
+---
+
+# Attendance API
+
+## Mobile Check In
+
+```dart
+await attendanceRepository.checkIn(
+  attendance,
+);
+```
+
+Status
+
+✅ Completed
+
+---
+
+## Mobile Check Out
+
+```dart
+await attendanceRepository.checkOut(
+  attendanceId: id,
+  checkOutTime: DateTime.now(),
+  latitude: latitude,
+  longitude: longitude,
+);
+```
+
+Status
+
+✅ Completed
+
+---
+
+## Load Attendance
+
+```dart
+await attendanceRepository.getAll();
+```
+
+Status
+
+✅ Completed
+
+---
+
+## Insert Attendance
+
+```dart
+await attendanceRepository.insert(
+  attendance,
+);
+```
+
+Status
+
+✅ Completed
+
+---
+
+## Update Attendance
+
+```dart
+await attendanceRepository.update(
+  attendance,
+);
+```
+
+Status
+
+✅ Completed
+
+---
+
+## Delete Attendance
+
+```dart
+await attendanceRepository.delete(
+  attendance.id,
+);
+```
 
 Status
 
@@ -248,7 +370,7 @@ Status
 
 ```dart
 await supabase
-    .from('employees')
+    .from('attendance')
     .select();
 ```
 
@@ -258,7 +380,7 @@ await supabase
 
 ```dart
 await supabase
-    .from('employees')
+    .from('attendance')
     .insert(data);
 ```
 
@@ -268,7 +390,7 @@ await supabase
 
 ```dart
 await supabase
-    .from('employees')
+    .from('attendance')
     .update(data)
     .eq('id', id);
 ```
@@ -279,7 +401,7 @@ await supabase
 
 ```dart
 await supabase
-    .from('employees')
+    .from('attendance')
     .delete()
     .eq('id', id);
 ```
@@ -291,9 +413,43 @@ await supabase
 ## Filter
 
 ```dart
-.from('employees')
-.select()
-.eq('company_id', companyId);
+.eq(
+  'company_id',
+  companyId,
+)
+```
+
+---
+
+## Employee
+
+```dart
+.eq(
+  'employee_id',
+  employeeId,
+)
+```
+
+---
+
+## Date
+
+```dart
+.eq(
+  'attendance_date',
+  today,
+)
+```
+
+---
+
+## Search
+
+```dart
+.ilike(
+  'attendance_no',
+  '%ATT%',
+)
 ```
 
 ---
@@ -304,65 +460,32 @@ await supabase
 .order(
   'created_at',
   ascending: false,
-);
-```
-
----
-
-## Search
-
-```dart
-.ilike(
-  'full_name',
-  '%john%',
-);
-```
-
----
-
-## Limit
-
-```dart
-.limit(20);
+)
 ```
 
 ---
 
 # Storage API
 
-## Upload
+Implemented
 
 ```dart
-await supabase.storage
-    .from('employee-photos')
-    .upload(path, file);
+upload()
+
+remove()
+
+getPublicUrl()
 ```
 
----
+Status
 
-## Public URL
-
-```dart
-supabase.storage
-    .from('employee-photos')
-    .getPublicUrl(path);
-```
-
----
-
-## Delete
-
-```dart
-await supabase.storage
-    .from('employee-photos')
-    .remove([path]);
-```
+🟡 Ready
 
 ---
 
 # Authentication Helper Functions
 
-Database Functions
+Implemented
 
 - hrms_current_employee()
 - hrms_current_employee_id()
@@ -378,8 +501,6 @@ Status
 ---
 
 # API Response Standard
-
-Every repository should return a consistent response.
 
 ```dart
 class ApiResult<T> {
@@ -404,27 +525,9 @@ Pattern
 ```dart
 try {
 
-  final response = await repository.getAll();
-
-  return ApiResult(
-    success: true,
-    message: 'Success',
-    data: response,
-  );
-
 } on PostgrestException catch (e) {
 
-  return ApiResult(
-    success: false,
-    message: e.message,
-  );
-
 } catch (e) {
-
-  return ApiResult(
-    success: false,
-    message: e.toString(),
-  );
 
 }
 ```
@@ -432,9 +535,10 @@ try {
 Rules
 
 - Always use try-catch
-- Return friendly messages
-- Log only in debug mode
-- Never crash the application
+- Friendly messages
+- Never crash UI
+- Debug logging only
+- Return bool/result
 
 ---
 
@@ -442,17 +546,17 @@ Rules
 
 Implemented
 
-- Supabase Authentication
-- Protected Routes
+- Authentication
 - Session Validation
 - Route Guard
+- Current Employee Mapping
 - Row Level Security
-- Storage Policies
+- Attendance Validation
 
-Future
+Upcoming
 
-- Permission Middleware
 - Company Isolation
+- Permission Middleware
 - Role Permission Matrix
 
 Status
@@ -465,13 +569,15 @@ Status
 
 | Module | Status |
 |---------|--------|
-| Authentication | 🟡 95% |
+| Authentication | ✅ |
 | Company | ✅ |
 | Department | ✅ |
 | Designation | ✅ |
 | Shift | ✅ |
 | Employee | ✅ |
-| Attendance | ⏳ |
+| Attendance CRUD | ✅ |
+| Mobile Check In | ✅ |
+| Mobile Check Out | ✅ |
 | Leave | ⏳ |
 | Dashboard | ⏳ |
 | Reports | ⏳ |
@@ -479,13 +585,6 @@ Status
 ---
 
 # Upcoming APIs
-
-Attendance
-
-- Check In
-- Check Out
-- Attendance History
-- Attendance Report
 
 Leave
 
@@ -497,12 +596,12 @@ Dashboard
 
 - Statistics
 - Charts
-- Recent Activities
+- Summary Cards
 
 Reports
 
-- Employee Report
 - Attendance Report
+- Employee Report
 - Leave Report
 
 Settings
@@ -519,8 +618,9 @@ Future Backend Features
 
 - Edge Functions
 - Realtime Attendance
-- Push Notifications
-- Email Notifications
+- Live GPS Tracking
+- Face Attendance
+- Push Notification
 - Payroll APIs
 - Public REST API
 - Webhooks
@@ -529,10 +629,11 @@ Future Backend Features
 
 # API Design Principles
 
+- Clean Architecture
 - Repository Pattern
-- Feature Isolation
+- Feature First
+- Riverpod
 - Strong Typing
-- Consistent Responses
 - Error Safe
 - Reusable Code
 - Lightweight Backend
@@ -545,7 +646,7 @@ Future Backend Features
 
 ✅ Stable Foundation
 
-Current implementation fully supports
+Completed Modules
 
 - Authentication
 - Company CRUD
@@ -553,5 +654,22 @@ Current implementation fully supports
 - Designation CRUD
 - Shift CRUD
 - Employee CRUD
+- Attendance CRUD
+- Mobile Check In
+- Mobile Check Out
 
-The next phase will introduce Attendance APIs while preserving the existing Repository architecture.
+Next Development
+
+🚀 Leave Module
+
+↓
+
+🚀 Dashboard
+
+↓
+
+🚀 Reports
+
+↓
+
+🎯 Version 1.0

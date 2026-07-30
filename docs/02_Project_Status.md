@@ -2,9 +2,9 @@
 
 # Project Status
 
-**Version:** `0.5.0`
+**Version:** `0.6.0`
 
-**Status:** 🟡 Active Development
+**Status:** 🟢 Active Development
 
 ---
 
@@ -16,15 +16,16 @@
 | Architecture | ✅ Completed |
 | Supabase Setup | ✅ Completed |
 | Database | ✅ Completed |
-| Authentication | 🟡 95% |
+| Authentication | ✅ Completed |
 | Company Management | ✅ Completed |
 | Department Management | ✅ Completed |
 | Designation Management | ✅ Completed |
 | Shift Management | ✅ Completed |
 | Employee Management | ✅ Completed |
-| Attendance Module | ⏳ Next Sprint |
+| Attendance CRUD | ✅ Completed |
+| Mobile Attendance | ✅ Completed |
+| Dashboard | 🟡 In Progress |
 | Leave Module | ⏳ Planned |
-| Dashboard | ⏳ Planned |
 | Reports | ⏳ Planned |
 | Settings | ⏳ Planned |
 | Role & Permission | ⏳ Planned |
@@ -88,6 +89,7 @@
 - [x] Designations
 - [x] Shifts
 - [x] Employees
+- [x] Attendance
 
 ## Database Features
 
@@ -103,7 +105,7 @@
 
 ---
 
-# Sprint 04 — Authentication 🟡
+# Sprint 04 — Authentication ✅
 
 ## Completed
 
@@ -114,14 +116,14 @@
 - [x] Route Guard
 - [x] Forgot Password
 - [x] Update Password
-- [x] Deep Link Configuration
+- [x] Current Employee Mapping
 
 ## Remaining
 
 - [ ] User Profile
 - [ ] Role Based Navigation
 
-**Status:** 🟡 95% COMPLETED
+**Status:** ✅ COMPLETED
 
 ---
 
@@ -174,29 +176,64 @@
 - [x] Shift Dropdown
 - [x] Search
 - [x] Active / Inactive
+- [x] User Mapping
+- [x] Role Support
 
 **Status:** ✅ COMPLETED
 
 ---
 
-# Sprint 06 — Attendance 🚀
+# Sprint 06 — Attendance ✅
 
-## Todo
+## Admin
 
-- [ ] Check In
-- [ ] Check Out
+- [x] Attendance CRUD
+- [x] Attendance Search
+- [x] Attendance Filter
+
+## Mobile Attendance
+
+- [x] Current Employee Mapping
+- [x] GPS Location
+- [x] Current Address
+- [x] Mobile Check In
+- [x] Mobile Check Out
+- [x] Duplicate Check In Protection
+- [x] Duplicate Check Out Protection
+- [x] Supabase Integration
+- [x] Attendance Provider
+- [x] Attendance Repository
+- [x] Attendance Services
+
+## Remaining
+
+- [ ] Today Attendance
 - [ ] Attendance History
-- [ ] Attendance Report
-- [ ] Monthly Attendance
+- [ ] Attendance Calendar
+- [ ] Working Hours
+- [ ] Late Calculation
 - [ ] Overtime
-- [ ] Late Attendance
-- [ ] Manual Attendance
+- [ ] Monthly Attendance
 
-**Status:** ⏳ NEXT SPRINT
+**Status:** 🟢 80% COMPLETED
 
 ---
 
-# Sprint 07 — Leave
+# Sprint 07 — Attendance Dashboard 🟡
+
+## Todo
+
+- [ ] Today Attendance Card
+- [ ] My Attendance
+- [ ] Dashboard Statistics
+- [ ] Attendance History
+- [ ] Recent Attendance
+
+**Status:** ⏳ IN PROGRESS
+
+---
+
+# Sprint 08 — Leave
 
 ## Todo
 
@@ -211,31 +248,16 @@
 
 ---
 
-# Sprint 08 — Dashboard
-
-## Todo
-
-- [ ] Dashboard Overview
-- [ ] Statistics Cards
-- [ ] Charts
-- [ ] Attendance Summary
-- [ ] Employee Summary
-- [ ] Leave Summary
-- [ ] Quick Actions
-- [ ] Recent Activities
-
-**Status:** ⏳ NOT STARTED
-
----
-
 # Sprint 09 — Reports
 
 ## Todo
 
-- [ ] Employee Report
 - [ ] Attendance Report
+- [ ] Employee Report
 - [ ] Leave Report
 - [ ] Shift Report
+- [ ] PDF Export
+- [ ] Excel Export
 
 **Status:** ⏳ NOT STARTED
 
@@ -251,7 +273,6 @@
 - [ ] Theme
 - [ ] Language
 - [ ] Notification Settings
-- [ ] Backup
 
 **Status:** ⏳ NOT STARTED
 
@@ -316,12 +337,22 @@
 - Designation CRUD
 - Shift CRUD
 - Employee CRUD
+- Attendance CRUD
+- Mobile Attendance
+- GPS Location
+- Employee Mapping
+- Check In
+- Check Out
 
 ⬇
 
 ## 🚀 Current Development
 
-Attendance Module
+Attendance Dashboard
+
+⬇
+
+Attendance History
 
 ⬇
 
@@ -334,10 +365,6 @@ Dashboard
 ⬇
 
 Reports
-
-⬇
-
-Settings
 
 ⬇
 
@@ -377,11 +404,11 @@ Next Sprint
 
 # Next Priority
 
-1. Attendance Module
-2. Leave Module
-3. Dashboard
-4. Reports
-5. Settings
+1. Today Attendance
+2. Attendance History
+3. Dashboard Statistics
+4. Leave Module
+5. Reports
 6. Role & Permission
 7. Notification System
 
@@ -394,11 +421,12 @@ Next Sprint
 | Foundation | 100% |
 | Architecture | 100% |
 | Database | 100% |
-| Authentication | 95% |
+| Authentication | 100% |
 | Master Data | 100% |
-| Attendance | 0% |
+| Attendance CRUD | 100% |
+| Mobile Attendance | 100% |
+| Attendance Dashboard | 20% |
 | Leave | 0% |
-| Dashboard | 0% |
 | Reports | 0% |
 | Settings | 0% |
 | Role Permission | 0% |
@@ -407,7 +435,7 @@ Next Sprint
 
 # Version 1.0 Goal
 
-Deliver a **professional, responsive, production-ready Flutter HRMS** with:
+Deliver a **production-ready Flutter HRMS** with:
 
 - Secure Authentication
 - Company Management
@@ -415,9 +443,9 @@ Deliver a **professional, responsive, production-ready Flutter HRMS** with:
 - Designation Management
 - Shift Management
 - Employee Management
-- Attendance Management
+- Mobile Attendance
+- Attendance Dashboard
 - Leave Management
-- Dashboard
 - Reports
 - Settings
 - Role & Permission
