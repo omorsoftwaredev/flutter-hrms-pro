@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/auth/dashboard_redirect.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../providers/login_controller.dart';
@@ -46,14 +47,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
 
     try {
+      final user =
       await ref.read(loginControllerProvider).login(
         email: email,
         password: password,
       );
 
-      if (mounted) {
-        context.go('/dashboard');
-      }
+      if (!mounted) return;
+
+      context.go(
+        DashboardRedirect.home(user),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

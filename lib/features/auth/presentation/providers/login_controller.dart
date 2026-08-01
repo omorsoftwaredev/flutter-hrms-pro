@@ -1,10 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'auth_provider.dart';
+import '../../../../core/auth/auth_provider.dart';
+import '../../../../core/auth/current_user.dart';
+import '../../../../core/auth/current_user_provider.dart';
 
-final loginLoadingProvider = StateProvider<bool>((ref) => false);
+final loginLoadingProvider =
+StateProvider<bool>((ref) => false);
 
-final loginControllerProvider = Provider<LoginController>((ref) {
+final loginControllerProvider =
+Provider<LoginController>((ref) {
   return LoginController(ref);
 });
 
@@ -13,19 +17,32 @@ class LoginController {
 
   LoginController(this.ref);
 
-  Future<void> login({
+  Future<CurrentUser> login({
     required String email,
     required String password,
   }) async {
     ref.read(loginLoadingProvider.notifier).state = true;
 
     try {
-      await ref.read(authRepositoryProvider).signIn(
+      final user = await ref
+          .read(authRepositoryProvider)
+          .login(
         email: email,
         password: password,
       );
+
+      if (user == null) {
+        throw Exception('Login failed.');
+      }
+
+      ref
+          .read(currentUserProvider.notifier)
+          .login(user);
+
+      return user;
     } finally {
-      ref.read(loginLoadingProvider.notifier).state = false;
+      ref.read(loginLoadingProvider.notifier).state =
+      false;
     }
   }
 }
