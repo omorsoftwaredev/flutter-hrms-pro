@@ -11,8 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/roles.dart';
 import '../../../core/auth/current_user_provider.dart';
 
+import '../../developer/pages/developer_dashboard_page.dart';
 import 'company_owner_dashboard_page.dart';
-import 'developer_dashboard_page.dart';
 import 'super_admin_dashboard_page.dart';
 import 'supervisor_dashboard_page.dart';
 import 'employee_dashboard_page.dart';

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../company/domain/entities/company_entity.dart';
 import '../../domain/entities/attendance_entity.dart';
 import '../providers/attendance_provider.dart';
 
-import '../../../company/domain/entities/company_entity.dart';
 import '../../../department/domain/entities/department_entity.dart';
 import '../../../designation/domain/entities/designation_entity.dart';
 import '../../../employee/domain/entities/employee_entity.dart';

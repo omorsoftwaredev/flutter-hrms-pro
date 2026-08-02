@@ -7,9 +7,9 @@
 
 import 'package:go_router/go_router.dart';
 
+import '../../developer/pages/developer_dashboard_page.dart';
 import '../pages/company_owner_dashboard_page.dart';
 import '../pages/dashboard_home_page.dart';
-import '../pages/developer_dashboard_page.dart';
 import '../pages/super_admin_dashboard_page.dart';
 import '../pages/supervisor_dashboard_page.dart';
 import '../pages/employee_dashboard_page.dart';

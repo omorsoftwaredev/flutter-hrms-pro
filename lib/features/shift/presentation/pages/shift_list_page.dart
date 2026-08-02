@@ -7,8 +7,8 @@ import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/app_section_title.dart';
 
-import '../../../company/presentation/providers/company_provider.dart';
 
+import '../../../company/presentation/providers/company_provider.dart';
 import '../providers/shift_provider.dart';
 import '../widgets/shift_card.dart';
 
