@@ -24,11 +24,11 @@ class RoleRedirect {
       case UserRole.developer:
         return '/developer';
 
-      case UserRole.superAdmin:
-        return '/super-admin';
-
       case UserRole.companyOwner:
         return '/dashboard';
+
+        case UserRole.hr:
+        return '/hr';
 
       case UserRole.supervisor:
         return '/supervisor';

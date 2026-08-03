@@ -1,111 +1,233 @@
-/// ===============================================================
-/// Flutter HRMS Pro
-/// Authentication Repository
-///
-/// Version : 0.8.0
-/// ===============================================================
+import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../services/supabase_service.dart';
 import 'current_user.dart';
 import 'roles.dart';
+import 'user_type.dart';
 
 class AuthRepository {
   AuthRepository();
 
   final SupabaseClient _client = SupabaseService.client;
 
-  // =============================================================
-  // Root Developer Email
-  // =============================================================
+  //==============================================================
+  // Session Key
+  //==============================================================
 
-  static const String rootDeveloperEmail =
-      'omor.software.dev@gmail.com';
+  static const String _sessionKey = 'current_user';
 
-  // =============================================================
+  //==============================================================
+  // Save Session
+  //==============================================================
+
+  Future<void> _saveSession(CurrentUser user) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(
+      _sessionKey,
+      jsonEncode({
+        'userId': user.userId,
+        'employeeId': user.employeeId,
+        'companyId': user.companyId,
+        'fullName': user.fullName,
+        'email': user.email,
+        'role': user.role.value,
+        'userType': user.userType.name,
+      }),
+    );
+  }
+
+  //==============================================================
+  // Clear Session
+  //==============================================================
+
+  Future<void> _clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_sessionKey);
+  }
+
+  //==============================================================
+  // Login
+  //==============================================================
+
+  Future<CurrentUser> login({
+    required String username,
+    required String password,
+  }) async {
+
+    print('================ LOGIN ================');
+    print('Username: $username');
+    print('Password: $password');
+    //----------------------------------------------------------
+    // Developer Login
+    //----------------------------------------------------------
+
+    // final developer = await _client
+    //     .from('developers')
+    //     .select()
+    //     .eq('username', username)
+    //     .eq('password', password)
+    //     .maybeSingle();
+
+    // final developer = await _client
+    //     .from('developers')
+    //     .select('*')
+    //     .eq('username', username)
+    //     .maybeSingle();
+    //
+    // print('Developer => $developer');
+
+    final developer = await _client
+        .from('developers')
+        .select()
+        .eq('username', username)
+        .eq('password', password)
+        .maybeSingle();
+
+    print('Developer => $developer');
+
+    if (developer != null) {
+      final user = CurrentUser(
+        userId: developer['id'].toString(),
+        employeeId: '',
+        companyId: '',
+        fullName: developer['full_name'] ?? '',
+        email: developer['email'] ?? '',
+        userType: UserType.developer,
+        role: UserRole.developer,
+      );
+      print('developer Result: $developer');
+      await _saveSession(user);
+
+      return user;
+    }
+    else
+      {
+        print('developer Result: null null 123456');
+      }
+
+    //----------------------------------------------------------
+    // Company Login
+    //----------------------------------------------------------
+
+    final company = await _client
+        .from('company_accounts')
+        .select()
+        .eq('username', username)
+        .eq('password', password)
+        .eq('is_active', true)
+        .maybeSingle();
+
+    if (company != null) {
+      final user = CurrentUser(
+        userId: company['id'].toString(),
+        employeeId: '',
+        companyId: company['company_id'].toString(),
+        fullName: company['username'] ?? '',
+        email: '',
+        userType: UserType.company,
+        role: UserRole.companyOwner,
+      );
+      print('Company Result: $company');
+      await _saveSession(user);
+
+      return user;
+    }
+    else
+    {
+      print('Company Result: null null 123456');
+    }
+
+    //----------------------------------------------------------
+    // Employee Login
+    //----------------------------------------------------------
+    //
+    // final employee = await _client
+    //     .from('employees')
+    //     .select()
+    //     .eq('employee_code', username)
+    //     .eq('password', password)
+    //     .eq('is_active', true)
+    //     .maybeSingle();
+    //
+    // if (employee != null) {
+    //   final role = UserRoleExtension.fromString(
+    //     employee['role'],
+    //   );
+    //
+    //   UserType type = UserType.employee;
+    //
+    //   switch (role) {
+    //     case UserRole.hr:
+    //       type = UserType.hr;
+    //       break;
+    //
+    //     case UserRole.supervisor:
+    //       type = UserType.supervisor;
+    //       break;
+    //
+    //     default:
+    //       type = UserType.employee;
+    //   }
+    //
+    //   final user = CurrentUser(
+    //     userId: employee['id'].toString(),
+    //     employeeId: employee['id'].toString(),
+    //     companyId: employee['company_id'].toString(),
+    //     fullName: employee['full_name'] ?? '',
+    //     email: employee['email'] ?? '',
+    //     userType: type,
+    //     role: role,
+    //   );
+    //
+    //   await _saveSession(user);
+    //
+    //   return user;
+    // }
+
+    throw Exception(
+      'Invalid username or password.',
+    );
+  }
+
+  //==============================================================
+  // Logout
+  //==============================================================
+
+  Future<void> logout() async {
+    await _clearSession();
+  }
+
+  //==============================================================
   // Current User
-  // =============================================================
+  //==============================================================
 
   Future<CurrentUser?> currentUser() async {
-    final authUser = _client.auth.currentUser;
+    final prefs = await SharedPreferences.getInstance();
 
-    if (authUser == null) {
+    final json = prefs.getString(_sessionKey);
+
+    if (json == null) {
       return null;
     }
 
-    // ===========================================================
-    // Root Developer
-    // ===========================================================
-
-    if ((authUser.email ?? '').toLowerCase() ==
-        rootDeveloperEmail.toLowerCase()) {
-      return CurrentUser(
-        userId: authUser.id,
-        employeeId: '',
-        companyId: '',
-        fullName: 'Root Developer',
-        email: authUser.email ?? '',
-        role: UserRole.developer,
-      );
-    }
-
-    // ===========================================================
-    // Employee Login
-    // ===========================================================
-
-    final response = await _client
-        .from('employees')
-        .select()
-        .eq('user_id', authUser.id)
-        .maybeSingle();
-
-    if (response == null) {
-      throw Exception(
-        'Employee profile not found.',
-      );
-    }
+    final data = jsonDecode(json);
 
     return CurrentUser(
-      userId: authUser.id,
-      employeeId: response['id']?.toString() ?? '',
-      companyId: response['company_id']?.toString() ?? '',
-      fullName: response['full_name'] ?? '',
-      email: response['email'] ?? authUser.email ?? '',
+      userId: data['userId'],
+      employeeId: data['employeeId'],
+      companyId: data['companyId'],
+      fullName: data['fullName'],
+      email: data['email'],
       role: UserRoleExtension.fromString(
-        response['role'],
+        data['role'],
+      ),
+      userType: UserType.values.firstWhere(
+            (e) => e.name == data['userType'],
       ),
     );
   }
-
-  // =============================================================
-  // Login
-  // =============================================================
-
-  Future<CurrentUser?> login({
-    required String email,
-    required String password,
-  }) async {
-    await _client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-
-    return currentUser();
-  }
-
-  // =============================================================
-  // Logout
-  // =============================================================
-
-  Future<void> logout() async {
-    await _client.auth.signOut();
-  }
-
-  // =============================================================
-  // Is Logged In
-  // =============================================================
-
-  bool get isLoggedIn =>
-      _client.auth.currentUser != null;
 }

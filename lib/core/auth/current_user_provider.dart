@@ -2,19 +2,20 @@
 /// Flutter HRMS Pro
 /// Current User Provider
 ///
-/// Version : 0.7.0
+/// Version : 1.0.0
 /// ===============================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'current_user.dart';
-import 'roles.dart';
+import 'user_type.dart';
 
 /// ===============================================================
 /// Current User Notifier
 /// ===============================================================
 
-class CurrentUserNotifier extends StateNotifier<CurrentUser?> {
+class CurrentUserNotifier
+    extends StateNotifier<CurrentUser?> {
   CurrentUserNotifier() : super(null);
 
   // =============================================================
@@ -50,7 +51,7 @@ class CurrentUserNotifier extends StateNotifier<CurrentUser?> {
   }
 
   // =============================================================
-  // Update Profile
+  // Update
   // =============================================================
 
   void update(CurrentUser user) {
@@ -58,23 +59,23 @@ class CurrentUserNotifier extends StateNotifier<CurrentUser?> {
   }
 
   // =============================================================
-  // Helpers
+  // User Type Helpers
   // =============================================================
 
   bool get isDeveloper =>
-      state?.role == UserRole.developer;
+      state?.userType == UserType.developer;
 
-  bool get isSuperAdmin =>
-      state?.role == UserRole.superAdmin;
+  bool get isCompany =>
+      state?.userType == UserType.company;
 
-  bool get isCompanyOwner =>
-      state?.role == UserRole.companyOwner;
+  bool get isHr =>
+      state?.userType == UserType.hr;
 
   bool get isSupervisor =>
-      state?.role == UserRole.supervisor;
+      state?.userType == UserType.supervisor;
 
   bool get isEmployee =>
-      state?.role == UserRole.employee;
+      state?.userType == UserType.employee;
 }
 
 /// ===============================================================

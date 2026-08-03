@@ -10,4 +10,8 @@ abstract class CompanyRepository {
   Future<void> updateCompany(CompanyEntity company);
 
   Future<void> deleteCompany(String id);
+  Future<void> updateCompanyStatus({
+    required String id,
+    required bool isActive,
+  });
 }

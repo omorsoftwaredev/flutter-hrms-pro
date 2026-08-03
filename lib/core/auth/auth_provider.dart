@@ -2,7 +2,7 @@
 /// Flutter HRMS Pro
 /// Authentication Provider
 ///
-/// Version : 0.7.0
+/// Version : 1.0.0
 /// ===============================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

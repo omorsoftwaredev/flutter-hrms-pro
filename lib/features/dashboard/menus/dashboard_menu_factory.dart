@@ -26,13 +26,13 @@ class DashboardMenuFactory {
       case UserRole.developer:
         return DashboardDeveloperMenu.menus;
 
-      case UserRole.superAdmin:
-        return DashboardSuperAdminMenu.menus;
-
       case UserRole.companyOwner:
         return DashboardOwnerMenu.menus;
 
       case UserRole.supervisor:
+        return DashboardSupervisorMenu.menus;
+
+      case UserRole.hr:
         return DashboardSupervisorMenu.menus;
 
       case UserRole.employee:

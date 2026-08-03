@@ -20,10 +20,10 @@ class DashboardRedirect {
       case UserRole.developer:
         return developer;
 
-      case UserRole.superAdmin:
-        return superAdmin;
-
       case UserRole.companyOwner:
+        return companyOwner;
+
+        case UserRole.hr:
         return companyOwner;
 
       case UserRole.supervisor:
@@ -46,6 +46,9 @@ class DashboardRedirect {
 
   static const String companyOwner =
       '/dashboard/company-owner';
+
+  static const String hr =
+      '/dashboard/hr';
 
   static const String supervisor =
       '/dashboard/supervisor';

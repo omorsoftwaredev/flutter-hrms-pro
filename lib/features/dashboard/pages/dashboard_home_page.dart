@@ -36,13 +36,13 @@ class DashboardHomePage extends ConsumerWidget {
       case UserRole.developer:
         return const DeveloperDashboardPage();
 
-      case UserRole.superAdmin:
-        return const SuperAdminDashboardPage();
-
       case UserRole.companyOwner:
         return const CompanyOwnerDashboardPage();
 
       case UserRole.supervisor:
+        return const SupervisorDashboardPage();
+
+      case UserRole.hr:
         return const SupervisorDashboardPage();
 
       case UserRole.employee:

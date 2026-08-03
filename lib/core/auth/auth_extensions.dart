@@ -38,9 +38,6 @@ extension CurrentUserExtension on CurrentUser {
   bool get isDeveloper =>
       role == UserRole.developer;
 
-  bool get isSuperAdmin =>
-      role == UserRole.superAdmin;
-
   bool get isCompanyOwner =>
       role == UserRole.companyOwner;
 
@@ -56,12 +53,10 @@ extension CurrentUserExtension on CurrentUser {
 
   bool get isAdmin =>
       isDeveloper ||
-          isSuperAdmin ||
           isCompanyOwner;
 
   bool get canManage =>
       isDeveloper ||
-          isSuperAdmin ||
           isCompanyOwner ||
           isSupervisor;
 

@@ -24,9 +24,6 @@ class RoleHelper {
   static bool isDeveloper(String? role) =>
       fromString(role) == UserRole.developer;
 
-  static bool isSuperAdmin(String? role) =>
-      fromString(role) == UserRole.superAdmin;
-
   static bool isCompanyOwner(String? role) =>
       fromString(role) == UserRole.companyOwner;
 

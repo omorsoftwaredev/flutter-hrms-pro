@@ -28,10 +28,6 @@ class AuthGuard {
     return user?.role == UserRole.developer;
   }
 
-  static bool isSuperAdmin(CurrentUser? user) {
-    return user?.role == UserRole.superAdmin;
-  }
-
   static bool isCompanyOwner(CurrentUser? user) {
     return user?.role == UserRole.companyOwner;
   }
@@ -52,7 +48,6 @@ class AuthGuard {
     if (user == null) return false;
 
     return user.role == UserRole.developer ||
-        user.role == UserRole.superAdmin ||
         user.role == UserRole.companyOwner;
   }
 

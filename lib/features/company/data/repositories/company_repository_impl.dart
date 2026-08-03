@@ -2,6 +2,7 @@
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/helpers/database_error_helper.dart';
 import '../../domain/entities/company_entity.dart';
 import '../../domain/repositories/company_repository.dart';
 import '../models/company_model.dart';
@@ -25,6 +26,17 @@ class CompanyRepositoryImpl implements CompanyRepository {
       ),
     )
         .toList();
+  }
+  Future<void> updateCompanyStatus({
+    required String id,
+    required bool isActive,
+  }) async {
+    await _client
+        .from('companies')
+        .update({
+      'is_active': isActive,
+    })
+        .eq('id', id);
   }
 
   @override
@@ -60,7 +72,7 @@ class CompanyRepositoryImpl implements CompanyRepository {
         'is_active': company.isActive,
       }).select();
     } on PostgrestException catch (e) {
-      throw Exception(e.message);
+      throw Exception(DatabaseErrorHelper.getMessage(e));
     } catch (e) {
       rethrow;
     }

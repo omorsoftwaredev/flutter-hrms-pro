@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/auth/dashboard_redirect.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../providers/login_controller.dart';
@@ -16,7 +15,7 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   // final _emailController = TextEditingController();
   // final _passwordController = TextEditingController();
-  final _emailController = TextEditingController(
+  final _usernameController = TextEditingController(
     text: "omor.software.dev@gmail.com",
   );
 
@@ -26,46 +25,44 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
-
   Future<void> _login() async {
-
-    final email = _emailController.text.trim();
+    final username = _usernameController.text.trim();
     final password = _passwordController.text;
 
-
-    if (email.isEmpty || password.isEmpty) {
+    if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Email and Password are required."),
+          content: Text(
+            'Username and Password are required.',
+          ),
         ),
       );
       return;
     }
 
     try {
-      final user =
-      await ref.read(loginControllerProvider).login(
-        email: email,
+       await ref.read(loginControllerProvider).login(
+        context: context,
+        username: username,
         password: password,
       );
-
+    } catch (e) {
       if (!mounted) return;
 
-      context.go(
-        DashboardRedirect.home(user),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst(
+              'Exception: ',
+              '',
+            ),
           ),
-        );
-      }
+        ),
+      );
     }
   }
 
@@ -103,9 +100,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const SizedBox(height: 40),
                 TextField(
-                  controller: _emailController,
+                  controller: _usernameController,
                   decoration: InputDecoration(
-                    labelText: "Email",
+                    labelText: "Username / Email",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppSizes.radius),
                     ),

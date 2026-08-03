@@ -29,11 +29,8 @@ class RouteGuard {
   static bool isDeveloper(CurrentUser? user) =>
       user?.isDeveloper ?? false;
 
-  static bool isSuperAdmin(CurrentUser? user) =>
-      user?.isSuperAdmin ?? false;
-
   static bool isCompanyOwner(CurrentUser? user) =>
-      user?.isCompanyOwner ?? false;
+      user?.isCompany ?? false;
 
   static bool isSupervisor(CurrentUser? user) =>
       user?.isSupervisor ?? false;

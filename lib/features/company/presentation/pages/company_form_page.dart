@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_paths.dart';
 import '../../domain/entities/company_entity.dart';
 import '../providers/company_provider.dart';
 import '../widgets/company_form.dart';
@@ -79,7 +80,9 @@ class CompanyFormPage extends ConsumerWidget {
                 }
 
                 if (context.mounted) {
-                  context.go('/dashboard/companies');
+                  context.go(
+                    RoutePaths.companies,
+                  );
                 }
               } catch (e) {
                 if (context.mounted) {

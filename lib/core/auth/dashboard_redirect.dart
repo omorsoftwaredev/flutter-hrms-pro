@@ -2,31 +2,32 @@
 /// Flutter HRMS Pro
 /// Dashboard Redirect
 ///
-/// Version : 0.7.0
+/// Version : 1.0.0
 /// ===============================================================
 
-import '../auth/current_user.dart';
-import '../auth/roles.dart';
+import '../router/route_paths.dart';
+import 'current_user.dart';
+import 'user_type.dart';
 
 class DashboardRedirect {
   const DashboardRedirect._();
 
   static String home(CurrentUser user) {
-    switch (user.role) {
-      case UserRole.developer:
-        return "/dashboard";
+    switch (user.userType) {
+      case UserType.developer:
+        return RoutePaths.developerDashboard;
 
-      case UserRole.superAdmin:
-        return "/dashboard";
+      case UserType.company:
+        return RoutePaths.companyDashboard;
 
-      case UserRole.companyOwner:
-        return "/dashboard";
+      case UserType.hr:
+        return RoutePaths.hrDashboard;
 
-      case UserRole.supervisor:
-        return "/dashboard";
+      case UserType.supervisor:
+        return RoutePaths.supervisorDashboard;
 
-      case UserRole.employee:
-        return "/dashboard/mobile-attendance";
+      case UserType.employee:
+        return RoutePaths.employeeDashboard;
     }
   }
 }

@@ -11,6 +11,33 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
       : super(const CompanyState());
 
   final CompanyRepository _repository;
+  Future<void> toggleCompanyStatus(
+      CompanyEntity company,
+      ) async {
+    try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.updateCompanyStatus(
+        id: company.id,
+        isActive: !company.isActive,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadCompanies();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+    }
+  }
+
 
   Future<void> loadCompanies() async {
     try {

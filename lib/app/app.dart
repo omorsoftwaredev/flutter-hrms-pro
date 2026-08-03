@@ -23,7 +23,7 @@ class HrmsApp extends ConsumerWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
 
-      title: 'Flutter HRMS Pro',
+      title: 'HRMS Pro',
 
       theme: AppTheme.light,
 

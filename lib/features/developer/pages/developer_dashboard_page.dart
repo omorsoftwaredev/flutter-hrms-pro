@@ -6,9 +6,10 @@
 /// ===============================================================
 
 import 'package:flutter/material.dart';
-
-import '../../dashboard/sidebar/dashboard_sidebar.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/router/route_paths.dart';
 import '../../dashboard/widgets/dashboard_app_bar.dart';
+import '../widgets/developer_sidebar.dart';
 
 class DeveloperDashboardPage extends StatelessWidget {
   const DeveloperDashboardPage({
@@ -82,7 +83,7 @@ class DeveloperDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const DashboardSidebar(),
+      drawer: const DeveloperSidebar(),
 
       appBar: const DashboardAppBar(
         title: "Developer Dashboard",
@@ -122,20 +123,6 @@ class DeveloperDashboardPage extends StatelessWidget {
             color: Colors.green,
           ),
 
-          _buildCard(
-            icon: Icons.apartment,
-            title: "Employees",
-            value: "0",
-            color: Colors.orange,
-          ),
-
-          _buildCard(
-            icon: Icons.admin_panel_settings,
-            title: "Super Admin",
-            value: "0",
-            color: Colors.red,
-          ),
-
           const SizedBox(height: 20),
 
           const Text(
@@ -153,7 +140,7 @@ class DeveloperDashboardPage extends StatelessWidget {
             icon: Icons.add_business,
             title: "Create Company",
             onTap: () {
-              // context.push(...)
+              context.push(RoutePaths.companyCreate);
             },
           ),
 
@@ -161,28 +148,18 @@ class DeveloperDashboardPage extends StatelessWidget {
             context,
             icon: Icons.business,
             title: "Company List",
-            onTap: () {},
+            onTap: () {
+              context.push(RoutePaths.companies);
+            },
           ),
 
           _buildMenu(
             context,
             icon: Icons.manage_accounts,
             title: "Company Accounts",
-            onTap: () {},
-          ),
-
-          _buildMenu(
-            context,
-            icon: Icons.analytics,
-            title: "Reports",
-            onTap: () {},
-          ),
-
-          _buildMenu(
-            context,
-            icon: Icons.settings,
-            title: "System Settings",
-            onTap: () {},
+            onTap: () {
+              context.push(RoutePaths.companyAccounts);
+            },
           ),
 
           const SizedBox(height: 30),

@@ -23,10 +23,18 @@ class RoutePaths {
 
   static const dashboard = '/dashboard';
 
+// =============================================================
+// Dashboards
+// =============================================================
+
   static const developerDashboard = '/dashboard/developer';
-  static const superAdminDashboard = '/dashboard/super-admin';
-  static const companyOwnerDashboard = '/dashboard/company-owner';
+
+  static const companyDashboard = '/dashboard/company';
+
+  static const hrDashboard = '/dashboard/hr';
+
   static const supervisorDashboard = '/dashboard/supervisor';
+
   static const employeeDashboard = '/dashboard/employee';
 
   // =============================================================
@@ -121,4 +129,26 @@ class RoutePaths {
 
   static const unauthorized = '/unauthorized';
   static const notFound = '/404';
+
+  static const companyAccounts = '/company-accounts';
+
+  static const companyAccountCreate =
+      '/company-accounts/create';
+
+  static const companyAccountEdit =
+      '/company-accounts/edit';
+
+  static const companyAccountDetails =
+      '/company-accounts/details';
+
+  static const roles = '/roles';
+  static const roleCreate = '/roles/create';
+  static const roleEdit = '/roles/edit';
+
+  static const rolePermissions = '/role-permissions';
+  static const rolePermissionEdit =
+      '/role-permissions/edit';
+
+
+
 }

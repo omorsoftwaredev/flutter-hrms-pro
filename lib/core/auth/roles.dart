@@ -7,10 +7,10 @@
 
 enum UserRole {
   developer,
-  superAdmin,
   companyOwner,
   supervisor,
   employee,
+  hr,
 }
 
 extension UserRoleExtension on UserRole {
@@ -19,11 +19,11 @@ extension UserRoleExtension on UserRole {
       case UserRole.developer:
         return 'developer';
 
-      case UserRole.superAdmin:
-        return 'super_admin';
-
       case UserRole.companyOwner:
         return 'company_owner';
+
+      case UserRole.hr:
+        return 'hr';
 
       case UserRole.supervisor:
         return 'supervisor';
@@ -38,11 +38,11 @@ extension UserRoleExtension on UserRole {
       case UserRole.developer:
         return 'Developer';
 
-      case UserRole.superAdmin:
-        return 'Super Admin';
-
       case UserRole.companyOwner:
         return 'Company Owner';
+
+      case UserRole.hr:
+        return 'hr';
 
       case UserRole.supervisor:
         return 'Supervisor';
@@ -59,16 +59,15 @@ extension UserRoleExtension on UserRole {
       case 'developer':
         return UserRole.developer;
 
-      case 'super_admin':
-      case 'superadmin':
-        return UserRole.superAdmin;
-
       case 'company_owner':
       case 'companyowner':
         return UserRole.companyOwner;
 
       case 'supervisor':
         return UserRole.supervisor;
+
+      case 'hr':
+        return UserRole.hr;
 
       case 'employee':
         return UserRole.employee;

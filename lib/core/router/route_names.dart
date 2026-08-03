@@ -24,8 +24,8 @@ class RouteNames {
   static const dashboard = 'dashboard';
 
   static const developerDashboard = 'developerDashboard';
-  static const superAdminDashboard = 'superAdminDashboard';
-  static const companyOwnerDashboard = 'companyOwnerDashboard';
+  static const companyDashboard = 'companyDashboard';
+  static const hrDashboard = 'hrDashboard';
   static const supervisorDashboard = 'supervisorDashboard';
   static const employeeDashboard = 'employeeDashboard';
 
@@ -121,4 +121,25 @@ class RouteNames {
 
   static const unauthorized = 'unauthorized';
   static const notFound = 'notFound';
+
+  // Company Account
+
+  static const companyAccounts = 'companyAccounts';
+
+  static const companyAccountCreate =
+      'companyAccountCreate';
+
+  static const companyAccountEdit =
+      'companyAccountEdit';
+
+  static const companyAccountDetails =
+      'companyAccountDetails';
+
+  static const roles = 'roles';
+  static const roleCreate = 'roleCreate';
+  static const roleEdit = 'roleEdit';
+
+  static const rolePermissions = 'rolePermissions';
+  static const rolePermissionEdit =
+      'rolePermissionEdit';
 }

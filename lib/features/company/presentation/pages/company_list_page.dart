@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/router/route_paths.dart';
 import '../../../../core/widgets/app_empty.dart';
 import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_search_field.dart';
@@ -41,7 +42,12 @@ class _CompanyListPageState
   }
 
   Future<void> _openAddCompany() async {
-    await context.pushNamed('add-company');
+
+    print("OPEN COMPANY FORM");
+
+    context.go(RoutePaths.companyCreate);
+
+    // await context.push(RoutePaths.companyCreate);
 
     if (mounted) {
       ref.read(companyProvider.notifier).loadCompanies();
@@ -51,8 +57,8 @@ class _CompanyListPageState
   Future<void> _openEditCompany(
       CompanyEntity company,
       ) async {
-    await context.pushNamed(
-      'edit-company',
+    await context.push(
+      RoutePaths.companyEdit,
       extra: company,
     );
 
@@ -109,7 +115,22 @@ class _CompanyListPageState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Companies'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(RoutePaths.developerDashboard);
+            }
+          },
+        ),
+        title: const Text(
+          'Company Management',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       floatingActionButton:
       FloatingActionButton.extended(
@@ -168,10 +189,102 @@ class _CompanyListPageState
 
                         return CompanyCard(
                           company: company,
-                          onEdit: () =>
-                              _openEditCompany(company),
-                          onDelete: () =>
-                              _deleteCompany(company.id),
+                          onView: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) {
+                                return AlertDialog(
+                                  title: const Text(
+                                    'Company Details',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  content: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+
+                                        _buildInfo(
+                                          'Company Name',
+                                          company.name,
+                                        ),
+
+                                        _buildInfo(
+                                          'Company Code',
+                                          company.code,
+                                        ),
+
+                                        _buildInfo(
+                                          'Phone',
+                                          company.phone,
+                                        ),
+
+                                        _buildInfo(
+                                          'Email',
+                                          company.email,
+                                        ),
+
+                                        _buildInfo(
+                                          'Website',
+                                          company.website,
+                                        ),
+
+                                        _buildInfo(
+                                          'Address',
+                                          company.address,
+                                        ),
+
+                                        _buildInfo(
+                                          'Contact Person',
+                                          company.contactPerson,
+                                        ),
+
+                                        _buildInfo(
+                                          'Tax Number',
+                                          company.taxNumber,
+                                        ),
+
+                                        _buildInfo(
+                                          'Registration No',
+                                          company.registrationNumber,
+                                        ),
+
+                                        _buildInfo(
+                                          'Notes',
+                                          company.notes,
+                                        ),
+
+                                        _buildInfo(
+                                          'Status',
+                                          company.isActive
+                                              ? 'Active'
+                                              : 'Inactive',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  actions: [
+                                    FilledButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          onEdit: () => _openEditCompany(company),
+                          onDelete: () => _deleteCompany(company.id),
+                          onToggleStatus: () async {
+                            await ref
+                                .read(companyProvider.notifier)
+                                .toggleCompanyStatus(company);
+                          },
                         );
                       },
                     ),
@@ -181,6 +294,35 @@ class _CompanyListPageState
             ),
           ],
         ),
+      ),
+    );
+  }
+  Widget _buildInfo(
+      String title,
+      String? value,
+      ) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: 10,
+      ),
+      child: Column(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value == null || value.isEmpty
+                ? '-'
+                : value,
+          ),
+        ],
       ),
     );
   }

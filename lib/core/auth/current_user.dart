@@ -1,21 +1,18 @@
-/// ===============================================================
-/// Flutter HRMS Pro
-/// Current User Model
-///
-/// Version : 0.7.0
-/// ===============================================================
-
+import 'roles.dart';
+import 'user_type.dart';
 import 'permissions.dart';
 import 'role_permissions.dart';
-import 'roles.dart';
 
 class CurrentUser {
   final String userId;
   final String employeeId;
   final String companyId;
+
   final String fullName;
   final String email;
+
   final UserRole role;
+  final UserType userType;
 
   const CurrentUser({
     required this.userId,
@@ -24,6 +21,7 @@ class CurrentUser {
     required this.fullName,
     required this.email,
     required this.role,
+    required this.userType,
   });
 
   // ===========================================================
@@ -33,21 +31,26 @@ class CurrentUser {
   bool get isLoggedIn => userId.isNotEmpty;
 
   // ===========================================================
-  // Role Helpers
+  // User Type
   // ===========================================================
 
-  bool get isDeveloper => role == UserRole.developer;
+  bool get isDeveloper =>
+      userType == UserType.developer;
 
-  bool get isSuperAdmin => role == UserRole.superAdmin;
+  bool get isCompany =>
+      userType == UserType.company;
 
-  bool get isCompanyOwner => role == UserRole.companyOwner;
+  bool get isHr =>
+      userType == UserType.hr;
 
-  bool get isSupervisor => role == UserRole.supervisor;
+  bool get isSupervisor =>
+      userType == UserType.supervisor;
 
-  bool get isEmployee => role == UserRole.employee;
+  bool get isEmployee =>
+      userType == UserType.employee;
 
   // ===========================================================
-  // Permission Helpers
+  // Permission
   // ===========================================================
 
   Set<Permission> get permissions =>
@@ -58,10 +61,6 @@ class CurrentUser {
   }
 
   bool can(Permission permission) {
-    return hasPermission(permission);
-  }
-
-  bool canManage(Permission permission) {
     return hasPermission(permission);
   }
 
@@ -76,6 +75,7 @@ class CurrentUser {
     String? fullName,
     String? email,
     UserRole? role,
+    UserType? userType,
   }) {
     return CurrentUser(
       userId: userId ?? this.userId,
@@ -84,12 +84,9 @@ class CurrentUser {
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       role: role ?? this.role,
+      userType: userType ?? this.userType,
     );
   }
-
-  // ===========================================================
-  // Debug
-  // ===========================================================
 
   @override
   String toString() {
@@ -101,6 +98,7 @@ CurrentUser(
   fullName: $fullName,
   email: $email,
   role: ${role.value},
+  userType: $userType,
 )
 ''';
   }

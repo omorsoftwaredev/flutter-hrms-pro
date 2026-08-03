@@ -1,38 +1,26 @@
-/// ===============================================================
-/// Flutter HRMS Pro
-/// Dashboard Redirect
-///
-/// Version : 0.8.1
-/// ===============================================================
-
 import '../auth/current_user.dart';
-import 'route_paths.dart';
+import '../auth/user_type.dart';
+import '../router/route_paths.dart';
 
 class DashboardRedirect {
-  const DashboardRedirect._();
+  DashboardRedirect._();
 
-  /// =============================================================
-  /// Dashboard Route
-  /// =============================================================
+  static String home(CurrentUser user) {
+    switch (user.userType) {
+      case UserType.developer:
+        return RoutePaths.developerDashboard;
 
-  static String home(CurrentUser? user) {
-    if (user == null || !user.isLoggedIn) {
-      return RoutePaths.login;
+      case UserType.company:
+        return RoutePaths.companyDashboard;
+
+      case UserType.hr:
+        return RoutePaths.hrDashboard;
+
+      case UserType.supervisor:
+        return RoutePaths.supervisorDashboard;
+
+      case UserType.employee:
+        return RoutePaths.employeeDashboard;
     }
-
-    // -------------------------------------------------------------
-    // All authenticated users go to one dashboard route.
-    // DashboardHomePage will decide which dashboard to show
-    // based on the user's role.
-    // -------------------------------------------------------------
-    return RoutePaths.dashboard;
-  }
-
-  /// =============================================================
-  /// Dashboard Check
-  /// =============================================================
-
-  static bool isDashboard(String location) {
-    return location == RoutePaths.dashboard;
   }
 }

@@ -12,9 +12,10 @@ import '../../features/auth/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/dashboard/pages/dashboard_home_page.dart';
 
+import 'company_dashboard_router.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
-
+import 'developer_router.dart';
 class AppRouter {
   AppRouter._();
 
@@ -58,6 +59,9 @@ class AppRouter {
         name: RouteNames.dashboard,
         builder: (context, state) => const DashboardHomePage(),
       ),
+
+      ...DeveloperRouter.routes,
+      ...CompanyDashboardRouter.routes,
     ],
 
     errorBuilder: (context, state) {
