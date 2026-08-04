@@ -70,8 +70,9 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     subtitle: const Text('Department Management'),
                     onTap: () {
                       Navigator.pop(context);
-                      context.go(RoutePaths.departments);
+                      context.push(RoutePaths.departments);
                     },
+
                   ),
 
                   ListTile(
@@ -80,7 +81,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     subtitle: const Text('Designation Management'),
                     onTap: () {
                       Navigator.pop(context);
-                      context.go(RoutePaths.designations);
+                      context.push(RoutePaths.designations);
                     },
                   ),
 
@@ -90,7 +91,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     subtitle: const Text('Shift Management'),
                     onTap: () {
                       Navigator.pop(context);
-                      context.go(RoutePaths.shifts);
+                      context.push(RoutePaths.shifts);
                     },
                   ),
 
@@ -100,7 +101,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     subtitle: const Text('Role Management'),
                     onTap: () {
                       Navigator.pop(context);
-                      context.go(RoutePaths.roles);
+                      context.push(RoutePaths.roles);
                     },
                   ),
 
@@ -110,7 +111,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     subtitle: const Text('Permission Management'),
                     onTap: () {
                       Navigator.pop(context);
-                      context.go(RoutePaths.rolePermissions);
+                      context.push(RoutePaths.rolePermissions);
                     },
                   ),
 
@@ -120,7 +121,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     subtitle: const Text('Employee Management'),
                     onTap: () {
                       Navigator.pop(context);
-                      context.go(RoutePaths.employees);
+                      context.push(RoutePaths.employees);
                     },
                   ),
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_paths.dart';
 import '../../domain/entities/department_entity.dart';
 import '../providers/department_provider.dart';
 import '../widgets/department_form.dart';
@@ -18,6 +19,7 @@ class DepartmentFormPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print("DepartmentFormPage Opened");
     final state = ref.watch(departmentProvider);
 
     return Scaffold(
@@ -124,8 +126,8 @@ class DepartmentFormPage extends ConsumerWidget {
                 )
                     .loadDepartments();
 
-                context.go(
-                  '/dashboard/departments',
+                context.push(
+                  RoutePaths.departments,
                 );
               } catch (e) {
                 if (!context.mounted) return;

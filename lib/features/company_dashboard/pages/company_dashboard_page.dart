@@ -104,7 +104,7 @@ class CompanyDashboardPage extends StatelessWidget {
           const SizedBox(height: 6),
 
           const Text(
-            "Flutter HRMS Pro Root Control Panel",
+            "HRMS Pro Root Control Panel",
           ),
 
           const SizedBox(height: 25),
@@ -137,28 +137,55 @@ class CompanyDashboardPage extends StatelessWidget {
 
           _buildMenu(
             context,
-            icon: Icons.add_business,
-            title: "Create Company",
+            icon: Icons.apartment_outlined,
+            title: "Departments",
             onTap: () {
-              context.push(RoutePaths.companyCreate);
+              context.push(RoutePaths.departments);
             },
           ),
 
           _buildMenu(
             context,
-            icon: Icons.business,
-            title: "Company List",
+            icon: Icons.badge_outlined,
+            title: "Designations",
             onTap: () {
-              context.push(RoutePaths.companies);
+              context.push(RoutePaths.designations);
             },
           ),
 
           _buildMenu(
             context,
-            icon: Icons.manage_accounts,
-            title: "Company Accounts",
+            icon: Icons.schedule_outlined,
+            title: "Shifts",
             onTap: () {
-              context.push(RoutePaths.companyAccounts);
+              context.push(RoutePaths.shifts);
+            },
+          ),
+
+          _buildMenu(
+            context,
+            icon: Icons.admin_panel_settings_outlined,
+            title: "Roles",
+            onTap: () {
+              context.push(RoutePaths.roles);
+            },
+          ),
+
+          _buildMenu(
+            context,
+            icon: Icons.security_outlined,
+            title: "Role Permissions",
+            onTap: () {
+              context.push(RoutePaths.rolePermissions);
+            },
+          ),
+
+          _buildMenu(
+            context,
+            icon: Icons.people_outline,
+            title: "Employees",
+            onTap: () {
+              context.push(RoutePaths.employees);
             },
           ),
 

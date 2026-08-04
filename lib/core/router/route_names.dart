@@ -41,7 +41,7 @@ class RouteNames {
   // =============================================================
   // Department
   // =============================================================
-
+  static const departmentView = 'department-view';
   static const departments = 'departments';
   static const departmentCreate = 'departmentCreate';
   static const departmentEdit = 'departmentEdit';
@@ -49,7 +49,7 @@ class RouteNames {
   // =============================================================
   // Designation
   // =============================================================
-
+  static const designationView = 'designation-view';
   static const designations = 'designations';
   static const designationCreate = 'designationCreate';
   static const designationEdit = 'designationEdit';
@@ -57,10 +57,24 @@ class RouteNames {
   // =============================================================
   // Shift
   // =============================================================
-
+  static const shiftView = 'shift-view';
   static const shifts = 'shifts';
   static const shiftCreate = 'shiftCreate';
   static const shiftEdit = 'shiftEdit';
+
+  // Role
+  // =============================================================
+  static const roleView = 'role-view';
+  static const roles = 'roles';
+  static const roleCreate = 'roleCreate';
+  static const roleEdit = 'roleEdit';
+
+  // RolePermissions
+  // =============================================================
+  static const rolePermissionsView = 'rolePermissions-view';
+  static const rolePermissions = 'rolePermissions';
+  static const rolePermissionsCreate = 'rolePermissionsCreate';
+  static const rolePermissionsEdit = 'rolePermissionsEdit';
 
   // =============================================================
   // Employee
@@ -134,12 +148,4 @@ class RouteNames {
 
   static const companyAccountDetails =
       'companyAccountDetails';
-
-  static const roles = 'roles';
-  static const roleCreate = 'roleCreate';
-  static const roleEdit = 'roleEdit';
-
-  static const rolePermissions = 'rolePermissions';
-  static const rolePermissionEdit =
-      'rolePermissionEdit';
 }

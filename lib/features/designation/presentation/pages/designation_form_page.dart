@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_paths.dart';
 import '../../domain/entities/designation_entity.dart';
 import '../providers/designation_provider.dart';
 import '../widgets/designation_form.dart';
@@ -105,11 +106,17 @@ class DesignationFormPage extends ConsumerWidget {
                   );
                 }
 
-                if (context.mounted) {
-                  context.go(
-                    '/dashboard/designations',
-                  );
-                }
+                if (!context.mounted) return;
+
+                await ref
+                    .read(
+                  designationProvider.notifier,
+                )
+                    .loadDesignations();
+
+                context.push(
+                  RoutePaths.designations,
+                );
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(

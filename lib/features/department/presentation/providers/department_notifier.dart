@@ -33,6 +33,32 @@ class DepartmentNotifier
       );
     }
   }
+  Future<void> toggleDepartmentStatus(
+      DepartmentEntity department,
+      ) async {
+    try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.updateDepartmentStatus(
+        id: department.id,
+        isActive: !department.isActive,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadDepartments();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+    }
+  }
 
   Future<void> refresh() async {
     await loadDepartments();

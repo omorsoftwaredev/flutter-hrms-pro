@@ -40,7 +40,32 @@ class DesignationNotifier
       );
     }
   }
+  Future<void> toggleDesignationStatus(
+      DesignationEntity designation,
+      ) async {
+    try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
 
+      await _repository.updateDesignationStatus(
+        id: designation.id,
+        isActive: !designation.isActive,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadDesignations();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+    }
+  }
   Future<void> refresh() async {
     await loadDesignations();
   }

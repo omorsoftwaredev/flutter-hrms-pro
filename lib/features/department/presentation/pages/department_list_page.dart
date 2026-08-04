@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_paths.dart';
 import '../../../../core/widgets/app_empty.dart';
 import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_search_field.dart';
@@ -9,7 +10,7 @@ import '../../../../core/widgets/app_section_title.dart';
 
 import '../providers/department_provider.dart';
 import '../widgets/department_card.dart';
-
+import '../../../../core/router/route_names.dart';
 class DepartmentListPage extends ConsumerStatefulWidget {
   const DepartmentListPage({super.key});
 
@@ -56,7 +57,9 @@ class _DepartmentListPageState
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          context.pushNamed('add-department');
+          context.push(
+            RoutePaths.departmentCreate,
+          );
         },
         icon: const Icon(Icons.add),
         label: const Text('Add'),
@@ -123,65 +126,49 @@ class _DepartmentListPageState
                         return DepartmentCard(
                           department: department,
 
+                          onView: () {
+                            context.push(
+                              RoutePaths.departmentView,
+                              extra: department,
+                            );
+                          },
+
                           onEdit: () {
-                            context.pushNamed(
-                              'edit-department',
+                            context.push(
+                              RoutePaths.departmentEdit,
                               extra: department,
                             );
                           },
 
                           onDelete: () async {
-                            final confirm =
-                            await showDialog<bool>(
+                            final confirm = await showDialog<bool>(
                               context: context,
                               builder: (_) => AlertDialog(
-                                title: const Text(
-                                  'Delete Department',
-                                ),
+                                title: const Text('Delete Department'),
                                 content: Text(
                                   'Are you sure you want to delete "${department.name}"?',
                                 ),
                                 actions: [
                                   OutlinedButton(
-                                    onPressed: () {
-                                      Navigator.pop(
-                                        context,
-                                        false,
-                                      );
-                                    },
-                                    child:
-                                    const Text('Cancel'),
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
                                   ),
                                   FilledButton(
-                                    onPressed: () {
-                                      Navigator.pop(
-                                        context,
-                                        true,
-                                      );
-                                    },
-                                    child:
-                                    const Text('Delete'),
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text('Delete'),
                                   ),
                                 ],
                               ),
                             );
 
-                            if (confirm != true) {
-                              return;
-                            }
+                            if (confirm != true) return;
 
                             await ref
-                                .read(
-                              departmentProvider
-                                  .notifier,
-                            )
-                                .deleteDepartment(
-                              department.id,
-                            );
+                                .read(departmentProvider.notifier)
+                                .deleteDepartment(department.id);
 
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     '${department.name} deleted successfully.',
@@ -189,6 +176,12 @@ class _DepartmentListPageState
                                 ),
                               );
                             }
+                          },
+
+                          onToggleStatus: () async {
+                            await ref
+                                .read(departmentProvider.notifier)
+                                .toggleDepartmentStatus(department);
                           },
                         );
                       },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_paths.dart';
 import '../../domain/entities/shift_entity.dart';
 import '../providers/shift_provider.dart';
 import '../widgets/shift_form.dart';
@@ -134,31 +135,41 @@ class ShiftFormPage extends ConsumerWidget {
                 DateTime.now(),
               );
 
-              if (isEdit) {
-                await ref
-                    .read(
-                  shiftProvider
-                      .notifier,
-                )
-                    .updateShift(
-                  entity,
+              try {
+                if (isEdit) {
+                  await ref
+                      .read(shiftProvider.notifier)
+                      .updateShift(entity);
+                } else {
+                  await ref
+                      .read(shiftProvider.notifier)
+                      .createShift(entity);
+                }
+
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isEdit
+                          ? 'Shift updated successfully.'
+                          : 'Shift created successfully.',
+                    ),
+                  ),
                 );
-              } else {
-                await ref
-                    .read(
-                  shiftProvider
-                      .notifier,
-                )
-                    .createShift(
-                  entity,
+
+                context.go(RoutePaths.shifts);
+
+              } catch (e) {
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString()),
+                  ),
                 );
               }
 
-              if (context.mounted) {
-                context.go(
-                  '/dashboard/shifts',
-                );
-              }
             },
           ),
         ),

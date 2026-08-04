@@ -13,10 +13,21 @@ import '../../features/department/domain/entities/department_entity.dart';
 import '../../features/department/presentation/pages/department_form_page.dart';
 import '../../features/department/presentation/pages/department_list_page.dart';
 
+import '../../features/department/presentation/pages/department_view_page.dart';
 import '../../features/designation/domain/entities/designation_entity.dart';
 import '../../features/designation/presentation/pages/designation_form_page.dart';
 import '../../features/designation/presentation/pages/designation_list_page.dart';
 
+import '../../features/designation/presentation/pages/designation_view_page.dart';
+import '../../features/role/domain/entities/role_entity.dart';
+import '../../features/role/presentation/pages/role_form_page.dart';
+import '../../features/role/presentation/pages/role_list_page.dart';
+import '../../features/role/presentation/pages/role_view_page.dart';
+import '../../features/role_permissions/domain/entities/role_permissions_entity.dart';
+import '../../features/role_permissions/domain/entities/role_permissions_view_entity.dart';
+import '../../features/role_permissions/presentation/pages/role_permissions_form_page.dart';
+import '../../features/role_permissions/presentation/pages/role_permissions_list_page.dart';
+import '../../features/role_permissions/presentation/pages/role_permissions_view_page.dart';
 import '../../features/shift/domain/entities/shift_entity.dart';
 import '../../features/shift/presentation/pages/shift_form_page.dart';
 import '../../features/shift/presentation/pages/shift_list_page.dart';
@@ -30,6 +41,7 @@ import '../../features/employee/domain/entities/employee_entity.dart';
 import '../../features/employee/presentation/pages/employee_form_page.dart';
 import '../../features/employee/presentation/pages/employee_list_page.dart';
 
+import '../../features/shift/presentation/pages/shift_view_page.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 
@@ -58,7 +70,15 @@ class CompanyDashboardRouter {
       builder: (context, state) =>
       const CompanyDashboardPage(),
     ),
-
+    GoRoute(
+      path: RoutePaths.departmentView,
+      builder: (context, state) {
+        final department = state.extra as DepartmentEntity;
+        return DepartmentViewPage(
+          department: department,
+        );
+      },
+    ),
     GoRoute(
       path: RoutePaths.departments,
       name: RouteNames.departments,
@@ -88,7 +108,17 @@ class CompanyDashboardRouter {
     // ===========================================================
     // Designation
     // ===========================================================
+    GoRoute(
+      path: RoutePaths.designationView,
+      builder: (context, state) {
+        final designation =
+        state.extra as DesignationEntity;
 
+        return DesignationViewPage(
+          designation: designation,
+        );
+      },
+    ),
     GoRoute(
       path: RoutePaths.designations,
       name: RouteNames.designations,
@@ -119,7 +149,17 @@ class CompanyDashboardRouter {
     // ===========================================================
     // Shift
     // ===========================================================
+    GoRoute(
+      path: RoutePaths.shiftView,
+      name: RouteNames.shiftView,
+      builder: (context, state) {
+        final shift = state.extra as ShiftEntity;
 
+        return ShiftViewPage(
+          shift: shift,
+        );
+      },
+    ),
     GoRoute(
       path: RoutePaths.shifts,
       name: RouteNames.shifts,
@@ -146,6 +186,88 @@ class CompanyDashboardRouter {
       },
     ),
 
+    // Role
+    // ===========================================================
+    GoRoute(
+      path: RoutePaths.roleView,
+      name: RouteNames.roleView,
+      builder: (context, state) {
+        final role = state.extra as RoleEntity;
+
+        return RoleViewPage(
+          role: role,
+        );
+      },
+    ),
+    GoRoute(
+      path: RoutePaths.roles,
+      name: RouteNames.roles,
+      builder: (_, __) =>
+      const RoleListPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.roleCreate,
+      name: RouteNames.roleCreate,
+      builder: (_, __) =>
+      const RoleFormPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.roleEdit,
+      name: RouteNames.roleEdit,
+      builder: (_, state) {
+        final role = state.extra as RoleEntity;
+
+        return RoleFormPage(
+          role: role,
+        );
+      },
+    ),
+
+
+    // RolePermissions
+    // ===========================================================
+    GoRoute(
+      path: RoutePaths.rolePermissionsView,
+      name: RouteNames.rolePermissionsView,
+      builder: (context, state) {
+
+        final data =
+        state.extra as RolePermissionsViewEntity;
+
+
+        return RolePermissionsViewPage(
+          data: data,
+        );
+
+      },
+    ),
+    GoRoute(
+      path: RoutePaths.rolePermissions,
+      name: RouteNames.rolePermissions,
+      builder: (_, __) =>
+      const RolePermissionsListPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.rolePermissionsCreate,
+      name: RouteNames.rolePermissionsCreate,
+      builder: (_, __) =>
+      const RolePermissionsFormPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.rolePermissionsEdit,
+      name: RouteNames.rolePermissionsEdit,
+      builder: (_, state) {
+        final role = state.extra as RolePermissionsEntity;
+
+        return RolePermissionsFormPage(
+          permission: role,
+        );
+      },
+    ),
     // ===========================================================
 // HR Dashboard
 // ===========================================================

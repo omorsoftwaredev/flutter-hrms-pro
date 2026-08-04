@@ -65,6 +65,13 @@ class _DepartmentFormState
   @override
   void initState() {
     super.initState();
+    Future.microtask(() async {
+      final companies = await ref
+          .read(companyRepositoryProvider)
+          .getCompanies();
+
+      print("DIRECT REPOSITORY: ${companies.length}");
+    });
 
     Future.microtask(() {
       ref
@@ -142,10 +149,12 @@ class _DepartmentFormState
 
   @override
   Widget build(BuildContext context) {
-    final companies = ref.watch(companyProvider).companies;
+    final companyState = ref.watch(companyProvider);
+    final companies = companyState.companies;
+    print("Loading: ${companyState.isLoading}");
+    print("Companies: ${companies.length}");
 
-    // 👇 এখানে বসবে
-    if (companies.isEmpty) {
+    if (companyState.isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
       );

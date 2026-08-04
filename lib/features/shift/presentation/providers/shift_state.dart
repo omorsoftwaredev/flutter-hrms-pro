@@ -4,6 +4,8 @@ class ShiftState {
   const ShiftState({
     this.shifts = const [],
     this.filteredShifts = const [],
+    this.selectedShift,
+    this.search = '',
     this.isLoading = false,
     this.isSaving = false,
     this.error,
@@ -11,8 +13,11 @@ class ShiftState {
 
   final List<ShiftEntity> shifts;
 
-  final List<ShiftEntity>
-  filteredShifts;
+  final List<ShiftEntity> filteredShifts;
+
+  final ShiftEntity? selectedShift;
+
+  final String search;
 
   final bool isLoading;
 
@@ -23,6 +28,8 @@ class ShiftState {
   ShiftState copyWith({
     List<ShiftEntity>? shifts,
     List<ShiftEntity>? filteredShifts,
+    ShiftEntity? selectedShift,
+    String? search,
     bool? isLoading,
     bool? isSaving,
     String? error,
@@ -30,13 +37,15 @@ class ShiftState {
     return ShiftState(
       shifts: shifts ?? this.shifts,
       filteredShifts:
-      filteredShifts ??
-          this.filteredShifts,
+      filteredShifts ?? this.filteredShifts,
+      selectedShift:
+      selectedShift ?? this.selectedShift,
+      search: search ?? this.search,
       isLoading:
       isLoading ?? this.isLoading,
       isSaving:
       isSaving ?? this.isSaving,
-      error: error,
+      error: error ?? this.error,
     );
   }
 }

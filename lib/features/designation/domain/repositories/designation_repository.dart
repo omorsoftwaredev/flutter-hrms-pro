@@ -15,4 +15,8 @@ abstract class DesignationRepository {
 
   Future<void> deleteDesignation(
       String id);
+  Future<void> updateDesignationStatus({
+    required String id,
+    required bool isActive,
+  });
 }

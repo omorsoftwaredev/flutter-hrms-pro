@@ -31,6 +31,19 @@ class DesignationRepositoryImpl
   }
 
   @override
+  Future<void> updateDesignationStatus({
+    required String id,
+    required bool isActive,
+  }) async {
+    await _client
+        .from('designations')
+        .update({
+      'is_active': isActive,
+    })
+        .eq('id', id);
+  }
+
+  @override
   Future<DesignationEntity>
   getDesignationById(
       String id) async {

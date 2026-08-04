@@ -11,6 +11,7 @@ class DesignationCard extends StatelessWidget {
     this.departmentName,
     this.onEdit,
     this.onDelete,
+    this.onToggleStatus, this.onView,
   });
 
   final DesignationEntity designation;
@@ -18,8 +19,10 @@ class DesignationCard extends StatelessWidget {
   final String? companyName;
   final String? departmentName;
 
+  final VoidCallback? onView;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onToggleStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -62,11 +65,20 @@ class DesignationCard extends StatelessWidget {
                 ),
               ),
 
+
               PopupMenuButton<String>(
                 onSelected: (value) {
                   switch (value) {
+                    case 'view':
+                      onView?.call();
+                      break;
+
                     case 'edit':
                       onEdit?.call();
+                      break;
+
+                    case 'status':
+                      onToggleStatus?.call();
                       break;
 
                     case 'delete':
@@ -74,12 +86,24 @@ class DesignationCard extends StatelessWidget {
                       break;
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'view',
+                    child: Text('View'),
+                  ),
+                  const PopupMenuItem(
                     value: 'edit',
                     child: Text('Edit'),
                   ),
                   PopupMenuItem(
+                    value: 'status',
+                    child: Text(
+                      designation.isActive
+                          ? 'Deactivate'
+                          : 'Activate',
+                    ),
+                  ),
+                  const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete'),
                   ),

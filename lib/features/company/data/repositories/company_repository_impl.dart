@@ -14,12 +14,16 @@ class CompanyRepositoryImpl implements CompanyRepository {
 
   @override
   Future<List<CompanyEntity>> getCompanies() async {
+    print("=========== COMPANY REPOSITORY ==========");
+
     final response = await _client
         .from('companies')
-        .select()
-        .order('name');
+        .select('*');
 
-    return (response as List)
+    print("Raw Response: $response");
+    print("Length: ${(response as List).length}");
+
+    return response
         .map(
           (json) => CompanyModel.fromJson(
         json as Map<String, dynamic>,
@@ -27,6 +31,7 @@ class CompanyRepositoryImpl implements CompanyRepository {
     )
         .toList();
   }
+
   Future<void> updateCompanyStatus({
     required String id,
     required bool isActive,

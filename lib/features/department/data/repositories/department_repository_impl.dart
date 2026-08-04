@@ -30,6 +30,19 @@ class DepartmentRepositoryImpl
   }
 
   @override
+  Future<void> updateDepartmentStatus({
+    required String id,
+    required bool isActive,
+  }) async {
+    await _client
+        .from('departments')
+        .update({
+      'is_active': isActive,
+    })
+        .eq('id', id);
+  }
+
+  @override
   Future<DepartmentEntity>
   getDepartmentById(String id) async {
     final response = await _client

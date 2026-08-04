@@ -7,15 +7,18 @@ class DepartmentCard extends StatelessWidget {
   const DepartmentCard({
     super.key,
     required this.department,
+    this.onView,
     this.onEdit,
     this.onDelete,
+    this.onToggleStatus,
   });
 
   final DepartmentEntity department;
 
+  final VoidCallback? onView;
   final VoidCallback? onEdit;
-
   final VoidCallback? onDelete;
+  final VoidCallback? onToggleStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -33,23 +36,16 @@ class DepartmentCard extends StatelessWidget {
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       department.name,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-
                     const SizedBox(height: 2),
-
                     Text(
                       department.code,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -58,8 +54,16 @@ class DepartmentCard extends StatelessWidget {
               PopupMenuButton<String>(
                 onSelected: (value) {
                   switch (value) {
+                    case 'view':
+                      onView?.call();
+                      break;
+
                     case 'edit':
                       onEdit?.call();
+                      break;
+
+                    case 'status':
+                      onToggleStatus?.call();
                       break;
 
                     case 'delete':
@@ -67,12 +71,24 @@ class DepartmentCard extends StatelessWidget {
                       break;
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'view',
+                    child: Text('View'),
+                  ),
+                  const PopupMenuItem(
                     value: 'edit',
                     child: Text('Edit'),
                   ),
                   PopupMenuItem(
+                    value: 'status',
+                    child: Text(
+                      department.isActive
+                          ? 'Deactivate'
+                          : 'Activate',
+                    ),
+                  ),
+                  const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete'),
                   ),
@@ -85,10 +101,7 @@ class DepartmentCard extends StatelessWidget {
 
           Row(
             children: [
-              const Icon(
-                Icons.description_outlined,
-                size: 18,
-              ),
+              const Icon(Icons.description_outlined, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -104,10 +117,7 @@ class DepartmentCard extends StatelessWidget {
 
           Row(
             children: [
-              const Icon(
-                Icons.person_outline,
-                size: 18,
-              ),
+              const Icon(Icons.person_outline, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -123,10 +133,7 @@ class DepartmentCard extends StatelessWidget {
 
           Row(
             children: [
-              const Icon(
-                Icons.phone,
-                size: 18,
-              ),
+              const Icon(Icons.phone, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -142,10 +149,7 @@ class DepartmentCard extends StatelessWidget {
 
           Row(
             children: [
-              const Icon(
-                Icons.email_outlined,
-                size: 18,
-              ),
+              const Icon(Icons.email_outlined, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -161,10 +165,7 @@ class DepartmentCard extends StatelessWidget {
 
           Row(
             children: [
-              const Icon(
-                Icons.location_on_outlined,
-                size: 18,
-              ),
+              const Icon(Icons.location_on_outlined, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

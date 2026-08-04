@@ -49,7 +49,7 @@ class RoutePaths {
   // =============================================================
   // Department
   // =============================================================
-
+  static const departmentView = '/departments/view';
   static const departments = '/departments';
   static const departmentCreate = '/departments/create';
   static const departmentEdit = '/departments/edit';
@@ -57,7 +57,7 @@ class RoutePaths {
   // =============================================================
   // Designation
   // =============================================================
-
+  static const designationView = '/designations/view';
   static const designations = '/designations';
   static const designationCreate = '/designations/create';
   static const designationEdit = '/designations/edit';
@@ -65,10 +65,25 @@ class RoutePaths {
   // =============================================================
   // Shift
   // =============================================================
-
+  static const shiftView = '/shifts/view';
   static const shifts = '/shifts';
   static const shiftCreate = '/shifts/create';
   static const shiftEdit = '/shifts/edit';
+
+
+  // Role
+  // =============================================================
+  static const roleView = '/roles/view';
+  static const roles = '/roles';
+  static const roleCreate = '/roles/create';
+  static const roleEdit = '/roles/edit';
+
+  // RolePermissions
+  // =============================================================
+  static const rolePermissionsView = '/role-permissions/view';
+  static const rolePermissions = '/role-permissions';
+  static const rolePermissionsCreate = '/role-permissions/create';
+  static const rolePermissionsEdit = '/role-permissions/edit';
 
   // =============================================================
   // Employee
@@ -140,14 +155,6 @@ class RoutePaths {
 
   static const companyAccountDetails =
       '/company-accounts/details';
-
-  static const roles = '/roles';
-  static const roleCreate = '/roles/create';
-  static const roleEdit = '/roles/edit';
-
-  static const rolePermissions = '/role-permissions';
-  static const rolePermissionEdit =
-      '/role-permissions/edit';
 
 
 

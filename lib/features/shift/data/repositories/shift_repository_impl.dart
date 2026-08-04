@@ -128,4 +128,17 @@ class ShiftRepositoryImpl
         .delete()
         .eq('id', id);
   }
+
+  @override
+  Future<void> updateShiftStatus({
+    required String id,
+    required bool isActive,
+  }) async {
+    await _client
+        .from('shifts')
+        .update({
+      'is_active': isActive,
+    })
+        .eq('id', id);
+  }
 }
