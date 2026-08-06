@@ -89,10 +89,32 @@ class RoutePaths {
   // Employee
   // =============================================================
 
-  static const employees = '/employees';
-  static const employeeCreate = '/employees/create';
-  static const employeeDetails = '/employees/details';
-  static const employeeEdit = '/employees/edit';
+  // Employee
+  static const employees =
+      '/dashboard/employees';
+
+  static const employeeCreate =
+      '/dashboard/employees/create';
+
+  static const employeeEdit =
+      '/dashboard/employees/edit';
+
+  static const employeeView =
+      '/dashboard/employees/view';
+
+  // Employee Account
+
+  static const employeesAccounts =
+      '/dashboard/employee-accounts';
+
+  static const employeeAccountCreate =
+      '/dashboard/employee-accounts/create';
+
+  static const employeeAccountEdit =
+      '/dashboard/employee-accounts/edit';
+
+  static const employeeAccountView =
+      '/dashboard/employee-accounts/view';
 
   // =============================================================
   // Attendance

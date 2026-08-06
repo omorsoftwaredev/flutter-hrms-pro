@@ -80,10 +80,26 @@ class RouteNames {
   // Employee
   // =============================================================
 
+  // Employee
   static const employees = 'employees';
-  static const employeeCreate = 'employeeCreate';
-  static const employeeDetails = 'employeeDetails';
-  static const employeeEdit = 'employeeEdit';
+  static const employeeCreate = 'employee-create';
+  static const employeeEdit = 'employee-edit';
+  static const employeeView = 'employee-view';
+
+
+  // Employee Account
+
+  static const employeeAccounts =
+      'employee-accounts';
+
+  static const employeeAccountCreate =
+      'employee-account-create';
+
+  static const employeeAccountEdit =
+      'employee-account-edit';
+
+  static const employeeAccountView =
+      'employee-account-view';
 
   // =============================================================
   // Attendance

@@ -31,9 +31,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
   Future<void> _login() async {
     final username = _usernameController.text.trim();
-    final password = _passwordController.text;
+    final passwordHash = _passwordController.text;
 
-    if (username.isEmpty || password.isEmpty) {
+    if (username.isEmpty || passwordHash.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -48,7 +48,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
        await ref.read(loginControllerProvider).login(
         context: context,
         username: username,
-        password: password,
+         passwordHash: passwordHash,
       );
     } catch (e) {
       if (!mounted) return;

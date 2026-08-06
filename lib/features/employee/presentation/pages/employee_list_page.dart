@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_paths.dart';
 import '../../../../core/widgets/app_empty.dart';
 import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_search_field.dart';
@@ -91,8 +92,8 @@ class _EmployeeListPageState
       floatingActionButton:
       FloatingActionButton.extended(
         onPressed: () {
-          context.pushNamed(
-            'add-employee',
+          context.push(
+            RoutePaths.employeeCreate,
           );
         },
         icon: const Icon(Icons.add),
@@ -175,55 +176,62 @@ class _EmployeeListPageState
                         state.filteredEmployees[
                         index];
 
-                        return EmployeeCard(
+                        return
+                          EmployeeCard(
+                            employee: employee,
 
-                          employee:
-                          employee,
-
-                          onEdit: () {
-                            context
-                                .pushNamed(
-                              'edit-employee',
-                              extra:
-                              employee,
-                            );
-                          },
-
-                          onDelete:
-                              () async {
-
-                            final delete =
-                            await _deleteDialog();
-
-                            if (delete !=
-                                true) {
-                              return;
-                            }
-
-                            await ref
-                                .read(
-                              employeeProvider
-                                  .notifier,
-                            )
-                                .deleteEmployee(
-                              employee.id,
-                            );
-
-                            if (context
-                                .mounted) {
-                              ScaffoldMessenger.of(
-                                  context)
-                                  .showSnackBar(
-                                const SnackBar(
-                                  content:
-                                  Text(
-                                    'Employee deleted successfully',
-                                  ),
-                                ),
+                            onView: () {
+                              context.push(
+                                RoutePaths.employeeView,
+                                extra: employee,
                               );
-                            }
-                          },
-                        );
+                            },
+
+                            onEdit: () {
+                              context.push(
+                                RoutePaths.employeeEdit,
+                                extra: employee,
+                              );
+                            },
+
+                            onToggleStatus: () async {
+                              await ref
+                                  .read(employeeProvider.notifier)
+                                  .toggleEmployeeStatus(employee);
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      employee.isActive
+                                          ? 'Employee deactivated successfully'
+                                          : 'Employee activated successfully',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+
+                            onDelete: () async {
+                              final delete = await _deleteDialog();
+
+                              if (delete != true) return;
+
+                              await ref
+                                  .read(employeeProvider.notifier)
+                                  .deleteEmployee(employee.id);
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Employee deleted successfully',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                          );
                       },
                     ),
                   );

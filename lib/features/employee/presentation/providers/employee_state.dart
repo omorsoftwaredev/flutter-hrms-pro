@@ -7,6 +7,8 @@ class EmployeeState {
   final List<EmployeeEntity> employees;
   final List<EmployeeEntity> filteredEmployees;
 
+  final EmployeeEntity? selectedEmployee;
+
   final String search;
 
   final String? error;
@@ -16,6 +18,7 @@ class EmployeeState {
     this.isSaving = false,
     this.employees = const [],
     this.filteredEmployees = const [],
+    this.selectedEmployee,
     this.search = '',
     this.error,
   });
@@ -25,6 +28,7 @@ class EmployeeState {
     bool? isSaving,
     List<EmployeeEntity>? employees,
     List<EmployeeEntity>? filteredEmployees,
+    EmployeeEntity? selectedEmployee,
     String? search,
     String? error,
   }) {
@@ -33,8 +37,9 @@ class EmployeeState {
       isSaving: isSaving ?? this.isSaving,
       employees: employees ?? this.employees,
       filteredEmployees:
-      filteredEmployees ??
-          this.filteredEmployees,
+      filteredEmployees ?? this.filteredEmployees,
+      selectedEmployee:
+      selectedEmployee ?? this.selectedEmployee,
       search: search ?? this.search,
       error: error,
     );
@@ -46,6 +51,7 @@ class EmployeeState {
       isSaving: false,
       employees: [],
       filteredEmployees: [],
+      selectedEmployee: null,
       search: '',
       error: null,
     );

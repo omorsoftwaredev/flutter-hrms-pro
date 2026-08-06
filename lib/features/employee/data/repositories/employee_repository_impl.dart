@@ -149,17 +149,9 @@ class EmployeeRepositoryImpl
       'is_active':
       employee.isActive,
 
-      'user_id':
-      employee.userId,
+      'auth_user_id': employee.userId,
 
-      'role':
-      employee.role,
-
-      'is_super_admin':
-      employee.isSuperAdmin,
-
-      'is_company_admin':
-      employee.isCompanyAdmin,
+      'role_id': employee.roleId,
 
       'created_by':
       employee.createdBy,
@@ -275,17 +267,9 @@ class EmployeeRepositoryImpl
       'is_active':
       employee.isActive,
 
-      'user_id':
-      employee.userId,
+      'auth_user_id': employee.userId,
 
-      'role':
-      employee.role,
-
-      'is_super_admin':
-      employee.isSuperAdmin,
-
-      'is_company_admin':
-      employee.isCompanyAdmin,
+      'role_id': employee.roleId,
 
       'created_by':
       employee.createdBy,

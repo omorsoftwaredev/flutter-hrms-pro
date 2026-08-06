@@ -55,12 +55,12 @@ class AuthRepository {
 
   Future<CurrentUser> login({
     required String username,
-    required String password,
+    required String passwordHash,
   }) async {
 
     print('================ LOGIN ================');
     print('Username: $username');
-    print('Password: $password');
+    print('passwordHash: $passwordHash');
     //----------------------------------------------------------
     // Developer Login
     //----------------------------------------------------------
@@ -69,7 +69,7 @@ class AuthRepository {
     //     .from('developers')
     //     .select()
     //     .eq('username', username)
-    //     .eq('password', password)
+    //     .eq('password_hash', passwordHash)
     //     .maybeSingle();
 
     // final developer = await _client
@@ -84,7 +84,7 @@ class AuthRepository {
         .from('developers')
         .select()
         .eq('username', username)
-        .eq('password', password)
+        .eq('password_hash', passwordHash)
         .maybeSingle();
 
     print('Developer => $developer');
@@ -117,7 +117,7 @@ class AuthRepository {
         .from('company_accounts')
         .select()
         .eq('username', username)
-        .eq('password', password)
+        .eq('password_hash', passwordHash)
         .eq('is_active', true)
         .maybeSingle();
 
@@ -149,7 +149,7 @@ class AuthRepository {
     //     .from('employees')
     //     .select()
     //     .eq('employee_code', username)
-    //     .eq('password', password)
+    //     .eq('password_hash', passwordHash)
     //     .eq('is_active', true)
     //     .maybeSingle();
     //

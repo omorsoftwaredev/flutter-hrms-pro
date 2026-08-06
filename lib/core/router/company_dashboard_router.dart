@@ -19,6 +19,10 @@ import '../../features/designation/presentation/pages/designation_form_page.dart
 import '../../features/designation/presentation/pages/designation_list_page.dart';
 
 import '../../features/designation/presentation/pages/designation_view_page.dart';
+import '../../features/employee/presentation/pages/employee_view_page.dart';
+import '../../features/employee_account/domain/entities/employee_account_entity.dart';
+import '../../features/employee_account/presentation/pages/employee_account_form_page.dart';
+import '../../features/employee_account/presentation/pages/employee_account_list_page.dart';
 import '../../features/role/domain/entities/role_entity.dart';
 import '../../features/role/presentation/pages/role_form_page.dart';
 import '../../features/role/presentation/pages/role_list_page.dart';
@@ -44,7 +48,7 @@ import '../../features/employee/presentation/pages/employee_list_page.dart';
 import '../../features/shift/presentation/pages/shift_view_page.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
-
+import '../../features/employee_account/presentation/routes/employee_account_routes.dart';
 class CompanyDashboardRouter {
   const CompanyDashboardRouter._();
 
@@ -268,6 +272,53 @@ class CompanyDashboardRouter {
         );
       },
     ),
+
+    // Employee
+    GoRoute(
+      path: RoutePaths.employees,
+      name: RouteNames.employees,
+      builder: (context, state) =>
+      const EmployeeListPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.employeeCreate,
+      name: RouteNames.employeeCreate,
+      builder: (context, state) =>
+      const EmployeeFormPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.employeeEdit,
+      name: RouteNames.employeeEdit,
+      builder: (context, state) {
+        final employee =
+        state.extra as EmployeeEntity;
+
+        return EmployeeFormPage(
+          employee: employee,
+        );
+      },
+    ),
+
+    GoRoute(
+      path: RoutePaths.employeeView,
+      name: RouteNames.employeeView,
+      builder: (context, state) {
+        final employee =
+        state.extra as EmployeeEntity;
+
+        return EmployeeViewPage(
+          employee: employee,
+        );
+      },
+    ),
+
+    //-------------------------------------------------------
+    // Employee Account List
+    //-------------------------------------------------------
+
+    ...EmployeeAccountRoutes.routes,
     // ===========================================================
 // HR Dashboard
 // ===========================================================
@@ -361,36 +412,5 @@ class CompanyDashboardRouter {
     //     );
     //   },
     // ),
-
-    // ===========================================================
-    // Employee
-    // ===========================================================
-
-    GoRoute(
-      path: RoutePaths.employees,
-      name: RouteNames.employees,
-      builder: (_, __) =>
-      const EmployeeListPage(),
-    ),
-
-    GoRoute(
-      path: RoutePaths.employeeCreate,
-      name: RouteNames.employeeCreate,
-      builder: (_, __) =>
-      const EmployeeFormPage(),
-    ),
-
-    GoRoute(
-      path: RoutePaths.employeeEdit,
-      name: RouteNames.employeeEdit,
-      builder: (_, state) {
-        final employee =
-        state.extra as EmployeeEntity;
-
-        return EmployeeFormPage(
-          employee: employee,
-        );
-      },
-    ),
   ];
 }

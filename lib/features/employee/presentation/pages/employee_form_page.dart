@@ -35,17 +35,11 @@ class EmployeeFormPage extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: EmployeeForm(
-            initialCompanyId:
-            employee?.companyId,
-
-            initialDepartmentId:
-            employee?.departmentId,
-
-            initialDesignationId:
-            employee?.designationId,
-
-            initialShiftId:
-            employee?.shiftId,
+            initialCompanyId: employee?.companyId,
+            initialDepartmentId: employee?.departmentId,
+            initialDesignationId: employee?.designationId,
+            initialShiftId: employee?.shiftId,
+            initialRoleId: employee?.roleId,
 
             initialEmployeeCode:
             employee?.employeeCode ?? '',
@@ -62,15 +56,14 @@ class EmployeeFormPage extends ConsumerWidget {
             initialFullName:
             employee?.fullName ?? '',
 
+            initialGender:
+            employee?.gender ?? 'Male',
+
             initialMobile:
             employee?.mobile ?? '',
 
             initialEmail:
             employee?.email ?? '',
-
-            initialGender:
-            employee?.gender ??
-                'Male',
 
             initialEmploymentType:
             employee?.employmentType ??
@@ -81,142 +74,95 @@ class EmployeeFormPage extends ConsumerWidget {
                 'Active',
 
             initialBasicSalary:
-            employee?.basicSalary ??
-                0,
+            employee?.basicSalary ?? 0,
 
             initialIsActive:
-            employee?.isActive ??
-                true,
+            employee?.isActive ?? true,
 
-            isLoading:
-            state.isSaving,
+            isLoading: state.isSaving,
 
             onSubmit: (
                 companyId,
                 departmentId,
                 designationId,
                 shiftId,
-
+                roleId,
                 employeeCode,
                 cardNo,
-
                 firstName,
                 lastName,
                 fullName,
-
                 mobile,
                 email,
-
                 gender,
-
                 employmentType,
                 employeeStatus,
-
                 basicSalary,
-
                 isActive,
                 ) async {
-              final entity =
-              EmployeeEntity(
-                id:
-                employee?.id ??
-                    '',
+              final entity = EmployeeEntity(
+                id: employee?.id ?? '',
 
-                companyId:
-                companyId,
+                companyId: companyId,
+                departmentId: departmentId,
+                designationId: designationId,
+                shiftId: shiftId,
+                roleId: roleId,
 
-                departmentId:
-                departmentId,
+                employeeCode: employeeCode,
+                cardNo: cardNo,
 
-                designationId:
-                designationId,
+                firstName: firstName,
+                lastName: lastName,
+                fullName: fullName,
 
-                shiftId:
-                shiftId,
+                mobile: mobile,
+                email: email,
+                gender: gender,
 
-                employeeCode:
-                employeeCode,
+                employmentType: employmentType,
+                employeeStatus: employeeStatus,
 
-                cardNo:
-                cardNo,
+                basicSalary: basicSalary,
 
-                firstName:
-                firstName,
-
-                lastName:
-                lastName,
-
-                fullName:
-                fullName,
-
-                mobile:
-                mobile,
-
-                email:
-                email,
-
-                gender:
-                gender,
-
-                employmentType:
-                employmentType,
-
-                employeeStatus:
-                employeeStatus,
-
-                basicSalary:
-                basicSalary,
-
-                isActive:
-                isActive,
+                isActive: isActive,
 
                 createdAt:
-                employee
-                    ?.createdAt ??
+                employee?.createdAt ??
                     DateTime.now(),
 
-                updatedAt:
-                DateTime.now(),
+                updatedAt: DateTime.now(),
               );
 
               try {
                 if (isEdit) {
                   await ref
                       .read(
-                    employeeProvider
-                        .notifier,
+                    employeeProvider.notifier,
                   )
-                      .updateEmployee(
-                    entity,
-                  );
+                      .updateEmployee(entity);
                 } else {
                   await ref
                       .read(
-                    employeeProvider
-                        .notifier,
+                    employeeProvider.notifier,
                   )
-                      .createEmployee(
-                    entity,
-                  );
+                      .createEmployee(entity);
                 }
 
                 if (context.mounted) {
-                  context.go(
-                    '/dashboard/employees',
-                  );
+                  context.pop(true);
                 }
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        e.toString(),
-                      ),
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      e.toString(),
                     ),
-                  );
-                }
+                  ),
+                );
               }
             },
           ),

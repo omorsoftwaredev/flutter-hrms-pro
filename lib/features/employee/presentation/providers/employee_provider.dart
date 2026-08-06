@@ -6,19 +6,13 @@ import 'employee_state.dart';
 
 final employeeRepositoryProvider =
 Provider<EmployeeRepositoryImpl>(
-      (ref) {
-    return EmployeeRepositoryImpl();
-  },
+      (ref) => EmployeeRepositoryImpl(),
 );
 
 final employeeProvider = StateNotifierProvider<
     EmployeeNotifier,
     EmployeeState>(
-      (ref) {
-    return EmployeeNotifier(
-      ref.read(
-        employeeRepositoryProvider,
-      ),
-    );
-  },
+      (ref) => EmployeeNotifier(
+    ref.read(employeeRepositoryProvider),
+  ),
 );

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/repositories/employee_repository_impl.dart';
+import '../../domain/repositories/employee_repository.dart';
 import '../../domain/entities/employee_entity.dart';
 import 'employee_state.dart';
 
@@ -9,8 +9,53 @@ class EmployeeNotifier
   EmployeeNotifier(this._repository)
       : super(EmployeeState.initial());
 
-  final EmployeeRepositoryImpl _repository;
+  final EmployeeRepository _repository;
+  Future<void> toggleEmployeeStatus(
+      EmployeeEntity employee,
+      ) async {
+    try {
+      final updated = employee.copyWith(
+        isActive: !employee.isActive,
+        updatedAt: DateTime.now(),
+      );
 
+      print('Old: ${employee.isActive}');
+      print('New: ${updated.isActive}');
+
+      await _repository.updateEmployee(updated);
+
+      await loadEmployees();
+
+    } catch (e) {
+      print(e);
+
+      state = state.copyWith(
+        error: e.toString(),
+      );
+    }
+  }
+
+  void clearSelection() {
+    state = state.copyWith(
+      selectedEmployee: null,
+    );
+  }
+  Future<void> getEmployeeById(
+      String id,
+      ) async {
+    try {
+      final employee =
+      await _repository.getEmployeeById(id);
+
+      state = state.copyWith(
+        selectedEmployee: employee,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: e.toString(),
+      );
+    }
+  }
   Future<void> loadEmployees() async {
     state = state.copyWith(
       isLoading: true,
@@ -89,22 +134,11 @@ class EmployeeNotifier
       rethrow;
     }
   }
-
-  Future<void> deleteEmployee(
-      String id,
-      ) async {
+  Future<void> deleteEmployee(String id) async {
     try {
       await _repository.deleteEmployee(id);
 
-      final updated =
-      state.employees
-          .where((e) => e.id != id)
-          .toList();
-
-      state = state.copyWith(
-        employees: updated,
-        filteredEmployees: updated,
-      );
+      await loadEmployees();
     } catch (e) {
       state = state.copyWith(
         error: e.toString(),
@@ -145,7 +179,7 @@ class EmployeeNotifier
     }).toList();
 
     state = state.copyWith(
-      search: keyword,
+      search: value,
       filteredEmployees: result,
     );
   }

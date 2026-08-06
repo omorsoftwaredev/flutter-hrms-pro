@@ -5,7 +5,7 @@ class EmployeeEntity {
   final String? departmentId;
   final String? designationId;
   final String? shiftId;
-
+  final String? roleId;
   final String employeeCode;
   final String? cardNo;
 
@@ -51,11 +51,6 @@ class EmployeeEntity {
 
   final String? userId;
 
-  final String role;
-
-  final bool isSuperAdmin;
-  final bool isCompanyAdmin;
-
   final String? createdBy;
   final String? updatedBy;
 
@@ -68,6 +63,7 @@ class EmployeeEntity {
     this.departmentId,
     this.designationId,
     this.shiftId,
+    this.roleId,
 
     required this.employeeCode,
     this.cardNo,
@@ -114,11 +110,6 @@ class EmployeeEntity {
 
     this.userId,
 
-    this.role = 'EMPLOYEE',
-
-    this.isSuperAdmin = false,
-    this.isCompanyAdmin = false,
-
     this.createdBy,
     this.updatedBy,
 
@@ -132,6 +123,7 @@ class EmployeeEntity {
     String? departmentId,
     String? designationId,
     String? shiftId,
+    String? roleId,
 
     String? employeeCode,
     String? cardNo,
@@ -180,9 +172,6 @@ class EmployeeEntity {
 
     String? role,
 
-    bool? isSuperAdmin,
-    bool? isCompanyAdmin,
-
     String? createdBy,
     String? updatedBy,
 
@@ -195,6 +184,7 @@ class EmployeeEntity {
       departmentId: departmentId ?? this.departmentId,
       designationId: designationId ?? this.designationId,
       shiftId: shiftId ?? this.shiftId,
+      roleId: roleId ?? this.roleId,
 
       employeeCode:
       employeeCode ?? this.employeeCode,
@@ -275,17 +265,6 @@ class EmployeeEntity {
 
       userId:
       userId ?? this.userId,
-
-      role:
-      role ?? this.role,
-
-      isSuperAdmin:
-      isSuperAdmin ??
-          this.isSuperAdmin,
-
-      isCompanyAdmin:
-      isCompanyAdmin ??
-          this.isCompanyAdmin,
 
       createdBy:
       createdBy ?? this.createdBy,

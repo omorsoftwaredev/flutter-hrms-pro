@@ -8,6 +8,7 @@ class EmployeeModel extends EmployeeEntity {
     super.departmentId,
     super.designationId,
     super.shiftId,
+    super.roleId,
 
     required super.employeeCode,
     super.cardNo,
@@ -54,11 +55,6 @@ class EmployeeModel extends EmployeeEntity {
 
     super.userId,
 
-    super.role,
-
-    super.isSuperAdmin,
-    super.isCompanyAdmin,
-
     super.createdBy,
     super.updatedBy,
 
@@ -75,6 +71,7 @@ class EmployeeModel extends EmployeeEntity {
       departmentId: json['department_id'],
       designationId: json['designation_id'],
       shiftId: json['shift_id'],
+      roleId: json['role_id'],
 
       employeeCode: json['employee_code'] ?? '',
       cardNo: json['card_no'],
@@ -164,19 +161,7 @@ class EmployeeModel extends EmployeeEntity {
       ),
 
       userId:
-      json['user_id'],
-
-      role:
-      json['role'] ??
-          'EMPLOYEE',
-
-      isSuperAdmin:
-      json['is_super_admin'] ??
-          false,
-
-      isCompanyAdmin:
-      json['is_company_admin'] ??
-          false,
+      json['auth_user_id'],
 
       createdBy:
       json['created_by'],
@@ -206,6 +191,7 @@ class EmployeeModel extends EmployeeEntity {
       'department_id': departmentId,
       'designation_id': designationId,
       'shift_id': shiftId,
+      'role_id': roleId,
 
       'employee_code': employeeCode,
       'card_no': cardNo,
@@ -283,17 +269,8 @@ class EmployeeModel extends EmployeeEntity {
       updatedAt
           ?.toIso8601String(),
 
-      'user_id':
+      'auth_user_id':
       userId,
-
-      'role':
-      role,
-
-      'is_super_admin':
-      isSuperAdmin,
-
-      'is_company_admin':
-      isCompanyAdmin,
 
       'created_by':
       createdBy,

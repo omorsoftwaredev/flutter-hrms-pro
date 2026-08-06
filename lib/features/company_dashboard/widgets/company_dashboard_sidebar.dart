@@ -124,6 +124,15 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                       context.push(RoutePaths.employees);
                     },
                   ),
+                  ListTile(
+                    leading: const Icon(Icons.people_outline),
+                    title: const Text('Employee Accounts'),
+                    subtitle: const Text('Employee Accounts Management'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push(RoutePaths.employeesAccounts);
+                    },
+                  ),
 
 
                 ],

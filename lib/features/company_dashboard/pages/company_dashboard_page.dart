@@ -189,6 +189,15 @@ class CompanyDashboardPage extends StatelessWidget {
             },
           ),
 
+          _buildMenu(
+            context,
+            icon: Icons.people_outline,
+            title: "Employee Accounts",
+            onTap: () {
+              context.push(RoutePaths.employeesAccounts);
+            },
+          ),
+
           const SizedBox(height: 30),
         ],
       ),

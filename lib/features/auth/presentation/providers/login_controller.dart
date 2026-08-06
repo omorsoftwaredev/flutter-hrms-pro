@@ -24,7 +24,7 @@ class LoginController {
   Future<void> login({
     required BuildContext context,
     required String username,
-    required String password,
+    required String passwordHash,
   }) async {
     ref.read(loginLoadingProvider.notifier).state = true;
 
@@ -33,7 +33,7 @@ class LoginController {
           .read(authRepositoryProvider)
           .login(
         username: username,
-        password: password,
+        passwordHash: passwordHash,
       );
 
       ref
