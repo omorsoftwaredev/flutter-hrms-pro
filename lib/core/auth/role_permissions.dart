@@ -2,7 +2,7 @@
 /// Flutter HRMS Pro
 /// Role Permissions
 ///
-/// Version : 0.7.0
+/// Version : 1.0.0
 /// ===============================================================
 
 import 'permissions.dart';
@@ -98,6 +98,30 @@ class RolePermissions {
     },
 
     // ===========================================================
+    // HR
+    // ===========================================================
+
+    UserRole.hr: {
+      Permission.viewDashboard,
+
+      Permission.employeeView,
+      Permission.employeeCreate,
+      Permission.employeeUpdate,
+
+      Permission.attendanceView,
+      Permission.attendanceCreate,
+      Permission.attendanceUpdate,
+      Permission.attendanceCheckIn,
+      Permission.attendanceCheckOut,
+
+      Permission.leaveView,
+      Permission.leaveCreate,
+      Permission.leaveApprove,
+
+      Permission.reportsView,
+    },
+
+    // ===========================================================
     // Employee
     // ===========================================================
 
@@ -113,12 +137,10 @@ class RolePermissions {
     },
   };
 
-  /// Get all permissions of a role
   static Set<Permission> permissions(UserRole role) {
     return _permissions[role] ?? <Permission>{};
   }
 
-  /// Check a single permission
   static bool hasPermission(
       UserRole role,
       Permission permission,
@@ -126,23 +148,25 @@ class RolePermissions {
     return permissions(role).contains(permission);
   }
 
-  /// Check any permission
   static bool hasAnyPermission(
       UserRole role,
       List<Permission> permissions,
       ) {
     final userPermissions = RolePermissions.permissions(role);
 
-    return permissions.any(userPermissions.contains);
+    return permissions.any(
+      userPermissions.contains,
+    );
   }
 
-  /// Check all permissions
   static bool hasAllPermissions(
       UserRole role,
       List<Permission> permissions,
       ) {
     final userPermissions = RolePermissions.permissions(role);
 
-    return permissions.every(userPermissions.contains);
+    return permissions.every(
+      userPermissions.contains,
+    );
   }
 }

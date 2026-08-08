@@ -2,7 +2,7 @@
 /// Flutter HRMS Pro
 /// Current User Provider
 ///
-/// Version : 1.0.0
+/// Version : 2.0.0
 /// ===============================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,21 +10,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'current_user.dart';
 import 'user_type.dart';
 
-/// ===============================================================
-/// Current User Notifier
-/// ===============================================================
-
 class CurrentUserNotifier
     extends StateNotifier<CurrentUser?> {
-  CurrentUserNotifier() : super(null);
+  CurrentUserNotifier()
+      : super(null);
 
   // =============================================================
   // Current User
   // =============================================================
 
-  CurrentUser? get currentUser => state;
+  CurrentUser? get currentUser =>
+      state;
 
-  bool get isLoggedIn => state != null;
+  bool get isLoggedIn =>
+      state != null;
 
   // =============================================================
   // Login
@@ -59,30 +58,83 @@ class CurrentUserNotifier
   }
 
   // =============================================================
-  // User Type Helpers
+  // User Type
   // =============================================================
 
   bool get isDeveloper =>
-      state?.userType == UserType.developer;
+      state?.userType ==
+          UserType.developer;
 
   bool get isCompany =>
-      state?.userType == UserType.company;
+      state?.userType ==
+          UserType.company;
 
   bool get isHr =>
-      state?.userType == UserType.hr;
+      state?.userType ==
+          UserType.hr;
 
   bool get isSupervisor =>
-      state?.userType == UserType.supervisor;
+      state?.userType ==
+          UserType.supervisor;
 
   bool get isEmployee =>
-      state?.userType == UserType.employee;
+      state?.userType ==
+          UserType.employee;
+
+  // =============================================================
+  // Login User
+  // =============================================================
+
+  String get loginUser {
+    if (state == null) {
+      return '';
+    }
+
+    return state!.loginUser;
+  }
+
+  // =============================================================
+  // Login Name
+  // =============================================================
+
+  String get loginName {
+    return state?.loginName ?? '';
+  }
+
+  // =============================================================
+  // Role
+  // =============================================================
+
+  String get role {
+    return state?.role.name ?? '';
+  }
+
+  // =============================================================
+  // Employee
+  // =============================================================
+
+  String get employeeId {
+    return state?.employeeId ?? '';
+  }
+
+  // =============================================================
+  // Company
+  // =============================================================
+
+  String get companyId {
+    return state?.companyId ?? '';
+  }
 }
 
-/// ===============================================================
-/// Provider
-/// ===============================================================
+// ===============================================================
+// Provider
+// ===============================================================
 
 final currentUserProvider =
-StateNotifierProvider<CurrentUserNotifier, CurrentUser?>(
-      (ref) => CurrentUserNotifier(),
+StateNotifierProvider<
+    CurrentUserNotifier,
+    CurrentUser?>(
+      (ref) {
+    return CurrentUserNotifier();
+  },
 );

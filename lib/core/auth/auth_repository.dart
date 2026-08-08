@@ -1,3 +1,10 @@
+/// ===============================================================
+/// Flutter HRMS Pro
+/// Authentication Repository
+///
+/// Version : 2.1.0
+/// ===============================================================
+
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,15 +20,15 @@ class AuthRepository {
 
   final SupabaseClient _client = SupabaseService.client;
 
-  //==============================================================
+  // =============================================================
   // Session Key
-  //==============================================================
+  // =============================================================
 
   static const String _sessionKey = 'current_user';
 
-  //==============================================================
-  // Save Session
-  //==============================================================
+  // =============================================================
+  // SAVE SESSION
+  // =============================================================
 
   Future<void> _saveSession(CurrentUser user) async {
     final prefs = await SharedPreferences.getInstance();
@@ -29,41 +36,69 @@ class AuthRepository {
     await prefs.setString(
       _sessionKey,
       jsonEncode({
+        // =======================================================
+        // Common
+        // =======================================================
         'userId': user.userId,
-        'employeeId': user.employeeId,
-        'companyId': user.companyId,
+        'loginName': user.loginName,
+        'userType': user.userType.name,
+        'role': user.role.value,
         'fullName': user.fullName,
         'email': user.email,
-        'role': user.role.value,
-        'userType': user.userType.name,
+
+        // =======================================================
+        // Employee
+        // =======================================================
+        'employeeId': user.employeeId,
+        'employeeCode': user.employeeCode,
+        'employeeName': user.employeeName,
+
+        // =======================================================
+        // Company
+        // =======================================================
+        'companyId': user.companyId,
+        'companyName': user.companyName,
+
+        // =======================================================
+        // Department
+        // =======================================================
+        'departmentId': user.departmentId,
+        'departmentName': user.departmentName,
+
+        // =======================================================
+        // Designation
+        // =======================================================
+        'designationId': user.designationId,
+        'designationName': user.designationName,
       }),
     );
   }
 
-  //==============================================================
-  // Clear Session
-  //==============================================================
+  // =============================================================
+  // CLEAR SESSION
+  // =============================================================
 
   Future<void> _clearSession() async {
     final prefs = await SharedPreferences.getInstance();
+
     await prefs.remove(_sessionKey);
   }
 
-  //==============================================================
-  // Login
-  //==============================================================
+  // =============================================================
+  // LOGIN
+  // =============================================================
 
   Future<CurrentUser> login({
     required String username,
     required String passwordHash,
   }) async {
-
     print('================ LOGIN ================');
+
     print('Username: $username');
-    print('passwordHash: $passwordHash');
-    //----------------------------------------------------------
-    // Developer Login
-    //----------------------------------------------------------
+
+    // ===========================================================
+    // 1. DEVELOPER LOGIN
+    // ===========================================================
 
     final developer = await _client
         .from('developers')
@@ -76,27 +111,55 @@ class AuthRepository {
 
     if (developer != null) {
       final user = CurrentUser(
+        // -------------------------------------------------------
+        // Common
+        // -------------------------------------------------------
         userId: developer['id'].toString(),
-        employeeId: '',
-        companyId: '',
-        fullName: developer['full_name'] ?? '',
-        email: developer['email'] ?? '',
+
+        loginName: developer['username']?.toString() ?? username,
+
+        fullName: developer['full_name']?.toString() ?? '',
+
+        email: developer['email']?.toString() ?? '',
+
         userType: UserType.developer,
+
         role: UserRole.developer,
+
+        // -------------------------------------------------------
+        // Employee
+        // -------------------------------------------------------
+        employeeId: '',
+        employeeCode: null,
+        employeeName: null,
+
+        // -------------------------------------------------------
+        // Company
+        // -------------------------------------------------------
+        companyId: '',
+        companyName: null,
+
+        // -------------------------------------------------------
+        // Department
+        // -------------------------------------------------------
+        departmentId: null,
+        departmentName: null,
+
+        // -------------------------------------------------------
+        // Designation
+        // -------------------------------------------------------
+        designationId: null,
+        designationName: null,
       );
-      print('developer Result: $developer');
+
       await _saveSession(user);
 
       return user;
     }
-    else
-      {
-        print('developer Result: null null 123456');
-      }
 
-    //----------------------------------------------------------
-    // Company Login
-    //----------------------------------------------------------
+    // ===========================================================
+    // 2. COMPANY OWNER LOGIN
+    // ===========================================================
 
     final company = await _client
         .from('company_accounts')
@@ -106,33 +169,87 @@ class AuthRepository {
         .eq('is_active', true)
         .maybeSingle();
 
+    print('Company Account => $company');
+
     if (company != null) {
+      // ---------------------------------------------------------
+      // Company ID
+      // ---------------------------------------------------------
+
+      final companyId = company['company_id']?.toString() ?? '';
+
+      // ---------------------------------------------------------
+      // Get Company Name
+      // ---------------------------------------------------------
+
+      String? companyName;
+
+      if (companyId.isNotEmpty) {
+        final companyData = await _client
+            .from('companies')
+            .select('id, name')
+            .eq('id', companyId)
+            .maybeSingle();
+
+        companyName = companyData?['name']?.toString();
+      }
+
+      // ---------------------------------------------------------
+      // Create Current User
+      // ---------------------------------------------------------
+
       final user = CurrentUser(
+        // -------------------------------------------------------
+        // Common
+        // -------------------------------------------------------
         userId: company['id'].toString(),
-        employeeId: '',
-        companyId: company['company_id'].toString(),
-        fullName: company['username'] ?? '',
-        email: '',
+
+        loginName: company['username']?.toString() ?? username,
+
+        fullName: company['username']?.toString() ?? username,
+
+        email: company['email']?.toString() ?? '',
+
         userType: UserType.company,
+
         role: UserRole.companyOwner,
+
+        // -------------------------------------------------------
+        // Employee
+        // -------------------------------------------------------
+        employeeId: '',
+        employeeCode: null,
+        employeeName: null,
+
+        // -------------------------------------------------------
+        // Company
+        // -------------------------------------------------------
+        companyId: companyId,
+
+        companyName: companyName,
+
+        // -------------------------------------------------------
+        // Department
+        // -------------------------------------------------------
+        departmentId: null,
+        departmentName: null,
+
+        // -------------------------------------------------------
+        // Designation
+        // -------------------------------------------------------
+        designationId: null,
+        designationName: null,
       );
-      print('Company Result: $company');
+
       await _saveSession(user);
 
       return user;
     }
-    else
-    {
-      print('Company Result: null null 123456');
-    }
 
+    // ===========================================================
+    // 3. EMPLOYEE LOGIN
+    // ===========================================================
 
-
-    //----------------------------------------------------------
-    // Employee Login
-    //----------------------------------------------------------
-    print('LOGIN USERNAME => [$username]');
-    print('LOGIN PASSWORD => [$passwordHash]');
     final employee = await _client
         .from('employee_accounts')
         .select()
@@ -141,152 +258,292 @@ class AuthRepository {
         .eq('is_active', true)
         .maybeSingle();
 
+    print('Employee Account => $employee');
+
     if (employee != null) {
+      // ---------------------------------------------------------
+      // Employee Information
+      // ---------------------------------------------------------
+
+      final employeeId = employee['employee_id']?.toString() ?? '';
+
+      final employeeCode = employee['employee_code']?.toString();
+
+      final employeeName = employee['full_name']?.toString();
+
+      // ---------------------------------------------------------
+      // Company Information
+      // ---------------------------------------------------------
+
+      final companyId = employee['company_id']?.toString() ?? '';
+
+      String? companyName;
+
+      if (companyId.isNotEmpty) {
+        final companyData = await _client
+            .from('companies')
+            .select('id, name')
+            .eq('id', companyId)
+            .maybeSingle();
+
+        companyName = companyData?['name']?.toString();
+      }
+
+      // ---------------------------------------------------------
+      // Department Information
+      // ---------------------------------------------------------
+
+      final departmentId = employee['department_id']?.toString();
+
+      String? departmentName;
+
+      if (departmentId != null && departmentId.isNotEmpty) {
+        final departmentData = await _client
+            .from('departments')
+            .select('id, name')
+            .eq('id', departmentId)
+            .maybeSingle();
+
+        departmentName = departmentData?['name']?.toString();
+      }
+
+      // ---------------------------------------------------------
+      // Designation Information
+      // ---------------------------------------------------------
+
+      final designationId = employee['designation_id']?.toString();
+
+      String? designationName;
+
+      if (designationId != null && designationId.isNotEmpty) {
+        final designationData = await _client
+            .from('designations')
+            .select('id, name')
+            .eq('id', designationId)
+            .maybeSingle();
+
+        designationName = designationData?['name']?.toString();
+      }
+
+      // =========================================================
+      // CREATE CURRENT USER
+      // =========================================================
+
       final user = CurrentUser(
+        // -------------------------------------------------------
+        // Common
+        // -------------------------------------------------------
         userId: employee['id'].toString(),
-        employeeId: employee['employee_id'].toString(),
-        companyId: employee['company_id'].toString(),
-        fullName: employee['username'] ?? '',
-        email: '',
+
+        loginName: employee['username']?.toString() ?? username,
+
+        fullName: employeeName ?? employee['username']?.toString() ?? username,
+
+        email: employee['email']?.toString() ?? '',
+
         userType: UserType.employee,
+
         role: UserRole.employee,
+
+        // -------------------------------------------------------
+        // Employee
+        // -------------------------------------------------------
+        employeeId: employeeId,
+
+        employeeCode: employeeCode,
+
+        employeeName: employeeName,
+
+        // -------------------------------------------------------
+        // Company
+        // -------------------------------------------------------
+        companyId: companyId,
+
+        companyName: companyName,
+
+        // -------------------------------------------------------
+        // Department
+        // -------------------------------------------------------
+        departmentId: departmentId,
+
+        departmentName: departmentName,
+
+        // -------------------------------------------------------
+        // Designation
+        // -------------------------------------------------------
+        designationId: designationId,
+
+        designationName: designationName,
       );
-      print('Employee Result: $employee');
+
+      // ---------------------------------------------------------
+      // Debug
+      // ---------------------------------------------------------
+
+      print('================ EMPLOYEE SESSION ================');
+
+      print('Login Name   => ${user.loginName}');
+
+      print('User Type    => ${user.userType.name}');
+
+      print('Role         => ${user.role.value}');
+
+      print('Employee ID  => ${user.employeeId}');
+
+      print('Employee Code=> ${user.employeeCode}');
+
+      print('Employee Name=> ${user.employeeName}');
+
+      print('Company ID   => ${user.companyId}');
+
+      print('Company Name => ${user.companyName}');
+
+      print('Department ID=> ${user.departmentId}');
+
+      print('Department Name=> ${user.departmentName}');
+
+      print('Designation ID=> ${user.designationId}');
+
+      print('Designation Name=> ${user.designationName}');
+
+      // ---------------------------------------------------------
+      // Save Session
+      // ---------------------------------------------------------
+
       await _saveSession(user);
 
       return user;
     }
-    else
-    {
-      print('Employee Result: null null 123456');
-    }
 
-    //----------------------------------------------------------
-    // Employee Login
-    //----------------------------------------------------------
-    //
-    // final employee = await _client
-    //     .from('employees')
-    //     .select()
-    //     .eq('employee_code', username)
-    //     .eq('password_hash', passwordHash)
-    //     .eq('is_active', true)
-    //     .maybeSingle();
-    //
-    // if (employee != null) {
-    //   final role = UserRoleExtension.fromString(
-    //     employee['role'],
-    //   );
-    //
-    //   UserType type = UserType.employee;
-    //
-    //   switch (role) {
-    //     case UserRole.hr:
-    //       type = UserType.hr;
-    //       break;
-    //
-    //     case UserRole.supervisor:
-    //       type = UserType.supervisor;
-    //       break;
-    //
-    //     default:
-    //       type = UserType.employee;
-    //   }
-    //
-    //   final user = CurrentUser(
-    //     userId: employee['id'].toString(),
-    //     employeeId: employee['id'].toString(),
-    //     companyId: employee['company_id'].toString(),
-    //     fullName: employee['full_name'] ?? '',
-    //     email: employee['email'] ?? '',
-    //     userType: type,
-    //     role: role,
-    //   );
-    //
-    //   await _saveSession(user);
-    //
-    //   return user;
-    // }
+    // ===========================================================
+    // INVALID LOGIN
+    // ===========================================================
 
-    throw Exception(
-      'Invalid username or password.',
-    );
+    throw Exception('Invalid username or password.');
   }
 
-  //==============================================================
-  // Logout
-  //==============================================================
+  // =============================================================
+  // LOGOUT
+  // =============================================================
 
   Future<void> logout() async {
     await _clearSession();
   }
 
-  //==============================================================
-  // Current User
-  //==============================================================
+  // =============================================================
+  // CURRENT USER
+  // =============================================================
 
   Future<CurrentUser?> currentUser() async {
     final prefs = await SharedPreferences.getInstance();
 
     final json = prefs.getString(_sessionKey);
 
-    if (json == null) {
+    if (json == null || json.trim().isEmpty) {
       return null;
     }
 
-    final data = jsonDecode(json);
+    try {
+      final Map<String, dynamic> data = jsonDecode(json);
 
-    return CurrentUser(
-      userId: data['userId'],
-      employeeId: data['employeeId'],
-      companyId: data['companyId'],
-      fullName: data['fullName'],
-      email: data['email'],
-      role: UserRoleExtension.fromString(
-        data['role'],
-      ),
-      userType: UserType.values.firstWhere(
-            (e) => e.name == data['userType'],
-      ),
-    );
+      // ---------------------------------------------------------
+      // User Type
+      // ---------------------------------------------------------
+
+      final userType = UserType.values.firstWhere(
+        (e) => e.name == data['userType'],
+        orElse: () => UserType.employee,
+      );
+
+      // ---------------------------------------------------------
+      // Current User
+      // ---------------------------------------------------------
+
+      return CurrentUser(
+        // -------------------------------------------------------
+        // Common
+        // -------------------------------------------------------
+        userId: data['userId']?.toString() ?? '',
+
+        loginName: data['loginName']?.toString() ?? '',
+
+        fullName: data['fullName']?.toString() ?? '',
+
+        email: data['email']?.toString() ?? '',
+
+        userType: userType,
+
+        role: UserRoleExtension.fromString(data['role']?.toString()),
+
+        // -------------------------------------------------------
+        // Employee
+        // -------------------------------------------------------
+        employeeId: data['employeeId']?.toString() ?? '',
+
+        employeeCode: data['employeeCode']?.toString(),
+
+        employeeName: data['employeeName']?.toString(),
+
+        // -------------------------------------------------------
+        // Company
+        // -------------------------------------------------------
+        companyId: data['companyId']?.toString() ?? '',
+
+        companyName: data['companyName']?.toString(),
+
+        // -------------------------------------------------------
+        // Department
+        // -------------------------------------------------------
+        departmentId: data['departmentId']?.toString(),
+
+        departmentName: data['departmentName']?.toString(),
+
+        // -------------------------------------------------------
+        // Designation
+        // -------------------------------------------------------
+        designationId: data['designationId']?.toString(),
+
+        designationName: data['designationName']?.toString(),
+      );
+    } catch (e) {
+      await _clearSession();
+
+      return null;
+    }
   }
-  //==============================================================
-// Change Employee Password
-//==============================================================
+
+  // =============================================================
+  // CHANGE EMPLOYEE PASSWORD
+  // =============================================================
 
   Future<void> changeEmployeePassword({
     required String employeeId,
     required String currentPassword,
     required String newPassword,
   }) async {
-    // ------------------------------------------------------------
-    // Current password verify + update
-    // ------------------------------------------------------------
-
     final result = await _client
         .from('employee_accounts')
         .update({
-      'password_hash': newPassword,
-      'password_changed_at': DateTime.now().toIso8601String(),
-      'force_change_password': false,
-      'password_reset_token': null,
-      'password_reset_expire_at': null,
-      'updated_at': DateTime.now().toIso8601String(),
-    })
+          'password_hash': newPassword,
+
+          'password_changed_at': DateTime.now().toIso8601String(),
+
+          'force_change_password': false,
+
+          'password_reset_token': null,
+
+          'password_reset_expire_at': null,
+
+          'updated_at': DateTime.now().toIso8601String(),
+        })
         .eq('employee_id', employeeId)
         .eq('password_hash', currentPassword)
         .eq('is_active', true)
         .select('id')
         .maybeSingle();
 
-    // ------------------------------------------------------------
-    // If no row updated => current password incorrect
-    // ------------------------------------------------------------
-
     if (result == null) {
-      throw Exception(
-        'Current password is incorrect.',
-      );
+      throw Exception('Current password is incorrect.');
     }
   }
 }

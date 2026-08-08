@@ -2,7 +2,7 @@
 /// Flutter HRMS Pro
 /// Role Definitions
 ///
-/// Version : 0.8.1
+/// Version : 1.0.0
 /// ===============================================================
 
 enum UserRole {
@@ -42,7 +42,7 @@ extension UserRoleExtension on UserRole {
         return 'Company Owner';
 
       case UserRole.hr:
-        return 'hr';
+        return 'HR';
 
       case UserRole.supervisor:
         return 'Supervisor';
