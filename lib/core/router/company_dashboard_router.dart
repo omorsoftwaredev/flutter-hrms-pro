@@ -57,17 +57,6 @@ class CompanyDashboardRouter {
     // ===========================================================
     // Company Dashboard
     // ===========================================================
-
-    // GoRoute(
-    //   path: RoutePaths.companyDashboard,
-    //   name: RouteNames.companyDashboard,
-    //   builder: (context, state) =>
-    //   const CompanyDashboardPage(),
-    // ),
-
-    // ===========================================================
-    // Department
-    // ===========================================================
     GoRoute(
       path: RoutePaths.companyDashboard,
       name: RouteNames.companyDashboard,

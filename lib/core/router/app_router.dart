@@ -8,11 +8,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/attendance/presentation/pages/attendance_mobile_page.dart';
 import '../../features/auth/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/dashboard/pages/dashboard_home_page.dart';
 
+import '../../features/dashboard/pages/employee_dashboard_page.dart';
 import 'company_dashboard_router.dart';
+import 'employee_dashboard_router.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 import 'developer_router.dart';
@@ -39,7 +42,13 @@ class AppRouter {
         name: RouteNames.splash,
         builder: (context, state) => const SplashPage(),
       ),
-
+      GoRoute(
+        path: RoutePaths.employeeDashboard,
+        name: 'employeeDashboard',
+        builder: (context, state) {
+          return const EmployeeDashboardPage();
+        },
+      ),
       // ===========================================================
       // Login
       // ===========================================================
@@ -62,6 +71,7 @@ class AppRouter {
 
       ...DeveloperRouter.routes,
       ...CompanyDashboardRouter.routes,
+      ...EmployeeDashboardRouter.routes,
     ],
 
     errorBuilder: (context, state) {

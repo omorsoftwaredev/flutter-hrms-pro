@@ -1,25 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/attendance_model.dart';
 import '../../data/repositories/attendance_repository.dart';
 import '../../domain/entities/attendance_entity.dart';
 
-final attendanceRepositoryProvider =
-Provider<AttendanceRepository>(
-      (ref) => AttendanceRepository(),
-);
+//==============================================================
+// REPOSITORY PROVIDER
+//==============================================================
 
-final attendanceProvider =
-StateNotifierProvider<
+final attendanceRepositoryProvider =
+Provider<AttendanceRepository>((ref) {
+  return AttendanceRepository();
+});
+
+//==============================================================
+// ATTENDANCE PROVIDER
+//==============================================================
+
+final attendanceProvider = StateNotifierProvider<
     AttendanceNotifier,
     AsyncValue<List<AttendanceEntity>>>(
-      (ref) => AttendanceNotifier(
-    ref.read(attendanceRepositoryProvider),
-  ),
+      (ref) {
+    return AttendanceNotifier(
+      ref.read(attendanceRepositoryProvider),
+    );
+  },
 );
 
+//==============================================================
+// ATTENDANCE NOTIFIER
+//==============================================================
+
 class AttendanceNotifier
-    extends StateNotifier<
-        AsyncValue<List<AttendanceEntity>>> {
+    extends StateNotifier<AsyncValue<List<AttendanceEntity>>> {
   AttendanceNotifier(this._repository)
       : super(const AsyncLoading()) {
     loadAttendance();
@@ -27,16 +40,15 @@ class AttendanceNotifier
 
   final AttendanceRepository _repository;
 
-  ///=====================================
-  /// LOAD
-  ///=====================================
+  //============================================================
+  // LOAD ALL
+  //============================================================
 
   Future<void> loadAttendance() async {
     try {
       state = const AsyncLoading();
 
-      final attendance =
-      await _repository.getAll();
+      final attendance = await _repository.getAll();
 
       state = AsyncData(attendance);
     } catch (e, st) {
@@ -44,31 +56,29 @@ class AttendanceNotifier
     }
   }
 
-  ///=====================================
-  /// REFRESH
-  ///=====================================
+  //============================================================
+  // REFRESH
+  //============================================================
 
   Future<void> refresh() async {
     await loadAttendance();
   }
 
-  ///=====================================
-  /// SEARCH
-  ///=====================================
+  //============================================================
+  // SEARCH
+  //============================================================
 
-  Future<void> search(
-      String keyword,
-      ) async {
+  Future<void> search(String keyword) async {
     try {
-      state = const AsyncLoading();
-
       if (keyword.trim().isEmpty) {
         await loadAttendance();
         return;
       }
 
+      state = const AsyncLoading();
+
       final attendance =
-      await _repository.search(keyword);
+      await _repository.search(keyword.trim());
 
       state = AsyncData(attendance);
     } catch (e, st) {
@@ -76,62 +86,73 @@ class AttendanceNotifier
     }
   }
 
-  ///=====================================
-  /// INSERT
-  ///=====================================
+  //============================================================
+  // INSERT
+  //============================================================
 
   Future<bool> insert(
       AttendanceEntity attendance,
       ) async {
     try {
-      await _repository.insert(attendance);
+      // Entity -> Model
+      final model =
+      AttendanceModel.fromEntity(attendance);
+
+      await _repository.insert(model);
 
       await loadAttendance();
 
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      state = AsyncError(e, st);
       return false;
     }
   }
 
-  ///=====================================
-  /// UPDATE
-  ///=====================================
+  //============================================================
+  // UPDATE
+  //============================================================
 
   Future<bool> update(
       AttendanceEntity attendance,
       ) async {
     try {
-      await _repository.update(attendance);
+      // Entity -> Model
+      final model =
+      AttendanceModel.fromEntity(attendance);
+
+      await _repository.update(model);
 
       await loadAttendance();
 
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      state = AsyncError(e, st);
       return false;
     }
   }
 
-  ///=====================================
-  /// DELETE
-  ///=====================================
+  //============================================================
+  // DELETE
+  //============================================================
 
-  Future<bool> delete(
-      String id,
-      ) async {
+  Future<bool> delete(String id) async {
     try {
       await _repository.delete(id);
 
       await loadAttendance();
 
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      state = AsyncError(e, st);
       return false;
     }
   }
-  ///=====================================
-  /// GET TODAY ATTENDANCE
-  ///=====================================
+
+  //============================================================
+  // GET TODAY ATTENDANCE
+  //============================================================
+
   Future<AttendanceEntity?> getTodayAttendance(
       String employeeId,
       ) async {
@@ -144,27 +165,32 @@ class AttendanceNotifier
     }
   }
 
-  ///=====================================
-  /// CHECK-IN
-  ///=====================================
+  //============================================================
+  // CHECK-IN
+  //============================================================
 
   Future<bool> checkIn({
     required AttendanceEntity attendance,
   }) async {
     try {
-      await _repository.insert(attendance);
+      // Entity -> Model
+      final model =
+      AttendanceModel.fromEntity(attendance);
+
+      await _repository.insert(model);
 
       await loadAttendance();
 
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      state = AsyncError(e, st);
       return false;
     }
   }
 
-  ///=====================================
-  /// CHECK-OUT
-  ///=====================================
+  //============================================================
+  // CHECK-OUT
+  //============================================================
 
   Future<bool> checkOut({
     required String attendanceId,
@@ -183,14 +209,15 @@ class AttendanceNotifier
       await loadAttendance();
 
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      state = AsyncError(e, st);
       return false;
     }
   }
 
-  ///=====================================
-  /// EMPLOYEE ATTENDANCE
-  ///=====================================
+  //============================================================
+  // EMPLOYEE ATTENDANCE
+  //============================================================
 
   Future<void> employeeAttendance(
       String employeeId,
@@ -209,9 +236,9 @@ class AttendanceNotifier
     }
   }
 
-  ///=====================================
-  /// TODAY
-  ///=====================================
+  //============================================================
+  // TODAY ATTENDANCE LIST
+  //============================================================
 
   Future<void> todayAttendance() async {
     try {

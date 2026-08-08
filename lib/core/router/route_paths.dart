@@ -15,6 +15,7 @@ class RoutePaths {
   static const splash = '/';
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
+  static const changePassword = '/change-password';
   static const updatePassword = '/update-password';
 
   // =============================================================
@@ -35,7 +36,7 @@ class RoutePaths {
 
   static const supervisorDashboard = '/dashboard/supervisor';
 
-  static const employeeDashboard = '/dashboard/employee';
+  static const String employeeDashboard = '/employee-dashboard';
 
   // =============================================================
   // Company
@@ -119,7 +120,8 @@ class RoutePaths {
   // =============================================================
   // Attendance
   // =============================================================
-
+  static const String employeeAttendanceReport =
+      '/employee-attendance-report';
   static const attendance = '/attendance';
   static const mobileAttendance = '/attendance/mobile';
   static const attendanceHistory = '/attendance/history';

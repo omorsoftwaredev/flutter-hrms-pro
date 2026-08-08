@@ -1,222 +1,460 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/helpers/database_error_helper.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../models/attendance_model.dart';
 
 class AttendanceRemoteDataSource {
   final SupabaseClient _client = SupabaseService.client;
 
-  Future<List<AttendanceModel>> getAll() async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .order('attendance_date', ascending: false);
+  //==============================================================
+  // GET ALL
+  //==============================================================
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+  Future<List<AttendanceModel>> getAll() async {
+    try {
+      final response = await _client
+          .from('attendance')
+          .select()
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // GET TODAY ATTENDANCE
+  //==============================================================
 
   Future<AttendanceModel?> getTodayAttendance(
       String employeeId,
       ) async {
-    final today =
-        DateTime.now().toIso8601String().split('T').first;
+    try {
+      final today = DateTime.now()
+          .toIso8601String()
+          .split('T')
+          .first;
 
-    final response = await _client
-        .from('attendance')
-        .select()
-        .eq('employee_id', employeeId)
-        .eq('attendance_date', today)
-        .maybeSingle();
+      final response = await _client
+          .from('attendance')
+          .select()
+          .eq(
+        'employee_id',
+        employeeId,
+      )
+          .eq(
+        'attendance_date',
+        today,
+      )
+          .maybeSingle();
 
-    if (response == null) {
-      return null;
+      if (response == null) {
+        return null;
+      }
+
+      return AttendanceModel.fromMap(
+        response,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
     }
-
-    return AttendanceModel.fromMap(response);
   }
 
-  Future<AttendanceModel?> getById(String id) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .eq('id', id)
-        .maybeSingle();
+  //==============================================================
+  // GET BY ID
+  //==============================================================
 
-    if (response == null) return null;
+  Future<AttendanceModel?> getById(
+      String id,
+      ) async {
+    try {
+      final response = await _client
+          .from('attendance')
+          .select()
+          .eq(
+        'id',
+        id,
+      )
+          .maybeSingle();
 
-    return AttendanceModel.fromMap(response);
+      if (response == null) {
+        return null;
+      }
+
+      return AttendanceModel.fromMap(
+        response,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // INSERT
+  //
+  // IMPORTANT:
+  //
+  // এখানে id পাঠানো হচ্ছে না।
+  //
+  // Database:
+  // id uuid NOT NULL DEFAULT gen_random_uuid()
+  //
+  // তাই PostgreSQL নিজে id generate করবে।
+  //==============================================================
 
   Future<void> insert(
       AttendanceModel attendance,
       ) async {
-    await _client
-        .from('attendance')
-        .insert(attendance.toMap());
+    try {
+      await _client
+          .from('attendance')
+          .insert(
+        attendance.toInsertMap(),
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // UPDATE
+  //
+  // IMPORTANT:
+  //
+  // id ছাড়া অন্য data update হবে।
+  //
+  // WHERE id = attendance.id
+  //==============================================================
 
   Future<void> update(
       AttendanceModel attendance,
       ) async {
-    await _client
-        .from('attendance')
-        .update(attendance.toMap())
-        .eq('id', attendance.id!);
+    try {
+      if (attendance.id == null ||
+          attendance.id!.isEmpty) {
+        throw Exception(
+          'Attendance ID is required for update.',
+        );
+      }
+
+      await _client
+          .from('attendance')
+          .update(
+        attendance.toUpdateMap(),
+      )
+          .eq(
+        'id',
+        attendance.id!,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
-  Future<void> delete(String id) async {
-    await _client
-        .from('attendance')
-        .delete()
-        .eq('id', id);
+  //==============================================================
+  // DELETE
+  //==============================================================
+
+  Future<void> delete(
+      String id,
+      ) async {
+    try {
+      await _client
+          .from('attendance')
+          .delete()
+          .eq(
+        'id',
+        id,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // SEARCH
+  //==============================================================
 
   Future<List<AttendanceModel>> search(
       String keyword,
       ) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .or(
-      'attendance_no.ilike.%$keyword%,remarks.ilike.%$keyword%',
-    )
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final response = await _client
+          .from('attendance')
+          .select()
+          .or(
+        'attendance_no.ilike.%$keyword%,'
+            'remarks.ilike.%$keyword%',
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // BY EMPLOYEE
+  //==============================================================
 
   Future<List<AttendanceModel>> byEmployee(
       String employeeId,
       ) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .eq('employee_id', employeeId)
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final response = await _client
+          .from('attendance')
+          .select()
+          .eq(
+        'employee_id',
+        employeeId,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // BY STATUS
+  //==============================================================
 
   Future<List<AttendanceModel>> byStatus(
       String status,
       ) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .eq(
-      'attendance_status',
-      status,
-    )
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final response = await _client
+          .from('attendance')
+          .select()
+          .eq(
+        'attendance_status',
+        status,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // BY DATE
+  //==============================================================
 
   Future<List<AttendanceModel>> byDate(
       DateTime date,
       ) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .eq(
-      'attendance_date',
-      date.toIso8601String().split('T').first,
-    );
+    try {
+      final selectedDate = date
+          .toIso8601String()
+          .split('T')
+          .first;
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      final response = await _client
+          .from('attendance')
+          .select()
+          .eq(
+        'attendance_date',
+        selectedDate,
+      );
+
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // BY DATE RANGE
+  //==============================================================
 
   Future<List<AttendanceModel>> byDateRange({
     required DateTime from,
     required DateTime to,
   }) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .gte(
-      'attendance_date',
-      from.toIso8601String().split('T').first,
-    )
-        .lte(
-      'attendance_date',
-      to.toIso8601String().split('T').first,
-    )
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final fromDate = from
+          .toIso8601String()
+          .split('T')
+          .first;
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      final toDate = to
+          .toIso8601String()
+          .split('T')
+          .first;
+
+      final response = await _client
+          .from('attendance')
+          .select()
+          .gte(
+        'attendance_date',
+        fromDate,
+      )
+          .lte(
+        'attendance_date',
+        toDate,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // BY COMPANY
+  //==============================================================
 
   Future<List<AttendanceModel>> byCompany(
       String companyId,
       ) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .eq('company_id', companyId)
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final response = await _client
+          .from('attendance')
+          .select()
+          .eq(
+        'company_id',
+        companyId,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
+
+  //==============================================================
+  // BY DEPARTMENT
+  //==============================================================
 
   Future<List<AttendanceModel>> byDepartment(
       String departmentId,
       ) async {
-    final response = await _client
-        .from('attendance')
-        .select()
-        .eq('department_id', departmentId)
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final response = await _client
+          .from('attendance')
+          .select()
+          .eq(
+        'department_id',
+        departmentId,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
 
-    return response
-        .map<AttendanceModel>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      return response
+          .map<AttendanceModel>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

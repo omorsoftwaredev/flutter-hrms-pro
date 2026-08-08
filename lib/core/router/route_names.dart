@@ -15,6 +15,7 @@ class RouteNames {
   static const splash = 'splash';
   static const login = 'login';
   static const forgotPassword = 'forgotPassword';
+  static const changePassword = 'changePassword';
   static const updatePassword = 'updatePassword';
 
   // =============================================================
@@ -106,6 +107,7 @@ class RouteNames {
   // =============================================================
 
   static const attendance = 'attendance';
+  static const String employeeAttendanceReport = 'employeeAttendanceReport';
   static const mobileAttendance = 'mobileAttendance';
   static const attendanceHistory = 'attendanceHistory';
 

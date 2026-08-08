@@ -65,21 +65,6 @@ class AuthRepository {
     // Developer Login
     //----------------------------------------------------------
 
-    // final developer = await _client
-    //     .from('developers')
-    //     .select()
-    //     .eq('username', username)
-    //     .eq('password_hash', passwordHash)
-    //     .maybeSingle();
-
-    // final developer = await _client
-    //     .from('developers')
-    //     .select('*')
-    //     .eq('username', username)
-    //     .maybeSingle();
-    //
-    // print('Developer => $developer');
-
     final developer = await _client
         .from('developers')
         .select()
@@ -139,6 +124,41 @@ class AuthRepository {
     else
     {
       print('Company Result: null null 123456');
+    }
+
+
+
+    //----------------------------------------------------------
+    // Employee Login
+    //----------------------------------------------------------
+    print('LOGIN USERNAME => [$username]');
+    print('LOGIN PASSWORD => [$passwordHash]');
+    final employee = await _client
+        .from('employee_accounts')
+        .select()
+        .eq('username', username)
+        .eq('password_hash', passwordHash)
+        .eq('is_active', true)
+        .maybeSingle();
+
+    if (employee != null) {
+      final user = CurrentUser(
+        userId: employee['id'].toString(),
+        employeeId: employee['employee_id'].toString(),
+        companyId: employee['company_id'].toString(),
+        fullName: employee['username'] ?? '',
+        email: '',
+        userType: UserType.employee,
+        role: UserRole.employee,
+      );
+      print('Employee Result: $employee');
+      await _saveSession(user);
+
+      return user;
+    }
+    else
+    {
+      print('Employee Result: null null 123456');
     }
 
     //----------------------------------------------------------
@@ -229,5 +249,44 @@ class AuthRepository {
             (e) => e.name == data['userType'],
       ),
     );
+  }
+  //==============================================================
+// Change Employee Password
+//==============================================================
+
+  Future<void> changeEmployeePassword({
+    required String employeeId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    // ------------------------------------------------------------
+    // Current password verify + update
+    // ------------------------------------------------------------
+
+    final result = await _client
+        .from('employee_accounts')
+        .update({
+      'password_hash': newPassword,
+      'password_changed_at': DateTime.now().toIso8601String(),
+      'force_change_password': false,
+      'password_reset_token': null,
+      'password_reset_expire_at': null,
+      'updated_at': DateTime.now().toIso8601String(),
+    })
+        .eq('employee_id', employeeId)
+        .eq('password_hash', currentPassword)
+        .eq('is_active', true)
+        .select('id')
+        .maybeSingle();
+
+    // ------------------------------------------------------------
+    // If no row updated => current password incorrect
+    // ------------------------------------------------------------
+
+    if (result == null) {
+      throw Exception(
+        'Current password is incorrect.',
+      );
+    }
   }
 }

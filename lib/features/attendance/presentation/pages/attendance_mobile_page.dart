@@ -66,7 +66,7 @@ class _AttendanceMobilePageState
 
     try {
       final location = await _locationService.getLocation();
-
+      print("CHECKING CURRENT EMPLOYEE");
       final employee =
       await CurrentEmployeeRepository().currentEmployee();
 
@@ -119,7 +119,10 @@ class _AttendanceMobilePageState
       if (ok) {
         await _loadLocation();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('========== ATTENDANCE ERROR ==========');
+      print('ERROR => $e');
+      print('STACK TRACE => $stackTrace');
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,7 +173,10 @@ class _AttendanceMobilePageState
           ok ? Colors.green : Colors.red,
         ),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('========== ATTENDANCE ERROR ==========');
+      print('ERROR => $e');
+      print('STACK TRACE => $stackTrace');
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
