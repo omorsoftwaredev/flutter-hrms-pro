@@ -168,6 +168,24 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                   ),
 
                   // =================================================
+                  // SUPERVISORS
+                  // =================================================
+
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.supervisor_account_outlined,
+                    title: 'Supervisors',
+                    subtitle: 'Supervisor Management',
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      context.push(
+                        RoutePaths.supervisors,
+                      );
+                    },
+                  ),
+
+                  // =================================================
                   // EMPLOYEE ACCOUNTS
                   // =================================================
 

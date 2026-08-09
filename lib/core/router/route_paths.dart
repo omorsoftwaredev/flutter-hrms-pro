@@ -17,6 +17,12 @@ class RoutePaths {
   static const forgotPassword = '/forgot-password';
   static const changePassword = '/change-password';
   static const updatePassword = '/update-password';
+  static const String supervisors = '/supervisors';
+
+  static const String supervisorCrud = '/supervisor-crud';
+
+  static const String supervisorAssignment = '/supervisor-assignment';
+  static const supervisorDashboard = '/supervisor-dashboard';
 
   // =============================================================
   // Dashboard
@@ -24,17 +30,15 @@ class RoutePaths {
 
   static const dashboard = '/dashboard';
 
-// =============================================================
-// Dashboards
-// =============================================================
+  // =============================================================
+  // Dashboards
+  // =============================================================
 
   static const developerDashboard = '/dashboard/developer';
 
   static const companyDashboard = '/dashboard/company';
 
   static const hrDashboard = '/dashboard/hr';
-
-  static const supervisorDashboard = '/dashboard/supervisor';
 
   static const String employeeDashboard = '/employee-dashboard';
 
@@ -71,7 +75,6 @@ class RoutePaths {
   static const shiftCreate = '/shifts/create';
   static const shiftEdit = '/shifts/edit';
 
-
   // Role
   // =============================================================
   static const roleView = '/roles/view';
@@ -91,37 +94,28 @@ class RoutePaths {
   // =============================================================
 
   // Employee
-  static const employees =
-      '/dashboard/employees';
+  static const employees = '/dashboard/employees';
 
-  static const employeeCreate =
-      '/dashboard/employees/create';
+  static const employeeCreate = '/dashboard/employees/create';
 
-  static const employeeEdit =
-      '/dashboard/employees/edit';
+  static const employeeEdit = '/dashboard/employees/edit';
 
-  static const employeeView =
-      '/dashboard/employees/view';
+  static const employeeView = '/dashboard/employees/view';
 
   // Employee Account
 
-  static const employeesAccounts =
-      '/dashboard/employee-accounts';
+  static const employeesAccounts = '/dashboard/employee-accounts';
 
-  static const employeeAccountCreate =
-      '/dashboard/employee-accounts/create';
+  static const employeeAccountCreate = '/dashboard/employee-accounts/create';
 
-  static const employeeAccountEdit =
-      '/dashboard/employee-accounts/edit';
+  static const employeeAccountEdit = '/dashboard/employee-accounts/edit';
 
-  static const employeeAccountView =
-      '/dashboard/employee-accounts/view';
+  static const employeeAccountView = '/dashboard/employee-accounts/view';
 
   // =============================================================
   // Attendance
   // =============================================================
-  static const String employeeAttendanceReport =
-      '/employee-attendance-report';
+  static const String employeeAttendanceReport = '/employee-attendance-report';
   static const attendance = '/attendance';
   static const mobileAttendance = '/attendance/mobile';
   static const attendanceHistory = '/attendance/history';
@@ -171,15 +165,9 @@ class RoutePaths {
 
   static const companyAccounts = '/company-accounts';
 
-  static const companyAccountCreate =
-      '/company-accounts/create';
+  static const companyAccountCreate = '/company-accounts/create';
 
-  static const companyAccountEdit =
-      '/company-accounts/edit';
+  static const companyAccountEdit = '/company-accounts/edit';
 
-  static const companyAccountDetails =
-      '/company-accounts/details';
-
-
-
+  static const companyAccountDetails = '/company-accounts/details';
 }

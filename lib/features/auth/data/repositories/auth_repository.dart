@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
@@ -14,10 +15,46 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    return await _client.auth.signInWithPassword(
+    final response = await _client.auth.signInWithPassword(
       email: email,
       password: password,
     );
+
+    // =============================================================
+    // LOGIN AUTH DEBUG
+    // =============================================================
+
+    debugPrint(
+      '=====================================================',
+    );
+
+    debugPrint('LOGIN AUTH DEBUG');
+
+    debugPrint(
+      'USER ID = ${_client.auth.currentUser?.id}',
+    );
+
+    debugPrint(
+      'USER EMAIL = ${_client.auth.currentUser?.email}',
+    );
+
+    debugPrint(
+      'SESSION EXISTS = ${_client.auth.currentSession != null}',
+    );
+
+    debugPrint(
+      'RESPONSE USER ID = ${response.user?.id}',
+    );
+
+    debugPrint(
+      'RESPONSE SESSION EXISTS = ${response.session != null}',
+    );
+
+    debugPrint(
+      '=====================================================',
+    );
+
+    return response;
   }
 
   ///=====================================

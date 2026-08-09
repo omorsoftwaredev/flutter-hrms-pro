@@ -46,6 +46,9 @@ import '../../features/employee/presentation/pages/employee_form_page.dart';
 import '../../features/employee/presentation/pages/employee_list_page.dart';
 
 import '../../features/shift/presentation/pages/shift_view_page.dart';
+import '../../features/supervisor/presentation/pages/supervisor_assignment_page.dart';
+import '../../features/supervisor/presentation/pages/supervisor_crud_page.dart';
+import '../../features/supervisor/presentation/pages/supervisor_page.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 import '../../features/employee_account/presentation/routes/employee_account_routes.dart';
@@ -302,7 +305,23 @@ class CompanyDashboardRouter {
         );
       },
     ),
+    GoRoute(
+      path: RoutePaths.supervisors,
+      builder: (context, state) =>
+      const SupervisorPage(),
+    ),
 
+    GoRoute(
+      path: RoutePaths.supervisorCrud,
+      builder: (context, state) =>
+      const SupervisorCrudPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.supervisorAssignment,
+      builder: (context, state) =>
+      const SupervisorAssignmentPage(),
+    ),
     //-------------------------------------------------------
     // Employee Account List
     //-------------------------------------------------------

@@ -142,6 +142,8 @@ class CurrentUser {
 
   bool get isSupervisor => userType == UserType.supervisor;
 
+
+
   bool get isEmployee => userType == UserType.employee;
 
   // =============================================================
