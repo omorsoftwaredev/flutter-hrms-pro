@@ -17,12 +17,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // final _passwordController = TextEditingController();
   final _usernameController = TextEditingController(
     // text: "omor.software.dev@gmail.com",
-    text: "EMP0002",
+    // text: "EMP0002",
+    text: "omor4android",
   );
 
   final _passwordController = TextEditingController(
     // text: "Admin@123456",
-    text: "123456",
+    // text: "123456",
+    text: "1234561",
   );
 
   @override

@@ -2,7 +2,12 @@
 // Flutter HRMS Pro
 // Company Dashboard Sidebar
 //
-// Version : 2.3.0
+// Version : 2.4.0
+//
+// Updated:
+// - Added Manage Supervisor Departments menu
+// - Existing menus preserved
+// - Existing routes preserved
 // ===============================================================
 
 import 'package:flutter/material.dart';
@@ -44,7 +49,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
         child: Column(
           children: [
             // ===================================================
-            // LOGIN INFORMATION
+            // USER HEADER
             // ===================================================
 
             _buildUserHeader(user),
@@ -185,6 +190,50 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     },
                   ),
 
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.account_tree_outlined,
+                    title: 'Supervisor Assign Departments', subtitle: 'Assign departments to supervisors',
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      context.push(
+                        RoutePaths
+                            .supervisorDepartmentAssignments,
+                      );
+                    },
+                  ),
+
+
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.account_tree_outlined,
+                    title: 'Manage Supervisor Departments',
+                    subtitle: 'Manage assigned departments',
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      context.push(
+                        RoutePaths
+                            .supervisorDepartmentManage,
+                      );
+                    },
+                  ),
+
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.analytics_outlined,
+                    title: 'Supervisor Department Status',
+                    subtitle: 'Assignment status & overview',
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      context.push(
+                        RoutePaths.supervisorDepartmentStatus,
+                      );
+                    },
+                  ),
+
                   // =================================================
                   // EMPLOYEE ACCOUNTS
                   // =================================================
@@ -193,7 +242,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     context,
                     icon: Icons.manage_accounts_outlined,
                     title: 'Employee Accounts',
-                    subtitle: 'Employee Accounts Management',
+                    subtitle:
+                    'Employee Accounts Management',
                     onTap: () {
                       Navigator.pop(context);
 
@@ -207,15 +257,20 @@ class CompanyDashboardSidebar extends ConsumerWidget {
             ),
 
             // =====================================================
-            // LOGOUT
+            // LOGOUT DIVIDER
             // =====================================================
 
             const Divider(
               height: 1,
             ),
 
+            // =====================================================
+            // LOGOUT
+            // =====================================================
+
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(
+              contentPadding:
+              const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 4,
               ),
@@ -224,7 +279,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: Colors.red.withOpacity(.08),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius:
+                  BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.logout,
@@ -254,7 +310,9 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     .logout();
 
                 ref
-                    .read(currentUserProvider.notifier)
+                    .read(
+                  currentUserProvider.notifier,
+                )
                     .logout();
 
                 if (context.mounted) {
@@ -298,7 +356,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
         children: [
           // =====================================================
           // PROFILE
@@ -311,17 +370,20 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius:
+                  BorderRadius.circular(15),
                 ),
                 child: Center(
                   child: Text(
                     displayName.isEmpty
                         ? '?'
-                        : displayName[0].toUpperCase(),
+                        : displayName[0]
+                        .toUpperCase(),
                     style: const TextStyle(
                       color: Color(0xFF2196F3),
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                      FontWeight.bold,
                     ),
                   ),
                 ),
@@ -339,11 +401,13 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     Text(
                       displayName,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      overflow:
+                      TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                        fontWeight:
+                        FontWeight.bold,
                       ),
                     ),
 
@@ -354,9 +418,11 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     Text(
                       user.loginUser,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      overflow:
+                      TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(.85),
+                        color: Colors.white
+                            .withOpacity(.85),
                         fontSize: 12,
                       ),
                     ),
@@ -381,17 +447,16 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                 color: Colors.white,
                 size: 17,
               ),
-
               const SizedBox(
                 width: 7,
               ),
-
               const Text(
                 'Login Information',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 13,
-                  fontWeight: FontWeight.bold,
+                  fontWeight:
+                  FontWeight.bold,
                 ),
               ),
             ],
@@ -426,7 +491,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
           // =====================================================
 
           _infoRow(
-            icon: Icons.admin_panel_settings_outlined,
+            icon:
+            Icons.admin_panel_settings_outlined,
             label: 'Role',
             value: user.role.name,
           ),
@@ -436,7 +502,9 @@ class CompanyDashboardSidebar extends ConsumerWidget {
           // =====================================================
 
           if (user.companyName != null &&
-              user.companyName!.trim().isNotEmpty)
+              user.companyName!
+                  .trim()
+                  .isNotEmpty)
             _infoRow(
               icon: Icons.business_outlined,
               label: 'Company',
@@ -453,13 +521,16 @@ class CompanyDashboardSidebar extends ConsumerWidget {
 
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(
+            padding:
+            const EdgeInsets.symmetric(
               horizontal: 10,
               vertical: 8,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.12),
-              borderRadius: BorderRadius.circular(10),
+              color:
+              Colors.white.withOpacity(.12),
+              borderRadius:
+              BorderRadius.circular(10),
             ),
             child: Row(
               children: [
@@ -506,7 +577,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
     required String value,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(
+      padding:
+      const EdgeInsets.only(
         bottom: 6,
       ),
       child: Row(
@@ -515,7 +587,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(.85),
+            color:
+            Colors.white.withOpacity(.85),
             size: 15,
           ),
 
@@ -528,7 +601,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(.72),
+                color: Colors.white
+                    .withOpacity(.72),
                 fontSize: 10.5,
               ),
             ),
@@ -557,7 +631,8 @@ class CompanyDashboardSidebar extends ConsumerWidget {
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 10.5,
-                fontWeight: FontWeight.w600,
+                fontWeight:
+                FontWeight.w600,
               ),
             ),
           ),
@@ -583,6 +658,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
         horizontal: 16,
         vertical: 2,
       ),
+
       leading: Container(
         width: 40,
         height: 40,
@@ -594,27 +670,33 @@ class CompanyDashboardSidebar extends ConsumerWidget {
         ),
         child: Icon(
           icon,
-          color: const Color(0xFF2196F3),
+          color:
+          const Color(0xFF2196F3),
           size: 21,
         ),
       ),
+
       title: Text(
         title,
         style: const TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.w600,
+          fontWeight:
+          FontWeight.w600,
         ),
       ),
+
       subtitle: Text(
         subtitle,
         style: const TextStyle(
           fontSize: 11,
         ),
       ),
+
       trailing: const Icon(
         Icons.chevron_right,
         size: 20,
       ),
+
       onTap: onTap,
     );
   }

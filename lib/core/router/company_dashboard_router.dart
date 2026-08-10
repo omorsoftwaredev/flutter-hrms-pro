@@ -5,6 +5,7 @@
 /// Version : 1.0.0
 /// ===============================================================
 
+import 'package:flutter_hrms_pro/features/supervisor/presentation/pages/supervisor_department_assignment_management_page.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/company_dashboard/pages/company_dashboard_page.dart';
@@ -20,9 +21,7 @@ import '../../features/designation/presentation/pages/designation_list_page.dart
 
 import '../../features/designation/presentation/pages/designation_view_page.dart';
 import '../../features/employee/presentation/pages/employee_view_page.dart';
-import '../../features/employee_account/domain/entities/employee_account_entity.dart';
-import '../../features/employee_account/presentation/pages/employee_account_form_page.dart';
-import '../../features/employee_account/presentation/pages/employee_account_list_page.dart';
+
 import '../../features/role/domain/entities/role_entity.dart';
 import '../../features/role/presentation/pages/role_form_page.dart';
 import '../../features/role/presentation/pages/role_list_page.dart';
@@ -36,18 +35,14 @@ import '../../features/shift/domain/entities/shift_entity.dart';
 import '../../features/shift/presentation/pages/shift_form_page.dart';
 import '../../features/shift/presentation/pages/shift_list_page.dart';
 
-//
-// import '../../features/role_permission/domain/entities/role_permission_entity.dart';
-// import '../../features/role_permission/presentation/pages/role_permission_form_page.dart';
-// import '../../features/role_permission/presentation/pages/role_permission_list_page.dart';
-
 import '../../features/employee/domain/entities/employee_entity.dart';
 import '../../features/employee/presentation/pages/employee_form_page.dart';
 import '../../features/employee/presentation/pages/employee_list_page.dart';
 
 import '../../features/shift/presentation/pages/shift_view_page.dart';
 import '../../features/supervisor/presentation/pages/supervisor_assignment_page.dart';
-import '../../features/supervisor/presentation/pages/supervisor_crud_page.dart';
+import '../../features/supervisor/presentation/pages/supervisor_department_assignment_page.dart';
+import '../../features/supervisor/presentation/pages/supervisor_department_status_page.dart';
 import '../../features/supervisor/presentation/pages/supervisor_page.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
@@ -308,19 +303,34 @@ class CompanyDashboardRouter {
     GoRoute(
       path: RoutePaths.supervisors,
       builder: (context, state) =>
+      // const SupervisorPage(),
       const SupervisorPage(),
     ),
 
-    GoRoute(
-      path: RoutePaths.supervisorCrud,
-      builder: (context, state) =>
-      const SupervisorCrudPage(),
-    ),
 
     GoRoute(
       path: RoutePaths.supervisorAssignment,
       builder: (context, state) =>
       const SupervisorAssignmentPage(),
+    ),
+
+    GoRoute(
+      path: RoutePaths.supervisorDepartmentAssignments,
+      builder: (context, state) =>
+      const SupervisorDepartmentAssignmentPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.supervisorDepartmentManage,
+      builder: (context, state) =>
+      const SupervisorDepartmentAssignmentManagementPage(),
+    ),
+    GoRoute(
+      path: RoutePaths.supervisorDepartmentStatus,
+      builder: (
+          context,
+          state,
+          ) =>
+      const SupervisorDepartmentStatusPage(),
     ),
     //-------------------------------------------------------
     // Employee Account List

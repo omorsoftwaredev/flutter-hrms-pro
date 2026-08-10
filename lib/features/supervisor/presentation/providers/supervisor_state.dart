@@ -143,105 +143,73 @@ class SupervisorState {
       // ===========================================================
       // LOADING
       // ===========================================================
-
-      isLoading:
-      isLoading ?? this.isLoading,
+      isLoading: isLoading ?? this.isLoading,
 
       // ===========================================================
       // SAVING
       // ===========================================================
-
-      isSaving:
-      isSaving ?? this.isSaving,
+      isSaving: isSaving ?? this.isSaving,
 
       // ===========================================================
       // DELETING
       // ===========================================================
-
-      isDeleting:
-      isDeleting ?? this.isDeleting,
+      isDeleting: isDeleting ?? this.isDeleting,
 
       // ===========================================================
       // COMPANIES
       // ===========================================================
-
-      companies:
-      companies ?? this.companies,
+      companies: companies ?? this.companies,
 
       // ===========================================================
       // DEPARTMENTS
       // ===========================================================
-
-      departments:
-      departments ?? this.departments,
+      departments: departments ?? this.departments,
 
       // ===========================================================
       // EMPLOYEES
       // ===========================================================
-
-      employees:
-      employees ?? this.employees,
+      employees: employees ?? this.employees,
 
       // ===========================================================
       // SUPERVISORS
       // ===========================================================
-
-      supervisors:
-      supervisors ?? this.supervisors,
+      supervisors: supervisors ?? this.supervisors,
 
       // ===========================================================
       // ASSIGNMENTS
       // ===========================================================
-
-      assignments:
-      assignments ?? this.assignments,
+      assignments: assignments ?? this.assignments,
 
       // ===========================================================
       // SELECTED SUPERVISOR
       // ===========================================================
-
-      selectedSupervisor:
-      clearSelectedSupervisor
+      selectedSupervisor: clearSelectedSupervisor
           ? null
-          : selectedSupervisor ??
-          this.selectedSupervisor,
+          : selectedSupervisor ?? this.selectedSupervisor,
 
       // ===========================================================
       // SELECTED COMPANY
       // ===========================================================
-
-      selectedCompanyId:
-      clearSelectedCompany
+      selectedCompanyId: clearSelectedCompany
           ? null
-          : selectedCompanyId ??
-          this.selectedCompanyId,
+          : selectedCompanyId ?? this.selectedCompanyId,
 
       // ===========================================================
       // ERROR
       // ===========================================================
-
-      errorMessage:
-      clearError
-          ? null
-          : errorMessage ??
-          this.errorMessage,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
 
       // ===========================================================
       // SUCCESS
       // ===========================================================
-
-      successMessage:
-      clearSuccess
+      successMessage: clearSuccess
           ? null
-          : successMessage ??
-          this.successMessage,
+          : successMessage ?? this.successMessage,
 
       // ===========================================================
       // CURRENT USER
       // ===========================================================
-
-      currentUser:
-      currentUser ?? this.currentUser,
+      currentUser: currentUser ?? this.currentUser,
     );
   }
 
@@ -249,30 +217,21 @@ class SupervisorState {
   // HELPERS
   // =============================================================
 
-  bool get hasCompanies =>
-      companies.isNotEmpty;
+  bool get hasCompanies => companies.isNotEmpty;
 
-  bool get hasDepartments =>
-      departments.isNotEmpty;
+  bool get hasDepartments => departments.isNotEmpty;
 
-  bool get hasEmployees =>
-      employees.isNotEmpty;
+  bool get hasEmployees => employees.isNotEmpty;
 
-  bool get hasSupervisors =>
-      supervisors.isNotEmpty;
+  bool get hasSupervisors => supervisors.isNotEmpty;
 
-  bool get hasAssignments =>
-      assignments.isNotEmpty;
+  bool get hasAssignments => assignments.isNotEmpty;
 
   bool get hasSelectedCompany =>
-      selectedCompanyId != null &&
-          selectedCompanyId!.isNotEmpty;
+      selectedCompanyId != null && selectedCompanyId!.isNotEmpty;
 
-  bool get hasError =>
-      errorMessage != null &&
-          errorMessage!.trim().isNotEmpty;
+  bool get hasError => errorMessage != null && errorMessage!.trim().isNotEmpty;
 
   bool get hasSuccess =>
-      successMessage != null &&
-          successMessage!.trim().isNotEmpty;
+      successMessage != null && successMessage!.trim().isNotEmpty;
 }

@@ -2,7 +2,7 @@
 
 # Project Status
 
-**Version:** `0.6.0`
+**Version:** `0.6.5`
 
 **Status:** 🟢 Active Development
 
@@ -10,27 +10,38 @@
 
 # Overall Progress
 
-| Area | Status |
-|------|--------|
-| Project Foundation | ✅ Completed |
-| Architecture | ✅ Completed |
-| Supabase Setup | ✅ Completed |
-| Database | ✅ Completed |
-| Authentication | ✅ Completed |
-| Company Management | ✅ Completed |
-| Department Management | ✅ Completed |
-| Designation Management | ✅ Completed |
-| Shift Management | ✅ Completed |
-| Employee Management | ✅ Completed |
-| Attendance CRUD | ✅ Completed |
-| Mobile Attendance | ✅ Completed |
-| Attendance Details UI | ✅ Completed |
-| Attendance Dashboard | 🟡 In Progress |
-| Leave Module | ⏳ Planned |
-| Reports | ⏳ Planned |
-| Settings | ⏳ Planned |
-| Role & Permission | ⏳ Planned |
-| Notifications | ⏳ Planned |
+| Area                          | Status |
+| ----------------------------- | ------ |
+| Project Foundation            | ✅ Completed |
+| Architecture                  | ✅ Completed |
+| Supabase Setup                | ✅ Completed |
+| Database                      | ✅ Completed |
+| Authentication               | ✅ Completed |
+| Developer Dashboard           | ✅ Completed |
+| Company Owner Dashboard       | ✅ Completed |
+| Employee Dashboard            | ✅ Completed |
+| Supervisor Dashboard          | 🚀 Pending |
+| Company Management            | ✅ Completed |
+| Department Management         | ✅ Completed |
+| Designation Management        | ✅ Completed |
+| Shift Management              | ✅ Completed |
+| Employee Management           | ✅ Completed |
+| Employee Accounts             | ✅ Completed |
+| Role Management               | ✅ Completed |
+| Role Permission Management    | ✅ Completed |
+| Supervisor Management         | ✅ Completed |
+| Supervisor Department Assign  | ✅ Completed |
+| Manage Supervisor Departments | ✅ Completed |
+| Supervisor Department Status  | ✅ Completed |
+| Attendance CRUD               | ✅ Completed |
+| Mobile Attendance             | ✅ Completed |
+| Attendance History            | ✅ Completed |
+| Attendance Details UI         | ✅ Completed |
+| Attendance Dashboard          | 🚀 Next |
+| Leave Module                  | ⏳ Planned |
+| Reports                       | ⏳ Planned |
+| Settings                      | ⏳ Planned |
+| Notifications                 | ⏳ Planned |
 
 ---
 
@@ -67,6 +78,8 @@
 - [x] Shared Widgets
 - [x] Providers
 - [x] Clean Folder Structure
+- [x] Reusable Components
+- [x] Feature Based Architecture
 
 **Status:** ✅ COMPLETED
 
@@ -91,6 +104,11 @@
 - [x] Shifts
 - [x] Employees
 - [x] Attendance
+- [x] Roles
+- [x] Role Permissions
+- [x] Employee Accounts
+- [x] Supervisors
+- [x] Supervisor Department Assignments
 
 ## Database Features
 
@@ -101,6 +119,7 @@
 - [x] Validation
 - [x] RLS Policies
 - [x] Storage Policies
+- [x] Assignment Relationships
 
 **Status:** ✅ COMPLETED
 
@@ -118,13 +137,35 @@
 - [x] Forgot Password
 - [x] Update Password
 - [x] Current Employee Mapping
+- [x] Developer Login
+- [x] Company Owner Login
+- [x] Employee Login
+- [x] Role Based User Mapping
+- [x] Dashboard Based on User Type
 
-## Remaining
+## Dashboard Status
 
-- [ ] User Profile
-- [ ] Role Based Navigation
+### Developer
 
-**Status:** ✅ COMPLETED
+- [x] Developer Login
+- [x] Developer Dashboard
+
+### Company Owner
+
+- [x] Company Owner Login
+- [x] Company Owner Dashboard
+
+### Employee
+
+- [x] Employee Login
+- [x] Employee Dashboard
+
+### Supervisor
+
+- [ ] Supervisor Login Routing
+- [ ] Supervisor Dashboard
+
+**Status:** 🟢 CORE AUTHENTICATION COMPLETED
 
 ---
 
@@ -143,6 +184,7 @@
 - [x] Company Dropdown
 - [x] Search
 - [x] Validation
+- [x] Active / Inactive
 
 ## Designation
 
@@ -150,6 +192,8 @@
 - [x] Company Dropdown
 - [x] Search
 - [x] Validation
+- [x] Department Relationship
+- [x] Active / Inactive
 
 ## Shift
 
@@ -176,7 +220,110 @@
 
 ---
 
-# Sprint 06 — Attendance ✅
+# Sprint 06 — Employee Accounts & Roles ✅
+
+## Employee Accounts
+
+- [x] Employee Account Management
+- [x] Employee Account Mapping
+- [x] Account Status
+- [x] Employee Authentication Mapping
+
+## Roles
+
+- [x] Role CRUD
+- [x] Role Management
+- [x] Role Status
+- [x] Role Assignment
+
+## Role Permissions
+
+- [x] Permission Management
+- [x] Role Permission CRUD
+- [x] Permission Assignment
+- [x] Permission Mapping
+- [x] Permission Based Structure
+
+## Permission Areas
+
+- [x] Company
+- [x] Department
+- [x] Designation
+- [x] Shift
+- [x] Employee
+- [x] Employee Accounts
+- [x] Supervisor
+- [x] Attendance
+- [x] Leave
+- [x] Reports
+- [x] Dashboard
+- [x] Settings
+
+**Status:** ✅ COMPLETED
+
+---
+
+# Sprint 07 — Supervisor Management ✅
+
+## Supervisor CRUD
+
+- [x] Create Supervisor
+- [x] Update Supervisor
+- [x] Delete Supervisor
+- [x] Supervisor Status Toggle
+- [x] Employee Mapping
+- [x] Company Mapping
+- [x] Department Mapping
+
+## Supervisor Department Assignment
+
+- [x] Create Supervisor Departments
+- [x] Company Selection
+- [x] Supervisor Selection
+- [x] Department Selection
+- [x] Multiple Department Assignment
+- [x] Existing Assignment Loading
+- [x] Assignment Synchronization
+
+## Manage Supervisor Departments
+
+- [x] Supervisor Selection
+- [x] Existing Department List
+- [x] Add Department
+- [x] Remove Department
+- [x] Select All
+- [x] Clear All
+- [x] Final State Update
+- [x] Database Insert
+- [x] Database Delete
+
+## Supervisor Department Status
+
+- [x] Supervisor Name
+- [x] Assigned Departments
+- [x] Unassigned Departments
+- [x] Department Assignment Status
+- [x] Status View
+
+### Status Tabs
+
+#### Tab 01 — Departments Without Supervisor
+
+- [x] Unassigned Department List
+- [x] Department Name
+- [x] Assignment Status
+
+#### Tab 02 — Supervisor Departments
+
+- [x] Supervisor Name
+- [x] Department Name
+- [x] Assignment Information
+
+**Status:** ✅ COMPLETED
+
+---
+
+# Sprint 08 — Attendance ✅
 
 ## Admin
 
@@ -209,60 +356,170 @@
 - [x] Attendance Repository
 - [x] Attendance Services
 
-## Remaining
+## Attendance History
 
-- [ ] Attendance History Page
-- [ ] Attendance Calendar
-- [ ] Monthly Attendance
-- [ ] Working Hours Report
+- [x] Attendance History Page
+- [x] Search
+- [x] Refresh
+- [x] Detail Navigation
+- [x] Attendance List
+- [x] Employee Mapping
 
 **Status:** 🟢 95% COMPLETED
 
 ---
 
-# Sprint 07 — Attendance Dashboard 🟡
+# Sprint 09 — Attendance Dashboard 🚀
 
-## Current Progress
+## Current Status
+
+🚀 NEXT DEVELOPMENT
+
+## Planned
 
 - [ ] Today Attendance Card
 - [ ] Dashboard Statistics
 - [ ] Attendance Summary
 - [ ] My Attendance
-- [ ] Attendance History List
+- [ ] Attendance History Summary
 - [ ] Recent Attendance
 - [ ] Calendar View
+- [ ] Monthly Attendance
+- [ ] Working Hours
+- [ ] Late Statistics
+- [ ] Overtime Statistics
+- [ ] Attendance Charts
 
-**Status:** ⏳ IN PROGRESS
-
----
-
-# Sprint 08 — Leave
-
-Status: ⏳ Planned
-
----
-
-# Sprint 09 — Reports
-
-Status: ⏳ Planned
+**Status:** 🚀 NEXT
 
 ---
 
-# Sprint 10 — Settings
+# Sprint 10 — Supervisor Dashboard 🚀
 
-Status: ⏳ Planned
+## Status
+
+⏳ Pending
+
+## Planned Features
+
+- [ ] Supervisor Login Routing
+- [ ] Supervisor Dashboard
+- [ ] My Departments
+- [ ] Assigned Employees
+- [ ] Department Attendance
+- [ ] Employee Attendance
+- [ ] Attendance Summary
+- [ ] Department Statistics
+- [ ] Leave Summary
+- [ ] Recent Activities
+- [ ] Supervisor Quick Actions
 
 ---
 
-# Sprint 11 — Role & Permission
+# Sprint 11 — Leave
 
-Status: ⏳ Planned
+## Status
+
+⏳ Planned
+
+## Features
+
+- [ ] Leave Types
+- [ ] Leave Application
+- [ ] Leave Approval
+- [ ] Holidays
+- [ ] Official Movement
 
 ---
 
-# Sprint 12 — Release
+# Sprint 12 — Reports
 
-Status: ⏳ Planned
+## Status
+
+⏳ Planned
+
+## Features
+
+- [ ] Attendance Report
+- [ ] Employee Report
+- [ ] Leave Report
+- [ ] Shift Report
+- [ ] Supervisor Report
+- [ ] Department Report
+- [ ] PDF Export
+- [ ] Excel Export
+- [ ] Print
+- [ ] Share
+
+---
+
+# Sprint 13 — Notifications
+
+## Status
+
+⏳ Planned
+
+## Features
+
+- [ ] Company Announcement
+- [ ] Department Notification
+- [ ] In-App Notification
+- [ ] Push Notification
+
+---
+
+# Sprint 14 — Settings
+
+## Status
+
+⏳ Planned
+
+## Features
+
+- [ ] Company Settings
+- [ ] Attendance Settings
+- [ ] Leave Settings
+- [ ] Notification Settings
+- [ ] Theme Settings
+- [ ] System Settings
+
+---
+
+# Sprint 15 — Profile
+
+## Status
+
+⏳ Planned
+
+## Features
+
+- [ ] My Profile
+- [ ] Profile Photo
+- [ ] Signature
+- [ ] Login History
+- [ ] Password Change
+- [ ] Account Information
+
+---
+
+# Sprint 16 — Testing & Optimization
+
+## Status
+
+⏳ Planned
+
+## Features
+
+- [ ] Unit Testing
+- [ ] Widget Testing
+- [ ] Integration Testing
+- [ ] Performance Optimization
+- [ ] Database Optimization
+- [ ] Security Review
+- [ ] RLS Review
+- [ ] UI/UX Review
+- [ ] Responsive Testing
+- [ ] Error Handling Review
 
 ---
 
@@ -271,14 +528,26 @@ Status: ⏳ Planned
 ## ✅ Completed
 
 - Authentication
+- Developer Dashboard
+- Company Owner Dashboard
+- Employee Dashboard
 - Company CRUD
 - Department CRUD
 - Designation CRUD
 - Shift CRUD
 - Employee CRUD
+- Employee Accounts
+- Roles CRUD
+- Role Permissions
+- Supervisor CRUD
+- Supervisor Status
+- Supervisor Department Assignment
+- Manage Supervisor Departments
+- Supervisor Department Status
 - Attendance CRUD
 - Mobile Attendance
-- Attendance Details Page
+- Attendance History
+- Attendance Details
 - GPS Location
 - Google Map
 - Employee Mapping
@@ -288,11 +557,20 @@ Status: ⏳ Planned
 
 ⬇
 
-## 🚀 Current Development
+## 🚀 Next Development
 
-- Attendance History
 - Attendance Dashboard
 - Attendance Calendar
+- Attendance Statistics
+
+⬇
+
+## 🚀 After Attendance Dashboard
+
+- Supervisor Login Routing
+- Supervisor Dashboard
+- Supervisor Department Dashboard
+- Department Employee Attendance
 
 ⬇
 
@@ -304,7 +582,15 @@ Reports
 
 ⬇
 
-Role & Permission
+Notifications
+
+⬇
+
+Settings
+
+⬇
+
+Testing & Optimization
 
 ⬇
 
@@ -315,38 +601,201 @@ Role & Permission
 # Current Completion
 
 | Module | Progress |
-|---------|----------|
+|---|---:|
 | Foundation | 100% |
 | Architecture | 100% |
+| Supabase | 100% |
 | Database | 100% |
 | Authentication | 100% |
-| Master Data | 100% |
+| Developer Dashboard | 100% |
+| Company Owner Dashboard | 100% |
+| Employee Dashboard | 100% |
+| Supervisor Dashboard | 0% |
+| Company | 100% |
+| Department | 100% |
+| Designation | 100% |
+| Shift | 100% |
+| Employee | 100% |
+| Employee Accounts | 100% |
+| Roles | 100% |
+| Role Permissions | 100% |
+| Supervisor CRUD | 100% |
+| Supervisor Department Assignment | 100% |
+| Manage Supervisor Departments | 100% |
+| Supervisor Department Status | 100% |
 | Attendance CRUD | 100% |
 | Mobile Attendance | 100% |
-| Attendance Details UI | 95% |
-| Attendance Dashboard | 30% |
+| Attendance History | 100% |
+| Attendance Details UI | 100% |
+| Attendance Dashboard | 0% |
 | Leave | 0% |
 | Reports | 0% |
+| Notifications | 0% |
 | Settings | 0% |
-| Role Permission | 0% |
+| Testing & Optimization | 0% |
 
 ---
 
-# Version 1.0 Goal
+# Version Roadmap
 
-Deliver a **Production-Ready Flutter HRMS** featuring:
+## Version 0.6.5
 
-- Secure Authentication
-- Master Data Management
-- Mobile Attendance
-- GPS & Address Tracking
-- Attendance Dashboard
-- Attendance History
-- Leave Management
-- Reports
-- Settings
-- Role & Permission
-- Responsive Material 3 UI
+### Completed
+
+- [x] Authentication
+- [x] Company Management
+- [x] Department Management
+- [x] Designation Management
+- [x] Shift Management
+- [x] Employee Management
+- [x] Employee Accounts
+- [x] Roles
+- [x] Role Permissions
+- [x] Supervisor CRUD
+- [x] Supervisor Department Assignment
+- [x] Manage Supervisor Departments
+- [x] Supervisor Department Status
+- [x] Attendance CRUD
+- [x] Mobile Attendance
+- [x] Attendance History
+- [x] Attendance Details
+- [x] GPS Location
+- [x] Google Map
+- [x] Employee Mapping
+
+---
+
+# Version 0.7.0
+
+## Attendance Dashboard
+
+Planned:
+
+- [ ] Attendance Dashboard
+- [ ] Attendance Statistics
+- [ ] Attendance Calendar
+- [ ] Dashboard Charts
+- [ ] Working Hours
+- [ ] Late Statistics
+- [ ] Overtime Statistics
+
+---
+
+# Version 0.8.0
+
+## Supervisor Dashboard + Leave
+
+Planned:
+
+- [ ] Supervisor Login Routing
+- [ ] Supervisor Dashboard
+- [ ] Supervisor Department View
+- [ ] Department Employee View
+- [ ] Department Attendance
+- [ ] Leave Types
+- [ ] Leave Application
+- [ ] Leave Approval
+- [ ] Holidays
+- [ ] Official Movement
+
+---
+
+# Version 0.9.0
+
+## Reports & Notifications
+
+Planned:
+
+- [ ] Attendance Reports
+- [ ] Employee Reports
+- [ ] Leave Reports
+- [ ] Supervisor Reports
+- [ ] Department Reports
+- [ ] PDF Export
+- [ ] Excel Export
+- [ ] Company Announcement
+- [ ] Department Notification
+- [ ] In-App Notification
+
+---
+
+# Version 1.0.0
+
+## Production Stable Release
+
+Goal:
+
+- [ ] Production Ready
+- [ ] Complete Authentication
+- [ ] Complete Role & Permission
+- [ ] Complete Supervisor Management
+- [ ] Complete Attendance
+- [ ] Leave Management
+- [ ] Dashboard
+- [ ] Reports
+- [ ] Notifications
+- [ ] Settings
+- [ ] Testing
+- [ ] Performance Optimization
+- [ ] Security Review
+- [ ] Responsive UI Review
+
+---
+
+# Responsive Support
+
+## Platforms
+
+- Android
+- iOS
+- Windows
+- macOS
+- Linux
+- Web
+
+## Layouts
+
+- Mobile
+- Tablet
+- Desktop
+
+---
+
+# Development Principles
+
 - Clean Architecture
-- Supabase Backend
-- CodeCanyon Quality
+- SOLID Principles
+- Repository Pattern
+- Feature First
+- Riverpod
+- GoRouter
+- Supabase
+- Material 3
+- Responsive Design
+- Documentation Driven Development
+- Reusable Widgets
+- Maintainable Code
+- Scalable Architecture
+
+---
+
+# Development Workflow
+
+```text
+Planning
+    ↓
+Database Design
+    ↓
+Architecture
+    ↓
+Development
+    ↓
+Testing
+    ↓
+Bug Fix
+    ↓
+Documentation
+    ↓
+Git Commit
+    ↓
+Git Push

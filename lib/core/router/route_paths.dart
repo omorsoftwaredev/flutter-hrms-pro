@@ -18,8 +18,13 @@ class RoutePaths {
   static const changePassword = '/change-password';
   static const updatePassword = '/update-password';
   static const String supervisors = '/supervisors';
+  static const String supervisorDepartmentAssignments =
+      '/supervisor-department-assignments';
+  static const String supervisorDepartmentManage =
+      '/supervisor-department-manage';
 
-  static const String supervisorCrud = '/supervisor-crud';
+  static const String supervisorDepartmentStatus =
+      '/supervisor-department-status';
 
   static const String supervisorAssignment = '/supervisor-assignment';
   static const supervisorDashboard = '/supervisor-dashboard';

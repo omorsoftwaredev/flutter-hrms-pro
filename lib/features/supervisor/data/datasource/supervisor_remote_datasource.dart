@@ -140,6 +140,305 @@ class SupervisorRemoteDataSource {
   }
 
   // =============================================================
+// GET SUPERVISOR DEPARTMENT ASSIGNMENTS
+// =============================================================
+
+  Future<List<Map<String, dynamic>>>
+  getSupervisorDepartmentAssignments({
+    required String companyId,
+    required String supervisorId,
+  }) async {
+    final response = await Supabase.instance.client
+        .from('supervisor_departments')
+        .select('''
+        id,
+        company_id,
+        supervisor_id,
+        department_id,
+        created_at,
+        departments (
+          id,
+          name
+        )
+      ''')
+        .eq(
+      'company_id',
+      companyId,
+    )
+        .eq(
+      'supervisor_id',
+      supervisorId,
+    )
+        .order(
+      'created_at',
+      ascending: true,
+    );
+
+    return List<Map<String, dynamic>>.from(
+      response,
+    );
+  }
+  // =============================================================
+// UPDATE SUPERVISOR DEPARTMENT ASSIGNMENTS
+//
+// Final selected departments-এর সাথে database synchronize করবে.
+//
+// Existing:
+// A B C D E
+//
+// New:
+// A B C
+//
+// Result:
+// D এবং E delete হবে.
+//
+// New department থাকলে সেটাও insert হবে.
+// =============================================================
+
+  Future<void> updateSupervisorDepartmentAssignments({
+    required String companyId,
+    required String supervisorId,
+    required List<String> departmentIds,
+  }) async {
+    final client =
+        Supabase.instance.client;
+
+    // ===========================================================
+    // CURRENT ASSIGNMENTS
+    // ===========================================================
+
+    final currentResponse = await client
+        .from('supervisor_departments')
+        .select('''
+        id,
+        department_id
+      ''')
+        .eq(
+      'company_id',
+      companyId,
+    )
+        .eq(
+      'supervisor_id',
+      supervisorId,
+    );
+
+    final currentAssignments =
+    List<Map<String, dynamic>>.from(
+      currentResponse,
+    );
+
+    final currentDepartmentIds =
+    currentAssignments
+        .map(
+          (item) =>
+          item['department_id']?.toString(),
+    )
+        .whereType<String>()
+        .toSet();
+
+    final selectedDepartmentIds =
+    departmentIds.toSet();
+
+    // ===========================================================
+    // DELETE
+    //
+    // Database-এ আছে কিন্তু নতুন selection-এ নেই
+    // ===========================================================
+
+    final departmentIdsToDelete =
+    currentDepartmentIds
+        .difference(
+      selectedDepartmentIds,
+    )
+        .toList();
+
+    for (final departmentId
+    in departmentIdsToDelete) {
+      await client
+          .from('supervisor_departments')
+          .delete()
+          .eq(
+        'company_id',
+        companyId,
+      )
+          .eq(
+        'supervisor_id',
+        supervisorId,
+      )
+          .eq(
+        'department_id',
+        departmentId,
+      );
+    }
+
+    // ===========================================================
+    // INSERT
+    //
+    // Selection-এ আছে কিন্তু database-এ নেই
+    // ===========================================================
+
+    final departmentIdsToInsert =
+    selectedDepartmentIds
+        .difference(
+      currentDepartmentIds,
+    )
+        .toList();
+
+    if (departmentIdsToInsert.isEmpty) {
+      return;
+    }
+
+    final insertData =
+    departmentIdsToInsert
+        .map(
+          (departmentId) {
+        return {
+          'company_id': companyId,
+          'supervisor_id': supervisorId,
+          'department_id':
+          departmentId,
+        };
+      },
+    )
+        .toList();
+
+    await client
+        .from('supervisor_departments')
+        .insert(
+      insertData,
+    );
+  }
+  // ===============================================================
+// ASSIGN SUPERVISOR DEPARTMENTS
+// ===============================================================
+
+  Future<int> assignSupervisorDepartments({
+    required String companyId,
+    required String supervisorId,
+    required List<String> departmentIds,
+  }) async {
+    if (companyId.trim().isEmpty) {
+      throw Exception(
+        'Company is required.',
+      );
+    }
+
+    if (supervisorId.trim().isEmpty) {
+      throw Exception(
+        'Supervisor is required.',
+      );
+    }
+
+    if (departmentIds.isEmpty) {
+      throw Exception(
+        'At least one department is required.',
+      );
+    }
+
+    // =============================================================
+    // REMOVE DUPLICATE DEPARTMENT IDS
+    // =============================================================
+
+    final uniqueDepartmentIds =
+    departmentIds
+        .map(
+          (id) => id.trim(),
+    )
+        .where(
+          (id) => id.isNotEmpty,
+    )
+        .toSet()
+        .toList();
+
+    if (uniqueDepartmentIds.isEmpty) {
+      throw Exception(
+        'At least one valid department is required.',
+      );
+    }
+
+    // =============================================================
+    // CHECK EXISTING ASSIGNMENTS
+    //
+    // Same supervisor + same department
+    // must not be inserted twice.
+    // =============================================================
+
+    final existingRows = await _client
+        .from('supervisor_departments')
+        .select('department_id')
+        .eq(
+      'company_id',
+      companyId,
+    )
+        .eq(
+      'supervisor_id',
+      supervisorId,
+    )
+        .inFilter(
+      'department_id',
+      uniqueDepartmentIds,
+    );
+
+    final existingDepartmentIds =
+    (existingRows as List)
+        .map(
+          (row) =>
+          row['department_id']
+              ?.toString(),
+    )
+        .whereType<String>()
+        .toSet();
+
+    // =============================================================
+    // ONLY NEW ASSIGNMENTS
+    // =============================================================
+
+    final newDepartmentIds =
+    uniqueDepartmentIds
+        .where(
+          (departmentId) =>
+      !existingDepartmentIds
+          .contains(departmentId),
+    )
+        .toList();
+
+    // =============================================================
+    // EVERYTHING ALREADY ASSIGNED
+    // =============================================================
+
+    if (newDepartmentIds.isEmpty) {
+      return 0;
+    }
+
+    // =============================================================
+    // BUILD INSERT DATA
+    // =============================================================
+
+    final rows =
+    newDepartmentIds
+        .map(
+          (departmentId) => {
+        'company_id': companyId,
+        'supervisor_id': supervisorId,
+        'department_id': departmentId,
+      },
+    )
+        .toList();
+
+    // =============================================================
+    // INSERT
+    //
+    // id + created_at are generated by database.
+    // =============================================================
+
+    await _client
+        .from('supervisor_departments')
+        .insert(rows);
+
+    return newDepartmentIds.length;
+  }
+
+  // =============================================================
   // GET SUPERVISORS BY COMPANY
   // =============================================================
 

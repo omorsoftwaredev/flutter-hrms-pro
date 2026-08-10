@@ -1,8 +1,10 @@
-# Flutter HRMS Pro
+from pathlib import Path
+
+content = r'''# Flutter HRMS Pro
 
 # Development Guide
 
-**Version:** `0.6.0`
+**Version:** `0.6.5`
 
 ---
 
@@ -42,6 +44,14 @@ Core Principles
 - Forgot Password
 - Update Password
 - Current Employee Mapping
+- Developer Login
+- Company Owner Login
+- Employee Login
+- Role-based Dashboard Access
+
+Status
+
+🟢 Completed
 
 ---
 
@@ -53,6 +63,59 @@ Core Principles
 - Shift CRUD
 - Employee CRUD
 
+Status
+
+🟢 Completed
+
+---
+
+### Role & Permission Management
+
+Completed
+
+- Role CRUD
+- Role Permission CRUD
+- Permission Management
+- Role-based Access Support
+
+Status
+
+🟢 Completed
+
+---
+
+### Employee Account Management
+
+Completed
+
+- Employee Account CRUD
+- Employee Mapping
+- Account Relationship Management
+
+Status
+
+🟢 Completed
+
+---
+
+### Supervisor Management
+
+Completed
+
+- Supervisor CRUD
+- Supervisor Department Creation
+- Supervisor Department Management
+- Supervisor Department Status Management
+- Supervisor Department Assignment / Mapping
+
+Remaining
+
+- Supervisor Dashboard Integration
+
+Status
+
+🟡 Near Completion
+
 ---
 
 ### Attendance Management
@@ -62,7 +125,7 @@ Completed
 - Attendance CRUD
 - Mobile Check In
 - Mobile Check Out
-- Current Employee Repository
+- Current Employee Mapping
 - GPS Location Capture
 - Address Detection
 - Attendance Validation
@@ -72,28 +135,49 @@ Completed
 - Attendance Repository
 - Attendance Provider
 - Attendance Details Page
+- Attendance History
+- Attendance Analytics
+- Attendance Timeline
 - Google Map Integration
-- Attendance Analytics Card
+- Attendance Location Card
 - Device Information
 - Company Information
 - Employee Information
 - Shift Information
-
-Progress
-
-🟢 Approximately 90%
+- Attendance Summary
+- Bottom Action Bar
 
 Remaining
 
 - Attendance Dashboard
-- Attendance History
+- Attendance Calendar
 - Monthly Attendance
-- Calendar View
 - Working Hour Summary
+- PDF Export
+- Print
+- Share
+
+Status
+
+🟢 Near Completion
 
 ---
 
 # Upcoming Modules
+
+## Supervisor Dashboard
+
+- Supervisor Dashboard
+- Supervisor Department Overview
+- Supervisor Employee Overview
+- Supervisor Attendance Overview
+- Supervisor Department-based Data
+
+Status
+
+🚀 Next Development
+
+---
 
 ## Attendance Dashboard
 
@@ -102,6 +186,14 @@ Remaining
 - Statistics
 - Summary Cards
 - Recent Attendance
+- Calendar View
+- Monthly Attendance
+- Working Hour Summary
+- Charts
+
+Status
+
+⏳ Planned
 
 ---
 
@@ -113,15 +205,25 @@ Remaining
 - Holiday Management
 - Official Movement
 
+Status
+
+⏳ Planned
+
 ---
 
-## Dashboard
+## Dashboard & Analytics
 
-- Charts
+- Company Statistics
 - Employee Statistics
 - Attendance Statistics
 - Leave Statistics
+- Charts
 - Quick Actions
+- Recent Activities
+
+Status
+
+⏳ Planned
 
 ---
 
@@ -134,6 +236,10 @@ Remaining
 - PDF Export
 - Excel Export
 
+Status
+
+⏳ Planned
+
 ---
 
 ## Settings
@@ -144,15 +250,9 @@ Remaining
 - Notification Settings
 - Theme Settings
 
----
+Status
 
-## Role & Permission
-
-- Super Admin
-- Company Admin
-- HR
-- Manager
-- Employee
+⏳ Planned
 
 ---
 
@@ -188,234 +288,3 @@ Documentation
 Git Commit
       ↓
 Git Push
-```
-
----
-
-# Folder Structure
-
-```
-lib/
-
-core/
-
-features/
-
-feature/
-
-data/
-
-datasources/
-
-models/
-
-repositories/
-
-domain/
-
-entities/
-
-repositories/
-
-presentation/
-
-pages/
-
-providers/
-
-widgets/
-```
-
-Every feature follows the same folder structure.
-
----
-
-# Coding Standards
-
-- Feature-First Structure
-- SOLID Principles
-- Repository Pattern
-- Reusable Widgets
-- Strong Typing
-- Null Safety
-- Consistent Naming
-- Small Focused Classes
-- Separation of Concerns
-- Documentation for Major Features
-
----
-
-# Git Workflow
-
-```text
-Development
-
-↓
-
-Testing
-
-↓
-
-Documentation
-
-↓
-
-Git Commit
-
-↓
-
-Git Push
-
-↓
-
-Next Sprint
-```
-
-Commit Message Style
-
-```
-feat:
-
-fix:
-
-refactor:
-
-docs:
-
-style:
-
-test:
-
-chore:
-```
-
-Examples
-
-```
-feat: complete mobile attendance module
-
-fix: resolve duplicate check-in validation
-
-refactor: optimize attendance repository
-
-docs: update development guide
-```
-
----
-
-# Development Priorities
-
-## Current Sprint
-
-- Attendance Dashboard
-- Attendance History
-- Dashboard Statistics
-
----
-
-## Next Sprint
-
-- Leave Management
-
----
-
-## Future Sprint
-
-- Reports
-- Settings
-- Role & Permission
-
----
-
-# Quality Checklist
-
-Before every Git Commit
-
-- Code Compiles Successfully
-- Analyzer Issues Fixed
-- Null Safety Verified
-- UI Tested
-- Responsive Layout Checked
-- Documentation Updated
-- Git Status Clean
-
----
-
-# Version Roadmap
-
-## Version 0.7.0
-
-- Attendance Dashboard
-- Attendance History
-- Attendance Statistics
-
----
-
-## Version 0.8.0
-
-- Leave Management
-
----
-
-## Version 0.9.0
-
-- Reports
-
----
-
-## Version 1.0.0
-
-- Production Release
-- CodeCanyon Ready
-- Enterprise Stable
-
----
-
-# Long-Term Vision
-
-Future Features
-
-- Face Attendance
-- Face Recognition
-- Employee Monitoring
-- Background GPS Tracking
-- Live Location
-- Payroll
-- Recruitment
-- Asset Management
-- Performance Management
-- Push Notifications
-
----
-
-# Current Milestone
-
-✅ Authentication
-
-✅ Company Management
-
-✅ Department Management
-
-✅ Designation Management
-
-✅ Shift Management
-
-✅ Employee Management
-
-✅ Attendance CRUD
-
-✅ Mobile Attendance
-
-✅ Attendance Details
-
-⬇
-
-🚀 Attendance Dashboard
-
-⬇
-
-🚀 Leave Management
-
-⬇
-
-🎯 Version 1.0

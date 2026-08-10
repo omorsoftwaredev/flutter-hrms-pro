@@ -12,44 +12,60 @@ Flutter HRMS Pro is a modern, scalable, responsive, and production-ready Human R
 
 The goal is to build a commercial-grade, CodeCanyon-quality HRMS supporting Android, iOS, Windows, macOS, Linux, and Web from a single Flutter codebase.
 
-Architecture Principles
+## Architecture Principles
 
 - Clean Architecture
 - Feature-First Development
 - Repository Pattern
 - Riverpod State Management
 - Supabase Backend
+- GoRouter Navigation
 - Documentation-Driven Development
+- Responsive Material 3 UI
 
 ---
 
 # Current Progress
 
-Overall Progress
+## Overall Progress
 
-🟢 Approximately 65%
+🟢 Approximately 70%
 
-Current Version
+## Current Version
 
-0.6.5
+`0.6.5`
 
-Current Sprint
+## Current Development Status
 
-Sprint 06 — Attendance Module
+🟢 Core HRMS Foundation Completed
 
-Status
+🟢 Authentication Completed
 
-🟢 Near Completion
+🟢 Master Data Completed
+
+🟢 Employee Accounts Completed
+
+🟢 Role & Permission Management Completed
+
+🟢 Supervisor Management Completed
+
+🟢 Supervisor Department Management Completed
+
+🟢 Supervisor Department Status Completed
+
+🟢 Attendance Module 95% Completed
+
+🚀 Next Major Task: Supervisor Dashboard + Attendance Dashboard
 
 ---
 
 # Module 01 — Authentication
 
-Status
+## Status
 
 ✅ 100% Completed
 
-Features
+## Completed Features
 
 - Login
 - Logout
@@ -59,45 +75,279 @@ Features
 - Forgot Password
 - Update Password
 - Current Employee Mapping
+- Role Based Login
+- Company Based Login
 
-Future Improvements
+## Login Types
 
-- Remember Me
-- Profile Management
-- Multi Company Login
+### Developer
+
+✅ Developer Login
+
+✅ Developer Dashboard
+
+### Company Owner
+
+✅ Company Owner Login
+
+✅ Company Owner Dashboard
+
+### Employee
+
+✅ Employee Login
+
+✅ Employee Dashboard
+
+### Supervisor
+
+🟡 Supervisor Login Logic Pending
+
+🟡 Supervisor Dashboard Pending
 
 ---
 
-# Module 02 — Master Data
+# Module 02 — Company Management
 
-Status
+## Status
 
 ✅ 100% Completed
 
-Completed Modules
+## Features
+
+- Company CRUD
+- Company Search
+- Active / Inactive
+- Company Relationship
+- Company Account Mapping
+
+---
+
+# Module 03 — Department Management
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Department CRUD
+- Company Dropdown
+- Department Search
+- Company Relationship
+- Active / Inactive
+
+---
+
+# Module 04 — Designation Management
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Designation CRUD
+- Company Dropdown
+- Designation Search
+- Department Relationship
+- Active / Inactive
+
+---
+
+# Module 05 — Shift Management
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Shift CRUD
+- Shift Time
+- Grace Time
+- Break Time
+- Weekly Off
+- Flexible Shift
+- Employee Shift Mapping
+
+---
+
+# Module 06 — Employee Management
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Employee CRUD
+- Company
+- Department
+- Designation
+- Shift
+- Salary
+- Personal Information
+- Employment Information
+- User Mapping
+- Employee Role
+- Employee Status
+
+---
+
+# Module 07 — Employee Accounts
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Employee Account Management
+- Employee Login Account
+- Account Mapping
+- Employee Authentication Mapping
+- Account Status
+
+---
+
+# Module 08 — Role Management
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Role CRUD
+- Role Management
+- Active / Inactive
+- Role Assignment
+- Role Based Access Structure
+
+---
+
+# Module 09 — Role Permission Management
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Permission Management
+- Role Permission Management
+- Permission Assignment
+- Permission Mapping
+- Permission Based Access Structure
+
+## Permission Areas
 
 - Company
 - Department
 - Designation
 - Shift
 - Employee
-
-Features
-
-- CRUD
-- Search
-- Active / Inactive
-- Relationship Mapping
+- Employee Accounts
+- Supervisor
+- Attendance
+- Leave
+- Reports
+- Dashboard
+- Settings
 
 ---
 
-# Module 03 — Attendance Management
+# Module 10 — Supervisor Management
 
-Status
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Supervisor CRUD
+- Create Supervisor
+- Update Supervisor
+- Delete Supervisor
+- Supervisor Status Toggle
+- Employee to Supervisor Mapping
+- Company Mapping
+- Department Mapping
+- Supervisor Search / Management
+
+---
+
+# Module 11 — Supervisor Department Assignment
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+### Create Supervisor Departments
+
+- Company Selection
+- Supervisor Selection
+- Department Selection
+- Select All Departments
+- Clear All Departments
+- Assign Multiple Departments
+- Database Synchronization
+
+### Manage Supervisor Departments
+
+- Company Selection
+- Supervisor Selection
+- Existing Assignment Loading
+- Add Department
+- Remove Department
+- Select All
+- Clear All
+- Assignment Update
+- Final State Synchronization
+- Database Insert
+- Database Delete
+
+---
+
+# Module 12 — Supervisor Department Status
+
+## Status
+
+✅ 100% Completed
+
+## Features
+
+- Supervisor Name
+- Assigned Department List
+- Department Assignment Status
+- Assigned Departments
+- Unassigned Departments
+- Department Status View
+- Supervisor Based Department View
+
+## Status Tabs
+
+### Tab 01 — Departments Without Supervisor
+
+Shows departments where no supervisor has been assigned.
+
+### Tab 02 — Supervisor Departments
+
+Shows:
+
+- Supervisor Name
+- Assigned Department Name
+- Department Assignment Information
+
+---
+
+# Module 13 — Attendance Management
+
+## Status
 
 🟢 95% Completed
-
-Completed Features
 
 ## Attendance CRUD
 
@@ -140,7 +390,7 @@ Completed Features
 - Basic Information Card
 - Bottom Action Bar
 
-Remaining
+## Remaining
 
 - PDF Export
 - Print
@@ -149,13 +399,13 @@ Remaining
 
 ---
 
-# Module 04 — Attendance Dashboard
+# Module 14 — Attendance Dashboard
 
-Status
+## Status
 
 🚀 Next Sprint
 
-Planned Features
+## Planned Features
 
 - Dashboard Statistics
 - My Attendance
@@ -163,17 +413,20 @@ Planned Features
 - Monthly Attendance
 - Recent Activities
 - Attendance Overview Cards
-- Charts
+- Attendance Charts
+- Working Hours
+- Late Statistics
+- Overtime Statistics
 
 ---
 
-# Module 05 — Leave Management
+# Module 15 — Leave Management
 
-Status
+## Status
 
 ⏳ Planned
 
-Features
+## Features
 
 - Leave Types
 - Leave Application
@@ -183,14 +436,23 @@ Features
 
 ---
 
-# Module 06 — Dashboard
+# Module 16 — Main Dashboard
 
-Status
+## Status
 
-⏳ Planned
+🟡 Partially Completed
 
-Features
+## Completed
 
+- Developer Dashboard
+- Company Owner Dashboard
+- Employee Dashboard
+- Role Based Dashboard Structure
+
+## Remaining
+
+- Supervisor Dashboard
+- Dashboard Statistics
 - Employee Summary
 - Attendance Summary
 - Leave Summary
@@ -200,30 +462,34 @@ Features
 
 ---
 
-# Module 07 — Reports
+# Module 17 — Reports
 
-Status
+## Status
 
 ⏳ Planned
 
-Features
+## Features
 
 - Attendance Report
 - Employee Report
 - Leave Report
 - Shift Report
+- Supervisor Report
+- Department Report
 - PDF Export
 - Excel Export
+- Print
+- Share
 
 ---
 
-# Module 08 — Notifications
+# Module 18 — Notifications
 
-Status
+## Status
 
 ⏳ Planned
 
-Features
+## Features
 
 - Company Announcement
 - Department Notification
@@ -232,70 +498,43 @@ Features
 
 ---
 
-# Module 09 — Settings
+# Module 19 — Settings
 
-Status
+## Status
 
 ⏳ Planned
 
-Features
+## Features
 
 - Company Settings
 - Attendance Settings
 - Leave Settings
 - Notification Settings
 - Theme Settings
+- System Settings
 
 ---
 
-# Module 10 — Profile
+# Module 20 — Profile
 
-Status
+## Status
 
 ⏳ Planned
 
-Features
+## Features
 
 - My Profile
-- Signature
 - Profile Photo
+- Signature
 - Login History
 - Password Change
-
----
-
-# Module 11 — Role & Permission
-
-Status
-
-⏳ Planned
-
-Roles
-
-- Super Admin
-- Company Admin
-- HR
-- Manager
-- Employee
-
-Permissions
-
-- Company
-- Department
-- Designation
-- Shift
-- Employee
-- Attendance
-- Leave
-- Reports
-- Dashboard
-- Settings
+- Account Information
 
 ---
 
 # Database Status
 
-Completed Tables
+## Completed Tables
 
 - Companies
 - Departments
@@ -303,8 +542,13 @@ Completed Tables
 - Shifts
 - Employees
 - Attendance
+- Roles
+- Role Permissions
+- Employee Accounts
+- Supervisors
+- Supervisor Department Assignments
 
-Database Features
+## Database Features
 
 - Relationships
 - Foreign Keys
@@ -313,8 +557,9 @@ Database Features
 - RLS Policies
 - Authentication
 - Storage
+- Assignment Synchronization
 
-Status
+## Status
 
 ✅ Completed
 
@@ -322,81 +567,146 @@ Status
 
 # Flutter Development Phases
 
-Phase 01
-
-Authentication
+## Phase 01 — Authentication
 
 ✅ Completed
 
+- Login
+- Logout
+- Auto Login
+- Route Guard
+- Session Management
+- Role Based Login
+- Current User Mapping
+
 ---
 
-Phase 02
-
-Master Data
+## Phase 02 — Master Data
 
 ✅ Completed
 
+- Company
+- Department
+- Designation
+- Shift
+- Employee
+
 ---
 
-Phase 03
+## Phase 03 — Employee Accounts
 
-Attendance Module
+✅ Completed
+
+- Employee Accounts
+- Account Mapping
+- Employee Authentication
+
+---
+
+## Phase 04 — Role & Permission
+
+✅ Completed
+
+- Roles
+- Role Permissions
+- Permission Mapping
+- Role Based Access
+
+---
+
+## Phase 05 — Supervisor Management
+
+✅ Completed
+
+- Supervisor CRUD
+- Supervisor Status
+- Supervisor Mapping
+
+---
+
+## Phase 06 — Supervisor Department Management
+
+✅ Completed
+
+- Create Supervisor Departments
+- Manage Supervisor Departments
+- Department Assignment
+- Department Removal
+- Assignment Synchronization
+- Supervisor Department Status
+
+---
+
+## Phase 07 — Attendance Module
 
 🟢 95% Completed
 
+- Attendance CRUD
+- Mobile Attendance
+- GPS
+- Reverse Geocoding
+- Attendance History
+- Attendance Details
+- Analytics
+- Timeline
+- Google Maps
+
 ---
 
-Phase 04
-
-Attendance Dashboard
+## Phase 08 — Attendance Dashboard
 
 🚀 Next
 
 ---
 
-Phase 05
+## Phase 09 — Supervisor Dashboard
 
-Leave Module
+🚀 Next
+
+Planned Features:
+
+- Supervisor Dashboard
+- My Departments
+- Assigned Employees
+- Department Attendance
+- Department Summary
+- Employee Attendance
+- Leave Summary
+- Department Statistics
+
+---
+
+## Phase 10 — Leave Module
 
 ⏳ Planned
 
 ---
 
-Phase 06
-
-Dashboard
+## Phase 11 — Main Dashboard
 
 ⏳ Planned
 
 ---
 
-Phase 07
-
-Reports
+## Phase 12 — Reports
 
 ⏳ Planned
 
 ---
 
-Phase 08
-
-Settings
+## Phase 13 — Notifications
 
 ⏳ Planned
 
 ---
 
-Phase 09
-
-Role Permission
+## Phase 14 — Settings
 
 ⏳ Planned
 
 ---
 
-Phase 10
-
-Testing & Optimization
+## Phase 15 — Testing & Optimization
 
 ⏳ Planned
 
@@ -406,48 +716,117 @@ Testing & Optimization
 
 ## Version 0.6.5
 
-✅ Attendance History
+### Completed
 
-✅ Attendance Details
+✅ Authentication
 
-✅ Timeline
+✅ Company Management
 
-✅ Google Map
+✅ Department Management
 
-✅ Analytics
+✅ Designation Management
 
-✅ Location Card
+✅ Shift Management
+
+✅ Employee Management
+
+✅ Employee Accounts
+
+✅ Roles
+
+✅ Role Permissions
+
+✅ Supervisor CRUD
+
+✅ Supervisor Status
+
+✅ Create Supervisor Departments
+
+✅ Manage Supervisor Departments
+
+✅ Supervisor Department Status
+
+🟢 Attendance Module — 95%
 
 ---
 
-## Version 0.7.0
+# Version 0.7.0
+
+## Attendance Dashboard
+
+Planned:
 
 - Attendance Dashboard
 - Attendance Statistics
-- Calendar
-- Dashboard Charts
+- Attendance Calendar
+- Attendance Charts
+- Working Hours
+- Late Statistics
+- Overtime Statistics
 
 ---
 
-## Version 0.8.0
+# Version 0.8.0
 
-- Leave Module
+## Supervisor Dashboard + Leave Module
+
+Planned:
+
+- Supervisor Dashboard
+- Supervisor Departments
+- Department Employees
+- Department Attendance
+- Leave Types
+- Leave Application
+- Leave Approval
+- Holidays
+- Official Movement
 
 ---
 
-## Version 0.9.0
+# Version 0.9.0
 
+## Reports & Notifications
+
+Planned:
+
+- Attendance Reports
+- Employee Reports
+- Leave Reports
+- Supervisor Reports
+- PDF Export
+- Excel Export
+- Company Announcement
+- Department Notification
+- In-App Notification
+
+---
+
+# Version 1.0.0
+
+## Production Stable Release
+
+Target:
+
+- Production Ready
+- Stable Database
+- Complete Authentication
+- Complete Role & Permission
+- Complete Supervisor Management
+- Attendance
+- Leave
+- Dashboard
 - Reports
-
----
-
-## Version 1.0.0
-
-Production Stable Release
+- Notifications
+- Settings
+- Testing
+- Performance Optimization
 
 ---
 
 # Future Version 2.x
+
+## Advanced HRMS Features
 
 - Face Attendance
 - Face Recognition
@@ -457,14 +836,17 @@ Production Stable Release
 - Employee Monitoring
 - Payroll
 - Recruitment
-- Performance
+- Performance Management
 - Asset Management
+- Training Management
+- Loan Management
+- Push Notification
 
 ---
 
 # Responsive Support
 
-Platforms
+## Platforms
 
 - Android
 - iOS
@@ -473,7 +855,7 @@ Platforms
 - Linux
 - Web
 
-Layouts
+## Layouts
 
 - Mobile
 - Tablet
@@ -493,12 +875,23 @@ Layouts
 - Material 3
 - Responsive Design
 - Documentation Driven Development
+- Reusable Widgets
+- Maintainable Code
+- Scalable Architecture
 
 ---
 
-# Current Milestone
+# Current Project Status
 
-✅ Authentication
+## Completed
+
+✅ Login System
+
+✅ Developer Dashboard
+
+✅ Company Owner Dashboard
+
+✅ Employee Dashboard
 
 ✅ Company Module
 
@@ -510,22 +903,67 @@ Layouts
 
 ✅ Employee Module
 
-🟢 Attendance Module (95%)
+✅ Employee Accounts
 
-⬇
+✅ Roles
 
-🚀 Attendance Dashboard
+✅ Role Permissions
 
-⬇
+✅ Supervisor CRUD
 
-🚀 Leave Module
+✅ Supervisor Status
 
-⬇
+✅ Create Supervisor Departments
 
-🎯 Version 1.0
+✅ Manage Supervisor Departments
+
+✅ Supervisor Department Status
+
+🟢 Attendance Module — 95%
 
 ---
 
-# Long-Term Vision
+# Current Milestone
 
-Flutter HRMS Pro aims to become a complete, enterprise-grade Human Resource Management System with commercial-quality Flutter architecture, responsive UI, GPS attendance, employee monitoring, payroll, reports, role management, and modern dashboards suitable for real-world business deployment and CodeCanyon distribution.
+```text
+Authentication
+      ↓
+Company
+      ↓
+Department
+      ↓
+Designation
+      ↓
+Shift
+      ↓
+Employee
+      ↓
+Employee Accounts
+      ↓
+Roles
+      ↓
+Role Permissions
+      ↓
+Supervisor
+      ↓
+Supervisor Department Assignment
+      ↓
+Supervisor Department Management
+      ↓
+Supervisor Department Status
+      ↓
+Attendance
+      ↓
+🚀 Attendance Dashboard
+      ↓
+🚀 Supervisor Dashboard
+      ↓
+Leave
+      ↓
+Reports
+      ↓
+Notifications
+      ↓
+Settings
+      ↓
+🎯 Version 1.0.0
