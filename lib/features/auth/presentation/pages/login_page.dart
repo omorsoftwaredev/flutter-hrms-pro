@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../providers/login_controller.dart';
 import 'package:go_router/go_router.dart';
+
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -19,6 +20,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // text: "omor.software.dev@gmail.com",
     // text: "EMP0002",
     text: "omor4android",
+    // text: "superomor",
   );
 
   final _passwordController = TextEditingController(
@@ -33,39 +35,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _passwordController.dispose();
     super.dispose();
   }
+
   Future<void> _login() async {
     final username = _usernameController.text.trim();
     final passwordHash = _passwordController.text;
 
     if (username.isEmpty || passwordHash.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Username and Password are required.',
-          ),
-        ),
+        const SnackBar(content: Text('Username and Password are required.')),
       );
       return;
     }
 
     try {
-       await ref.read(loginControllerProvider).login(
-        context: context,
-        username: username,
-         passwordHash: passwordHash,
-      );
+      await ref
+          .read(loginControllerProvider)
+          .login(
+            context: context,
+            username: username,
+            passwordHash: passwordHash,
+          );
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
-          ),
-        ),
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     }
   }
@@ -92,10 +86,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const Text(
                   "Flutter HRMS Pro",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -141,10 +132,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: const Text('Forgot Password'),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  "Version 0.1.0",
-                  textAlign: TextAlign.center,
-                ),
+                const Text("Version 0.1.0", textAlign: TextAlign.center),
               ],
             ),
           ),

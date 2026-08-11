@@ -22,7 +22,7 @@ class CurrentUser {
 
   /// Display user type
   ///
-  /// Developer / Company / Employee
+  /// Developer / Company / HR / Supervisor / Employee
   final UserType userType;
 
   /// Permission role
@@ -77,16 +77,20 @@ class CurrentUser {
     required this.fullName,
     required this.email,
 
+    // Employee
     required this.employeeId,
     required this.employeeCode,
     required this.employeeName,
 
+    // Company
     required this.companyId,
     required this.companyName,
 
+    // Department
     required this.departmentId,
     required this.departmentName,
 
+    // Designation
     required this.designationId,
     required this.designationName,
   });
@@ -134,43 +138,56 @@ class CurrentUser {
   // User Type Helpers
   // =============================================================
 
-  bool get isDeveloper => userType == UserType.developer;
+  bool get isDeveloper =>
+      userType == UserType.developer;
 
-  bool get isCompany => userType == UserType.company;
+  bool get isCompany =>
+      userType == UserType.company;
 
-  bool get isHr => userType == UserType.hr;
+  bool get isHr =>
+      userType == UserType.hr;
 
-  bool get isSupervisor => userType == UserType.supervisor;
+  bool get isSupervisor =>
+      userType == UserType.supervisor;
 
-
-
-  bool get isEmployee => userType == UserType.employee;
+  bool get isEmployee =>
+      userType == UserType.employee;
 
   // =============================================================
   // Role Helpers
   // =============================================================
 
-  bool get isDeveloperRole => role == UserRole.developer;
+  bool get isDeveloperRole =>
+      role == UserRole.developer;
 
-  bool get isCompanyOwner => role == UserRole.companyOwner;
+  bool get isCompanyOwner =>
+      role == UserRole.companyOwner;
 
-  bool get isHrRole => role == UserRole.hr;
+  bool get isHrRole =>
+      role == UserRole.hr;
 
-  bool get isSupervisorRole => role == UserRole.supervisor;
+  bool get isSupervisorRole =>
+      role == UserRole.supervisor;
 
-  bool get isEmployeeRole => role == UserRole.employee;
+  bool get isEmployeeRole =>
+      role == UserRole.employee;
 
   // =============================================================
   // Permission
   // =============================================================
 
-  Set<Permission> get permissions => RolePermissions.permissions(role);
+  Set get permissions =>
+      RolePermissions.permissions(role);
 
-  bool hasPermission(Permission permission) {
+  bool hasPermission(
+      Permission permission,
+      ) {
     return permissions.contains(permission);
   }
 
-  bool can(Permission permission) {
+  bool can(
+      Permission permission,
+      ) {
     return hasPermission(permission);
   }
 
@@ -183,7 +200,8 @@ class CurrentUser {
   /// Employee Name থাকলে সেটা দেখাবে,
   /// না থাকলে fullName দেখাবে।
   String get displayEmployeeName {
-    if (employeeName != null && employeeName!.trim().isNotEmpty) {
+    if (employeeName != null &&
+        employeeName!.trim().isNotEmpty) {
       return employeeName!;
     }
 
@@ -199,7 +217,8 @@ class CurrentUser {
   /// Company Name থাকলে সেটা দেখাবে।
   /// না থাকলে empty থাকবে।
   String get displayCompanyName {
-    if (companyName != null && companyName!.trim().isNotEmpty) {
+    if (companyName != null &&
+        companyName!.trim().isNotEmpty) {
       return companyName!;
     }
 
@@ -208,7 +227,8 @@ class CurrentUser {
 
   /// Department display name
   String get displayDepartmentName {
-    if (departmentName != null && departmentName!.trim().isNotEmpty) {
+    if (departmentName != null &&
+        departmentName!.trim().isNotEmpty) {
       return departmentName!;
     }
 
@@ -217,7 +237,8 @@ class CurrentUser {
 
   /// Designation display name
   String get displayDesignationName {
-    if (designationName != null && designationName!.trim().isNotEmpty) {
+    if (designationName != null &&
+        designationName!.trim().isNotEmpty) {
       return designationName!;
     }
 
@@ -236,16 +257,20 @@ class CurrentUser {
     String? fullName,
     String? email,
 
+    // Employee
     String? employeeId,
     String? employeeCode,
     String? employeeName,
 
+    // Company
     String? companyId,
     String? companyName,
 
+    // Department
     String? departmentId,
     String? departmentName,
 
+    // Designation
     String? designationId,
     String? designationName,
   }) {
@@ -257,23 +282,29 @@ class CurrentUser {
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
 
+      // Employee
       employeeId: employeeId ?? this.employeeId,
+      employeeCode:
+      employeeCode ?? this.employeeCode,
+      employeeName:
+      employeeName ?? this.employeeName,
 
-      employeeCode: employeeCode ?? this.employeeCode,
-
-      employeeName: employeeName ?? this.employeeName,
-
+      // Company
       companyId: companyId ?? this.companyId,
+      companyName:
+      companyName ?? this.companyName,
 
-      companyName: companyName ?? this.companyName,
+      // Department
+      departmentId:
+      departmentId ?? this.departmentId,
+      departmentName:
+      departmentName ?? this.departmentName,
 
-      departmentId: departmentId ?? this.departmentId,
-
-      departmentName: departmentName ?? this.departmentName,
-
-      designationId: designationId ?? this.designationId,
-
-      designationName: designationName ?? this.designationName,
+      // Designation
+      designationId:
+      designationId ?? this.designationId,
+      designationName:
+      designationName ?? this.designationName,
     );
   }
 
@@ -287,7 +318,8 @@ class CurrentUser {
   /// না থাকলে Full Name,
   /// সেটাও না থাকলে Login Name দেখাবে.
   String get displayName {
-    if (employeeName != null && employeeName!.trim().isNotEmpty) {
+    if (employeeName != null &&
+        employeeName!.trim().isNotEmpty) {
       return employeeName!;
     }
 

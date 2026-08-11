@@ -1,20 +1,16 @@
-from pathlib import Path
-
-content = r'''# Flutter HRMS Pro
+# Flutter HRMS Pro
 
 # Development Guide
 
-**Version:** `0.6.5`
+**Version:** `0.8.0`
 
 ---
 
 # Development Philosophy
 
-Flutter HRMS Pro is a professional, scalable and production-ready Human Resource Management System (HRMS) built using **Flutter** and **Supabase**.
+Flutter HRMS Pro is a professional, scalable and production-ready HRMS built using **Flutter** and **Supabase**.
 
-The project follows modern software engineering practices to ensure clean architecture, maintainability, scalability and enterprise-level code quality suitable for commercial distribution.
-
-Core Principles
+## Core Principles
 
 - Clean Architecture
 - Feature-First Development
@@ -28,13 +24,9 @@ Core Principles
 - Production Ready Code
 - CodeCanyon Quality
 
----
-
 # Current Development Status
 
-## ✅ Completed Modules
-
-### Authentication
+## Authentication
 
 - Login
 - Logout
@@ -43,19 +35,15 @@ Core Principles
 - Route Guard
 - Forgot Password
 - Update Password
-- Current Employee Mapping
 - Developer Login
 - Company Owner Login
 - Employee Login
+- Supervisor Login
 - Role-based Dashboard Access
-
-Status
 
 🟢 Completed
 
----
-
-### Master Data
+## Master Data
 
 - Company CRUD
 - Department CRUD
@@ -63,141 +51,106 @@ Status
 - Shift CRUD
 - Employee CRUD
 
-Status
-
 🟢 Completed
 
----
-
-### Role & Permission Management
-
-Completed
+## Role & Permission Management
 
 - Role CRUD
 - Role Permission CRUD
 - Permission Management
 - Role-based Access Support
 
-Status
-
 🟢 Completed
 
----
-
-### Employee Account Management
-
-Completed
+## Employee Account Management
 
 - Employee Account CRUD
 - Employee Mapping
 - Account Relationship Management
 
-Status
-
 🟢 Completed
 
----
-
-### Supervisor Management
-
-Completed
+## Supervisor Management
 
 - Supervisor CRUD
 - Supervisor Department Creation
 - Supervisor Department Management
 - Supervisor Department Status Management
 - Supervisor Department Assignment / Mapping
+- Supervisor Dashboard
+- Supervisor Attendance View
 
-Remaining
+🟢 Completed
 
-- Supervisor Dashboard Integration
-
-Status
-
-🟡 Near Completion
-
----
-
-### Attendance Management
-
-Completed
+## Attendance Management
 
 - Attendance CRUD
 - Mobile Check In
 - Mobile Check Out
-- Current Employee Mapping
 - GPS Location Capture
 - Address Detection
 - Attendance Validation
-- Attendance Number Generation
-- Duplicate Check In Prevention
-- Duplicate Check Out Prevention
-- Attendance Repository
-- Attendance Provider
-- Attendance Details Page
 - Attendance History
 - Attendance Analytics
 - Attendance Timeline
 - Google Map Integration
-- Attendance Location Card
-- Device Information
-- Company Information
-- Employee Information
-- Shift Information
 - Attendance Summary
-- Bottom Action Bar
+- Supervisor Attendance View
 
-Remaining
+🟢 Completed Core Attendance
 
-- Attendance Dashboard
-- Attendance Calendar
-- Monthly Attendance
-- Working Hour Summary
-- PDF Export
-- Print
-- Share
+## Settings
 
-Status
+### Theme Settings
+- Light
+- Dark
+- System
+- Theme Persistence
+- Responsive UI
 
-🟢 Near Completion
+🟢 Completed
 
----
+### Working Days
+- Company Wise Working Days
+- Persistent Settings
+- Seven Day Configuration
 
-# Upcoming Modules
+🟢 Completed
 
-## Supervisor Dashboard
+### Basic Attendance Rules
+- Late Grace Period
+- Early Leave Grace Period
+- Late Attendance Allowed
+- Early Leave Allowed
+- Half-Day Threshold
+- Minimum Working Hours
+- Check-in Required
+- Check-out Required
+- Company Wise Storage
 
-- Supervisor Dashboard
-- Supervisor Department Overview
-- Supervisor Employee Overview
-- Supervisor Attendance Overview
-- Supervisor Department-based Data
+🟢 Completed
 
-Status
+### Weekend Settings
 
-🚀 Next Development
+A separate weekend settings table/module was removed.
 
----
+❌ Removed
 
-## Attendance Dashboard
+# Next Development Priorities
 
-- Today's Attendance
-- My Attendance
-- Statistics
-- Summary Cards
-- Recent Attendance
-- Calendar View
-- Monthly Attendance
-- Working Hour Summary
-- Charts
+## 1. Attendance Data Synchronization & Reports
 
-Status
+- Sync attendance data with report layer
+- Employee attendance summary
+- Supervisor attendance summary
+- Late calculation
+- Early leave calculation
+- Working hour calculation
+- Company-wise reporting
 
-⏳ Planned
+⏭️ Next Priority
 
----
-
-## Leave Management
+## 2. Leave Management
 
 - Leave Types
 - Apply Leave
@@ -205,13 +158,9 @@ Status
 - Holiday Management
 - Official Movement
 
-Status
-
 ⏳ Planned
 
----
-
-## Dashboard & Analytics
+## 3. Dashboard & Analytics
 
 - Company Statistics
 - Employee Statistics
@@ -221,13 +170,9 @@ Status
 - Quick Actions
 - Recent Activities
 
-Status
-
 ⏳ Planned
 
----
-
-## Reports
+## 4. Reports
 
 - Attendance Report
 - Employee Report
@@ -236,29 +181,27 @@ Status
 - PDF Export
 - Excel Export
 
-Status
+⏳ Planned
+
+## 5. Notifications
+
+- In-App Notification
+- Department Notification
+- Company Announcement
+- Push Notification
 
 ⏳ Planned
 
----
+## 6. Employee Monitoring
 
-## Settings
-
-- Company Settings
-- Attendance Settings
-- Leave Settings
-- Notification Settings
-- Theme Settings
-
-Status
+- Background Location Tracking
+- Google Maps
+- Live Employee Monitoring
+- Location History
 
 ⏳ Planned
-
----
 
 # Development Workflow
-
-Every feature follows the same development lifecycle.
 
 ```text
 Requirement
@@ -288,3 +231,19 @@ Documentation
 Git Commit
       ↓
 Git Push
+```
+
+# Development Rule
+
+The project should proceed **module-by-module**.
+
+The current module should be completed and verified before starting an unrelated module.
+
+Priority:
+
+1. Stability
+2. Data integrity
+3. Multi-company isolation
+4. Responsive UI
+5. Reusable architecture
+6. CodeCanyon quality

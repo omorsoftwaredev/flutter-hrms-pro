@@ -16,24 +16,19 @@ import '../../../../core/auth/user_type.dart';
 import '../../../../core/router/route_paths.dart';
 import '../../../../core/services/supabase_service.dart';
 
-
 // ===============================================================
 // LOGIN LOADING PROVIDER
 // ===============================================================
 
-final loginLoadingProvider =
-StateProvider<bool>((ref) => false);
-
+final loginLoadingProvider = StateProvider<bool>((ref) => false);
 
 // ===============================================================
 // LOGIN CONTROLLER PROVIDER
 // ===============================================================
 
-final loginControllerProvider =
-Provider<LoginController>((ref) {
+final loginControllerProvider = Provider<LoginController>((ref) {
   return LoginController(ref);
 });
-
 
 // ===============================================================
 // LOGIN CONTROLLER
@@ -44,7 +39,6 @@ class LoginController {
 
   LoginController(this.ref);
 
-
   // =============================================================
   // LOGIN
   // =============================================================
@@ -54,145 +48,96 @@ class LoginController {
     required String username,
     required String passwordHash,
   }) async {
-
-    ref
-        .read(loginLoadingProvider.notifier)
-        .state = true;
-
+    ref.read(loginLoadingProvider.notifier).state = true;
 
     try {
-
       // =========================================================
       // BEFORE LOGIN DEBUG
       // =========================================================
 
       debugPrint('');
-      debugPrint(
-        '=====================================================',
-      );
+      debugPrint('=====================================================');
 
-      debugPrint(
-        'LOGIN CONTROLLER - START',
-      );
+      debugPrint('LOGIN CONTROLLER - START');
 
-      debugPrint(
-        'USERNAME = $username',
-      );
+      debugPrint('USERNAME = $username');
 
       debugPrint(
         'SUPABASE USER BEFORE LOGIN = '
-            '${SupabaseService.client.auth.currentUser?.id}',
+        '${SupabaseService.client.auth.currentUser?.id}',
       );
 
       debugPrint(
         'SUPABASE SESSION BEFORE LOGIN = '
-            '${SupabaseService.client.auth.currentSession != null}',
+        '${SupabaseService.client.auth.currentSession != null}',
       );
 
-      debugPrint(
-        '=====================================================',
-      );
-
+      debugPrint('=====================================================');
 
       // =========================================================
       // APPLICATION LOGIN
       // =========================================================
 
-      final CurrentUser user =
-      await ref
+      final CurrentUser user = await ref
           .read(authRepositoryProvider)
-          .login(
-        username: username,
-        passwordHash: passwordHash,
-      );
-
+          .login(username: username, passwordHash: passwordHash);
 
       // =========================================================
       // AFTER LOGIN - SUPABASE AUTH CHECK
       // =========================================================
 
-      final supabaseUser =
-          SupabaseService.client.auth.currentUser;
+      final supabaseUser = SupabaseService.client.auth.currentUser;
 
-      final supabaseSession =
-          SupabaseService.client.auth.currentSession;
-
+      final supabaseSession = SupabaseService.client.auth.currentSession;
 
       debugPrint('');
-      debugPrint(
-        '=====================================================',
-      );
+      debugPrint('=====================================================');
 
-      debugPrint(
-        'LOGIN CONTROLLER - AFTER LOGIN',
-      );
+      debugPrint('LOGIN CONTROLLER - AFTER LOGIN');
 
-      debugPrint(
-        'CURRENT USER MODEL ID = ${user.userId}',
-      );
+      debugPrint('CURRENT USER MODEL ID = ${user.userId}');
 
-      debugPrint(
-        'CURRENT USER MODEL EMAIL = ${user.email}',
-      );
+      debugPrint('CURRENT USER MODEL EMAIL = ${user.email}');
 
       debugPrint(
         'SUPABASE AUTH USER ID = '
-            '${supabaseUser?.id}',
+        '${supabaseUser?.id}',
       );
 
       debugPrint(
         'SUPABASE AUTH EMAIL = '
-            '${supabaseUser?.email}',
+        '${supabaseUser?.email}',
       );
 
       debugPrint(
         'SUPABASE SESSION EXISTS = '
-            '${supabaseSession != null}',
+        '${supabaseSession != null}',
       );
 
-      debugPrint(
-        '=====================================================',
-      );
-
+      debugPrint('=====================================================');
 
       // =========================================================
       // CURRENT USER PROVIDER
       // =========================================================
 
-      ref
-          .read(currentUserProvider.notifier)
-          .login(user);
-
+      ref.read(currentUserProvider.notifier).login(user);
 
       // =========================================================
       // AUTH WARNING
       // =========================================================
 
-      if (supabaseUser == null ||
-          supabaseSession == null) {
-
+      if (supabaseUser == null || supabaseSession == null) {
         debugPrint('');
-        debugPrint(
-          '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
-        );
+        debugPrint('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 
-        debugPrint(
-          'WARNING: APPLICATION LOGIN SUCCESSFUL',
-        );
+        debugPrint('WARNING: APPLICATION LOGIN SUCCESSFUL');
 
-        debugPrint(
-          'BUT SUPABASE AUTH SESSION IS NOT AVAILABLE.',
-        );
+        debugPrint('BUT SUPABASE AUTH SESSION IS NOT AVAILABLE.');
 
-        debugPrint(
-          'Supervisor INSERT WILL FAIL WITH RLS.',
-        );
+        debugPrint('Supervisor INSERT WILL FAIL WITH RLS.');
 
-        debugPrint(
-          '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
-        );
+        debugPrint('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
       }
-
 
       // =========================================================
       // NAVIGATION
@@ -202,59 +147,34 @@ class LoginController {
         return;
       }
 
-
       switch (user.userType) {
-
         case UserType.developer:
-
-          context.go(
-            RoutePaths.developerDashboard,
-          );
+          context.go(RoutePaths.developerDashboard);
 
           break;
-
 
         case UserType.company:
-
-          context.go(
-            RoutePaths.companyDashboard,
-          );
+          context.go(RoutePaths.companyDashboard);
 
           break;
-
 
         case UserType.hr:
-
-          context.go(
-            RoutePaths.hrDashboard,
-          );
+          context.go(RoutePaths.hrDashboard);
 
           break;
-
 
         case UserType.supervisor:
-
-          context.go(
-            RoutePaths.supervisorDashboard,
-          );
+          context.go(RoutePaths.supervisorDashboard);
 
           break;
 
-
         case UserType.employee:
-
-          context.go(
-            RoutePaths.employeeDashboard,
-          );
+          context.go(RoutePaths.employeeDashboard);
 
           break;
       }
-
     } finally {
-
-      ref
-          .read(loginLoadingProvider.notifier)
-          .state = false;
+      ref.read(loginLoadingProvider.notifier).state = false;
     }
   }
 }

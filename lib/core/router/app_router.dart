@@ -6,14 +6,16 @@
 /// ===============================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hrms_pro/core/router/settings_router.dart';
+import 'package:flutter_hrms_pro/core/router/supervisor_dashboard_router.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/dashboard/pages/dashboard_home_page.dart';
 
-import '../../features/dashboard/pages/supervisor_dashboard_page.dart';
 import '../../features/employee_dashboard/pages/employee_dashboard_page.dart';
+import '../../features/supervisor_dashboard/pages/supervisor_dashboard_page.dart';
 import 'company_dashboard_router.dart';
 import 'employee_dashboard_router.dart';
 import 'route_names.dart';
@@ -77,6 +79,8 @@ class AppRouter {
       ...DeveloperRouter.routes,
       ...CompanyDashboardRouter.routes,
       ...EmployeeDashboardRouter.routes,
+      ...SupervisorDashboardRouter.routes,
+      ...SettingsRouter.routes,
     ],
 
     errorBuilder: (context, state) {

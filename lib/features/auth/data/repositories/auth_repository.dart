@@ -4,8 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthRepository {
   AuthRepository();
 
-  final SupabaseClient _client =
-      Supabase.instance.client;
+  final SupabaseClient _client = Supabase.instance.client;
 
   ///=====================================
   /// LOGIN
@@ -24,35 +23,21 @@ class AuthRepository {
     // LOGIN AUTH DEBUG
     // =============================================================
 
-    debugPrint(
-      '=====================================================',
-    );
+    debugPrint('=====================================================');
 
     debugPrint('LOGIN AUTH DEBUG');
 
-    debugPrint(
-      'USER ID = ${_client.auth.currentUser?.id}',
-    );
+    debugPrint('USER ID = ${_client.auth.currentUser?.id}');
 
-    debugPrint(
-      'USER EMAIL = ${_client.auth.currentUser?.email}',
-    );
+    debugPrint('USER EMAIL = ${_client.auth.currentUser?.email}');
 
-    debugPrint(
-      'SESSION EXISTS = ${_client.auth.currentSession != null}',
-    );
+    debugPrint('SESSION EXISTS = ${_client.auth.currentSession != null}');
 
-    debugPrint(
-      'RESPONSE USER ID = ${response.user?.id}',
-    );
+    debugPrint('RESPONSE USER ID = ${response.user?.id}');
 
-    debugPrint(
-      'RESPONSE SESSION EXISTS = ${response.session != null}',
-    );
+    debugPrint('RESPONSE SESSION EXISTS = ${response.session != null}');
 
-    debugPrint(
-      '=====================================================',
-    );
+    debugPrint('=====================================================');
 
     return response;
   }
@@ -101,11 +86,7 @@ class AuthRepository {
   /// RESET PASSWORD
   ///=====================================
 
-  Future<void> resetPassword(
-      String email,
-      ) async {
-    await _client.auth.resetPasswordForEmail(
-      email,
-    );
+  Future<void> resetPassword(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
   }
 }

@@ -1,8 +1,9 @@
+````
 # Flutter HRMS Pro
 
 # Project Status
 
-**Version:** `0.6.5`
+**Version:** `0.8.0`
 
 **Status:** 🟢 Active Development
 
@@ -20,7 +21,7 @@
 | Developer Dashboard           | ✅ Completed |
 | Company Owner Dashboard       | ✅ Completed |
 | Employee Dashboard            | ✅ Completed |
-| Supervisor Dashboard          | 🚀 Pending |
+| Supervisor Dashboard          | ✅ Completed |
 | Company Management            | ✅ Completed |
 | Department Management         | ✅ Completed |
 | Designation Management        | ✅ Completed |
@@ -37,10 +38,10 @@
 | Mobile Attendance             | ✅ Completed |
 | Attendance History            | ✅ Completed |
 | Attendance Details UI         | ✅ Completed |
-| Attendance Dashboard          | 🚀 Next |
+| Attendance Dashboard          | ⏳ Planned |
 | Leave Module                  | ⏳ Planned |
 | Reports                       | ⏳ Planned |
-| Settings                      | ⏳ Planned |
+| Settings                      | 🟢 Core Completed |
 | Notifications                 | ⏳ Planned |
 
 ---
@@ -162,8 +163,12 @@
 
 ### Supervisor
 
-- [ ] Supervisor Login Routing
-- [ ] Supervisor Dashboard
+- [x] Supervisor Login Routing
+- [x] Supervisor Dashboard
+- [x] Supervisor Department View
+- [x] Department Employee View
+- [x] Department Attendance
+- [x] Supervisor Attendance View
 
 **Status:** 🟢 CORE AUTHENTICATION COMPLETED
 
@@ -365,15 +370,15 @@
 - [x] Attendance List
 - [x] Employee Mapping
 
-**Status:** 🟢 95% COMPLETED
+**Status:** 🟢 COMPLETED
 
 ---
 
-# Sprint 09 — Attendance Dashboard 🚀
+# Sprint 09 — Attendance Dashboard ⏳
 
 ## Current Status
 
-🚀 NEXT DEVELOPMENT
+⏳ PLANNED
 
 ## Planned
 
@@ -394,25 +399,24 @@
 
 ---
 
-# Sprint 10 — Supervisor Dashboard 🚀
+# Sprint 10 — Supervisor Dashboard ✅
 
 ## Status
 
-⏳ Pending
+✅ COMPLETED
 
-## Planned Features
+## Completed Features
 
-- [ ] Supervisor Login Routing
-- [ ] Supervisor Dashboard
-- [ ] My Departments
-- [ ] Assigned Employees
-- [ ] Department Attendance
-- [ ] Employee Attendance
-- [ ] Attendance Summary
-- [ ] Department Statistics
-- [ ] Leave Summary
-- [ ] Recent Activities
-- [ ] Supervisor Quick Actions
+- [x] Supervisor Login Routing
+- [x] Supervisor Dashboard
+- [x] My Departments
+- [x] Assigned Employees
+- [x] Department Attendance
+- [x] Employee Attendance
+- [x] Attendance Summary
+- [x] Department Statistics
+- [x] Supervisor Attendance View
+- [x] Supervisor Department Based Access
 
 ---
 
@@ -472,15 +476,31 @@
 
 ## Status
 
-⏳ Planned
+🟢 CORE SETTINGS COMPLETED
 
-## Features
+## Completed
 
-- [ ] Company Settings
-- [ ] Attendance Settings
+### Theme Settings
+- [x] Light Theme
+- [x] Dark Theme
+- [x] System Theme
+- [x] Theme Persistence
+- [x] Responsive Theme Settings UI
+
+### Attendance Settings
+- [x] Working Days
+- [x] Company Wise Working Days
+- [x] Basic Attendance Rules
+- [x] Company Wise Attendance Rules
+- [x] Persistent Database Storage
+
+### Removed
+- [x] Weekend Settings as a separate table/module
+
+## Planned
+- [ ] Additional company settings
 - [ ] Leave Settings
 - [ ] Notification Settings
-- [ ] Theme Settings
 - [ ] System Settings
 
 ---
@@ -559,34 +579,20 @@
 
 ## 🚀 Next Development
 
+- Attendance Data Synchronization
+- Attendance Reporting
 - Attendance Dashboard
 - Attendance Calendar
 - Attendance Statistics
 
 ⬇
 
-## 🚀 After Attendance Dashboard
+## 🚀 After Attendance Reporting
 
-- Supervisor Login Routing
-- Supervisor Dashboard
-- Supervisor Department Dashboard
-- Department Employee Attendance
-
-⬇
-
-Leave Module
-
-⬇
-
-Reports
-
-⬇
-
-Notifications
-
-⬇
-
-Settings
+- Leave Module
+- Holidays
+- Reports
+- Notifications
 
 ⬇
 
@@ -610,7 +616,7 @@ Testing & Optimization
 | Developer Dashboard | 100% |
 | Company Owner Dashboard | 100% |
 | Employee Dashboard | 100% |
-| Supervisor Dashboard | 0% |
+| Supervisor Dashboard | 100% |
 | Company | 100% |
 | Department | 100% |
 | Designation | 100% |
@@ -631,7 +637,7 @@ Testing & Optimization
 | Leave | 0% |
 | Reports | 0% |
 | Notifications | 0% |
-| Settings | 0% |
+| Settings | 80% |
 | Testing & Optimization | 0% |
 
 ---
@@ -669,6 +675,8 @@ Testing & Optimization
 
 ## Attendance Dashboard
 
+Status: ⏳ Planned
+
 Planned:
 
 - [ ] Attendance Dashboard
@@ -683,15 +691,22 @@ Planned:
 
 # Version 0.8.0
 
-## Supervisor Dashboard + Leave
+## Supervisor Dashboard + Attendance Settings
 
-Planned:
+### Completed
 
-- [ ] Supervisor Login Routing
-- [ ] Supervisor Dashboard
-- [ ] Supervisor Department View
-- [ ] Department Employee View
-- [ ] Department Attendance
+- [x] Supervisor Login Routing
+- [x] Supervisor Dashboard
+- [x] Supervisor Department View
+- [x] Department Employee View
+- [x] Department Attendance
+- [x] Supervisor Attendance View
+- [x] Theme Settings
+- [x] Working Days Settings
+- [x] Basic Attendance Rules
+
+### Planned
+
 - [ ] Leave Types
 - [ ] Leave Application
 - [ ] Leave Approval
@@ -702,7 +717,7 @@ Planned:
 
 # Version 0.9.0
 
-## Reports & Notifications
+## Attendance Reports & Notifications
 
 Planned:
 
@@ -739,6 +754,23 @@ Goal:
 - [ ] Performance Optimization
 - [ ] Security Review
 - [ ] Responsive UI Review
+
+---
+
+# Current Development Focus
+
+The current priority is to synchronize completed employee/supervisor attendance data with the reporting layer.
+
+### Immediate Next Work
+
+1. Attendance data synchronization for reports
+2. Attendance report foundation
+3. Attendance dashboard / statistics
+4. Leave module
+5. Notifications
+6. Testing & optimization
+
+Company-wise data isolation remains mandatory for all multi-user and multi-company modules.
 
 ---
 
@@ -799,3 +831,4 @@ Documentation
 Git Commit
     ↓
 Git Push
+````

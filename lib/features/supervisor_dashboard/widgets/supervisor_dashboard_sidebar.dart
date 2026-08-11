@@ -19,8 +19,8 @@ import '../../../core/auth/current_user.dart';
 import '../../../core/auth/current_user_provider.dart';
 import '../../../core/router/route_paths.dart';
 
-class CompanyDashboardSidebar extends ConsumerWidget {
-  const CompanyDashboardSidebar({
+class SupervisorDashboardSidebar extends ConsumerWidget {
+  const SupervisorDashboardSidebar({
     super.key,
   });
 
@@ -65,11 +65,6 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                 ),
                 children: [
 
-
-                  // ===============================================================
-                  // THEME SETTINGS
-                  // ===============================================================
-
                   _buildMenuItem(
                     context,
                     icon: Icons.settings_outlined,
@@ -84,24 +79,6 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     },
                   ),
 
-                  // ===============================================================
-                  // ATTENDANCE SETTINGS
-                  // ===============================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.fact_check_outlined,
-                    title: 'Attendance Settings',
-                    subtitle: 'Working days and attendance rules',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.attendanceSettings,
-                      );
-                    },
-                  ),
-
                   // =================================================
                   // DEPARTMENTS
                   // =================================================
@@ -109,184 +86,29 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                   _buildMenuItem(
                     context,
                     icon: Icons.apartment_outlined,
-                    title: 'Departments',
-                    subtitle: 'Department Management',
+                    title: 'Attendance',
+                    subtitle: 'Attendance Report',
                     onTap: () {
                       Navigator.pop(context);
 
-                      context.push(
-                        RoutePaths.departments,
-                      );
-                    },
-                  ),
+                      final supervisorEmployeeId = user.employeeId;
 
-                  // =================================================
-                  // DESIGNATIONS
-                  // =================================================
+                      if (supervisorEmployeeId.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Supervisor Employee ID not available.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
 
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.badge_outlined,
-                    title: 'Designations',
-                    subtitle: 'Designation Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.designations,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // SHIFTS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.schedule_outlined,
-                    title: 'Shifts',
-                    subtitle: 'Shift Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.shifts,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // ROLES
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.admin_panel_settings_outlined,
-                    title: 'Roles',
-                    subtitle: 'Role Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.roles,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // ROLE PERMISSIONS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.security_outlined,
-                    title: 'Role Permissions',
-                    subtitle: 'Permission Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.rolePermissions,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // EMPLOYEES
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.people_outline,
-                    title: 'Employees',
-                    subtitle: 'Employee Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.employees,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // SUPERVISORS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.supervisor_account_outlined,
-                    title: 'Supervisors',
-                    subtitle: 'Supervisor Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.supervisors,
-                      );
-                    },
-                  ),
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.account_tree_outlined,
-                    title: 'Supervisor Assign Departments', subtitle: 'Assign departments to supervisors',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths
-                            .supervisorDepartmentAssignments,
-                      );
-                    },
-                  ),
-
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.account_tree_outlined,
-                    title: 'Manage Supervisor Departments',
-                    subtitle: 'Manage assigned departments',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths
-                            .supervisorDepartmentManage,
-                      );
-                    },
-                  ),
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.analytics_outlined,
-                    title: 'Supervisor Department Status',
-                    subtitle: 'Assignment status & overview',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.supervisorDepartmentStatus,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // EMPLOYEE ACCOUNTS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.manage_accounts_outlined,
-                    title: 'Employee Accounts',
-                    subtitle:
-                    'Employee Accounts Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.employeesAccounts,
+                      context.pushNamed(
+                        'supervisorEmployeeAttendanceReport',
+                        queryParameters: {
+                          'supervisorEmployeeId': supervisorEmployeeId,
+                        },
                       );
                     },
                   ),

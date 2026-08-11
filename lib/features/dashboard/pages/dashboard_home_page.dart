@@ -13,9 +13,9 @@ import '../../../core/auth/current_user_provider.dart';
 
 import '../../developer/pages/developer_dashboard_page.dart';
 import '../../employee_dashboard/pages/employee_dashboard_page.dart';
+import '../../supervisor_dashboard/pages/supervisor_dashboard_page.dart';
 import 'company_owner_dashboard_page.dart';
 import 'super_admin_dashboard_page.dart';
-import 'supervisor_dashboard_page.dart';
 
 class DashboardHomePage extends ConsumerWidget {
   const DashboardHomePage({super.key});

@@ -3,7 +3,7 @@
 ///
 /// App
 ///
-/// Version : 0.8.0
+/// Version : 1.0.0
 /// ===============================================================
 
 import 'package:flutter/material.dart';
@@ -14,25 +14,55 @@ import '../core/theme/app_theme.dart';
 import '../core/theme/theme_provider.dart';
 
 class HrmsApp extends ConsumerWidget {
-  const HrmsApp({super.key});
+  const HrmsApp({
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
+  Widget build(
+      BuildContext context,
+      WidgetRef ref,
+      ) {
+    // ===========================================================
+    // CURRENT THEME
+    // ===========================================================
+
+    final themeMode =
+    ref.watch(themeModeProvider);
+
+    // ===========================================================
+    // APP
+    // ===========================================================
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
 
       title: 'HRMS Pro',
 
+      // =========================================================
+      // LIGHT THEME
+      // =========================================================
+
       theme: AppTheme.light,
 
-      // পরে Dark Theme তৈরি হলে এটা পরিবর্তন করবে
-      darkTheme: AppTheme.light,
+      // =========================================================
+      // DARK THEME
+      // =========================================================
+
+      darkTheme: AppTheme.dark,
+
+      // =========================================================
+      // THEME MODE
+      // =========================================================
 
       themeMode: themeMode,
 
-      routerConfig: AppRouter.router,
+      // =========================================================
+      // ROUTER
+      // =========================================================
+
+      routerConfig:
+      AppRouter.router,
     );
   }
 }

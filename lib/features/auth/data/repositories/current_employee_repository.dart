@@ -7,8 +7,7 @@ import '../../../../core/auth/auth_repository.dart';
 class CurrentEmployeeRepository {
   CurrentEmployeeRepository();
 
-  final SupabaseClient _client =
-      Supabase.instance.client;
+  final SupabaseClient _client = Supabase.instance.client;
 
   // ============================================================
   // Current Employee
@@ -29,25 +28,18 @@ class CurrentEmployeeRepository {
       // Get current logged-in application user
       // ----------------------------------------------------------
 
-      final currentUser =
-      await AuthRepository().currentUser();
+      final currentUser = await AuthRepository().currentUser();
 
-      print(
-        'CURRENT USER => ${currentUser?.userId}',
-      );
+      print('CURRENT USER => ${currentUser?.userId}');
 
-      print(
-        'CURRENT EMPLOYEE ID => ${currentUser?.employeeId}',
-      );
+      print('CURRENT EMPLOYEE ID => ${currentUser?.employeeId}');
 
       // ----------------------------------------------------------
       // No session
       // ----------------------------------------------------------
 
       if (currentUser == null) {
-        print(
-          'CURRENT EMPLOYEE => No logged-in user',
-        );
+        print('CURRENT EMPLOYEE => No logged-in user');
 
         return null;
       }
@@ -57,9 +49,7 @@ class CurrentEmployeeRepository {
       // ----------------------------------------------------------
 
       if (currentUser.employeeId.isEmpty) {
-        print(
-          'CURRENT EMPLOYEE => Employee ID is empty',
-        );
+        print('CURRENT EMPLOYEE => Employee ID is empty');
 
         return null;
       }
@@ -71,10 +61,7 @@ class CurrentEmployeeRepository {
       final json = await _client
           .from('employees')
           .select()
-          .eq(
-        'id',
-        currentUser.employeeId,
-      )
+          .eq('id', currentUser.employeeId)
           .maybeSingle();
 
       // ----------------------------------------------------------
@@ -82,13 +69,11 @@ class CurrentEmployeeRepository {
       // ----------------------------------------------------------
 
       if (json == null) {
-        print(
-          'CURRENT EMPLOYEE => Employee not found',
-        );
+        print('CURRENT EMPLOYEE => Employee not found');
 
         print(
           'SEARCHED EMPLOYEE ID => '
-              '${currentUser.employeeId}',
+          '${currentUser.employeeId}',
         );
 
         return null;
@@ -98,23 +83,15 @@ class CurrentEmployeeRepository {
       // Employee found
       // ----------------------------------------------------------
 
-      print(
-        'CURRENT EMPLOYEE => Employee found',
-      );
+      print('CURRENT EMPLOYEE => Employee found');
 
-      print(
-        'EMPLOYEE ID => ${json['id']}',
-      );
+      print('EMPLOYEE ID => ${json['id']}');
 
-      print(
-        'EMPLOYEE NAME => ${json['full_name']}',
-      );
+      print('EMPLOYEE NAME => ${json['full_name']}');
 
       return EmployeeModel.fromJson(json);
     } catch (e) {
-      print(
-        'CURRENT EMPLOYEE ERROR => $e',
-      );
+      print('CURRENT EMPLOYEE ERROR => $e');
 
       rethrow;
     }

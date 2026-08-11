@@ -9,10 +9,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../developer/pages/developer_dashboard_page.dart';
 import '../../employee_dashboard/pages/employee_dashboard_page.dart';
+import '../../supervisor_dashboard/pages/supervisor_dashboard_page.dart';
 import '../pages/company_owner_dashboard_page.dart';
 import '../pages/dashboard_home_page.dart';
 import '../pages/super_admin_dashboard_page.dart';
-import '../pages/supervisor_dashboard_page.dart';
 
 import 'dashboard_redirect.dart';
 

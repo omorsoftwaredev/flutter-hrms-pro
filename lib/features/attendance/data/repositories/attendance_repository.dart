@@ -133,6 +133,54 @@ class AttendanceRepository {
 
     return result;
   }
+//==============================================================
+// SUPERVISOR - TODAY ATTENDANCE BY EMPLOYEES
+//==============================================================
+//
+// Existing employee report method untouched.
+//
+// This method is used by Supervisor Attendance Report
+// for "All Employees -> Today Attendance".
+//
+// employeeIds:
+// Supervisor-এর selected department-এর employee IDs.
+//
+//==============================================================
+
+  Future<List<AttendanceEntity>> getTodayAttendanceByEmployees(
+      List<String> employeeIds,
+      ) async {
+    if (employeeIds.isEmpty) {
+      return [];
+    }
+
+    final today = DateTime.now()
+        .toIso8601String()
+        .split('T')
+        .first;
+
+    final response = await _supabase
+        .from(_table)
+        .select()
+        .inFilter(
+      'employee_id',
+      employeeIds,
+    )
+        .eq(
+      'attendance_date',
+      today,
+    )
+        .order(
+      'check_in_time',
+      ascending: true,
+    );
+
+    return response
+        .map<AttendanceEntity>(
+          (json) => AttendanceModel.fromMap(json),
+    )
+        .toList();
+  }
 
   String _formatDate(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'

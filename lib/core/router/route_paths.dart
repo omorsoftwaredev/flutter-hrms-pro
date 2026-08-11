@@ -121,6 +121,8 @@ class RoutePaths {
   // Attendance
   // =============================================================
   static const String employeeAttendanceReport = '/employee-attendance-report';
+  static const String supervisorEmployeeAttendanceReport =
+      '/superviosr-employee-attendance-report';
   static const attendance = '/attendance';
   static const mobileAttendance = '/attendance/mobile';
   static const attendanceHistory = '/attendance/history';
@@ -150,12 +152,6 @@ class RoutePaths {
   static const notifications = '/notifications';
 
   // =============================================================
-  // Settings
-  // =============================================================
-
-  static const settings = '/settings';
-
-  // =============================================================
   // Profile
   // =============================================================
 
@@ -175,4 +171,25 @@ class RoutePaths {
   static const companyAccountEdit = '/company-accounts/edit';
 
   static const companyAccountDetails = '/company-accounts/details';
+
+  // =============================================================
+// SETTINGS
+// =============================================================
+
+  static const String settings =
+      '/settings';
+
+  static const String appearanceSettings =
+      '/settings/appearance';
+
+  static const String themeSettings =
+      '/settings/theme';
+
+  static const String attendanceSettings =
+      '/settings/attendance';
+
+  static const String workingDaysSettings =
+      '/settings/attendance/working-days';
+  static const String attendanceRulesSettings =
+      '/settings/attendance/rules';
 }

@@ -2,7 +2,7 @@
 
 # Project Roadmap
 
-**Version:** 0.6.5
+**Version:** 0.8.0
 
 ---
 
@@ -29,11 +29,11 @@ The goal is to build a commercial-grade, CodeCanyon-quality HRMS supporting Andr
 
 ## Overall Progress
 
-🟢 Approximately 70%
+🟢 Approximately 80%
 
 ## Current Version
 
-`0.6.5`
+`0.8.0`
 
 ## Current Development Status
 
@@ -53,9 +53,9 @@ The goal is to build a commercial-grade, CodeCanyon-quality HRMS supporting Andr
 
 🟢 Supervisor Department Status Completed
 
-🟢 Attendance Module 95% Completed
+🟢 Mobile Attendance Module Completed
 
-🚀 Next Major Task: Supervisor Dashboard + Attendance Dashboard
+🚀 Next Major Task: Attendance Data Synchronization + Reporting
 
 ---
 
@@ -100,9 +100,9 @@ The goal is to build a commercial-grade, CodeCanyon-quality HRMS supporting Andr
 
 ### Supervisor
 
-🟡 Supervisor Login Logic Pending
+✅ Supervisor Login Completed
 
-🟡 Supervisor Dashboard Pending
+✅ Supervisor Dashboard Completed
 
 ---
 
@@ -347,55 +347,63 @@ Shows:
 
 ## Status
 
-🟢 95% Completed
-
-## Attendance CRUD
-
-- Create
-- Update
-- Delete
-- Search
+✅ 100% Core Attendance Completed
 
 ## Mobile Attendance
 
-- Check In
-- Check Out
-- GPS Capture
-- Reverse Geocoding
-- Employee Mapping
-- Duplicate Check-In Protection
-- Duplicate Check-Out Protection
+- [x] Check In
+- [x] Check Out
+- [x] GPS Capture
+- [x] Reverse Geocoding
+- [x] Employee Mapping
+- [x] Duplicate Check-In Protection
+- [x] Duplicate Check-Out Protection
 
 ## Attendance History
 
-- History Page
-- Search
-- Refresh
-- Detail Navigation
+- [x] History Page
+- [x] Search
+- [x] Refresh
+- [x] Detail Navigation
 
 ## Attendance Details
 
-- Employee Summary
-- Employee Avatar
-- Attendance Summary
-- Attendance Analytics
-- Attendance Timeline
-- Shift Information
-- Company Information
-- Device Information
-- Google Map Preview
-- Open in Google Maps
-- Location Card
-- Remarks Card
-- Basic Information Card
-- Bottom Action Bar
+- [x] Employee Summary
+- [x] Employee Avatar
+- [x] Attendance Summary
+- [x] Attendance Analytics
+- [x] Attendance Timeline
+- [x] Shift Information
+- [x] Company Information
+- [x] Device Information
+- [x] Google Map Preview
+- [x] Open in Google Maps
+- [x] Location Card
+- [x] Remarks Card
+- [x] Basic Information Card
+- [x] Bottom Action Bar
+
+## Employee Attendance
+
+- [x] Employee Attendance Recording
+- [x] Attendance History
+
+## Supervisor Attendance
+
+- [x] Supervisor Dashboard
+- [x] Supervisor Department View
+- [x] Assigned Employee View
+- [x] Department Attendance View
+- [x] Attendance Summary
 
 ## Remaining
 
-- PDF Export
-- Print
-- Share
-- Calendar View
+- [ ] Attendance Data Synchronization for Reporting
+- [ ] Attendance Report Foundation
+- [ ] PDF Export
+- [ ] Print
+- [ ] Share
+- [ ] Calendar View
 
 ---
 
@@ -403,7 +411,7 @@ Shows:
 
 ## Status
 
-🚀 Next Sprint
+⏳ Planned
 
 ## Planned Features
 
@@ -451,7 +459,6 @@ Shows:
 
 ## Remaining
 
-- Supervisor Dashboard
 - Dashboard Statistics
 - Employee Summary
 - Attendance Summary
@@ -502,16 +509,36 @@ Shows:
 
 ## Status
 
-⏳ Planned
+🟢 Core Settings Completed
 
-## Features
+## Completed
 
-- Company Settings
-- Attendance Settings
-- Leave Settings
-- Notification Settings
-- Theme Settings
-- System Settings
+### Theme Settings
+
+- [x] Light Theme
+- [x] Dark Theme
+- [x] System Theme
+- [x] Theme Persistence
+- [x] Responsive Theme Settings UI
+
+### Attendance Settings
+
+- [x] Working Days
+- [x] Company Wise Working Days
+- [x] Basic Attendance Rules
+- [x] Company Wise Attendance Rules
+- [x] Database Persistence
+
+### Removed
+
+- [x] Weekend Settings as a separate table/module
+
+## Planned
+
+- [ ] Additional Company Settings
+- [ ] Leave Settings
+- [ ] Notification Settings
+- [ ] System Settings
 
 ---
 
@@ -639,7 +666,7 @@ Shows:
 
 ## Phase 07 — Attendance Module
 
-🟢 95% Completed
+🟢 100% Completed
 
 - Attendance CRUD
 - Mobile Attendance
@@ -653,15 +680,19 @@ Shows:
 
 ---
 
-## Phase 08 — Attendance Dashboard
+## Phase 08 — Attendance Synchronization & Reporting
 
 🚀 Next
+
+- Attendance Data Synchronization
+- Attendance Report Foundation
+- Attendance Dashboard Data Preparation
 
 ---
 
-## Phase 09 — Supervisor Dashboard
+## Phase 09 — Attendance Dashboard
 
-🚀 Next
+⏳ Planned
 
 Planned Features:
 
@@ -714,47 +745,24 @@ Planned Features:
 
 # Version Roadmap
 
-## Version 0.6.5
+## Version 0.7.0
+
+## Attendance Module & Supervisor Dashboard
 
 ### Completed
 
-✅ Authentication
+- [x] Mobile Attendance
+- [x] Attendance History
+- [x] Attendance Details
+- [x] Supervisor Dashboard
+- [x] Supervisor Department Attendance
+- [x] Supervisor Employee Attendance
 
-✅ Company Management
+### Next
 
-✅ Department Management
-
-✅ Designation Management
-
-✅ Shift Management
-
-✅ Employee Management
-
-✅ Employee Accounts
-
-✅ Roles
-
-✅ Role Permissions
-
-✅ Supervisor CRUD
-
-✅ Supervisor Status
-
-✅ Create Supervisor Departments
-
-✅ Manage Supervisor Departments
-
-✅ Supervisor Department Status
-
-🟢 Attendance Module — 95%
-
----
-
-# Version 0.7.0
-
-## Attendance Dashboard
-
-Planned:
+- [ ] Attendance Data Synchronization
+- [ ] Attendance Reporting
+- [ ] Attendance Dashboard
 
 - Attendance Dashboard
 - Attendance Statistics
@@ -768,19 +776,32 @@ Planned:
 
 # Version 0.8.0
 
-## Supervisor Dashboard + Leave Module
+## Attendance Reporting + Core Settings
 
-Planned:
+### Completed
 
-- Supervisor Dashboard
-- Supervisor Departments
-- Department Employees
-- Department Attendance
-- Leave Types
-- Leave Application
-- Leave Approval
-- Holidays
-- Official Movement
+- [x] Supervisor Dashboard
+- [x] Supervisor Department View
+- [x] Department Employee View
+- [x] Department Attendance
+- [x] Theme Settings
+- [x] Working Days Settings
+- [x] Basic Attendance Rules
+- [x] Company Wise Settings Persistence
+
+### Current Focus
+
+- [ ] Attendance Data Synchronization
+- [ ] Attendance Report Foundation
+- [ ] Attendance Dashboard
+
+### Planned After Attendance Reporting
+
+- [ ] Leave Types
+- [ ] Leave Application
+- [ ] Leave Approval
+- [ ] Holidays
+- [ ] Official Movement
 
 ---
 
@@ -885,41 +906,36 @@ Target:
 
 ## Completed
 
-✅ Login System
+- [x] Login System
+- [x] Developer Dashboard
+- [x] Company Owner Dashboard
+- [x] Employee Dashboard
+- [x] Supervisor Dashboard
+- [x] Company Module
+- [x] Department Module
+- [x] Designation Module
+- [x] Shift Module
+- [x] Employee Module
+- [x] Employee Accounts
+- [x] Roles
+- [x] Role Permissions
+- [x] Supervisor CRUD
+- [x] Supervisor Status
+- [x] Create Supervisor Departments
+- [x] Manage Supervisor Departments
+- [x] Supervisor Department Status
+- [x] Mobile Attendance
+- [x] Employee Attendance
+- [x] Supervisor Attendance View
+- [x] Theme Settings
+- [x] Working Days Settings
+- [x] Basic Attendance Rules
 
-✅ Developer Dashboard
+## Current Priority
 
-✅ Company Owner Dashboard
-
-✅ Employee Dashboard
-
-✅ Company Module
-
-✅ Department Module
-
-✅ Designation Module
-
-✅ Shift Module
-
-✅ Employee Module
-
-✅ Employee Accounts
-
-✅ Roles
-
-✅ Role Permissions
-
-✅ Supervisor CRUD
-
-✅ Supervisor Status
-
-✅ Create Supervisor Departments
-
-✅ Manage Supervisor Departments
-
-✅ Supervisor Department Status
-
-🟢 Attendance Module — 95%
+- [ ] Attendance Data Synchronization
+- [ ] Attendance Report Foundation
+- [ ] Attendance Dashboard
 
 ---
 
@@ -952,18 +968,27 @@ Supervisor Department Management
       ↓
 Supervisor Department Status
       ↓
-Attendance
+Mobile Attendance
+      ↓
+Employee Attendance
+      ↓
+Supervisor Attendance
+      ↓
+Theme Settings
+      ↓
+Working Days
+      ↓
+Basic Attendance Rules
+      ↓
+🚀 Attendance Data Synchronization
+      ↓
+🚀 Attendance Reports
       ↓
 🚀 Attendance Dashboard
       ↓
-🚀 Supervisor Dashboard
-      ↓
 Leave
-      ↓
-Reports
       ↓
 Notifications
       ↓
-Settings
-      ↓
 🎯 Version 1.0.0
+```
