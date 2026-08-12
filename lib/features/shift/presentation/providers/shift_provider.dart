@@ -6,17 +6,15 @@ import 'shift_notifier.dart';
 import 'shift_state.dart';
 
 final shiftRepositoryProvider =
-Provider<ShiftRepository>(
-      (ref) => ShiftRepositoryImpl(),
-);
+Provider<ShiftRepository>((ref) {
+  return ShiftRepositoryImpl(ref);
+});
 
 final shiftProvider =
 StateNotifierProvider<
     ShiftNotifier,
-    ShiftState>(
-      (ref) {
-    return ShiftNotifier(
-      ref.read(shiftRepositoryProvider),
-    );
-  },
-);
+    ShiftState>((ref) {
+  return ShiftNotifier(
+    ref.read(shiftRepositoryProvider),
+  );
+});

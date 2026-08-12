@@ -8,8 +8,8 @@ import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/app_section_title.dart';
 
-
 import '../../../company/presentation/providers/company_provider.dart';
+
 import '../providers/shift_provider.dart';
 import '../widgets/shift_card.dart';
 
@@ -23,16 +23,18 @@ class ShiftListPage extends ConsumerStatefulWidget {
 
 class _ShiftListPageState
     extends ConsumerState<ShiftListPage> {
-
   final _searchController =
   TextEditingController();
+
+  // =============================================================
+  // INIT
+  // =============================================================
 
   @override
   void initState() {
     super.initState();
 
     Future.microtask(() async {
-
       await ref
           .read(companyProvider.notifier)
           .loadCompanies();
@@ -40,9 +42,12 @@ class _ShiftListPageState
       await ref
           .read(shiftProvider.notifier)
           .loadShifts();
-
     });
   }
+
+  // =============================================================
+  // DISPOSE
+  // =============================================================
 
   @override
   void dispose() {
@@ -50,9 +55,12 @@ class _ShiftListPageState
     super.dispose();
   }
 
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(BuildContext context) {
-
     final shiftState =
     ref.watch(shiftProvider);
 
@@ -60,219 +68,273 @@ class _ShiftListPageState
     ref.watch(companyProvider);
 
     return Scaffold(
-
       appBar: AppBar(
-        automaticallyImplyLeading: true,
-        title: const Text('Shift Management'),
-      ),
-
-      floatingActionButton:
-      FloatingActionButton.extended(
-
-        onPressed: () {
-
-          context.push(
-            RoutePaths.shiftCreate,
-          );
-
-        },
-
-        icon: const Icon(Icons.add),
-
-        label: const Text(
-          'Add Shift',
+        title: const Text(
+          'Shifts',
         ),
       ),
 
-      body: Padding(
+      // ===========================================================
+      // ADD SHIFT
+      // ===========================================================
 
-        padding:
-        const EdgeInsets.all(16),
+      floatingActionButton:
+      FloatingActionButton.extended(
+        onPressed: () {
+          context.push(
+            RoutePaths.shiftCreate,
+          );
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Add'),
+      ),
 
-        child: Column(
+      // ===========================================================
+      // BODY
+      // ===========================================================
 
-          children: [
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref
+              .read(companyProvider.notifier)
+              .loadCompanies();
 
-            AppSearchField(
+          await ref
+              .read(shiftProvider.notifier)
+              .loadShifts();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // ===================================================
+              // SEARCH
+              // ===================================================
 
-              controller:
-              _searchController,
+              AppSearchField(
+                controller:
+                _searchController,
+                onChanged: (value) {
+                  ref
+                      .read(
+                    shiftProvider
+                        .notifier,
+                  )
+                      .search(value);
+                },
+              ),
 
-              onChanged: (value) {
+              const SizedBox(
+                height: 20,
+              ),
 
-                ref
-                    .read(
-                  shiftProvider.notifier,
-                )
-                    .search(value);
+              // ===================================================
+              // SECTION TITLE
+              // ===================================================
 
-              },
+              AppSectionTitle(
+                title:
+                'Shift List '
+                    '(${shiftState.filteredShifts.length})',
+              ),
 
-            ),
+              const SizedBox(
+                height: 10,
+              ),
 
-            const SizedBox(
-              height: 20,
-            ),
+              // ===================================================
+              // LIST
+              // ===================================================
 
-            const AppSectionTitle(
+              Expanded(
+                child: Builder(
+                  builder: (_) {
+                    // =============================================
+                    // LOADING
+                    // =============================================
 
-              title:
-              'Shift List',
+                    if (shiftState.isLoading) {
+                      return const AppLoading();
+                    }
 
-            ),
+                    // =============================================
+                    // EMPTY
+                    // =============================================
 
-            const SizedBox(
-              height: 12,
-            ),
-
-            Expanded(
-
-              child: Builder(
-
-                builder: (_) {
-
-                  if (shiftState.isLoading) {
-
-                    return const AppLoading();
-
-                  }
-
-                  if (shiftState
-                      .filteredShifts
-                      .isEmpty) {
-
-                    return const AppEmpty(
-
-                      title:
-                      'No Shift Found',
-
-                    );
-
-                  }
-
-                  return ListView.separated(
-
-                    itemCount: shiftState
+                    if (shiftState
                         .filteredShifts
-                        .length,
+                        .isEmpty) {
+                      return const AppEmpty(
+                        title:
+                        'No Shift Found',
+                      );
+                    }
 
-                    separatorBuilder:
-                        (_, __) =>
-                    const SizedBox(
-                      height: 12,
-                    ),
+                    // =============================================
+                    // SHIFT LIST
+                    // =============================================
 
-                    itemBuilder:
-                        (_, index) {
-
-                      final shift =
+                    return ListView.separated(
+                      itemCount:
                       shiftState
-                          .filteredShifts[
-                      index];
+                          .filteredShifts
+                          .length,
 
-                      String companyName =
-                          '-';
+                      separatorBuilder:
+                          (_, __) =>
+                      const SizedBox(
+                        height: 12,
+                      ),
 
-                      try {
+                      itemBuilder:
+                          (_, index) {
+                        final shift =
+                        shiftState
+                            .filteredShifts[
+                        index];
 
-                        companyName =
+                        // =========================================
+                        // COMPANY
+                        // =========================================
+
+                        final company =
                             companyState
                                 .companies
-                                .firstWhere(
+                                .where(
                                   (e) =>
                               e.id ==
                                   shift.companyId,
                             )
-                                .name;
+                                .firstOrNull;
 
-                      } catch (_) {}
+                        // =========================================
+                        // SHIFT CARD
+                        // =========================================
 
-                      return ShiftCard(
-                        shift: shift,
+                        return ShiftCard(
+                          shift: shift,
 
-                        companyName: companyName,
+                          companyName:
+                          company?.name,
 
-                        onView: () {
-                          context.push(
-                            RoutePaths.shiftView,
-                            extra: shift,
-                          );
-                        },
+                          // =======================================
+                          // VIEW
+                          // =======================================
 
-                        onEdit: () {
-                          context.push(
-                            RoutePaths.shiftEdit,
-                            extra: shift,
-                          );
-                        },
-
-                        onDelete: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: const Text('Delete Shift'),
-                              content: Text(
-                                'Are you sure you want to delete "${shift.name}"?',
-                              ),
-                              actions: [
-                                OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, false);
-                                  },
-                                  child: const Text('Cancel'),
-                                ),
-                                FilledButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, true);
-                                  },
-                                  child: const Text('Delete'),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          if (confirm != true) return;
-
-                          await ref
-                              .read(shiftProvider.notifier)
-                              .deleteShift(shift.id);
-
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${shift.name} deleted successfully.',
-                                ),
-                              ),
+                          onView: () {
+                            context.push(
+                              RoutePaths.shiftView,
+                              extra: shift,
                             );
-                          }
-                        },
+                          },
 
-                        onToggleStatus: () async {
-                          await ref
-                              .read(shiftProvider.notifier)
-                              .toggleShiftStatus(shift);
-                        },
-                      );
+                          // =======================================
+                          // EDIT
+                          // =======================================
 
-                    },
+                          onEdit: () {
+                            context.push(
+                              RoutePaths.shiftEdit,
+                              extra: shift,
+                            );
+                          },
 
-                  );
+                          // =======================================
+                          // DELETE
+                          // =======================================
 
-                },
+                          onDelete: () async {
+                            final confirm =
+                            await showDialog<bool>(
+                              context: context,
+                              builder: (_) =>
+                                  AlertDialog(
+                                    title: const Text(
+                                      'Delete Shift',
+                                    ),
+                                    content: Text(
+                                      'Are you sure you want to delete '
+                                          '"${shift.name}"?',
+                                    ),
+                                    actions: [
+                                      OutlinedButton(
+                                        onPressed: () =>
+                                            Navigator.pop(
+                                              context,
+                                              false,
+                                            ),
+                                        child:
+                                        const Text(
+                                          'Cancel',
+                                        ),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () =>
+                                            Navigator.pop(
+                                              context,
+                                              true,
+                                            ),
+                                        child:
+                                        const Text(
+                                          'Delete',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            );
 
+                            if (confirm != true) {
+                              return;
+                            }
+
+                            await ref
+                                .read(
+                              shiftProvider
+                                  .notifier,
+                            )
+                                .deleteShift(
+                              shift.id,
+                            );
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${shift.name} '
+                                        'deleted successfully.',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+
+                          // =======================================
+                          // TOGGLE STATUS
+                          // =======================================
+
+                          onToggleStatus:
+                              () async {
+                            await ref
+                                .read(
+                              shiftProvider
+                                  .notifier,
+                            )
+                                .toggleShiftStatus(
+                              shift,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-
-            ),
-
-          ],
-
+            ],
+          ),
         ),
-
       ),
-
     );
-
   }
-
 }

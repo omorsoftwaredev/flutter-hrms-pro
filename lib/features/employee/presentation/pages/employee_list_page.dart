@@ -21,8 +21,11 @@ class EmployeeListPage extends ConsumerStatefulWidget {
 
 class _EmployeeListPageState
     extends ConsumerState<EmployeeListPage> {
-  final _searchController =
-  TextEditingController();
+  final _searchController = TextEditingController();
+
+  // ===========================================================
+  // INIT
+  // ===========================================================
 
   @override
   void initState() {
@@ -35,25 +38,44 @@ class _EmployeeListPageState
     });
   }
 
+  // ===========================================================
+  // DISPOSE
+  // ===========================================================
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<bool?> _deleteDialog() {
+  // ===========================================================
+  // REFRESH
+  // ===========================================================
+
+  Future<void> _refresh() async {
+    await ref
+        .read(employeeProvider.notifier)
+        .refresh();
+  }
+
+  // ===========================================================
+  // DELETE DIALOG
+  // ===========================================================
+
+  Future<bool?> _deleteDialog(
+      String employeeName,
+      ) {
     return showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius:
-          BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16),
         ),
         title: const Text(
           'Delete Employee',
         ),
-        content: const Text(
-          'Are you sure you want to delete this employee?',
+        content: Text(
+          'Are you sure you want to delete "$employeeName"?',
         ),
         actions: [
           TextButton(
@@ -63,7 +85,9 @@ class _EmployeeListPageState
                 false,
               );
             },
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+            ),
           ),
           FilledButton(
             onPressed: () {
@@ -72,22 +96,53 @@ class _EmployeeListPageState
                 true,
               );
             },
-            child: const Text('Delete'),
+            child: const Text(
+              'Delete',
+            ),
           ),
         ],
       ),
     );
   }
 
+  // ===========================================================
+  // BUILD
+  // ===========================================================
+
   @override
   Widget build(BuildContext context) {
-    final state =
-    ref.watch(employeeProvider);
+    final state = ref.watch(
+      employeeProvider,
+    );
 
     return Scaffold(
+      // =======================================================
+      // APP BAR
+      // =======================================================
+
       appBar: AppBar(
-        title: const Text('Employees'),
+        leading: IconButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(
+                RoutePaths.companyDashboard,
+              );
+            }
+          },
+          icon: const Icon(
+            Icons.arrow_back,
+          ),
+        ),
+        title: const Text(
+          'Employees',
+        ),
       ),
+
+      // =======================================================
+      // ADD EMPLOYEE
+      // =======================================================
 
       floatingActionButton:
       FloatingActionButton.extended(
@@ -96,72 +151,104 @@ class _EmployeeListPageState
             RoutePaths.employeeCreate,
           );
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Add'),
+        icon: const Icon(
+          Icons.add,
+        ),
+        label: const Text(
+          'Add',
+        ),
       ),
 
+      // =======================================================
+      // BODY
+      // =======================================================
+
       body: Padding(
-        padding:
-        const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // =================================================
+            // SEARCH
+            // =================================================
 
             AppSearchField(
-              controller:
-              _searchController,
+              controller: _searchController,
               onChanged: (value) {
                 ref
                     .read(
-                  employeeProvider
-                      .notifier,
+                  employeeProvider.notifier,
                 )
                     .search(value);
               },
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(
+              height: 20,
+            ),
+
+            // =================================================
+            // SECTION TITLE
+            // =================================================
 
             AppSectionTitle(
               title:
               'Employee List (${state.filteredEmployees.length})',
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(
+              height: 12,
+            ),
+
+            // =================================================
+            // EMPLOYEE LIST
+            // =================================================
 
             Expanded(
               child: Builder(
                 builder: (_) {
+                  // =========================================
+                  // LOADING
+                  // =========================================
 
                   if (state.isLoading) {
                     return const AppLoading();
                   }
 
-                  if (state
-                      .filteredEmployees
-                      .isEmpty) {
-                    return const AppEmpty(
-                      title:
-                      'No Employee Found',
+                  // =========================================
+                  // EMPTY
+                  // =========================================
+
+                  if (state.filteredEmployees.isEmpty) {
+                    return RefreshIndicator(
+                      onRefresh: _refresh,
+                      child: ListView(
+                        physics:
+                        const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(
+                            height: 120,
+                          ),
+                          AppEmpty(
+                            title:
+                            'No Employee Found',
+                          ),
+                        ],
+                      ),
                     );
                   }
 
+                  // =========================================
+                  // LIST
+                  // =========================================
+
                   return RefreshIndicator(
-                    onRefresh: () {
-                      return ref
-                          .read(
-                        employeeProvider
-                            .notifier,
-                      )
-                          .refresh();
-                    },
-                    child:
-                    ListView.separated(
+                    onRefresh: _refresh,
+                    child: ListView.separated(
                       physics:
                       const AlwaysScrollableScrollPhysics(),
 
-                      itemCount: state
-                          .filteredEmployees
-                          .length,
+                      itemCount:
+                      state.filteredEmployees.length,
 
                       separatorBuilder:
                           (_, __) =>
@@ -171,67 +258,145 @@ class _EmployeeListPageState
 
                       itemBuilder:
                           (_, index) {
-
                         final employee =
                         state.filteredEmployees[
                         index];
 
-                        return
-                          EmployeeCard(
-                            employee: employee,
+                        return EmployeeCard(
+                          employee: employee,
 
-                            onView: () {
-                              context.push(
-                                RoutePaths.employeeView,
-                                extra: employee,
-                              );
-                            },
+                          // =================================
+                          // VIEW
+                          // =================================
 
-                            onEdit: () {
-                              context.push(
-                                RoutePaths.employeeEdit,
-                                extra: employee,
-                              );
-                            },
+                          onView: () {
+                            context.push(
+                              RoutePaths.employeeView,
+                              extra: employee,
+                            );
+                          },
 
-                            onToggleStatus: () async {
+                          // =================================
+                          // EDIT
+                          // =================================
+
+                          onEdit: () {
+                            context.push(
+                              RoutePaths.employeeEdit,
+                              extra: employee,
+                            );
+                          },
+
+                          // =================================
+                          // TOGGLE STATUS
+                          // =================================
+
+                          onToggleStatus: () async {
+                            try {
                               await ref
-                                  .read(employeeProvider.notifier)
-                                  .toggleEmployeeStatus(employee);
+                                  .read(
+                                employeeProvider
+                                    .notifier,
+                              )
+                                  .toggleEmployeeStatus(
+                                employee,
+                              );
 
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      employee.isActive
-                                          ? 'Employee deactivated successfully'
-                                          : 'Employee activated successfully',
-                                    ),
-                                  ),
-                                );
+                              if (!context.mounted) {
+                                return;
                               }
-                            },
 
-                            onDelete: () async {
-                              final delete = await _deleteDialog();
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    employee.isActive
+                                        ? 'Employee deactivated successfully.'
+                                        : 'Employee activated successfully.',
+                                  ),
+                                ),
+                              );
+                            } catch (e) {
+                              if (!context.mounted) {
+                                return;
+                              }
 
-                              if (delete != true) return;
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  backgroundColor:
+                                  Colors.red,
+                                  content: Text(
+                                    e.toString(),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
 
+                          // =================================
+                          // DELETE
+                          // =================================
+
+                          onDelete: () async {
+                            final employeeName =
+                            employee.fullName.trim().isNotEmpty
+                                ? employee.fullName
+                                : employee.firstName;
+
+                            final confirm =
+                            await _deleteDialog(
+                              employeeName,
+                            );
+
+                            if (confirm != true) {
+                              return;
+                            }
+
+                            try {
                               await ref
-                                  .read(employeeProvider.notifier)
-                                  .deleteEmployee(employee.id);
+                                  .read(
+                                employeeProvider
+                                    .notifier,
+                              )
+                                  .deleteEmployee(
+                                employee.id,
+                              );
 
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Employee deleted successfully',
-                                    ),
-                                  ),
-                                );
+                              if (!context.mounted) {
+                                return;
                               }
-                            },
-                          );
+
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '$employeeName deleted successfully.',
+                                  ),
+                                ),
+                              );
+                            } catch (e) {
+                              if (!context.mounted) {
+                                return;
+                              }
+
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  backgroundColor:
+                                  Colors.red,
+                                  content: Text(
+                                    e.toString(),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        );
                       },
                     ),
                   );

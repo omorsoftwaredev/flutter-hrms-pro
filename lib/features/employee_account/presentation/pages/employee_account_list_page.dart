@@ -1,5 +1,6 @@
 //===============================================================
-// lib/features/employee_account/presentation/pages/employee_account_list_page.dart
+// lib/features/employee_account/presentation/pages/
+// employee_account_list_page.dart
 //===============================================================
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,9 @@ import '../widgets/employee_account_delete_dialog.dart';
 import '../widgets/employee_account_view_dialog.dart';
 
 class EmployeeAccountListPage extends ConsumerStatefulWidget {
-  const EmployeeAccountListPage({super.key});
+  const EmployeeAccountListPage({
+    super.key,
+  });
 
   @override
   ConsumerState<EmployeeAccountListPage> createState() =>
@@ -28,16 +31,30 @@ class EmployeeAccountListPage extends ConsumerStatefulWidget {
 
 class _EmployeeAccountListPageState
     extends ConsumerState<EmployeeAccountListPage> {
+  // =============================================================
+  // SEARCH
+  // =============================================================
+
   final _searchController = TextEditingController();
+
+  // =============================================================
+  // INIT
+  // =============================================================
 
   @override
   void initState() {
     super.initState();
 
     Future.microtask(() {
-      ref.read(employeeAccountProvider.notifier).loadAccounts();
+      ref
+          .read(employeeAccountProvider.notifier)
+          .loadAccounts();
     });
   }
+
+  // =============================================================
+  // DISPOSE
+  // =============================================================
 
   @override
   void dispose() {
@@ -45,192 +62,461 @@ class _EmployeeAccountListPageState
     super.dispose();
   }
 
+  // =============================================================
+  // REFRESH
+  // =============================================================
+
+  Future<void> _refresh() async {
+    await ref
+        .read(employeeAccountProvider.notifier)
+        .refresh();
+  }
+
+  // =============================================================
+  // CREATE
+  // =============================================================
+
   Future<void> _openCreatePage() async {
-    await context.push(RoutePaths.employeeAccountCreate);
+    await context.push(
+      RoutePaths.employeeAccountCreate,
+    );
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
-    ref.read(employeeAccountProvider.notifier).refresh();
+    await _refresh();
   }
 
-  Future<void> _openEditPage(EmployeeAccountEntity account) async {
-    await context.push(RoutePaths.employeeAccountEdit, extra: account);
+  // =============================================================
+  // EDIT
+  // =============================================================
 
-    if (!mounted) return;
+  Future<void> _openEditPage(
+      EmployeeAccountEntity account,
+      ) async {
+    await context.push(
+      RoutePaths.employeeAccountEdit,
+      extra: account,
+    );
 
-    ref.read(employeeAccountProvider.notifier).refresh();
+    if (!mounted) {
+      return;
+    }
+
+    await _refresh();
   }
 
-  Future<void> _deleteAccount(String id) async {
-    final result = await EmployeeAccountDeleteDialog.show(context);
+  // =============================================================
+  // VIEW
+  // =============================================================
+
+  void _openViewDialog(
+      EmployeeAccountEntity account,
+      ) {
+    showEmployeeAccountDialog(
+      context,
+      account,
+    );
+  }
+
+  // =============================================================
+  // DELETE
+  // =============================================================
+
+  Future<void> _deleteAccount(
+      EmployeeAccountEntity account,
+      ) async {
+    final result =
+    await EmployeeAccountDeleteDialog.show(
+      context,
+    );
 
     if (result != true) {
       return;
     }
 
-    await ref.read(employeeAccountProvider.notifier).deleteAccount(id);
+    try {
+      await ref
+          .read(employeeAccountProvider.notifier)
+          .deleteAccount(account.id);
 
-    if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Employee account deleted successfully.')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${account.username} deleted successfully.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            e.toString(),
+          ),
+        ),
+      );
+    }
   }
 
+  // =============================================================
+  // TOGGLE ACTIVE
+  // =============================================================
+
+  Future<void> _toggleActive(
+      EmployeeAccountEntity account,
+      ) async {
+    try {
+      await ref
+          .read(employeeAccountProvider.notifier)
+          .toggleActive(account);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            account.isActive
+                ? 'Account deactivated successfully.'
+                : 'Account activated successfully.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            e.toString(),
+          ),
+        ),
+      );
+    }
+  }
+
+  // =============================================================
+  // TOGGLE LOGIN
+  // =============================================================
+
+  Future<void> _toggleCanLogin(
+      EmployeeAccountEntity account,
+      ) async {
+    try {
+      await ref
+          .read(employeeAccountProvider.notifier)
+          .toggleCanLogin(account);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            account.canLogin
+                ? 'Login disabled successfully.'
+                : 'Login enabled successfully.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            e.toString(),
+          ),
+        ),
+      );
+    }
+  }
+
+  // =============================================================
+  // TOGGLE LOCK
+  // =============================================================
+
+  Future<void> _toggleLock(
+      EmployeeAccountEntity account,
+      ) async {
+    try {
+      await ref
+          .read(employeeAccountProvider.notifier)
+          .toggleLock(account);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            account.isLocked
+                ? 'Account unlocked successfully.'
+                : 'Account locked successfully.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            e.toString(),
+          ),
+        ),
+      );
+    }
+  }
+
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(employeeAccountProvider);
+  Widget build(
+      BuildContext context,
+      ) {
+    final state =
+    ref.watch(employeeAccountProvider);
 
     return Scaffold(
+      // =========================================================
+      // APP BAR
+      // =========================================================
+
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new),
-
           onPressed: () {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go(RoutePaths.companyDashboard);
+              context.go(
+                RoutePaths.companyDashboard,
+              );
             }
           },
+          icon: const Icon(
+            Icons.arrow_back,
+          ),
         ),
 
         title: const Text(
           'Employee Accounts',
-          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
+      // =========================================================
+      // CREATE BUTTON
+      // =========================================================
+
+      floatingActionButton:
+      FloatingActionButton.extended(
         onPressed: _openCreatePage,
-
-        icon: const Icon(Icons.add),
-
-        label: const Text('Create Account'),
+        icon: const Icon(
+          Icons.add,
+        ),
+        label: const Text(
+          'Add Account',
+        ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      // =========================================================
+      // BODY
+      // =========================================================
 
-        child: Column(
-          children: [
-            AppSearchField(
-              controller: _searchController,
+      body: RefreshIndicator(
+        onRefresh: _refresh,
 
-              onChanged: (value) {
-                ref.read(employeeAccountProvider.notifier).search(value);
-              },
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
 
-            const SizedBox(height: 20),
+          child: Column(
+            children: [
+              // =================================================
+              // SEARCH
+              // =================================================
 
-            AppSectionTitle(
-              title: 'Employee Accounts (${state.filteredAccounts.length})',
-            ),
+              AppSearchField(
+                controller: _searchController,
 
-            const SizedBox(height: 12),
+                onChanged: (value) {
+                  ref
+                      .read(
+                    employeeAccountProvider
+                        .notifier,
+                  )
+                      .search(value);
+                },
+              ),
 
-            Expanded(
-              child: Builder(
-                builder: (_) {
-                  if (state.isLoading) {
-                    return const AppLoading();
-                  }
+              const SizedBox(
+                height: 20,
+              ),
 
-                  if (state.filteredAccounts.isEmpty) {
-                    return const AppEmpty(title: 'No Employee Account Found');
-                  }
+              // =================================================
+              // SECTION TITLE
+              // =================================================
 
-                  return RefreshIndicator(
-                    onRefresh: () {
-                      return ref
-                          .read(employeeAccountProvider.notifier)
-                          .refresh();
-                    },
+              AppSectionTitle(
+                title:
+                'Employee Accounts '
+                    '(${state.filteredAccounts.length})',
+              ),
 
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
+              const SizedBox(
+                height: 12,
+              ),
 
-                      itemCount: state.filteredAccounts.length,
+              // =================================================
+              // LIST
+              // =================================================
 
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+              Expanded(
+                child: Builder(
+                  builder: (_) {
+                    // =========================================
+                    // LOADING
+                    // =========================================
+
+                    if (state.isLoading) {
+                      return const AppLoading();
+                    }
+
+                    // =========================================
+                    // EMPTY
+                    // =========================================
+
+                    if (state.filteredAccounts.isEmpty) {
+                      return ListView(
+                        physics:
+                        const AlwaysScrollableScrollPhysics(),
+
+                        children: const [
+                          SizedBox(
+                            height: 120,
+                          ),
+                          AppEmpty(
+                            title:
+                            'No Employee Account Found',
+                          ),
+                        ],
+                      );
+                    }
+
+                    // =========================================
+                    // ACCOUNTS
+                    // =========================================
+
+                    return ListView.separated(
+                      physics:
+                      const AlwaysScrollableScrollPhysics(),
+
+                      itemCount:
+                      state.filteredAccounts.length,
+
+                      separatorBuilder:
+                          (_, __) =>
+                      const SizedBox(
+                        height: 12,
+                      ),
 
                       itemBuilder: (_, index) {
-                        final account = state.filteredAccounts[index];
+                        final account =
+                        state.filteredAccounts[index];
+
                         return EmployeeAccountCard(
                           account: account,
 
+                          // ===================================
+                          // VIEW
+                          // ===================================
+
                           onView: () {
-                            showEmployeeAccountDialog(context, account);
+                            _openViewDialog(
+                              account,
+                            );
                           },
+
+                          // ===================================
+                          // EDIT
+                          // ===================================
 
                           onEdit: () {
-                            _openEditPage(account);
+                            _openEditPage(
+                              account,
+                            );
                           },
+
+                          // ===================================
+                          // DELETE
+                          // ===================================
 
                           onDelete: () {
-                            _deleteAccount(account.id);
-                          },
-                          onToggleActive: () async {
-                            await ref
-                                .read(employeeAccountProvider.notifier)
-                                .toggleActive(account);
-
-                            if (!mounted) return;
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  account.isActive
-                                      ? 'Account deactivated successfully.'
-                                      : 'Account activated successfully.',
-                                ),
-                              ),
+                            _deleteAccount(
+                              account,
                             );
                           },
 
-                          onToggleCanLogin: () async {
-                            await ref
-                                .read(employeeAccountProvider.notifier)
-                                .toggleCanLogin(account);
+                          // ===================================
+                          // ACTIVE
+                          // ===================================
 
-                            if (!mounted) return;
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  account.canLogin
-                                      ? 'Login disabled successfully.'
-                                      : 'Login enabled successfully.',
-                                ),
-                              ),
+                          onToggleActive: () {
+                            _toggleActive(
+                              account,
                             );
                           },
-                          onToggleLock: () async {
-                            await ref
-                                .read(employeeAccountProvider.notifier)
-                                .toggleLock(account);
 
-                            if (!mounted) return;
+                          // ===================================
+                          // CAN LOGIN
+                          // ===================================
 
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  account.isLocked
-                                      ? 'Account unlocked successfully.'
-                                      : 'Account locked successfully.',
-                                ),
-                              ),
+                          onToggleCanLogin: () {
+                            _toggleCanLogin(
+                              account,
+                            );
+                          },
+
+                          // ===================================
+                          // LOCK
+                          // ===================================
+
+                          onToggleLock: () {
+                            _toggleLock(
+                              account,
                             );
                           },
                         );
                       },
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

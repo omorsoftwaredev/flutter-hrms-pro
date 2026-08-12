@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../company/domain/entities/company_entity.dart';
-import '../../../company/presentation/providers/company_provider.dart';
-
-class DesignationForm extends ConsumerStatefulWidget {
+class DesignationForm extends StatefulWidget {
   const DesignationForm({
     super.key,
-    this.initialCompanyId = '',
-    this.initialCode = '',
     this.initialName = '',
     this.initialDescription = '',
     this.initialGrade = 1,
@@ -19,19 +13,41 @@ class DesignationForm extends ConsumerStatefulWidget {
     required this.onSubmit,
   });
 
-  final String initialCompanyId;
-  final String initialCode;
+  // =============================================================
+  // INITIAL VALUES
+  // =============================================================
+
   final String initialName;
   final String initialDescription;
+
   final int initialGrade;
   final int initialDisplayOrder;
+
   final double initialBaseSalary;
+
   final bool initialIsActive;
+
   final bool isLoading;
 
+  // =============================================================
+  // SUBMIT
+  // =============================================================
+  //
+  // IMPORTANT:
+  //
+  // companyId এখানে নেই।
+  //
+  // code এখানেও নেই।
+  //
+  // companyId:
+  //     CurrentUser.companyId
+  //
+  // code:
+  //     Database trigger generate করবে।
+  //
+  // =============================================================
+
   final Future<void> Function(
-      String companyId,
-      String code,
       String name,
       String description,
       int grade,
@@ -41,38 +57,33 @@ class DesignationForm extends ConsumerStatefulWidget {
       ) onSubmit;
 
   @override
-  ConsumerState<DesignationForm> createState() =>
+  State<DesignationForm> createState() =>
       _DesignationFormState();
 }
 
 class _DesignationFormState
-    extends ConsumerState<DesignationForm> {
+    extends State<DesignationForm> {
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _codeController;
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
   late TextEditingController _gradeController;
   late TextEditingController _displayOrderController;
   late TextEditingController _baseSalaryController;
 
-  String? _companyId;
+  late bool _isActive;
 
-  bool _isActive = true;
+  // =============================================================
+  // INIT
+  // =============================================================
 
   @override
   void initState() {
     super.initState();
 
-    _companyId = widget.initialCompanyId.isEmpty
-        ? null
-        : widget.initialCompanyId;
-
-    _codeController =
-        TextEditingController(text: widget.initialCode);
-
-    _nameController =
-        TextEditingController(text: widget.initialName);
+    _nameController = TextEditingController(
+      text: widget.initialName,
+    );
 
     _descriptionController =
         TextEditingController(
@@ -86,28 +97,24 @@ class _DesignationFormState
 
     _displayOrderController =
         TextEditingController(
-          text:
-          widget.initialDisplayOrder.toString(),
+          text: widget.initialDisplayOrder.toString(),
         );
 
     _baseSalaryController =
         TextEditingController(
-          text:
-          widget.initialBaseSalary.toString(),
+          text: widget.initialBaseSalary
+              .toString(),
         );
 
     _isActive = widget.initialIsActive;
-
-    Future.microtask(() async {
-      await ref
-          .read(companyProvider.notifier)
-          .loadCompanies();
-    });
   }
+
+  // =============================================================
+  // DISPOSE
+  // =============================================================
 
   @override
   void dispose() {
-    _codeController.dispose();
     _nameController.dispose();
     _descriptionController.dispose();
     _gradeController.dispose();
@@ -117,114 +124,95 @@ class _DesignationFormState
     super.dispose();
   }
 
+  // =============================================================
+  // SAVE
+  // =============================================================
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    final name =
+    _nameController.text.trim();
+
+    final description =
+    _descriptionController.text.trim();
+
+    final grade =
+        int.tryParse(
+          _gradeController.text.trim(),
+        ) ??
+            1;
+
+    final displayOrder =
+        int.tryParse(
+          _displayOrderController.text
+              .trim(),
+        ) ??
+            0;
+
+    final baseSalary =
+        double.tryParse(
+          _baseSalaryController.text
+              .trim(),
+        ) ??
+            0;
+
     await widget.onSubmit(
-      _companyId!,
-      _codeController.text.trim(),
-      _nameController.text.trim(),
-      _descriptionController.text.trim(),
-      int.tryParse(_gradeController.text) ?? 1,
-      int.tryParse(
-          _displayOrderController.text) ??
-          0,
-      double.tryParse(
-          _baseSalaryController.text) ??
-          0,
+      name,
+      description,
+      grade,
+      displayOrder,
+      baseSalary,
       _isActive,
     );
   }
 
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(BuildContext context) {
-    final companyState =
-    ref.watch(companyProvider);
-
-    final List<CompanyEntity> companies =
-        companyState.companies;
-
-    if (companies.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     return Form(
       key: _formKey,
       child: Column(
         children: [
-
-          DropdownButtonFormField<String>(
-            value: _companyId,
-            decoration:
-            const InputDecoration(
-              labelText: 'Company',
-              border:
-              OutlineInputBorder(),
-            ),
-            items: companies
-                .map(
-                  (e) =>
-                  DropdownMenuItem(
-                    value: e.id,
-                    child: Text(e.name),
-                  ),
-            )
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                _companyId = value;
-              });
-            },
-            validator: (value) =>
-            value == null
-                ? 'Select Company'
-                : null,
-          ),
-
-          const SizedBox(height: 16),
-
-
-          TextFormField(
-            controller: _codeController,
-            decoration: const InputDecoration(
-              labelText: 'Designation Code',
-              border: OutlineInputBorder(),
-            ),
-            validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return 'Designation code is required';
-              }
-              return null;
-            },
-          ),
-
-          const SizedBox(height: 16),
+          // =======================================================
+          // DESIGNATION NAME
+          // =======================================================
 
           TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
+            decoration:
+            const InputDecoration(
               labelText: 'Designation Name',
               border: OutlineInputBorder(),
             ),
+            textInputAction:
+            TextInputAction.next,
             validator: (value) {
               if (value == null ||
                   value.trim().isEmpty) {
                 return 'Designation name is required';
               }
+
               return null;
             },
           ),
 
           const SizedBox(height: 16),
 
+          // =======================================================
+          // DESCRIPTION
+          // =======================================================
+
           TextFormField(
-            controller: _descriptionController,
-            decoration: const InputDecoration(
+            controller:
+            _descriptionController,
+            decoration:
+            const InputDecoration(
               labelText: 'Description',
               border: OutlineInputBorder(),
             ),
@@ -233,22 +221,33 @@ class _DesignationFormState
 
           const SizedBox(height: 16),
 
+          // =======================================================
+          // GRADE
+          // =======================================================
+
           TextFormField(
             controller: _gradeController,
-            decoration: const InputDecoration(
+            decoration:
+            const InputDecoration(
               labelText: 'Grade',
               border: OutlineInputBorder(),
             ),
             keyboardType:
             TextInputType.number,
+            textInputAction:
+            TextInputAction.next,
             validator: (value) {
               if (value == null ||
                   value.trim().isEmpty) {
                 return 'Grade is required';
               }
 
-              if (int.tryParse(value) ==
-                  null) {
+              final grade =
+              int.tryParse(
+                value.trim(),
+              );
+
+              if (grade == null) {
                 return 'Invalid grade';
               }
 
@@ -258,26 +257,34 @@ class _DesignationFormState
 
           const SizedBox(height: 16),
 
+          // =======================================================
+          // DISPLAY ORDER
+          // =======================================================
+
           TextFormField(
             controller:
             _displayOrderController,
             decoration:
             const InputDecoration(
-              labelText:
-              'Display Order',
-              border:
-              OutlineInputBorder(),
+              labelText: 'Display Order',
+              border: OutlineInputBorder(),
             ),
             keyboardType:
             TextInputType.number,
+            textInputAction:
+            TextInputAction.next,
             validator: (value) {
               if (value == null ||
                   value.trim().isEmpty) {
                 return 'Display Order is required';
               }
 
-              if (int.tryParse(value) ==
-                  null) {
+              final order =
+              int.tryParse(
+                value.trim(),
+              );
+
+              if (order == null) {
                 return 'Invalid number';
               }
 
@@ -287,30 +294,42 @@ class _DesignationFormState
 
           const SizedBox(height: 16),
 
+          // =======================================================
+          // BASE SALARY
+          // =======================================================
+
           TextFormField(
             controller:
             _baseSalaryController,
             decoration:
             const InputDecoration(
-              labelText:
-              'Base Salary',
-              border:
-              OutlineInputBorder(),
+              labelText: 'Base Salary',
+              border: OutlineInputBorder(),
               prefixText: '৳ ',
             ),
             keyboardType:
             const TextInputType.numberWithOptions(
               decimal: true,
             ),
+            textInputAction:
+            TextInputAction.done,
             validator: (value) {
               if (value == null ||
                   value.trim().isEmpty) {
                 return null;
               }
 
-              if (double.tryParse(value) ==
-                  null) {
+              final salary =
+              double.tryParse(
+                value.trim(),
+              );
+
+              if (salary == null) {
                 return 'Invalid salary';
+              }
+
+              if (salary < 0) {
+                return 'Salary cannot be negative';
               }
 
               return null;
@@ -319,13 +338,19 @@ class _DesignationFormState
 
           const SizedBox(height: 16),
 
+          // =======================================================
+          // ACTIVE
+          // =======================================================
+
           SwitchListTile(
             contentPadding:
             EdgeInsets.zero,
-            title:
-            const Text('Active'),
+            title: const Text('Active'),
             value: _isActive,
-            onChanged: (value) {
+            onChanged:
+            widget.isLoading
+                ? null
+                : (value) {
               setState(() {
                 _isActive = value;
               });
@@ -334,12 +359,16 @@ class _DesignationFormState
 
           const SizedBox(height: 24),
 
+          // =======================================================
+          // SAVE / UPDATE BUTTON
+          // =======================================================
+
           SizedBox(
             width: double.infinity,
             height: 48,
             child: FilledButton(
-              onPressed: widget
-                  .isLoading
+              onPressed:
+              widget.isLoading
                   ? null
                   : _save,
               child: widget.isLoading
@@ -352,8 +381,8 @@ class _DesignationFormState
                 ),
               )
                   : Text(
-                widget
-                    .initialCode
+                widget.initialName
+                    .trim()
                     .isEmpty
                     ? 'Save'
                     : 'Update',

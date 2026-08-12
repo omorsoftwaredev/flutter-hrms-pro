@@ -2,7 +2,6 @@ class RoleEntity {
   const RoleEntity({
     required this.id,
     required this.companyId,
-    required this.roleCode,
     required this.roleName,
     required this.description,
     required this.isActive,
@@ -15,8 +14,6 @@ class RoleEntity {
   final String id;
 
   final String companyId;
-
-  final String roleCode;
 
   final String roleName;
 
@@ -35,7 +32,6 @@ class RoleEntity {
   RoleEntity copyWith({
     String? id,
     String? companyId,
-    String? roleCode,
     String? roleName,
     String? description,
     bool? isActive,
@@ -47,7 +43,6 @@ class RoleEntity {
     return RoleEntity(
       id: id ?? this.id,
       companyId: companyId ?? this.companyId,
-      roleCode: roleCode ?? this.roleCode,
       roleName: roleName ?? this.roleName,
       description: description ?? this.description,
       isActive: isActive ?? this.isActive,

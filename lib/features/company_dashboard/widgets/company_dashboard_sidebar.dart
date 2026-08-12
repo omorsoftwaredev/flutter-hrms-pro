@@ -2,12 +2,16 @@
 // Flutter HRMS Pro
 // Company Dashboard Sidebar
 //
-// Version : 2.4.0
+// Version : 2.6.0
 //
 // Updated:
-// - Added Manage Supervisor Departments menu
-// - Existing menus preserved
+// - Accordion style parent menu
+// - Only one parent group opens at a time
+// - Previous parent automatically closes
+// - Cleaner child menu separation
+// - Meaningful single-line menu labels
 // - Existing routes preserved
+// - Existing logout functionality preserved
 // ===============================================================
 
 import 'package:flutter/material.dart';
@@ -19,22 +23,80 @@ import '../../../core/auth/current_user.dart';
 import '../../../core/auth/current_user_provider.dart';
 import '../../../core/router/route_paths.dart';
 
-class CompanyDashboardSidebar extends ConsumerWidget {
+class CompanyDashboardSidebar extends ConsumerStatefulWidget {
   const CompanyDashboardSidebar({
     super.key,
   });
 
   @override
-  Widget build(
-      BuildContext context,
-      WidgetRef ref,
-      ) {
-    final CurrentUser? user =
-    ref.watch(currentUserProvider);
+  ConsumerState<CompanyDashboardSidebar> createState() =>
+      _CompanyDashboardSidebarState();
+}
 
-    // =========================================================
+class _CompanyDashboardSidebarState
+    extends ConsumerState<CompanyDashboardSidebar> {
+  // =============================================================
+  // CURRENTLY OPEN GROUP
+  // =============================================================
+  //
+  // Only ONE parent group can remain open at a time.
+  //
+  // Example:
+  // Organization open
+  //       ↓
+  // People click
+  //       ↓
+  // Organization closes
+  // People opens
+  //
+  // =============================================================
+
+  String? _expandedGroup = 'Organization';
+
+  // =============================================================
+  // TOGGLE GROUP
+  // =============================================================
+
+  void _toggleGroup(String group) {
+    setState(() {
+      // Same group click করলে close হবে
+      if (_expandedGroup == group) {
+        _expandedGroup = null;
+      }
+
+      // অন্য group click করলে আগেরটা close হয়ে
+      // নতুন group open হবে
+      else {
+        _expandedGroup = group;
+      }
+    });
+  }
+
+  // =============================================================
+  // CLOSE DRAWER + NAVIGATE
+  // =============================================================
+
+  void _navigate(
+      BuildContext context,
+      String route,
+      ) {
+    Navigator.pop(context);
+    context.push(route);
+  }
+
+  // =============================================================
+  // BUILD
+  // =============================================================
+
+  @override
+  Widget build(BuildContext context) {
+    final CurrentUser? user = ref.watch(
+      currentUserProvider,
+    );
+
+    // ===========================================================
     // USER LOADING
-    // =========================================================
+    // ===========================================================
 
     if (user == null) {
       return const Drawer(
@@ -60,235 +122,206 @@ class CompanyDashboardSidebar extends ConsumerWidget {
 
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
+                padding: const EdgeInsets.fromLTRB(
+                  10,
+                  12,
+                  10,
+                  12,
                 ),
                 children: [
+                  // =================================================
+                  // SETTINGS
+                  // =================================================
 
-
-                  // ===============================================================
-                  // THEME SETTINGS
-                  // ===============================================================
-
-                  _buildMenuItem(
+                  _buildMenuGroup(
                     context,
+                    title: 'Settings',
                     icon: Icons.settings_outlined,
-                    title: 'Theme Settings',
-                    subtitle: 'Application Theme settings',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.themeSettings,
-                      );
-                    },
-                  ),
-
-                  // ===============================================================
-                  // ATTENDANCE SETTINGS
-                  // ===============================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.fact_check_outlined,
-                    title: 'Attendance Settings',
-                    subtitle: 'Working days and attendance rules',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.attendanceSettings,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // DEPARTMENTS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.apartment_outlined,
-                    title: 'Departments',
-                    subtitle: 'Department Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.departments,
-                      );
-                    },
+                    color: const Color(0xFF6366F1),
+                    children: [
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.palette_outlined,
+                        title: 'Theme & Appearance',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.themeSettings,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.fact_check_outlined,
+                        title: 'Attendance Rules',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.attendanceSettings,
+                          );
+                        },
+                      ),
+                    ],
                   ),
 
                   // =================================================
-                  // DESIGNATIONS
+                  // ORGANIZATION
                   // =================================================
 
-                  _buildMenuItem(
+                  _buildMenuGroup(
                     context,
-                    icon: Icons.badge_outlined,
-                    title: 'Designations',
-                    subtitle: 'Designation Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.designations,
-                      );
-                    },
+                    title: 'Organization',
+                    icon: Icons.business_center_outlined,
+                    color: const Color(0xFF2196F3),
+                    children: [
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.apartment_outlined,
+                        title: 'Departments',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.departments,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.badge_outlined,
+                        title: 'Designations',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.designations,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.schedule_outlined,
+                        title: 'Shifts',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.shifts,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.admin_panel_settings_outlined,
+                        title: 'Roles',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.roles,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.security_outlined,
+                        title: 'Role Permissions',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.rolePermissions,
+                          );
+                        },
+                      ),
+                    ],
                   ),
 
                   // =================================================
-                  // SHIFTS
+                  // PEOPLE
                   // =================================================
 
-                  _buildMenuItem(
+                  _buildMenuGroup(
                     context,
-                    icon: Icons.schedule_outlined,
-                    title: 'Shifts',
-                    subtitle: 'Shift Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.shifts,
-                      );
-                    },
+                    title: 'People',
+                    icon: Icons.people_alt_outlined,
+                    color: const Color(0xFF10B981),
+                    children: [
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.people_outline,
+                        title: 'Employees',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.employees,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.manage_accounts_outlined,
+                        title: 'Employee Accounts',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.employeesAccounts,
+                          );
+                        },
+                      ),
+                    ],
                   ),
 
                   // =================================================
-                  // ROLES
+                  // SUPERVISION
                   // =================================================
 
-                  _buildMenuItem(
+                  _buildMenuGroup(
                     context,
-                    icon: Icons.admin_panel_settings_outlined,
-                    title: 'Roles',
-                    subtitle: 'Role Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.roles,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // ROLE PERMISSIONS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.security_outlined,
-                    title: 'Role Permissions',
-                    subtitle: 'Permission Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.rolePermissions,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // EMPLOYEES
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.people_outline,
-                    title: 'Employees',
-                    subtitle: 'Employee Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.employees,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // SUPERVISORS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
+                    title: 'Supervision',
                     icon: Icons.supervisor_account_outlined,
-                    title: 'Supervisors',
-                    subtitle: 'Supervisor Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.supervisors,
-                      );
-                    },
-                  ),
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.account_tree_outlined,
-                    title: 'Supervisor Assign Departments', subtitle: 'Assign departments to supervisors',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths
-                            .supervisorDepartmentAssignments,
-                      );
-                    },
-                  ),
-
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.account_tree_outlined,
-                    title: 'Manage Supervisor Departments',
-                    subtitle: 'Manage assigned departments',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths
-                            .supervisorDepartmentManage,
-                      );
-                    },
-                  ),
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.analytics_outlined,
-                    title: 'Supervisor Department Status',
-                    subtitle: 'Assignment status & overview',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.supervisorDepartmentStatus,
-                      );
-                    },
-                  ),
-
-                  // =================================================
-                  // EMPLOYEE ACCOUNTS
-                  // =================================================
-
-                  _buildMenuItem(
-                    context,
-                    icon: Icons.manage_accounts_outlined,
-                    title: 'Employee Accounts',
-                    subtitle:
-                    'Employee Accounts Management',
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      context.push(
-                        RoutePaths.employeesAccounts,
-                      );
-                    },
+                    color: const Color(0xFFF59E0B),
+                    children: [
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.supervisor_account_outlined,
+                        title: 'Supervisors',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.supervisors,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.assignment_ind_outlined,
+                        title: 'Assign Departments',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.supervisorDepartmentAssignments,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.account_tree_outlined,
+                        title: 'Manage Departments',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.supervisorDepartmentManage,
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.analytics_outlined,
+                        title: 'Department Status',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.supervisorDepartmentStatus,
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -306,61 +339,393 @@ class CompanyDashboardSidebar extends ConsumerWidget {
             // LOGOUT
             // =====================================================
 
-            ListTile(
-              contentPadding:
-              const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 4,
-              ),
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(.08),
-                  borderRadius:
-                  BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                  size: 21,
-                ),
-              ),
-              title: const Text(
-                'Logout',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text(
-                'Sign out from your account',
-                style: TextStyle(
-                  fontSize: 11,
-                ),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-
-                await ref
-                    .read(authRepositoryProvider)
-                    .logout();
-
-                ref
-                    .read(
-                  currentUserProvider.notifier,
-                )
-                    .logout();
-
-                if (context.mounted) {
-                  context.go(
-                    RoutePaths.login,
-                  );
-                }
-              },
-            ),
+            _buildLogout(context),
           ],
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // MENU GROUP
+  // =============================================================
+
+  Widget _buildMenuGroup(
+      BuildContext context, {
+        required String title,
+        required IconData icon,
+        required Color color,
+        required List<Widget> children,
+      }) {
+    // ===========================================================
+    // IMPORTANT
+    // ===========================================================
+    //
+    // এখানে Set ব্যবহার করা হয়নি।
+    //
+    // তাই একসাথে multiple parent open হতে পারবে না।
+    //
+    // ===========================================================
+
+    final bool isExpanded = _expandedGroup == title;
+
+    return Container(
+      margin: const EdgeInsets.only(
+        bottom: 10,
+      ),
+      decoration: BoxDecoration(
+        color: isExpanded
+            ? color.withOpacity(.035)
+            : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isExpanded
+              ? color.withOpacity(.18)
+              : Colors.grey.shade200,
+        ),
+      ),
+      child: Column(
+        children: [
+          // =====================================================
+          // PARENT HEADER
+          // =====================================================
+
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                _toggleGroup(title);
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  12,
+                  11,
+                  10,
+                  11,
+                ),
+                child: Row(
+                  children: [
+                    // =================================================
+                    // GROUP ICON
+                    // =================================================
+
+                    AnimatedContainer(
+                      duration: const Duration(
+                        milliseconds: 200,
+                      ),
+                      width: 43,
+                      height: 43,
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(
+                          isExpanded ? .14 : .09,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          12,
+                        ),
+                      ),
+                      child: Icon(
+                        icon,
+                        color: color,
+                        size: 22,
+                      ),
+                    ),
+
+                    const SizedBox(
+                      width: 12,
+                    ),
+
+                    // =================================================
+                    // GROUP TITLE
+                    // =================================================
+
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: isExpanded
+                              ? color
+                              : Colors.grey.shade800,
+                        ),
+                      ),
+                    ),
+
+                    // =================================================
+                    // ARROW
+                    // =================================================
+
+                    AnimatedRotation(
+                      turns: isExpanded ? .5 : 0,
+                      duration: const Duration(
+                        milliseconds: 200,
+                      ),
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: isExpanded
+                            ? color
+                            : Colors.grey.shade500,
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // =====================================================
+          // CHILDREN
+          // =====================================================
+
+          AnimatedCrossFade(
+            duration: const Duration(
+              milliseconds: 220,
+            ),
+            firstCurve: Curves.easeOut,
+            secondCurve: Curves.easeIn,
+            sizeCurve: Curves.easeInOut,
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                8,
+                0,
+                8,
+                9,
+              ),
+              child: Column(
+                children: [
+                  // =================================================
+                  // SEPARATOR
+                  // =================================================
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                    ),
+                    child: Divider(
+                      height: 1,
+                      thickness: .8,
+                      color: color.withOpacity(.12),
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 7,
+                  ),
+
+                  // =================================================
+                  // CHILD ITEMS
+                  // =================================================
+
+                  ...children,
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // CHILD MENU ITEM
+  // =============================================================
+
+  Widget _buildChildMenuItem(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required VoidCallback onTap,
+      }) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: 6,
+      ),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 10,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.grey.shade200,
+              ),
+            ),
+            child: Row(
+              children: [
+                // =================================================
+                // CHILD ICON
+                // =================================================
+
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2196F3)
+                        .withOpacity(.07),
+                    borderRadius: BorderRadius.circular(
+                      10,
+                    ),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFF2196F3),
+                    size: 19,
+                  ),
+                ),
+
+                const SizedBox(
+                  width: 11,
+                ),
+
+                // =================================================
+                // CHILD TITLE
+                // =================================================
+
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                // =================================================
+                // ARROW
+                // =================================================
+
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 19,
+                  color: Colors.grey.shade500,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // LOGOUT
+  // =============================================================
+
+  Widget _buildLogout(
+      BuildContext context,
+      ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        10,
+        8,
+        10,
+        10,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () async {
+            Navigator.pop(context);
+
+            await ref
+                .read(authRepositoryProvider)
+                .logout();
+
+            ref
+                .read(currentUserProvider.notifier)
+                .logout();
+
+            if (context.mounted) {
+              context.go(
+                RoutePaths.login,
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 9,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(.035),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.red.withOpacity(.10),
+              ),
+            ),
+            child: Row(
+              children: [
+                // =================================================
+                // LOGOUT ICON
+                // =================================================
+
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(.08),
+                    borderRadius: BorderRadius.circular(
+                      11,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.logout_rounded,
+                    color: Colors.red,
+                    size: 21,
+                  ),
+                ),
+
+                const SizedBox(
+                  width: 11,
+                ),
+
+                // =================================================
+                // LOGOUT TEXT
+                // =================================================
+
+                const Expanded(
+                  child: Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+
+                // =================================================
+                // ARROW
+                // =================================================
+
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.red,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -394,8 +759,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // =====================================================
           // PROFILE
@@ -408,20 +772,17 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius:
-                  BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(15),
                 ),
                 child: Center(
                   child: Text(
                     displayName.isEmpty
                         ? '?'
-                        : displayName[0]
-                        .toUpperCase(),
+                        : displayName[0].toUpperCase(),
                     style: const TextStyle(
                       color: Color(0xFF2196F3),
                       fontSize: 24,
-                      fontWeight:
-                      FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -439,13 +800,11 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     Text(
                       displayName,
                       maxLines: 1,
-                      overflow:
-                      TextOverflow.ellipsis,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 17,
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
@@ -456,11 +815,9 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                     Text(
                       user.loginUser,
                       maxLines: 1,
-                      overflow:
-                      TextOverflow.ellipsis,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white
-                            .withOpacity(.85),
+                        color: Colors.white.withOpacity(.85),
                         fontSize: 12,
                       ),
                     ),
@@ -475,7 +832,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
           ),
 
           // =====================================================
-          // LOGIN INFORMATION TITLE
+          // LOGIN INFORMATION
           // =====================================================
 
           Row(
@@ -493,8 +850,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 13,
-                  fontWeight:
-                  FontWeight.bold,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -504,19 +860,11 @@ class CompanyDashboardSidebar extends ConsumerWidget {
             height: 11,
           ),
 
-          // =====================================================
-          // LOGIN NAME
-          // =====================================================
-
           _infoRow(
             icon: Icons.person_outline,
             label: 'Login Name',
             value: user.loginName,
           ),
-
-          // =====================================================
-          // LOGIN USER
-          // =====================================================
 
           _infoRow(
             icon: Icons.account_circle_outlined,
@@ -524,25 +872,14 @@ class CompanyDashboardSidebar extends ConsumerWidget {
             value: user.loginUser,
           ),
 
-          // =====================================================
-          // ROLE
-          // =====================================================
-
           _infoRow(
-            icon:
-            Icons.admin_panel_settings_outlined,
+            icon: Icons.admin_panel_settings_outlined,
             label: 'Role',
             value: user.role.name,
           ),
 
-          // =====================================================
-          // COMPANY
-          // =====================================================
-
           if (user.companyName != null &&
-              user.companyName!
-                  .trim()
-                  .isNotEmpty)
+              user.companyName!.trim().isNotEmpty)
             _infoRow(
               icon: Icons.business_outlined,
               label: 'Company',
@@ -559,16 +896,13 @@ class CompanyDashboardSidebar extends ConsumerWidget {
 
           Container(
             width: double.infinity,
-            padding:
-            const EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: 10,
               vertical: 8,
             ),
             decoration: BoxDecoration(
-              color:
-              Colors.white.withOpacity(.12),
-              borderRadius:
-              BorderRadius.circular(10),
+              color: Colors.white.withOpacity(.12),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
@@ -615,18 +949,15 @@ class CompanyDashboardSidebar extends ConsumerWidget {
     required String value,
   }) {
     return Padding(
-      padding:
-      const EdgeInsets.only(
+      padding: const EdgeInsets.only(
         bottom: 6,
       ),
       child: Row(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             icon,
-            color:
-            Colors.white.withOpacity(.85),
+            color: Colors.white.withOpacity(.85),
             size: 15,
           ),
 
@@ -639,8 +970,7 @@ class CompanyDashboardSidebar extends ConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.white
-                    .withOpacity(.72),
+                color: Colors.white.withOpacity(.72),
                 fontSize: 10.5,
               ),
             ),
@@ -660,82 +990,18 @@ class CompanyDashboardSidebar extends ConsumerWidget {
 
           Expanded(
             child: Text(
-              value.trim().isEmpty
-                  ? '-'
-                  : value,
+              value.trim().isEmpty ? '-' : value,
               maxLines: 1,
-              overflow:
-              TextOverflow.ellipsis,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 10.5,
-                fontWeight:
-                FontWeight.w600,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  // =============================================================
-  // MENU ITEM
-  // =============================================================
-
-  Widget _buildMenuItem(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required String subtitle,
-        required VoidCallback onTap,
-      }) {
-    return ListTile(
-      contentPadding:
-      const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 2,
-      ),
-
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xFF2196F3)
-              .withOpacity(.08),
-          borderRadius:
-          BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color:
-          const Color(0xFF2196F3),
-          size: 21,
-        ),
-      ),
-
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight:
-          FontWeight.w600,
-        ),
-      ),
-
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          fontSize: 11,
-        ),
-      ),
-
-      trailing: const Icon(
-        Icons.chevron_right,
-        size: 20,
-      ),
-
-      onTap: onTap,
     );
   }
 }

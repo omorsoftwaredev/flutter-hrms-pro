@@ -6,16 +6,15 @@ import 'department_notifier.dart';
 import 'department_state.dart';
 
 final departmentRepositoryProvider =
-Provider<DepartmentRepository>(
-      (ref) => DepartmentRepositoryImpl(),
-);
+Provider<DepartmentRepository>((ref) {
+  return DepartmentRepositoryImpl(ref);
+});
 
-final departmentProvider = StateNotifierProvider<
+final departmentProvider =
+StateNotifierProvider<
     DepartmentNotifier,
-    DepartmentState>(
-      (ref) {
-    return DepartmentNotifier(
-      ref.read(departmentRepositoryProvider),
-    );
-  },
-);
+    DepartmentState>((ref) {
+  return DepartmentNotifier(
+    ref.read(departmentRepositoryProvider),
+  );
+});

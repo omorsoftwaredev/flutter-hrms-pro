@@ -33,6 +33,7 @@ class DepartmentNotifier
       );
     }
   }
+
   Future<void> toggleDepartmentStatus(
       DepartmentEntity department,
       ) async {
@@ -153,8 +154,7 @@ class DepartmentNotifier
     if (query.isEmpty) {
       state = state.copyWith(
         search: '',
-        filteredDepartments:
-        state.departments,
+        filteredDepartments: state.departments,
       );
       return;
     }
@@ -163,10 +163,7 @@ class DepartmentNotifier
     state.departments.where((department) {
       return department.name
           .toLowerCase()
-          .contains(query) ||
-          department.code
-              .toLowerCase()
-              .contains(query);
+          .contains(query);
     }).toList();
 
     state = state.copyWith(

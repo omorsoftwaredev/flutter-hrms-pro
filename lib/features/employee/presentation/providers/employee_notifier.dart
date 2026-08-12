@@ -1,45 +1,47 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/repositories/employee_repository.dart';
 import '../../domain/entities/employee_entity.dart';
+import '../../domain/repositories/employee_repository.dart';
 import 'employee_state.dart';
 
 class EmployeeNotifier
     extends StateNotifier<EmployeeState> {
   EmployeeNotifier(this._repository)
-      : super(EmployeeState.initial());
+      : super(EmployeeState());
 
   final EmployeeRepository _repository;
-  Future<void> toggleEmployeeStatus(
-      EmployeeEntity employee,
-      ) async {
+
+  // ===========================================================
+  // LOAD EMPLOYEES
+  // ===========================================================
+
+  Future<void> loadEmployees() async {
     try {
-      final updated = employee.copyWith(
-        isActive: !employee.isActive,
-        updatedAt: DateTime.now(),
+      state = state.copyWith(
+        isLoading: true,
+        error: null,
       );
 
-      print('Old: ${employee.isActive}');
-      print('New: ${updated.isActive}');
-
-      await _repository.updateEmployee(updated);
-
-      await loadEmployees();
-
-    } catch (e) {
-      print(e);
+      final employees =
+      await _repository.getEmployees();
 
       state = state.copyWith(
+        employees: employees,
+        filteredEmployees: employees,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
         error: e.toString(),
       );
     }
   }
 
-  void clearSelection() {
-    state = state.copyWith(
-      selectedEmployee: null,
-    );
-  }
+  // ===========================================================
+  // GET EMPLOYEE BY ID
+  // ===========================================================
+
   Future<void> getEmployeeById(
       String id,
       ) async {
@@ -49,6 +51,7 @@ class EmployeeNotifier
 
       state = state.copyWith(
         selectedEmployee: employee,
+        error: null,
       );
     } catch (e) {
       state = state.copyWith(
@@ -56,47 +59,29 @@ class EmployeeNotifier
       );
     }
   }
-  Future<void> loadEmployees() async {
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-    );
 
-    try {
-      final employees =
-      await _repository.getEmployees();
-
-      state = state.copyWith(
-        isLoading: false,
-        employees: employees,
-        filteredEmployees: employees,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
+  // ===========================================================
+  // CREATE EMPLOYEE
+  // ===========================================================
 
   Future<void> createEmployee(
       EmployeeEntity employee,
       ) async {
-    state = state.copyWith(
-      isSaving: true,
-      error: null,
-    );
-
     try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
       await _repository.createEmployee(
         employee,
       );
 
-      await loadEmployees();
-
       state = state.copyWith(
         isSaving: false,
       );
+
+      await loadEmployees();
     } catch (e) {
       state = state.copyWith(
         isSaving: false,
@@ -106,25 +91,29 @@ class EmployeeNotifier
       rethrow;
     }
   }
+
+  // ===========================================================
+  // UPDATE EMPLOYEE
+  // ===========================================================
 
   Future<void> updateEmployee(
       EmployeeEntity employee,
       ) async {
-    state = state.copyWith(
-      isSaving: true,
-      error: null,
-    );
-
     try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
       await _repository.updateEmployee(
         employee,
       );
 
-      await loadEmployees();
-
       state = state.copyWith(
         isSaving: false,
       );
+
+      await loadEmployees();
     } catch (e) {
       state = state.copyWith(
         isSaving: false,
@@ -134,8 +123,57 @@ class EmployeeNotifier
       rethrow;
     }
   }
-  Future<void> deleteEmployee(String id) async {
+
+  // ===========================================================
+  // TOGGLE EMPLOYEE STATUS
+  // ===========================================================
+
+  Future<void> toggleEmployeeStatus(
+      EmployeeEntity employee,
+      ) async {
     try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      final updatedEmployee =
+      employee.copyWith(
+        isActive: !employee.isActive,
+        updatedAt: DateTime.now(),
+      );
+
+      await _repository.updateEmployee(
+        updatedEmployee,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadEmployees();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+
+      rethrow;
+    }
+  }
+
+  // ===========================================================
+  // DELETE EMPLOYEE
+  // ===========================================================
+
+  Future<void> deleteEmployee(
+      String id,
+      ) async {
+    try {
+      state = state.copyWith(
+        error: null,
+      );
+
       await _repository.deleteEmployee(id);
 
       await loadEmployees();
@@ -148,11 +186,15 @@ class EmployeeNotifier
     }
   }
 
+  // ===========================================================
+  // SEARCH
+  // ===========================================================
+
   void search(String keyword) {
-    final value =
+    final query =
     keyword.trim().toLowerCase();
 
-    if (value.isEmpty) {
+    if (query.isEmpty) {
       state = state.copyWith(
         search: '',
         filteredEmployees:
@@ -162,29 +204,49 @@ class EmployeeNotifier
       return;
     }
 
-    final result =
+    final filtered =
     state.employees.where((employee) {
-      return employee.employeeCode
+      return employee.fullName
           .toLowerCase()
-          .contains(value) ||
-          employee.fullName
+          .contains(query) ||
+          employee.firstName
               .toLowerCase()
-              .contains(value) ||
+              .contains(query) ||
+          (employee.lastName ?? '')
+              .toLowerCase()
+              .contains(query) ||
+          (employee.employeeCode ?? '')
+              .toLowerCase()
+              .contains(query) ||
           (employee.mobile ?? '')
               .toLowerCase()
-              .contains(value) ||
+              .contains(query) ||
           (employee.email ?? '')
               .toLowerCase()
-              .contains(value);
+              .contains(query);
     }).toList();
 
     state = state.copyWith(
-      search: value,
-      filteredEmployees: result,
+      search: query,
+      filteredEmployees: filtered,
     );
   }
 
+  // ===========================================================
+  // REFRESH
+  // ===========================================================
+
   Future<void> refresh() async {
     await loadEmployees();
+  }
+
+  // ===========================================================
+  // CLEAR SELECTION
+  // ===========================================================
+
+  void clearSelection() {
+    state = state.copyWith(
+      selectedEmployee: null,
+    );
   }
 }

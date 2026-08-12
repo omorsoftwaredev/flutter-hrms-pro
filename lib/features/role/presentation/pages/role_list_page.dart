@@ -23,290 +23,328 @@ class RoleListPage extends ConsumerStatefulWidget {
 
 class _RoleListPageState
     extends ConsumerState<RoleListPage> {
+  final _searchController =
+  TextEditingController();
 
-final _searchController =
-TextEditingController();
+  @override
+  void initState() {
+    super.initState();
 
-@override
-void initState() {
-super.initState();
+    Future.microtask(() async {
+      await ref
+          .read(companyProvider.notifier)
+          .loadCompanies();
 
-Future.microtask(() async {
-await ref
-.read(companyProvider.notifier)
-.loadCompanies();
+      await ref
+          .read(roleProvider.notifier)
+          .loadRoles();
+    });
+  }
 
-await ref
-.read(roleProvider.notifier)
-.loadRoles();
-});
-}
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
-@override
-void dispose() {
-_searchController.dispose();
-super.dispose();
-}
+  // =============================================================
+  // REFRESH
+  // =============================================================
 
-Future<void> _refresh() async {
-await ref
-.read(roleProvider.notifier)
-.refresh();
-}
+  Future<void> _refresh() async {
+    await ref
+        .read(companyProvider.notifier)
+        .loadCompanies();
 
-@override
-Widget build(BuildContext context) {
+    await ref
+        .read(roleProvider.notifier)
+        .refresh();
+  }
 
-final roleState =
-ref.watch(roleProvider);
+  @override
+  Widget build(
+      BuildContext context,
+      ) {
+    final roleState =
+    ref.watch(roleProvider);
 
-final companyState =
-ref.watch(companyProvider);
+    final companyState =
+    ref.watch(companyProvider);
 
-return Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Role Management',
+        ),
+      ),
 
-appBar: AppBar(
-title: const Text(
-'Role Management',
-),
-),
+      // =========================================================
+      // ADD ROLE
+      // =========================================================
 
-floatingActionButton:
-FloatingActionButton.extended(
+      floatingActionButton:
+      FloatingActionButton.extended(
+        onPressed: () {
+          context.push(
+            RoutePaths.roleCreate,
+          );
+        },
+        icon: const Icon(
+          Icons.add,
+        ),
+        label: const Text(
+          'Add Role',
+        ),
+      ),
 
-onPressed: () {
+      // =========================================================
+      // BODY
+      // =========================================================
 
-context.push(
-RoutePaths.roleCreate,
-);
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: Padding(
+          padding:
+          const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // =================================================
+              // SEARCH
+              // =================================================
 
-},
+              AppSearchField(
+                controller:
+                _searchController,
+                onChanged: (value) {
+                  ref
+                      .read(
+                    roleProvider
+                        .notifier,
+                  )
+                      .search(value);
+                },
+              ),
 
-icon: const Icon(Icons.add),
+              const SizedBox(
+                height: 20,
+              ),
 
-label: const Text(
-'Add Role',
-),
-),
+              // =================================================
+              // SECTION TITLE
+              // =================================================
 
-body: RefreshIndicator(
+              AppSectionTitle(
+                title:
+                'Role List (${roleState.filteredRoles.length})',
+              ),
 
-onRefresh: _refresh,
+              const SizedBox(
+                height: 12,
+              ),
 
-child: Padding(
+              // =================================================
+              // ROLE LIST
+              // =================================================
 
-padding:
-const EdgeInsets.all(16),
+              Expanded(
+                child: Builder(
+                  builder: (_) {
+                    if (roleState.isLoading) {
+                      return const AppLoading();
+                    }
 
-child: Column(
+                    if (roleState
+                        .filteredRoles
+                        .isEmpty) {
+                      return ListView(
+                        physics:
+                        const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(
+                            height: 120,
+                          ),
+                          AppEmpty(
+                            title:
+                            'No Role Found',
+                          ),
+                        ],
+                      );
+                    }
 
-children: [
+                    return ListView.separated(
+                      physics:
+                      const AlwaysScrollableScrollPhysics(),
+                      itemCount: roleState
+                          .filteredRoles
+                          .length,
+                      separatorBuilder:
+                          (_, __) =>
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      itemBuilder:
+                          (_, index) {
+                        final role =
+                        roleState
+                            .filteredRoles[
+                        index];
 
-AppSearchField(
+                        String companyName =
+                            '-';
 
-controller:
-_searchController,
+                        try {
+                          companyName =
+                              companyState
+                                  .companies
+                                  .firstWhere(
+                                    (e) =>
+                                e.id ==
+                                    role
+                                        .companyId,
+                              )
+                                  .name;
+                        } catch (_) {
+                          companyName =
+                          '-';
+                        }
 
-onChanged: (value) {
+                        return RoleCard(
+                          role: role,
 
-ref
-.read(
-roleProvider.notifier,
-)
-.search(value);
+                          companyName:
+                          companyName,
 
-},
+                          // ===================================
+                          // VIEW
+                          // ===================================
 
-),
+                          onView: () {
+                            context.push(
+                              RoutePaths
+                                  .roleView,
+                              extra: role,
+                            );
+                          },
 
-const SizedBox(
-height: 20,
-),
+                          // ===================================
+                          // EDIT
+                          // ===================================
 
-AppSectionTitle(
-title:
-'Role List (${roleState.filteredRoles.length})',
-),
+                          onEdit: () {
+                            context.push(
+                              RoutePaths
+                                  .roleEdit,
+                              extra: role,
+                            );
+                          },
 
-const SizedBox(
-height: 12,
-),
+                          // ===================================
+                          // DELETE
+                          // ===================================
 
-Expanded(
+                          onDelete: () async {
+                            final confirm =
+                            await showDialog<
+                                bool>(
+                              context:
+                              context,
+                              builder:
+                                  (_) =>
+                                  AlertDialog(
+                                    title:
+                                    const Text(
+                                      'Delete Role',
+                                    ),
+                                    content:
+                                    Text(
+                                      'Are you sure you want to delete "${role.roleName}"?',
+                                    ),
+                                    actions: [
+                                      OutlinedButton(
+                                        onPressed:
+                                            () {
+                                          Navigator.pop(
+                                            context,
+                                            false,
+                                          );
+                                        },
+                                        child:
+                                        const Text(
+                                          'Cancel',
+                                        ),
+                                      ),
+                                      FilledButton(
+                                        onPressed:
+                                            () {
+                                          Navigator.pop(
+                                            context,
+                                            true,
+                                          );
+                                        },
+                                        child:
+                                        const Text(
+                                          'Delete',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            );
 
-child: Builder(
+                            if (confirm !=
+                                true) {
+                              return;
+                            }
 
-builder: (_) {
+                            await ref
+                                .read(
+                              roleProvider
+                                  .notifier,
+                            )
+                                .deleteRole(
+                              role.id,
+                            );
 
-if (roleState.isLoading) {
-return const AppLoading();
-}
+                            if (context
+                                .mounted) {
+                              ScaffoldMessenger
+                                  .of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  content:
+                                  Text(
+                                    '${role.roleName} deleted successfully.',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
 
-if (roleState
-.filteredRoles
-.isEmpty) {
-return ListView(
-children: const [
-SizedBox(height: 120),
-AppEmpty(
-title:
-'No Role Found',
-),
-],
-);
-}
+                          // ===================================
+                          // TOGGLE STATUS
+                          // ===================================
 
-return ListView.separated(
-
-physics:
-const AlwaysScrollableScrollPhysics(),
-
-itemCount:
-roleState
-.filteredRoles
-.length,
-
-separatorBuilder:
-(_, __) =>
-const SizedBox(
-height: 12,
-),
-
-itemBuilder:
-(_, index)
-{
-final role =
-roleState
-.filteredRoles[index];
-
-String companyName = '-';
-
-try {
-companyName =
-companyState
-.companies
-.firstWhere(
-(e) =>
-e.id ==
-role.companyId,
-)
-.name;
-} catch (_) {}
-
-return RoleCard(
-role: role,
-
-companyName:
-companyName,
-
-onView: () {
-context.push(
-RoutePaths.roleView,
-extra: role,
-);
-},
-
-onEdit: () {
-context.push(
-RoutePaths.roleEdit,
-extra: role,
-);
-},
-
-onDelete: () async {
-final confirm =
-await showDialog<bool>(
-context: context,
-builder: (_) =>
-AlertDialog(
-title: const Text(
-'Delete Role',
-),
-content: Text(
-'Are you sure you want to delete "${role.roleName}"?',
-),
-actions: [
-OutlinedButton(
-onPressed: () {
-Navigator.pop(
-context,
-false,
-);
-},
-child: const Text(
-'Cancel',
-),
-),
-FilledButton(
-onPressed: () {
-Navigator.pop(
-context,
-true,
-);
-},
-child: const Text(
-'Delete',
-),
-),
-],
-),
-);
-
-if (confirm != true) {
-return;
-}
-
-await ref
-.read(
-roleProvider
-.notifier,
-)
-.deleteRole(
-role.id,
-);
-
-if (context.mounted) {
-ScaffoldMessenger.of(
-context)
-.showSnackBar(
-SnackBar(
-content: Text(
-'${role.roleName} deleted successfully.',
-),
-),
-);
-}
-},
-
-onToggleStatus: () async {
-await ref
-.read(
-roleProvider
-.notifier,
-)
-.toggleRoleStatus(
-role,
-);
-},
-);
-},
-);
-},
-
-),
-
-),
-
-],
-
-),
-
-),
-
-),
-
-);
-
-}
-
+                          onToggleStatus:
+                              () async {
+                            await ref
+                                .read(
+                              roleProvider
+                                  .notifier,
+                            )
+                                .toggleRoleStatus(
+                              role,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

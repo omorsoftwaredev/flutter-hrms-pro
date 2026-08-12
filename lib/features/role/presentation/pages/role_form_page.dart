@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/router/route_paths.dart';
-
 import '../../domain/entities/role_entity.dart';
 import '../providers/role_provider.dart';
 import '../widgets/role_form.dart';
@@ -27,6 +25,14 @@ class RoleFormPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            }
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         title: Text(
           isEdit
               ? 'Edit Role'
@@ -34,14 +40,12 @@ class RoleFormPage extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: RoleForm(
-            initialCompanyId:
-            role?.companyId ?? '',
-
-            initialRoleCode:
-            role?.roleCode ?? '',
+            // ===================================================
+            // INITIAL VALUES
+            // ===================================================
 
             initialRoleName:
             role?.roleName ?? '',
@@ -55,63 +59,116 @@ class RoleFormPage extends ConsumerWidget {
             isLoading:
             state.isSaving,
 
+            // ===================================================
+            // SUBMIT
+            // ===================================================
+
             onSubmit: (
-                companyId,
-                roleCode,
                 roleName,
                 description,
                 isActive,
                 ) async {
               final entity = RoleEntity(
                 id: role?.id ?? '',
-                companyId: companyId,
-                roleCode: roleCode,
-                roleName: roleName,
-                description: description,
-                isActive: isActive,
+
+                // -----------------------------------------------
+                // Company ID
+                //
+                // Existing role হলে existing companyId থাকবে।
+                // Create হলে repository/provider current company
+                // scope অনুযায়ী handle করবে।
+                // -----------------------------------------------
+
+                companyId:
+                role?.companyId ?? '',
+
+                roleName:
+                roleName,
+
+                description:
+                description,
+
+                isActive:
+                isActive,
+
                 createdAt:
                 role?.createdAt ??
                     DateTime.now(),
+
                 updatedAt:
-                DateTime.now(),
+                role?.updatedAt,
+
+                createdBy:
+                role?.createdBy,
+
+                updatedBy:
+                role?.updatedBy,
               );
 
               try {
+                // ===============================================
+                // UPDATE
+                // ===============================================
+
                 if (isEdit) {
                   await ref
                       .read(
                     roleProvider.notifier,
                   )
-                      .updateRole(entity);
-                } else {
+                      .updateRole(
+                    entity,
+                  );
+                }
+
+                // ===============================================
+                // CREATE
+                // ===============================================
+
+                else {
                   await ref
                       .read(
                     roleProvider.notifier,
                   )
-                      .createRole(entity);
+                      .createRole(
+                    entity,
+                  );
                 }
 
-                if (!context.mounted) return;
+                if (!context.mounted) {
+                  return;
+                }
 
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      isEdit
-                          ? 'Role updated successfully.'
-                          : 'Role created successfully.',
-                    ),
-                  ),
-                );
+                // ===============================================
+                // RELOAD ROLE LIST
+                // ===============================================
 
-                context.go(
-                  RoutePaths.roles,
-                );
+                await ref
+                    .read(
+                  roleProvider.notifier,
+                )
+                    .loadRoles();
+
+                if (!context.mounted) {
+                  return;
+                }
+
+                // ===============================================
+                // BACK TO ROLE LIST
+                // ===============================================
+
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/roles');
+                }
               } catch (e) {
-                if (!context.mounted) return;
+                if (!context.mounted) {
+                  return;
+                }
 
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(
                   SnackBar(
                     content: Text(
                       e.toString(),

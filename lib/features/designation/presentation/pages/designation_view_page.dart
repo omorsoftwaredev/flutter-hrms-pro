@@ -43,11 +43,6 @@ class DesignationViewPage extends StatelessWidget {
               ),
 
               AppDetailTile(
-                title: 'Code',
-                value: designation.code,
-              ),
-
-              AppDetailTile(
                 title: 'Designation',
                 value: designation.name,
               ),

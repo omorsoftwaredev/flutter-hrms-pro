@@ -43,15 +43,6 @@ class DepartmentViewPage extends StatelessWidget {
                         .headlineSmall,
                   ),
 
-                  const SizedBox(height: 6),
-
-                  Text(
-                    department.code,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium,
-                  ),
-
                   const SizedBox(height: 20),
 
                   AppStatusChip(
@@ -73,12 +64,6 @@ class DepartmentViewPage extends StatelessWidget {
                   ),
 
                   AppDetailTile(
-                    icon: Icons.badge,
-                    title: 'Department Code',
-                    value: department.code,
-                  ),
-
-                  AppDetailTile(
                     icon: Icons.apartment,
                     title: 'Department Name',
                     value: department.name,
@@ -88,12 +73,6 @@ class DepartmentViewPage extends StatelessWidget {
                     icon: Icons.description,
                     title: 'Description',
                     value: department.description,
-                  ),
-
-                  AppDetailTile(
-                    icon: Icons.person,
-                    title: 'Manager',
-                    value: department.managerName,
                   ),
 
                   AppDetailTile(

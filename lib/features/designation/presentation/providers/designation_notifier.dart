@@ -2,20 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/designation_entity.dart';
 import '../../domain/repositories/designation_repository.dart';
-
 import 'designation_state.dart';
 
 class DesignationNotifier
-    extends StateNotifier<
-        DesignationState> {
-  DesignationNotifier(
-      this._repository)
-      : super(
-    const DesignationState(),
-  );
+    extends StateNotifier<DesignationState> {
+  DesignationNotifier(this._repository)
+      : super(const DesignationState());
 
-  final DesignationRepository
-  _repository;
+  final DesignationRepository _repository;
+
+  // =============================================================
+  // LOAD DESIGNATIONS
+  // =============================================================
 
   Future<void> loadDesignations() async {
     try {
@@ -24,13 +22,12 @@ class DesignationNotifier
         error: null,
       );
 
-      final list =
-      await _repository
-          .getDesignations();
+      final designations =
+      await _repository.getDesignations();
 
       state = state.copyWith(
-        designations: list,
-        filteredDesignations: list,
+        designations: designations,
+        filteredDesignations: designations,
         isLoading: false,
       );
     } catch (e) {
@@ -40,6 +37,71 @@ class DesignationNotifier
       );
     }
   }
+
+  // =============================================================
+  // CREATE DESIGNATION
+  // =============================================================
+
+  Future<void> createDesignation(
+      DesignationEntity designation,
+      ) async {
+    try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.createDesignation(
+        designation,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadDesignations();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  // =============================================================
+  // UPDATE DESIGNATION
+  // =============================================================
+
+  Future<void> updateDesignation(
+      DesignationEntity designation,
+      ) async {
+    try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.updateDesignation(
+        designation,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadDesignations();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  // =============================================================
+  // TOGGLE DESIGNATION STATUS
+  // =============================================================
+
   Future<void> toggleDesignationStatus(
       DesignationEntity designation,
       ) async {
@@ -66,85 +128,48 @@ class DesignationNotifier
       );
     }
   }
-  Future<void> refresh() async {
-    await loadDesignations();
-  }
 
-  Future<void> createDesignation(
-      DesignationEntity entity) async {
-    try {
-      state = state.copyWith(
-        isSaving: true,
-        error: null,
-      );
-
-      await _repository
-          .createDesignation(entity);
-
-      state = state.copyWith(
-        isSaving: false,
-      );
-
-      await loadDesignations();
-    } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: e.toString(),
-      );
-
-      rethrow;
-    }
-  }
-
-  Future<void> updateDesignation(
-      DesignationEntity entity) async {
-    try {
-      state = state.copyWith(
-        isSaving: true,
-        error: null,
-      );
-
-      await _repository
-          .updateDesignation(entity);
-
-      state = state.copyWith(
-        isSaving: false,
-      );
-
-      await loadDesignations();
-    } catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        error: e.toString(),
-      );
-
-      rethrow;
-    }
-  }
+  // =============================================================
+  // DELETE DESIGNATION
+  // =============================================================
 
   Future<void> deleteDesignation(
-      String id) async {
+      String id,
+      ) async {
     try {
-      await _repository
-          .deleteDesignation(id);
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.deleteDesignation(id);
+
+      state = state.copyWith(
+        isSaving: false,
+      );
 
       await loadDesignations();
     } catch (e) {
       state = state.copyWith(
+        isSaving: false,
         error: e.toString(),
       );
     }
   }
 
+  // =============================================================
+  // GET DESIGNATION BY ID
+  // =============================================================
+
   Future<void> getDesignationById(
-      String id) async {
+      String id,
+      ) async {
     try {
-      final item =
-      await _repository
-          .getDesignationById(id);
+      final designation =
+      await _repository.getDesignationById(id);
 
       state = state.copyWith(
-        selectedDesignation: item,
+        selectedDesignation: designation,
       );
     } catch (e) {
       state = state.copyWith(
@@ -152,6 +177,39 @@ class DesignationNotifier
       );
     }
   }
+
+  // =============================================================
+  // SEARCH
+  // =============================================================
+
+  void search(String keyword) {
+    final query = keyword.trim().toLowerCase();
+
+    if (query.isEmpty) {
+      state = state.copyWith(
+        search: '',
+        filteredDesignations: state.designations,
+      );
+
+      return;
+    }
+
+    final filtered =
+    state.designations.where((designation) {
+      return designation.name
+          .toLowerCase()
+          .contains(query);
+    }).toList();
+
+    state = state.copyWith(
+      search: query,
+      filteredDesignations: filtered,
+    );
+  }
+
+  // =============================================================
+  // CLEAR SELECTION
+  // =============================================================
 
   void clearSelection() {
     state = state.copyWith(
@@ -159,34 +217,11 @@ class DesignationNotifier
     );
   }
 
-  void search(String keyword) {
-    final query =
-    keyword.trim().toLowerCase();
+  // =============================================================
+  // REFRESH
+  // =============================================================
 
-    if (query.isEmpty) {
-      state = state.copyWith(
-        search: '',
-        filteredDesignations:
-        state.designations,
-      );
-      return;
-    }
-
-    final filtered = state.designations
-        .where(
-          (designation) =>
-      designation.name
-          .toLowerCase()
-          .contains(query) ||
-          designation.code
-              .toLowerCase()
-              .contains(query),
-    )
-        .toList();
-
-    state = state.copyWith(
-      search: query,
-      filteredDesignations: filtered,
-    );
+  Future<void> refresh() async {
+    await loadDesignations();
   }
 }

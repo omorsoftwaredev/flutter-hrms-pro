@@ -44,7 +44,8 @@ class RoleState {
       isLoading ?? this.isLoading,
       isSaving:
       isSaving ?? this.isSaving,
-      search: search ?? this.search,
+      search:
+      search ?? this.search,
       error: error,
     );
   }

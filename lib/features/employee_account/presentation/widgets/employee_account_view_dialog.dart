@@ -10,144 +10,190 @@ Future<void> showEmployeeAccountDialog(
     BuildContext context,
     EmployeeAccountEntity account,
     ) {
-  return showDialog(
+  return showDialog<void>(
     context: context,
     builder: (_) {
       return AlertDialog(
-        title: const Text(
-          'Employee Account',
+        icon: const CircleAvatar(
+          radius: 28,
+          child: Icon(
+            Icons.manage_accounts,
+            size: 30,
+          ),
         ),
+
+        title: Text(
+          account.username,
+          textAlign: TextAlign.center,
+        ),
+
         content: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              _sectionTitle('Employee Information'),
 
               _item(
-                "Company ID",
-                account.companyId,
+                'Employee Name',
+                account.employeeName?.isNotEmpty == true
+                    ? account.employeeName!
+                    : '-',
               ),
 
               _item(
-                "Department ID",
-                account.departmentId,
-              ),
-
-              _item(
-                "Employee ID",
+                'Employee ID',
                 account.employeeId,
               ),
 
               _item(
-                "Username",
+                'Company',
+                account.companyName?.isNotEmpty == true
+                    ? account.companyName!
+                    : '-',
+              ),
+
+              _item(
+                'Company ID',
+                account.companyId,
+              ),
+
+              _item(
+                'Department',
+                account.departmentName?.isNotEmpty == true
+                    ? account.departmentName!
+                    : '-',
+              ),
+
+              _item(
+                'Department ID',
+                account.departmentId,
+              ),
+
+              const SizedBox(height: 8),
+
+              _sectionTitle('Account Information'),
+
+              _item(
+                'Username',
                 account.username,
               ),
 
               _item(
-                "Can Login",
-                account.canLogin
-                    ? "Yes"
-                    : "No",
+                'Login Permission',
+                account.canLogin ? 'Allowed' : 'Blocked',
               ),
 
               _item(
-                "Status",
-                account.isActive
-                    ? "Active"
-                    : "Inactive",
+                'Account Status',
+                account.isActive ? 'Active' : 'Inactive',
               ),
 
               _item(
-                "Account Locked",
-                account.isLocked
-                    ? "Yes"
-                    : "No",
+                'Account Lock',
+                account.isLocked ? 'Locked' : 'Unlocked',
               ),
 
               _item(
-                "Failed Login Attempts",
-                account
-                    .failedLoginAttempts
-                    .toString(),
+                'Failed Login Attempts',
+                account.failedLoginAttempts.toString(),
               ),
 
               _item(
-                "Force Change Password",
-                account
-                    .forceChangePassword
-                    ? "Yes"
-                    : "No",
+                'Force Change Password',
+                account.forceChangePassword ? 'Yes' : 'No',
+              ),
+
+              const SizedBox(height: 8),
+
+              _sectionTitle('Login Information'),
+
+              _item(
+                'Last Login',
+                account.lastLoginAt?.toString() ?? '-',
               ),
 
               _item(
-                "Last Login",
-                account.lastLoginAt == null
-                    ? "-"
-                    : account.lastLoginAt
-                    .toString(),
+                'Last Login IP',
+                account.lastLoginIp ?? '-',
+              ),
+
+              const SizedBox(height: 8),
+
+              _sectionTitle('Password Information'),
+
+              _item(
+                'Password Changed',
+                account.passwordChangedAt?.toString() ?? '-',
               ),
 
               _item(
-                "Password Changed",
-                account.passwordChangedAt ==
-                    null
-                    ? "-"
-                    : account
-                    .passwordChangedAt
-                    .toString(),
+                'Password Expire',
+                account.passwordExpireAt?.toString() ?? '-',
+              ),
+
+              const SizedBox(height: 8),
+
+              _sectionTitle('Security Information'),
+
+              _item(
+                'Account Locked At',
+                account.accountLockedAt?.toString() ?? '-',
+              ),
+
+              const SizedBox(height: 8),
+
+              _sectionTitle('Audit Information'),
+
+              _item(
+                'Created By',
+                account.createdBy ?? '-',
               ),
 
               _item(
-                "Password Expire",
-                account.passwordExpireAt ==
-                    null
-                    ? "-"
-                    : account
-                    .passwordExpireAt
-                    .toString(),
+                'Created At',
+                account.createdAt.toString(),
               ),
 
               _item(
-                "Account Locked At",
-                account.accountLockedAt ==
-                    null
-                    ? "-"
-                    : account
-                    .accountLockedAt
-                    .toString(),
+                'Updated By',
+                account.updatedBy ?? '-',
               ),
 
               _item(
-                "Created At",
-                account.createdAt == null
-                    ? "-"
-                    : account.createdAt
-                    .toString(),
-              ),
-
-              _item(
-                "Updated At",
-                account.updatedAt == null
-                    ? "-"
-                    : account.updatedAt
-                    .toString(),
+                'Updated At',
+                account.updatedAt?.toString() ?? '-',
               ),
             ],
           ),
         ),
+
         actions: [
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: const Text(
-              "OK",
-            ),
+            child: const Text('Close'),
           ),
         ],
       );
     },
+  );
+}
+
+Widget _sectionTitle(String title) {
+  return Padding(
+    padding: const EdgeInsets.only(
+      top: 4,
+      bottom: 10,
+    ),
+    child: Text(
+      title,
+      style: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
   );
 }
 
@@ -160,18 +206,30 @@ Widget _item(
       bottom: 12,
     ),
     child: Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: const TextStyle(
-            fontWeight:
-            FontWeight.bold,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 2),
-        Text(value),
+
+        const SizedBox(height: 3),
+
+        Text(
+          value.isEmpty ? '-' : value,
+          style: const TextStyle(
+            fontSize: 14,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        const Divider(
+          height: 1,
+        ),
       ],
     ),
   );

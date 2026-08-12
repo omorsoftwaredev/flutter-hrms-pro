@@ -8,16 +8,16 @@ class EmployeeCard extends StatelessWidget {
     super.key,
     required this.employee,
     this.onView,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
     this.onToggleStatus,
   });
 
   final EmployeeEntity employee;
 
   final VoidCallback? onView;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
   final VoidCallback? onToggleStatus;
 
   @override
@@ -26,6 +26,10 @@ class EmployeeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // =========================================================
+          // HEADER
+          // =========================================================
+
           Row(
             children: [
               CircleAvatar(
@@ -41,8 +45,7 @@ class EmployeeCard extends StatelessWidget {
                     ? Text(
                   employee.fullName.isEmpty
                       ? '?'
-                      : employee.fullName[0]
-                      .toUpperCase(),
+                      : employee.fullName[0].toUpperCase(),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -53,29 +56,27 @@ class EmployeeCard extends StatelessWidget {
 
               const SizedBox(width: 12),
 
+              // =====================================================
+              // NAME
+              // =====================================================
+
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       employee.fullName,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium,
-                    ),
-
-                    const SizedBox(height: 2),
-
-                    Text(
-                      employee.employeeCode,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ],
                 ),
               ),
+
+              // =====================================================
+              // MENU
+              // =====================================================
 
               PopupMenuButton<String>(
                 onSelected: (value) {
@@ -85,7 +86,7 @@ class EmployeeCard extends StatelessWidget {
                       break;
 
                     case 'edit':
-                      onEdit();
+                      onEdit?.call();
                       break;
 
                     case 'status':
@@ -93,7 +94,7 @@ class EmployeeCard extends StatelessWidget {
                       break;
 
                     case 'delete':
-                      onDelete();
+                      onDelete?.call();
                       break;
                   }
                 },
@@ -102,10 +103,12 @@ class EmployeeCard extends StatelessWidget {
                     value: 'view',
                     child: Text('View'),
                   ),
+
                   const PopupMenuItem(
                     value: 'edit',
                     child: Text('Edit'),
                   ),
+
                   PopupMenuItem(
                     value: 'status',
                     child: Text(
@@ -114,6 +117,7 @@ class EmployeeCard extends StatelessWidget {
                           : 'Activate',
                     ),
                   ),
+
                   const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete'),
@@ -125,74 +129,95 @@ class EmployeeCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
+          // =========================================================
+          // MOBILE
+          // =========================================================
+
           if (employee.mobile != null &&
               employee.mobile!.isNotEmpty)
             Padding(
-              padding:
-              const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
                   const Icon(
                     Icons.phone,
                     size: 18,
                   ),
+
                   const SizedBox(width: 8),
+
                   Expanded(
-                    child: Text(employee.mobile!),
+                    child: Text(
+                      employee.mobile!,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
 
+          // =========================================================
+          // EMAIL
+          // =========================================================
+
           if (employee.email != null &&
               employee.email!.isNotEmpty)
             Padding(
-              padding:
-              const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
                   const Icon(
                     Icons.email_outlined,
                     size: 18,
                   ),
+
                   const SizedBox(width: 8),
+
                   Expanded(
                     child: Text(
                       employee.email!,
-                      overflow:
-                      TextOverflow.ellipsis,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
             ),
 
+          // =========================================================
+          // EMPLOYEE STATUS
+          // =========================================================
+
           if (employee.employeeStatus != null &&
               employee.employeeStatus!.isNotEmpty)
             Padding(
-              padding:
-              const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
                   const Icon(
                     Icons.badge_outlined,
                     size: 18,
                   ),
+
                   const SizedBox(width: 8),
+
                   Expanded(
                     child: Text(
                       employee.employeeStatus!,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
             ),
 
+          // =========================================================
+          // ACTIVE / INACTIVE
+          // =========================================================
+
           Align(
             alignment: Alignment.centerRight,
             child: Chip(
-              backgroundColor:
-              employee.isActive
+              backgroundColor: employee.isActive
                   ? Colors.green.shade100
                   : Colors.red.shade100,
               label: Text(
@@ -203,8 +228,7 @@ class EmployeeCard extends StatelessWidget {
                   color: employee.isActive
                       ? Colors.green.shade900
                       : Colors.red.shade900,
-                  fontWeight:
-                  FontWeight.w600,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

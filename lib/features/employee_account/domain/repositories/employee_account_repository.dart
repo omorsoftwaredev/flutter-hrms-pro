@@ -1,26 +1,50 @@
 import '../entities/employee_account_entity.dart';
 
 abstract class EmployeeAccountRepository {
-  /// Get All Employee Accounts
+  // =============================================================
+  // GET ALL ACCOUNTS
+  // =============================================================
+
   Future<List<EmployeeAccountEntity>> getAccounts();
 
-  /// Get Employee Account By Id
+  // =============================================================
+  // GET ACCOUNT BY ID
+  // =============================================================
+
   Future<EmployeeAccountEntity> getAccountById(
       String id,
       );
 
-  /// Create Employee Account
+  // =============================================================
+  // CREATE ACCOUNT
+  // =============================================================
+
   Future<void> createAccount(
       EmployeeAccountEntity account,
       );
 
-  /// Update Employee Account
+  // =============================================================
+  // UPDATE ACCOUNT
+  // =============================================================
+
   Future<void> updateAccount(
       EmployeeAccountEntity account,
       );
 
-  /// Delete Employee Account
+  // =============================================================
+  // DELETE ACCOUNT
+  // =============================================================
+
   Future<void> deleteAccount(
       String id,
       );
+
+  // =============================================================
+  // UPDATE ACCOUNT STATUS
+  // =============================================================
+
+  Future<void> updateAccountStatus({
+    required String id,
+    required bool isActive,
+  });
 }

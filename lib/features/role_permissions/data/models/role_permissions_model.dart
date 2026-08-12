@@ -1,285 +1,200 @@
 import '../../domain/entities/role_permissions_entity.dart';
 import '../../domain/entities/role_permissions_view_entity.dart';
 
-
 class RolePermissionsModel extends RolePermissionsEntity {
-
   const RolePermissionsModel({
-
     required super.id,
-
     required super.companyId,
-
     required super.roleId,
-
     required super.moduleName,
-
-
     required super.canView,
-
     required super.canCreate,
-
     required super.canUpdate,
-
     required super.canDelete,
-
     required super.canExport,
-
     required super.canApprove,
-
-
     required super.createdAt,
-
-
     super.updatedAt,
-
     super.createdBy,
-
     super.updatedBy,
-
-
     this.companyName,
-
     this.roleName,
-
   });
 
-
   final String? companyName;
-
   final String? roleName;
 
-
+  // =============================================================
+  // FROM JSON
+  // =============================================================
 
   factory RolePermissionsModel.fromJson(
       Map<String, dynamic> json,
       ) {
-
     return RolePermissionsModel(
+      // ---------------------------------------------------------
+      // ID
+      // ---------------------------------------------------------
 
-      id:
-      json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
 
+      // ---------------------------------------------------------
+      // COMPANY
+      // ---------------------------------------------------------
 
       companyId:
-      json['company_id'] ?? '',
+      json['company_id']?.toString() ?? '',
 
+      // ---------------------------------------------------------
+      // ROLE
+      // ---------------------------------------------------------
 
       roleId:
-      json['role_id'] ?? '',
+      json['role_id']?.toString() ?? '',
 
-
+      // ---------------------------------------------------------
+      // MODULE
+      // ---------------------------------------------------------
 
       moduleName:
-      json['module_name'] ?? '',
+      json['module_name']?.toString() ?? '',
 
-
+      // ---------------------------------------------------------
+      // PERMISSIONS
+      // ---------------------------------------------------------
 
       canView:
-      json['can_view'] ?? false,
-
+      json['can_view'] == true,
 
       canCreate:
-      json['can_create'] ?? false,
-
+      json['can_create'] == true,
 
       canUpdate:
-      json['can_update'] ?? false,
-
+      json['can_update'] == true,
 
       canDelete:
-      json['can_delete'] ?? false,
-
+      json['can_delete'] == true,
 
       canExport:
-      json['can_export'] ?? false,
-
+      json['can_export'] == true,
 
       canApprove:
-      json['can_approve'] ?? false,
+      json['can_approve'] == true,
 
-
+      // ---------------------------------------------------------
+      // CREATED AT
+      // ---------------------------------------------------------
 
       createdAt:
-
       json['created_at'] != null
-
           ? DateTime.parse(
-        json['created_at'],
+        json['created_at'].toString(),
       )
-
           : DateTime.now(),
 
-
+      // ---------------------------------------------------------
+      // UPDATED AT
+      // ---------------------------------------------------------
 
       updatedAt:
+      json['updated_at'] != null
+          ? DateTime.parse(
+        json['updated_at'].toString(),
+      )
+          : null,
 
-      json['updated_at'] == null
-
-          ? null
-
-          : DateTime.parse(
-        json['updated_at'],
-      ),
-
-
+      // ---------------------------------------------------------
+      // CREATED BY
+      // ---------------------------------------------------------
 
       createdBy:
-      json['created_by'],
+      json['created_by']?.toString(),
 
+      // ---------------------------------------------------------
+      // UPDATED BY
+      // ---------------------------------------------------------
 
       updatedBy:
-      json['updated_by'],
+      json['updated_by']?.toString(),
 
-
+      // ---------------------------------------------------------
+      // COMPANY NAME
+      // ---------------------------------------------------------
 
       companyName:
-
-      json['companies'] != null
-
-          ? json['companies']['name']
-
+      json['companies'] is Map
+          ? json['companies']['name']?.toString()
           : null,
 
-
+      // ---------------------------------------------------------
+      // ROLE NAME
+      // ---------------------------------------------------------
 
       roleName:
-
-      json['roles'] != null
-
-          ? json['roles']['role_name']
-
+      json['roles'] is Map
+          ? json['roles']['role_name']?.toString()
           : null,
-
     );
-
   }
 
+  // =============================================================
+  // TO CREATE JSON
+  // =============================================================
 
-
-
-  Map<String,dynamic> toCreateJson(){
-
+  Map<String, dynamic> toCreateJson() {
     return {
+      'company_id': companyId,
+      'role_id': roleId,
+      'module_name': moduleName,
 
-      'company_id':
-      companyId,
-
-
-      'role_id':
-      roleId,
-
-
-      'module_name':
-      moduleName,
-
-
-      'can_view':
-      canView,
-
-
-      'can_create':
-      canCreate,
-
-
-      'can_update':
-      canUpdate,
-
-
-      'can_delete':
-      canDelete,
-
-
-      'can_export':
-      canExport,
-
-
-      'can_approve':
-      canApprove,
-
+      'can_view': canView,
+      'can_create': canCreate,
+      'can_update': canUpdate,
+      'can_delete': canDelete,
+      'can_export': canExport,
+      'can_approve': canApprove,
 
       'created_at':
       createdAt.toIso8601String(),
 
-
-      if(createdBy != null)
-        'created_by':
-        createdBy,
-
+      if (createdBy != null)
+        'created_by': createdBy,
     };
-
   }
 
+  // =============================================================
+  // TO UPDATE JSON
+  // =============================================================
 
-
-
-
-  Map<String,dynamic> toUpdateJson(){
-
+  Map<String, dynamic> toUpdateJson() {
     return {
+      'module_name': moduleName,
 
+      'can_view': canView,
+      'can_create': canCreate,
+      'can_update': canUpdate,
+      'can_delete': canDelete,
+      'can_export': canExport,
+      'can_approve': canApprove,
 
-      'module_name':
-      moduleName,
+      if (updatedAt != null)
+        'updated_at':
+        updatedAt!.toIso8601String(),
 
-
-      'can_view':
-      canView,
-
-
-      'can_create':
-      canCreate,
-
-
-      'can_update':
-      canUpdate,
-
-
-      'can_delete':
-      canDelete,
-
-
-      'can_export':
-      canExport,
-
-
-      'can_approve':
-      canApprove,
-
-
-      'updated_at':
-      updatedAt?.toIso8601String(),
-
-
-
-      if(updatedBy != null)
-        'updated_by':
-        updatedBy,
-
+      if (updatedBy != null)
+        'updated_by': updatedBy,
     };
-
   }
 
+  // =============================================================
+  // TO VIEW ENTITY
+  // =============================================================
 
-
-
-
-  RolePermissionsViewEntity toViewEntity(){
-
+  RolePermissionsViewEntity toViewEntity() {
     return RolePermissionsViewEntity(
-
       permission: this,
-
-
-      companyName:
-      companyName ?? '-',
-
-
-      roleName:
-      roleName ?? '-',
-
+      companyName: companyName ?? '-',
+      roleName: roleName ?? '-',
     );
-
   }
-
 }

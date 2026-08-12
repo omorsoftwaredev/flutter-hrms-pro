@@ -2,7 +2,6 @@ class DesignationEntity {
   const DesignationEntity({
     required this.id,
     required this.companyId,
-    required this.code,
     required this.name,
     required this.description,
     required this.grade,
@@ -16,7 +15,6 @@ class DesignationEntity {
   final String id;
   final String companyId;
 
-  final String code;
   final String name;
   final String description;
 

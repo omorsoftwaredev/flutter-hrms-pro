@@ -4,11 +4,16 @@ import '../../domain/entities/shift_entity.dart';
 import '../../domain/repositories/shift_repository.dart';
 import 'shift_state.dart';
 
-class ShiftNotifier extends StateNotifier<ShiftState> {
+class ShiftNotifier
+    extends StateNotifier<ShiftState> {
   ShiftNotifier(this._repository)
       : super(const ShiftState());
 
   final ShiftRepository _repository;
+
+  // =============================================================
+  // LOAD SHIFTS
+  // =============================================================
 
   Future<void> loadShifts() async {
     try {
@@ -17,7 +22,8 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
         error: null,
       );
 
-      final shifts = await _repository.getShifts();
+      final shifts =
+      await _repository.getShifts();
 
       state = state.copyWith(
         shifts: shifts,
@@ -32,9 +38,9 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
     }
   }
 
-  Future<void> refresh() async {
-    await loadShifts();
-  }
+  // =============================================================
+  // CREATE SHIFT
+  // =============================================================
 
   Future<void> createShift(
       ShiftEntity shift,
@@ -45,7 +51,9 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
         error: null,
       );
 
-      await _repository.createShift(shift);
+      await _repository.createShift(
+        shift,
+      );
 
       state = state.copyWith(
         isSaving: false,
@@ -59,6 +67,10 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
       );
     }
   }
+
+  // =============================================================
+  // UPDATE SHIFT
+  // =============================================================
 
   Future<void> updateShift(
       ShiftEntity shift,
@@ -69,7 +81,9 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
         error: null,
       );
 
-      await _repository.updateShift(shift);
+      await _repository.updateShift(
+        shift,
+      );
 
       state = state.copyWith(
         isSaving: false,
@@ -84,36 +98,9 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
     }
   }
 
-  Future<void> deleteShift(
-      String id,
-      ) async {
-    try {
-      await _repository.deleteShift(id);
-
-      await loadShifts();
-    } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-      );
-    }
-  }
-
-  Future<void> getShiftById(
-      String id,
-      ) async {
-    try {
-      final shift =
-      await _repository.getShiftById(id);
-
-      state = state.copyWith(
-        selectedShift: shift,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-      );
-    }
-  }
+  // =============================================================
+  // TOGGLE SHIFT STATUS
+  // =============================================================
 
   Future<void> toggleShiftStatus(
       ShiftEntity shift,
@@ -142,6 +129,59 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
     }
   }
 
+  // =============================================================
+  // DELETE SHIFT
+  // =============================================================
+
+  Future<void> deleteShift(
+      String id,
+      ) async {
+    try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.deleteShift(id);
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadShifts();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  // =============================================================
+  // GET SHIFT BY ID
+  // =============================================================
+
+  Future<void> getShiftById(
+      String id,
+      ) async {
+    try {
+      final shift =
+      await _repository.getShiftById(id);
+
+      state = state.copyWith(
+        selectedShift: shift,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: e.toString(),
+      );
+    }
+  }
+
+  // =============================================================
+  // SEARCH
+  // =============================================================
+
   void search(String keyword) {
     final query = keyword.trim().toLowerCase();
 
@@ -150,16 +190,15 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
         search: '',
         filteredShifts: state.shifts,
       );
+
       return;
     }
 
-    final filtered = state.shifts.where((shift) {
+    final filtered =
+    state.shifts.where((shift) {
       return shift.name
           .toLowerCase()
-          .contains(query) ||
-          shift.code
-              .toLowerCase()
-              .contains(query);
+          .contains(query);
     }).toList();
 
     state = state.copyWith(
@@ -168,9 +207,21 @@ class ShiftNotifier extends StateNotifier<ShiftState> {
     );
   }
 
+  // =============================================================
+  // CLEAR SELECTION
+  // =============================================================
+
   void clearSelection() {
     state = state.copyWith(
       selectedShift: null,
     );
+  }
+
+  // =============================================================
+  // REFRESH
+  // =============================================================
+
+  Future<void> refresh() async {
+    await loadShifts();
   }
 }

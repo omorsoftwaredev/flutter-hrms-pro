@@ -53,14 +53,6 @@ class DesignationCard extends StatelessWidget {
                           .titleMedium,
                     ),
 
-                    const SizedBox(height: 2),
-
-                    Text(
-                      designation.code,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
-                    ),
                   ],
                 ),
               ),

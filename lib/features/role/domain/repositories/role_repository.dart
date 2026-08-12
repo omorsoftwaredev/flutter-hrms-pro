@@ -9,5 +9,10 @@ abstract class RoleRepository {
 
   Future<void> updateRole(RoleEntity role);
 
+  Future<void> updateRoleStatus({
+    required String id,
+    required bool isActive,
+  });
+
   Future<void> deleteRole(String id);
 }

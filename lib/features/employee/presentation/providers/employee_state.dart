@@ -1,59 +1,81 @@
 import '../../domain/entities/employee_entity.dart';
 
 class EmployeeState {
-  final bool isLoading;
-  final bool isSaving;
-
-  final List<EmployeeEntity> employees;
-  final List<EmployeeEntity> filteredEmployees;
-
-  final EmployeeEntity? selectedEmployee;
-
-  final String search;
-
-  final String? error;
-
   const EmployeeState({
-    this.isLoading = false,
-    this.isSaving = false,
     this.employees = const [],
     this.filteredEmployees = const [],
     this.selectedEmployee,
+    this.isLoading = false,
+    this.isSaving = false,
     this.search = '',
     this.error,
   });
 
+  // =============================================================
+  // EMPLOYEES
+  // =============================================================
+
+  final List<EmployeeEntity> employees;
+
+  // =============================================================
+  // FILTERED EMPLOYEES
+  // =============================================================
+
+  final List<EmployeeEntity> filteredEmployees;
+
+  // =============================================================
+  // SELECTED EMPLOYEE
+  // =============================================================
+
+  final EmployeeEntity? selectedEmployee;
+
+  // =============================================================
+  // LOADING
+  // =============================================================
+
+  final bool isLoading;
+
+  // =============================================================
+  // SAVING
+  // =============================================================
+
+  final bool isSaving;
+
+  // =============================================================
+  // SEARCH
+  // =============================================================
+
+  final String search;
+
+  // =============================================================
+  // ERROR
+  // =============================================================
+
+  final String? error;
+
+  // =============================================================
+  // COPY WITH
+  // =============================================================
+
   EmployeeState copyWith({
-    bool? isLoading,
-    bool? isSaving,
     List<EmployeeEntity>? employees,
     List<EmployeeEntity>? filteredEmployees,
     EmployeeEntity? selectedEmployee,
+    bool? isLoading,
+    bool? isSaving,
     String? search,
     String? error,
   }) {
     return EmployeeState(
-      isLoading: isLoading ?? this.isLoading,
-      isSaving: isSaving ?? this.isSaving,
       employees: employees ?? this.employees,
       filteredEmployees:
       filteredEmployees ?? this.filteredEmployees,
       selectedEmployee:
       selectedEmployee ?? this.selectedEmployee,
+      isLoading: isLoading ?? this.isLoading,
+      isSaving: isSaving ?? this.isSaving,
       search: search ?? this.search,
       error: error,
-    );
-  }
-
-  factory EmployeeState.initial() {
-    return const EmployeeState(
-      isLoading: false,
-      isSaving: false,
-      employees: [],
-      filteredEmployees: [],
-      selectedEmployee: null,
-      search: '',
-      error: null,
     );
   }
 }

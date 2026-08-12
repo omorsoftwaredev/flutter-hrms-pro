@@ -2,7 +2,6 @@ class ShiftEntity {
   const ShiftEntity({
     required this.id,
     required this.companyId,
-    required this.code,
     required this.name,
     required this.description,
     required this.startTime,
@@ -21,31 +20,21 @@ class ShiftEntity {
   });
 
   final String id;
-
   final String companyId;
 
-  final String code;
-
   final String name;
-
   final String description;
 
   final String startTime;
-
   final String endTime;
 
   final int breakMinutes;
-
   final int graceInMinutes;
-
   final int graceOutMinutes;
-
   final int lateAfterMinutes;
-
   final int halfDayAfterMinutes;
 
   final bool isNightShift;
-
   final bool isFlexible;
 
   final int? weeklyOffDay;
@@ -53,6 +42,5 @@ class ShiftEntity {
   final bool isActive;
 
   final DateTime createdAt;
-
   final DateTime? updatedAt;
 }

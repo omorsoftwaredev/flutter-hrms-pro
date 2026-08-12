@@ -5,9 +5,14 @@ import '../../domain/repositories/role_repository.dart';
 import 'role_state.dart';
 
 class RoleNotifier extends StateNotifier<RoleState> {
-  RoleNotifier(this._repository) : super(const RoleState());
+  RoleNotifier(this._repository)
+      : super(const RoleState());
 
   final RoleRepository _repository;
+
+  // =============================================================
+  // LOAD ROLES
+  // =============================================================
 
   Future<void> loadRoles() async {
     try {
@@ -16,7 +21,8 @@ class RoleNotifier extends StateNotifier<RoleState> {
         error: null,
       );
 
-      final roles = await _repository.getRoles();
+      final roles =
+      await _repository.getRoles();
 
       state = state.copyWith(
         roles: roles,
@@ -31,9 +37,9 @@ class RoleNotifier extends StateNotifier<RoleState> {
     }
   }
 
-  Future<void> refresh() async {
-    await loadRoles();
-  }
+  // =============================================================
+  // CREATE ROLE
+  // =============================================================
 
   Future<void> createRole(
       RoleEntity role,
@@ -44,7 +50,9 @@ class RoleNotifier extends StateNotifier<RoleState> {
         error: null,
       );
 
-      await _repository.createRole(role);
+      await _repository.createRole(
+        role,
+      );
 
       state = state.copyWith(
         isSaving: false,
@@ -60,6 +68,10 @@ class RoleNotifier extends StateNotifier<RoleState> {
       rethrow;
     }
   }
+
+  // =============================================================
+  // UPDATE ROLE
+  // =============================================================
 
   Future<void> updateRole(
       RoleEntity role,
@@ -70,7 +82,9 @@ class RoleNotifier extends StateNotifier<RoleState> {
         error: null,
       );
 
-      await _repository.updateRole(role);
+      await _repository.updateRole(
+        role,
+      );
 
       state = state.copyWith(
         isSaving: false,
@@ -86,16 +100,65 @@ class RoleNotifier extends StateNotifier<RoleState> {
       rethrow;
     }
   }
+
+  // =============================================================
+  // TOGGLE ROLE STATUS
+  // =============================================================
+
+  Future<void> toggleRoleStatus(
+      RoleEntity role,
+      ) async {
+    try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.updateRoleStatus(
+        id: role.id,
+        isActive: !role.isActive,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
+
+      await loadRoles();
+    } catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        error: e.toString(),
+      );
+
+      rethrow;
+    }
+  }
+
+  // =============================================================
+  // DELETE ROLE
+  // =============================================================
 
   Future<void> deleteRole(
       String id,
       ) async {
     try {
-      await _repository.deleteRole(id);
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
+
+      await _repository.deleteRole(
+        id,
+      );
+
+      state = state.copyWith(
+        isSaving: false,
+      );
 
       await loadRoles();
     } catch (e) {
       state = state.copyWith(
+        isSaving: false,
         error: e.toString(),
       );
 
@@ -103,11 +166,18 @@ class RoleNotifier extends StateNotifier<RoleState> {
     }
   }
 
+  // =============================================================
+  // GET ROLE BY ID
+  // =============================================================
+
   Future<void> getRoleById(
       String id,
       ) async {
     try {
-      final role = await _repository.getRoleById(id);
+      final role =
+      await _repository.getRoleById(
+        id,
+      );
 
       state = state.copyWith(
         selectedRole: role,
@@ -116,46 +186,33 @@ class RoleNotifier extends StateNotifier<RoleState> {
       state = state.copyWith(
         error: e.toString(),
       );
+
+      rethrow;
     }
   }
 
-  Future<void> toggleRoleStatus(
-      RoleEntity role,
-      ) async {
-    try {
-      final updatedRole = role.copyWith(
-        isActive: !role.isActive,
-        updatedAt: DateTime.now(),
-      );
-
-      await _repository.updateRole(updatedRole);
-
-      await loadRoles();
-    } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-      );
-    }
-  }
+  // =============================================================
+  // SEARCH
+  // =============================================================
 
   void search(String keyword) {
-    final query = keyword.trim().toLowerCase();
+    final query =
+    keyword.trim().toLowerCase();
 
     if (query.isEmpty) {
       state = state.copyWith(
         search: '',
         filteredRoles: state.roles,
       );
+
       return;
     }
 
-    final filtered = state.roles.where((role) {
-      return role.roleCode
+    final filtered =
+    state.roles.where((role) {
+      return role.roleName
           .toLowerCase()
-          .contains(query) ||
-          role.roleName
-              .toLowerCase()
-              .contains(query);
+          .contains(query);
     }).toList();
 
     state = state.copyWith(
@@ -164,9 +221,21 @@ class RoleNotifier extends StateNotifier<RoleState> {
     );
   }
 
+  // =============================================================
+  // CLEAR SELECTION
+  // =============================================================
+
   void clearSelection() {
     state = state.copyWith(
       selectedRole: null,
     );
+  }
+
+  // =============================================================
+  // REFRESH
+  // =============================================================
+
+  Future<void> refresh() async {
+    await loadRoles();
   }
 }

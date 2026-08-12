@@ -31,6 +31,10 @@ class EmployeeAccountCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          //=======================================================
+          // Header
+          //=======================================================
+
           Row(
             children: [
               CircleAvatar(
@@ -61,7 +65,9 @@ class EmployeeAccountCard extends StatelessWidget {
                     const SizedBox(height: 2),
 
                     Text(
-                      account.username,
+                      account.username.isEmpty
+                          ? '-'
+                          : account.username,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -101,10 +107,12 @@ class EmployeeAccountCard extends StatelessWidget {
                     value: 'view',
                     child: Text('View'),
                   ),
+
                   const PopupMenuItem(
                     value: 'edit',
                     child: Text('Edit'),
                   ),
+
                   PopupMenuItem(
                     value: 'active',
                     child: Text(
@@ -113,6 +121,7 @@ class EmployeeAccountCard extends StatelessWidget {
                           : 'Activate',
                     ),
                   ),
+
                   PopupMenuItem(
                     value: 'login',
                     child: Text(
@@ -121,6 +130,7 @@ class EmployeeAccountCard extends StatelessWidget {
                           : 'Enable Login',
                     ),
                   ),
+
                   PopupMenuItem(
                     value: 'lock',
                     child: Text(
@@ -129,6 +139,7 @@ class EmployeeAccountCard extends StatelessWidget {
                           : 'Lock',
                     ),
                   ),
+
                   const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete'),
@@ -140,32 +151,61 @@ class EmployeeAccountCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
+          //=======================================================
+          // Employee
+          //=======================================================
+
           _infoRow(
             Icons.person_outline,
-            '${account.employeeName ?? "Unknown"}',
+            account.employeeName?.isNotEmpty == true
+                ? account.employeeName!
+                : account.employeeId,
           ),
 
-          _infoRow(
-            Icons.business,
-            '${account.companyName ?? "Unknown Company"}',
-          ),
+          //=======================================================
+          // Company
+          //=======================================================
 
           _infoRow(
-            Icons.apartment,
-            '${account.departmentName ?? "Unknown Department"}',
+            Icons.business_outlined,
+            account.companyName?.isNotEmpty == true
+                ? account.companyName!
+                : account.companyId,
           ),
+
+          //=======================================================
+          // Department
+          //=======================================================
+
+          _infoRow(
+            Icons.apartment_outlined,
+            account.departmentName?.isNotEmpty == true
+                ? account.departmentName!
+                : account.departmentId,
+          ),
+
+          //=======================================================
+          // Username
+          //=======================================================
 
           _infoRow(
             Icons.account_circle_outlined,
-            account.username,
+            account.username.isEmpty
+                ? '-'
+                : account.username,
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+
+          //=======================================================
+          // Status Chips
+          //=======================================================
 
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
+              // Active
               Chip(
                 backgroundColor: account.isActive
                     ? Colors.green.shade100
@@ -177,6 +217,7 @@ class EmployeeAccountCard extends StatelessWidget {
                 ),
               ),
 
+              // Login
               Chip(
                 backgroundColor: account.canLogin
                     ? Colors.blue.shade100
@@ -188,6 +229,7 @@ class EmployeeAccountCard extends StatelessWidget {
                 ),
               ),
 
+              // Lock
               Chip(
                 backgroundColor: account.isLocked
                     ? Colors.red.shade100
@@ -199,6 +241,7 @@ class EmployeeAccountCard extends StatelessWidget {
                 ),
               ),
 
+              // Force Password Change
               if (account.forceChangePassword)
                 Chip(
                   backgroundColor: Colors.amber.shade100,
@@ -218,13 +261,22 @@ class EmployeeAccountCard extends StatelessWidget {
       String text,
       ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(
+        bottom: 8,
+      ),
       child: Row(
         children: [
-          Icon(icon, size: 18),
+          Icon(
+            icon,
+            size: 18,
+          ),
+
           const SizedBox(width: 8),
+
           Expanded(
-            child: Text(text),
+            child: Text(
+              text.isEmpty ? '-' : text,
+            ),
           ),
         ],
       ),

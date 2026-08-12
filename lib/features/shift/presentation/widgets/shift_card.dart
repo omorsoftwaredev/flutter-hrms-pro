@@ -15,12 +15,17 @@ class ShiftCard extends StatelessWidget {
   });
 
   final ShiftEntity shift;
+
   final String? companyName;
 
   final VoidCallback? onView;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onToggleStatus;
+
+  // =============================================================
+  // WEEK DAY
+  // =============================================================
 
   String _weekDay(int? day) {
     switch (day) {
@@ -43,31 +48,40 @@ class ShiftCard extends StatelessWidget {
     }
   }
 
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(BuildContext context) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // =======================================================
+          // HEADER
+          // =======================================================
+
           Row(
             children: [
               const CircleAvatar(
-                child: Icon(Icons.schedule),
+                child: Icon(
+                  Icons.schedule,
+                ),
               ),
 
               const SizedBox(width: 12),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
                   children: [
                     Text(
                       shift.name,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Text(
-                      shift.code,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium,
                     ),
                   ],
                 ),
@@ -96,50 +110,23 @@ class ShiftCard extends StatelessWidget {
                 itemBuilder: (_) => [
                   const PopupMenuItem(
                     value: 'view',
-                    child: ListTile(
-                      leading: Icon(Icons.visibility_outlined),
-                      title: Text('View'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
+                    child: Text('View'),
                   ),
                   const PopupMenuItem(
                     value: 'edit',
-                    child: ListTile(
-                      leading: Icon(Icons.edit_outlined),
-                      title: Text('Edit'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
+                    child: Text('Edit'),
                   ),
                   PopupMenuItem(
                     value: 'status',
-                    child: ListTile(
-                      leading: Icon(
-                        shift.isActive
-                            ? Icons.toggle_off
-                            : Icons.toggle_on,
-                      ),
-                      title: Text(
-                        shift.isActive
-                            ? 'Deactivate'
-                            : 'Activate',
-                      ),
-                      contentPadding: EdgeInsets.zero,
+                    child: Text(
+                      shift.isActive
+                          ? 'Deactivate'
+                          : 'Activate',
                     ),
                   ),
-                  const PopupMenuDivider(),
                   const PopupMenuItem(
                     value: 'delete',
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
-                      ),
-                      title: Text(
-                        'Delete',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                    ),
+                    child: Text('Delete'),
                   ),
                 ],
               ),
@@ -148,22 +135,58 @@ class ShiftCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
+          // =======================================================
+          // COMPANY
+          // =======================================================
+
           Row(
             children: [
-              const Icon(Icons.business, size: 18),
+              const Icon(
+                Icons.business,
+                size: 18,
+              ),
+
               const SizedBox(width: 8),
+
               Expanded(
-                child: Text(companyName ?? '-'),
+                child: Text(
+                  companyName ?? '-',
+                ),
               ),
             ],
           ),
 
           const SizedBox(height: 10),
 
+          // =======================================================
+          // SHIFT CODE
+          // =======================================================
+
           Row(
             children: [
-              const Icon(Icons.access_time, size: 18),
+              const Icon(
+                Icons.tag,
+                size: 18,
+              ),
+
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // =======================================================
+          // SHIFT TIME
+          // =======================================================
+
+          Row(
+            children: [
+              const Icon(
+                Icons.access_time,
+                size: 18,
+              ),
+
               const SizedBox(width: 8),
+
               Expanded(
                 child: Text(
                   '${shift.startTime} → ${shift.endTime}',
@@ -174,33 +197,64 @@ class ShiftCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
+          // =======================================================
+          // BREAK
+          // =======================================================
+
           Row(
             children: [
-              const Icon(Icons.free_breakfast, size: 18),
+              const Icon(
+                Icons.free_breakfast,
+                size: 18,
+              ),
+
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Break : ${shift.breakMinutes} Minutes',
-                ),
+
+              Text(
+                'Break : ${shift.breakMinutes} Minutes',
               ),
             ],
           ),
 
           const SizedBox(height: 10),
 
+          // =======================================================
+          // WEEKLY OFF
+          // =======================================================
+
           Row(
             children: [
-              const Icon(Icons.event, size: 18),
+              const Icon(
+                Icons.event,
+                size: 18,
+              ),
+
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Weekly Off : ${_weekDay(shift.weeklyOffDay)}',
-                ),
+
+              Text(
+                'Weekly Off : '
+                    '${_weekDay(shift.weeklyOffDay)}',
               ),
             ],
           ),
 
+          // =======================================================
+          // DESCRIPTION
+          // =======================================================
+
+          if (shift.description.isNotEmpty) ...[
+            const SizedBox(height: 12),
+
+            Text(
+              shift.description,
+            ),
+          ],
+
           const SizedBox(height: 16),
+
+          // =======================================================
+          // SHIFT TYPE / STATUS
+          // =======================================================
 
           Wrap(
             spacing: 8,
@@ -208,20 +262,29 @@ class ShiftCard extends StatelessWidget {
             children: [
               Chip(
                 label: Text(
-                  shift.isNightShift ? 'Night Shift' : 'Day Shift',
+                  shift.isNightShift
+                      ? 'Night Shift'
+                      : 'Day Shift',
                 ),
               ),
+
               Chip(
                 label: Text(
-                  shift.isFlexible ? 'Flexible' : 'Fixed',
+                  shift.isFlexible
+                      ? 'Flexible'
+                      : 'Fixed',
                 ),
               ),
+
               Chip(
-                backgroundColor: shift.isActive
+                backgroundColor:
+                shift.isActive
                     ? Colors.green.shade100
                     : Colors.red.shade100,
                 label: Text(
-                  shift.isActive ? 'Active' : 'Inactive',
+                  shift.isActive
+                      ? 'Active'
+                      : 'Inactive',
                 ),
               ),
             ],

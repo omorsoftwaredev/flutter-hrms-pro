@@ -27,30 +27,35 @@ class RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
         children: [
+          // =====================================================
+          // HEADER
+          // =====================================================
+
           Row(
             children: [
               const CircleAvatar(
-                child: Icon(Icons.admin_panel_settings),
+                child: Icon(
+                  Icons.admin_panel_settings,
+                ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(
+                width: 12,
+              ),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
                   children: [
                     Text(
                       role.roleName,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-
-                    const SizedBox(height: 2),
-
-                    Text(
-                      role.roleCode,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium,
                     ),
                   ],
                 ),
@@ -102,7 +107,13 @@ class RoleCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(
+            height: 16,
+          ),
+
+          // =====================================================
+          // COMPANY
+          // =====================================================
 
           Row(
             children: [
@@ -110,23 +121,40 @@ class RoleCard extends StatelessWidget {
                 Icons.business,
                 size: 18,
               ),
-              const SizedBox(width: 8),
+
+              const SizedBox(
+                width: 8,
+              ),
+
               Expanded(
-                child: Text(companyName ?? '-'),
+                child: Text(
+                  companyName ?? '-',
+                ),
               ),
             ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(
+            height: 10,
+          ),
+
+          // =====================================================
+          // DESCRIPTION
+          // =====================================================
 
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
             children: [
               const Icon(
                 Icons.description_outlined,
                 size: 18,
               ),
-              const SizedBox(width: 8),
+
+              const SizedBox(
+                width: 8,
+              ),
+
               Expanded(
                 child: Text(
                   role.description.isEmpty
@@ -137,10 +165,17 @@ class RoleCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(
+            height: 16,
+          ),
+
+          // =====================================================
+          // STATUS
+          // =====================================================
 
           Align(
-            alignment: Alignment.centerRight,
+            alignment:
+            Alignment.centerRight,
             child: Chip(
               label: Text(
                 role.isActive

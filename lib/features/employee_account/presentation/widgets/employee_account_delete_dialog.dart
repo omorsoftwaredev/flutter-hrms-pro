@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-class EmployeeAccountDeleteDialog
-    extends StatelessWidget {
+class EmployeeAccountDeleteDialog extends StatelessWidget {
   const EmployeeAccountDeleteDialog({
     super.key,
   });
@@ -12,8 +11,7 @@ class EmployeeAccountDeleteDialog
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>
-      const EmployeeAccountDeleteDialog(),
+      builder: (_) => const EmployeeAccountDeleteDialog(),
     );
   }
 
@@ -25,13 +23,16 @@ class EmployeeAccountDeleteDialog
         color: Colors.red,
         size: 42,
       ),
+
       title: const Text(
         'Delete Employee Account',
       ),
+
       content: const Text(
         'Are you sure you want to delete this employee account?\n\n'
             'This action cannot be undone.',
       ),
+
       actions: [
         OutlinedButton(
           onPressed: () {
@@ -44,19 +45,23 @@ class EmployeeAccountDeleteDialog
             'Cancel',
           ),
         ),
+
         FilledButton.icon(
           style: FilledButton.styleFrom(
             backgroundColor: Colors.red,
           ),
+
           onPressed: () {
             Navigator.pop(
               context,
               true,
             );
           },
+
           icon: const Icon(
             Icons.delete,
           ),
+
           label: const Text(
             'Delete',
           ),

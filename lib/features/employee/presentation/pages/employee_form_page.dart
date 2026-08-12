@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/auth/current_user_provider.dart';
+import '../../../../core/router/route_paths.dart';
 import '../../domain/entities/employee_entity.dart';
 import '../providers/employee_provider.dart';
 import '../widgets/employee_form.dart';
@@ -21,151 +23,436 @@ class EmployeeFormPage extends ConsumerWidget {
       BuildContext context,
       WidgetRef ref,
       ) {
+    // ===========================================================
+    // CURRENT LOGGED-IN USER
+    // ===========================================================
+
+    final user = ref.watch(currentUserProvider);
+
+    // ===========================================================
+    // EMPLOYEE STATE
+    // ===========================================================
+
     final state = ref.watch(employeeProvider);
+
+    // ===========================================================
+    // USER VALIDATION
+    // ===========================================================
+
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Employee'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Logged-in user information is not available.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ===========================================================
+    // CURRENT USER ID
+    // ===========================================================
+
+    final currentUserId = user.userId.trim();
+
+    if (currentUserId.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Employee'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Logged-in user ID is not available.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ===========================================================
+    // COMPANY ID
+    // ===========================================================
+
+    final companyId = isEdit
+        ? (employee?.companyId ?? '').trim()
+        : user.companyId.trim();
+
+    if (companyId.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Employee'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Company information is not available for this account.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ===========================================================
+    // DEBUG
+    // ===========================================================
+
+    debugPrint('==============================================');
+    debugPrint('EMPLOYEE FORM');
+    debugPrint('Mode          => ${isEdit ? 'UPDATE' : 'CREATE'}');
+    debugPrint('User ID       => $currentUserId');
+    debugPrint('Login Name    => ${user.loginName}');
+    debugPrint('User Type     => ${user.userType.name}');
+    debugPrint('Company ID    => $companyId');
+    debugPrint('Employee ID   => ${employee?.id}');
+    debugPrint('Employee Code => ${employee?.employeeCode}');
+    debugPrint('==============================================');
+
+    // ===========================================================
+    // PAGE
+    // ===========================================================
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isEdit
-              ? 'Edit Employee'
-              : 'Add Employee',
+          isEdit ? 'Edit Employee' : 'Add Employee',
         ),
       ),
+
+      // IMPORTANT:
+      // EmployeeForm already contains ListView.
+      // তাই এখানে আর SingleChildScrollView ব্যবহার করা যাবে না.
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: EmployeeForm(
-            initialCompanyId: employee?.companyId,
-            initialDepartmentId: employee?.departmentId,
-            initialDesignationId: employee?.designationId,
-            initialShiftId: employee?.shiftId,
-            initialRoleId: employee?.roleId,
+        child: EmployeeForm(
+          initialCompanyId:
+          employee?.companyId ?? companyId,
 
-            initialEmployeeCode:
-            employee?.employeeCode ?? '',
+          initialDepartmentId:
+          employee?.departmentId,
 
-            initialCardNo:
-            employee?.cardNo ?? '',
+          initialDesignationId:
+          employee?.designationId,
 
-            initialFirstName:
-            employee?.firstName ?? '',
+          initialShiftId:
+          employee?.shiftId,
 
-            initialLastName:
-            employee?.lastName ?? '',
+          initialRoleId:
+          employee?.roleId,
 
-            initialFullName:
-            employee?.fullName ?? '',
+          initialEmployeeCode:
+          employee?.employeeCode ?? '',
 
-            initialGender:
-            employee?.gender ?? 'Male',
+          initialCardNo:
+          employee?.cardNo ?? '',
 
-            initialMobile:
-            employee?.mobile ?? '',
+          initialFirstName:
+          employee?.firstName ?? '',
 
-            initialEmail:
-            employee?.email ?? '',
+          initialLastName:
+          employee?.lastName ?? '',
 
-            initialEmploymentType:
-            employee?.employmentType ??
-                'Permanent',
+          initialFullName:
+          employee?.fullName ?? '',
 
-            initialEmployeeStatus:
-            employee?.employeeStatus ??
-                'Active',
+          initialGender:
+          employee?.gender ?? 'Male',
 
-            initialBasicSalary:
-            employee?.basicSalary ?? 0,
+          initialMobile:
+          employee?.mobile ?? '',
 
-            initialIsActive:
-            employee?.isActive ?? true,
+          initialEmail:
+          employee?.email ?? '',
 
-            isLoading: state.isSaving,
+          initialEmploymentType:
+          employee?.employmentType ?? 'Permanent',
 
-            onSubmit: (
-                companyId,
-                departmentId,
-                designationId,
-                shiftId,
-                roleId,
-                employeeCode,
-                cardNo,
-                firstName,
-                lastName,
-                fullName,
-                mobile,
-                email,
-                gender,
-                employmentType,
-                employeeStatus,
-                basicSalary,
-                isActive,
-                ) async {
-              final entity = EmployeeEntity(
-                id: employee?.id ?? '',
+          initialEmployeeStatus:
+          employee?.employeeStatus ?? 'Active',
 
-                companyId: companyId,
-                departmentId: departmentId,
-                designationId: designationId,
-                shiftId: shiftId,
-                roleId: roleId,
+          initialBasicSalary:
+          employee?.basicSalary ?? 0,
 
-                employeeCode: employeeCode,
-                cardNo: cardNo,
+          initialIsActive:
+          employee?.isActive ?? true,
 
-                firstName: firstName,
-                lastName: lastName,
-                fullName: fullName,
+          isLoading:
+          state.isSaving,
 
-                mobile: mobile,
-                email: email,
-                gender: gender,
+          // =====================================================
+          // SUBMIT
+          // =====================================================
 
-                employmentType: employmentType,
-                employeeStatus: employeeStatus,
+          onSubmit: (
+              submittedCompanyId,
+              departmentId,
+              designationId,
+              shiftId,
+              roleId,
+              employeeCode,
+              cardNo,
+              firstName,
+              lastName,
+              fullName,
+              mobile,
+              email,
+              gender,
+              employmentType,
+              employeeStatus,
+              basicSalary,
+              isActive,
+              ) async {
+            // ===================================================
+            // FINAL COMPANY ID
+            // ===================================================
 
-                basicSalary: basicSalary,
+            final finalCompanyId = companyId;
 
-                isActive: isActive,
+            // ===================================================
+            // ENTITY
+            // ===================================================
 
-                createdAt:
-                employee?.createdAt ??
-                    DateTime.now(),
+            final entity = EmployeeEntity(
+              id: employee?.id ?? '',
 
-                updatedAt: DateTime.now(),
-              );
+              companyId: finalCompanyId,
 
-              try {
-                if (isEdit) {
-                  await ref
-                      .read(
-                    employeeProvider.notifier,
-                  )
-                      .updateEmployee(entity);
-                } else {
-                  await ref
-                      .read(
-                    employeeProvider.notifier,
-                  )
-                      .createEmployee(entity);
-                }
+              departmentId: departmentId,
 
-                if (context.mounted) {
-                  context.pop(true);
-                }
-              } catch (e) {
+              designationId: designationId,
+
+              shiftId: shiftId,
+
+              roleId: roleId,
+
+              cardNo: cardNo.trim(),
+
+              firstName: firstName.trim(),
+
+              lastName: lastName?.trim(),
+
+              fullName: fullName.trim(),
+
+              gender: gender?.trim(),
+
+              dateOfBirth:
+              employee?.dateOfBirth,
+
+              bloodGroup:
+              employee?.bloodGroup,
+
+              religion:
+              employee?.religion,
+
+              nationality:
+              employee?.nationality,
+
+              maritalStatus:
+              employee?.maritalStatus,
+
+              mobile: mobile?.trim(),
+
+              email: email?.trim(),
+
+              emergencyContactName:
+              employee?.emergencyContactName,
+
+              emergencyContactMobile:
+              employee?.emergencyContactMobile,
+
+              presentAddress:
+              employee?.presentAddress,
+
+              permanentAddress:
+              employee?.permanentAddress,
+
+              joiningDate:
+              employee?.joiningDate,
+
+              confirmationDate:
+              employee?.confirmationDate,
+
+              employmentType:
+              employmentType?.trim(),
+
+              employeeStatus:
+              employeeStatus?.trim(),
+
+              nidNo:
+              employee?.nidNo,
+
+              passportNo:
+              employee?.passportNo,
+
+              basicSalary:
+              basicSalary,
+
+              photoUrl:
+              employee?.photoUrl,
+
+              signatureUrl:
+              employee?.signatureUrl,
+
+              isActive:
+              isActive,
+
+              createdAt:
+              employee?.createdAt ??
+                  DateTime.now(),
+
+              updatedAt:
+              DateTime.now(),
+
+              userId:
+              employee?.userId,
+
+              createdBy: isEdit
+                  ? employee?.createdBy
+                  : currentUserId,
+
+              updatedBy:
+              currentUserId,
+
+              lastLoginAt:
+              employee?.lastLoginAt,
+            );
+
+            // ===================================================
+            // DEBUG
+            // ===================================================
+
+            debugPrint(
+              '============= EMPLOYEE SAVE =============',
+            );
+
+            debugPrint(
+              'Mode          => '
+                  '${isEdit ? 'UPDATE' : 'CREATE'}',
+            );
+
+            debugPrint(
+              'Employee ID   => ${entity.id}',
+            );
+
+            debugPrint(
+              'Employee Code => ${entity.employeeCode}',
+            );
+
+            debugPrint(
+              'Name          => ${entity.fullName}',
+            );
+
+            debugPrint(
+              'Company ID    => ${entity.companyId}',
+            );
+
+            debugPrint(
+              'Department ID => ${entity.departmentId}',
+            );
+
+            debugPrint(
+              'Designation ID=> ${entity.designationId}',
+            );
+
+            debugPrint(
+              'Shift ID      => ${entity.shiftId}',
+            );
+
+            debugPrint(
+              'Role ID       => ${entity.roleId}',
+            );
+
+            debugPrint(
+              'Created By    => ${entity.createdBy}',
+            );
+
+            debugPrint(
+              'Updated By    => ${entity.updatedBy}',
+            );
+
+            debugPrint(
+              '==========================================',
+            );
+
+            // ===================================================
+            // SAVE
+            // ===================================================
+
+            try {
+              if (isEdit) {
+                await ref
+                    .read(employeeProvider.notifier)
+                    .updateEmployee(entity);
+
                 if (!context.mounted) return;
 
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
-                  SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
                     content: Text(
-                      e.toString(),
+                      'Employee updated successfully.',
+                    ),
+                  ),
+                );
+              } else {
+                await ref
+                    .read(employeeProvider.notifier)
+                    .createEmployee(entity);
+
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Employee created successfully.',
                     ),
                   ),
                 );
               }
-            },
-          ),
+
+              // =================================================
+              // RELOAD
+              // =================================================
+
+              await ref
+                  .read(employeeProvider.notifier)
+                  .loadEmployees();
+
+              if (!context.mounted) return;
+
+              // =================================================
+              // BACK TO LIST
+              // =================================================
+
+              context.go(
+                RoutePaths.employees,
+              );
+            } catch (e) {
+              debugPrint(
+                'Employee Save Error => $e',
+              );
+
+              if (!context.mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.red,
+                  content: Text(
+                    e.toString(),
+                  ),
+                ),
+              );
+            }
+          },
         ),
       ),
     );

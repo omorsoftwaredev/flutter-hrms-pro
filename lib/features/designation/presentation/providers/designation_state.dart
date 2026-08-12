@@ -12,20 +12,26 @@ class DesignationState {
   });
 
   final List<DesignationEntity> designations;
-  final List<DesignationEntity> filteredDesignations;
 
-  final DesignationEntity? selectedDesignation;
+  final List<DesignationEntity>
+  filteredDesignations;
+
+  final DesignationEntity?
+  selectedDesignation;
 
   final bool isLoading;
   final bool isSaving;
 
   final String search;
+
   final String? error;
 
   DesignationState copyWith({
     List<DesignationEntity>? designations,
-    List<DesignationEntity>? filteredDesignations,
-    DesignationEntity? selectedDesignation,
+    List<DesignationEntity>?
+    filteredDesignations,
+    DesignationEntity?
+    selectedDesignation,
     bool? isLoading,
     bool? isSaving,
     String? search,
@@ -34,17 +40,26 @@ class DesignationState {
     return DesignationState(
       designations:
       designations ?? this.designations,
+
       filteredDesignations:
       filteredDesignations ??
           this.filteredDesignations,
+
       selectedDesignation:
-      selectedDesignation,
+      selectedDesignation ??
+          this.selectedDesignation,
+
       isLoading:
       isLoading ?? this.isLoading,
+
       isSaving:
       isSaving ?? this.isSaving,
-      search: search ?? this.search,
-      error: error,
+
+      search:
+      search ?? this.search,
+
+      error:
+      error,
     );
   }
 }

@@ -28,7 +28,7 @@ class AttendanceEmployeeDropdown extends StatelessWidget {
             (e) => DropdownMenuItem(
           value: e,
           child: Text(
-            '${e.employeeCode} - ${e.fullName}',
+            '${e.fullName}',
             overflow: TextOverflow.ellipsis,
           ),
         ),

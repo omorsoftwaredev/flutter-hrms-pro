@@ -1,58 +1,68 @@
 import '../entities/role_permissions_entity.dart';
 import '../entities/role_permissions_view_entity.dart';
 
-
 abstract class RolePermissionsRepository {
+  // =============================================================
+  // GET ALL ROLE PERMISSIONS
+  // =============================================================
 
-
-  /// Get all permissions
-  /// Include:
+  /// Get all role permissions.
+  ///
+  /// Includes:
   /// - companyName
   /// - roleName
-  Future<List<RolePermissionsViewEntity>>
-  getRolePermissions();
+  Future<List<RolePermissionsViewEntity>> getRolePermissions();
 
+  // =============================================================
+  // GET ROLE PERMISSIONS BY ROLE ID
+  // =============================================================
 
-
-  /// Get permissions by role id
-  /// Include:
+  /// Get all permissions for a specific role.
+  ///
+  /// Includes:
   /// - companyName
   /// - roleName
-  Future<List<RolePermissionsViewEntity>>
-  getRolePermissionsByRoleId(
+  Future<List<RolePermissionsViewEntity>> getRolePermissionsByRoleId(
       String roleId,
       );
 
+  // =============================================================
+  // GET ROLE PERMISSION BY ID
+  // =============================================================
 
-
-  /// Get single permission details
-  /// Include:
+  /// Get a single role permission.
+  ///
+  /// Includes:
   /// - companyName
   /// - roleName
-  Future<RolePermissionsViewEntity>
-  getRolePermissionById(
+  Future<RolePermissionsViewEntity> getRolePermissionById(
       String id,
       );
 
+  // =============================================================
+  // CREATE ROLE PERMISSION
+  // =============================================================
 
-
-  /// Create permission
+  /// Create a new role permission.
   Future<void> createRolePermission(
       RolePermissionsEntity rolePermission,
       );
 
+  // =============================================================
+  // UPDATE ROLE PERMISSION
+  // =============================================================
 
-
-  /// Update permission
+  /// Update an existing role permission.
   Future<void> updateRolePermission(
       RolePermissionsEntity rolePermission,
       );
 
+  // =============================================================
+  // DELETE ROLE PERMISSION
+  // =============================================================
 
-
-  /// Delete permission
+  /// Delete a role permission.
   Future<void> deleteRolePermission(
       String id,
       );
-
 }

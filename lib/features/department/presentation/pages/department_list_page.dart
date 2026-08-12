@@ -52,6 +52,16 @@ class _DepartmentListPageState
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(RoutePaths.companyDashboard);
+            }
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         title: const Text('Departments'),
       ),
 

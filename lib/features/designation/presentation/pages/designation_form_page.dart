@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/router/route_paths.dart';
 import '../../domain/entities/designation_entity.dart';
 import '../providers/designation_provider.dart';
 import '../widgets/designation_form.dart';
@@ -18,26 +17,36 @@ class DesignationFormPage extends ConsumerWidget {
   bool get isEdit => designation != null;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(
+      BuildContext context,
+      WidgetRef ref,
+      ) {
     final state = ref.watch(designationProvider);
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            }
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         title: Text(
           isEdit
               ? 'Edit Designation'
               : 'Add Designation',
         ),
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: DesignationForm(
-            initialCompanyId:
-            designation?.companyId ?? '',
-
-            initialCode:
-            designation?.code ?? '',
+            // =====================================================
+            // INITIAL VALUES
+            // =====================================================
 
             initialName:
             designation?.name ?? '',
@@ -59,9 +68,22 @@ class DesignationFormPage extends ConsumerWidget {
 
             isLoading: state.isSaving,
 
+            // =====================================================
+            // SUBMIT
+            // =====================================================
+            //
+            // Company ID নেই
+            // Code নেই
+            //
+            // Company ID:
+            //     CurrentUser.companyId
+            //
+            // Code:
+            //     Database trigger
+            //
+            // =====================================================
+
             onSubmit: (
-                companyId,
-                code,
                 name,
                 description,
                 grade,
@@ -69,23 +91,48 @@ class DesignationFormPage extends ConsumerWidget {
                 baseSalary,
                 isActive,
                 ) async {
-              final entity = DesignationEntity(
+              final entity =
+              DesignationEntity(
                 id: designation?.id ?? '',
-                companyId: companyId,
-                code: code,
+
+                // -------------------------------------------------
+                // IMPORTANT
+                //
+                // এখানে companyId manually দেওয়া হচ্ছে না।
+                //
+                // Provider/Notifier CurrentUser.companyId
+                // থেকে company scope করবে।
+                //
+                // -------------------------------------------------
+
+                companyId:
+                designation?.companyId ?? '',
+
                 name: name,
+
                 description: description,
+
                 grade: grade,
+
                 displayOrder: displayOrder,
+
                 baseSalary: baseSalary,
+
                 isActive: isActive,
+
                 createdAt:
                 designation?.createdAt ??
                     DateTime.now(),
-                updatedAt: DateTime.now(),
+
+                updatedAt:
+                designation?.updatedAt,
               );
 
               try {
+                // =================================================
+                // UPDATE
+                // =================================================
+
                 if (isEdit) {
                   await ref
                       .read(
@@ -95,7 +142,13 @@ class DesignationFormPage extends ConsumerWidget {
                       .updateDesignation(
                     entity,
                   );
-                } else {
+                }
+
+                // =================================================
+                // CREATE
+                // =================================================
+
+                else {
                   await ref
                       .read(
                     designationProvider
@@ -106,29 +159,58 @@ class DesignationFormPage extends ConsumerWidget {
                   );
                 }
 
-                if (!context.mounted) return;
+                if (!context.mounted) {
+                  return;
+                }
+
+                // =================================================
+                // RELOAD LIST
+                // =================================================
 
                 await ref
                     .read(
-                  designationProvider.notifier,
+                  designationProvider
+                      .notifier,
                 )
                     .loadDesignations();
 
-                context.push(
-                  RoutePaths.designations,
-                );
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        e.toString(),
-                      ),
-                    ),
+                if (!context.mounted) {
+                  return;
+                }
+
+                // =================================================
+                // BACK TO DESIGNATION LIST
+                // =================================================
+                //
+                // push না করে pop করছি।
+                //
+                // কারণ Add/Edit page থেকে list page-এ এসেছি।
+                //
+                // এতে duplicate list page তৈরি হবে না।
+                //
+                // =================================================
+
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(
+                    '/designations',
                   );
                 }
+              } catch (e) {
+                if (!context.mounted) {
+                  return;
+                }
+
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      e.toString(),
+                    ),
+                  ),
+                );
               }
             },
           ),

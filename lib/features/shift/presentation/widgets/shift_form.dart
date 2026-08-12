@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../company/presentation/providers/company_provider.dart';
-
-
-class ShiftForm extends ConsumerStatefulWidget {
+class ShiftForm extends StatefulWidget {
   const ShiftForm({
     super.key,
-    this.initialCompanyId = '',
-    this.initialCode = '',
     this.initialName = '',
     this.initialDescription = '',
     this.initialStartTime = '09:00:00',
@@ -26,8 +20,10 @@ class ShiftForm extends ConsumerStatefulWidget {
     required this.onSubmit,
   });
 
-  final String initialCompanyId;
-  final String initialCode;
+  // =============================================================
+  // INITIAL VALUES
+  // =============================================================
+
   final String initialName;
   final String initialDescription;
 
@@ -48,503 +44,753 @@ class ShiftForm extends ConsumerStatefulWidget {
 
   final bool isLoading;
 
+  // =============================================================
+  // SUBMIT
+  // =============================================================
+  //
+  // IMPORTANT:
+  //
+  // companyId এখানে নেই।
+  //
+  // code এখানেও নেই।
+  //
+  // companyId:
+  //     CurrentUser.companyId
+  //
+  // code:
+  //     Database trigger generate করবে।
+  //
+  // =============================================================
+
   final Future<void> Function(
-      String companyId,
-      String code,
       String name,
       String description,
       String startTime,
       String endTime,
       int breakMinutes,
-      int graceIn,
-      int graceOut,
-      int lateAfter,
-      int halfDayAfter,
-      int? weeklyOff,
-      bool nightShift,
-      bool flexible,
-      bool active,
+      int graceInMinutes,
+      int graceOutMinutes,
+      int lateAfterMinutes,
+      int halfDayAfterMinutes,
+      int? weeklyOffDay,
+      bool isNightShift,
+      bool isFlexible,
+      bool isActive,
       ) onSubmit;
 
   @override
-  ConsumerState<ShiftForm> createState() =>
+  State<ShiftForm> createState() =>
       _ShiftFormState();
 }
 
 class _ShiftFormState
-    extends ConsumerState<ShiftForm> {
-final _formKey = GlobalKey<FormState>();
+    extends State<ShiftForm> {
+  final _formKey = GlobalKey<FormState>();
 
-String? _companyId;
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _breakController;
+  late TextEditingController _graceInController;
+  late TextEditingController _graceOutController;
+  late TextEditingController _lateController;
+  late TextEditingController _halfDayController;
 
-late TextEditingController _codeController;
-late TextEditingController _nameController;
-late TextEditingController _descriptionController;
+  late TimeOfDay _startTime;
+  late TimeOfDay _endTime;
 
-late TextEditingController _breakController;
-late TextEditingController _graceInController;
-late TextEditingController _graceOutController;
-late TextEditingController _lateController;
-late TextEditingController _halfDayController;
+  int? _weeklyOffDay;
 
-late TimeOfDay _startTime;
-late TimeOfDay _endTime;
+  late bool _isNightShift;
+  late bool _isFlexible;
+  late bool _isActive;
 
-int? _weeklyOff;
+  // =============================================================
+  // INIT
+  // =============================================================
 
-bool _nightShift = false;
-bool _flexible = false;
-bool _active = true;
+  @override
+  void initState() {
+    super.initState();
 
-@override
-void initState() {
-super.initState();
+    _nameController = TextEditingController(
+      text: widget.initialName,
+    );
 
-_companyId = widget.initialCompanyId.isEmpty
-? null
-: widget.initialCompanyId;
+    _descriptionController =
+        TextEditingController(
+          text: widget.initialDescription,
+        );
 
-_codeController = TextEditingController(
-text: widget.initialCode,
-);
+    _breakController =
+        TextEditingController(
+          text: widget.initialBreakMinutes
+              .toString(),
+        );
 
-_nameController = TextEditingController(
-text: widget.initialName,
-);
+    _graceInController =
+        TextEditingController(
+          text: widget.initialGraceInMinutes
+              .toString(),
+        );
 
-_descriptionController =
-TextEditingController(
-text: widget.initialDescription,
-);
+    _graceOutController =
+        TextEditingController(
+          text: widget.initialGraceOutMinutes
+              .toString(),
+        );
 
-_breakController =
-TextEditingController(
-text: widget.initialBreakMinutes
-.toString(),
-);
+    _lateController =
+        TextEditingController(
+          text: widget.initialLateAfterMinutes
+              .toString(),
+        );
 
-_graceInController =
-TextEditingController(
-text: widget.initialGraceInMinutes
-.toString(),
-);
+    _halfDayController =
+        TextEditingController(
+          text: widget.initialHalfDayAfterMinutes
+              .toString(),
+        );
 
-_graceOutController =
-TextEditingController(
-text: widget.initialGraceOutMinutes
-.toString(),
-);
+    _startTime = _parseTime(
+      widget.initialStartTime,
+    );
 
-_lateController =
-TextEditingController(
-text: widget.initialLateAfterMinutes
-.toString(),
-);
+    _endTime = _parseTime(
+      widget.initialEndTime,
+    );
 
-_halfDayController =
-TextEditingController(
-text: widget
-.initialHalfDayAfterMinutes
-.toString(),
-);
+    _weeklyOffDay =
+        widget.initialWeeklyOffDay;
 
-_startTime = _parseTime(
-widget.initialStartTime,
-);
+    _isNightShift =
+        widget.initialNightShift;
 
-_endTime = _parseTime(
-widget.initialEndTime,
-);
+    _isFlexible =
+        widget.initialFlexible;
 
-_weeklyOff =
-widget.initialWeeklyOffDay;
-
-_nightShift =
-widget.initialNightShift;
-
-_flexible =
-widget.initialFlexible;
-
-_active =
-widget.initialActive;
-
-Future.microtask(() {
-ref
-.read(companyProvider.notifier)
-.loadCompanies();
-});
-}
-
-TimeOfDay _parseTime(
-String value) {
-final parts = value.split(':');
-
-return TimeOfDay(
-hour: int.parse(parts[0]),
-minute: int.parse(parts[1]),
-);
-}
-
-String _format(TimeOfDay time) {
-final h = time.hour
-.toString()
-.padLeft(2, '0');
-
-final m = time.minute
-.toString()
-.padLeft(2, '0');
-
-return '$h:$m:00';
-}
-
-Future<void> _pickStart() async {
-final result =
-await showTimePicker(
-context: context,
-initialTime: _startTime,
-);
-
-if (result != null) {
-setState(() {
-_startTime = result;
-});
-}
-}
-
-Future<void> _pickEnd() async {
-final result =
-await showTimePicker(
-context: context,
-initialTime: _endTime,
-);
-
-if (result != null) {
-setState(() {
-_endTime = result;
-});
-}
-}
-Future<void> _save() async {
-  if (!_formKey.currentState!.validate()) {
-    return;
+    _isActive =
+        widget.initialActive;
   }
 
-  await widget.onSubmit(
-    _companyId!,
-    _codeController.text.trim(),
-    _nameController.text.trim(),
-    _descriptionController.text.trim(),
-    _format(_startTime),
-    _format(_endTime),
-    int.parse(_breakController.text),
-    int.parse(_graceInController.text),
-    int.parse(_graceOutController.text),
-    int.parse(_lateController.text),
-    int.parse(_halfDayController.text),
-    _weeklyOff,
-    _nightShift,
-    _flexible,
-    _active,
-  );
-}
+  // =============================================================
+  // PARSE TIME
+  // =============================================================
 
-@override
-Widget build(BuildContext context) {
-  final state = ref.watch(companyProvider);
+  TimeOfDay _parseTime(
+      String value,
+      ) {
+    final parts = value.split(':');
 
-  if (state.isLoading) {
-    return const Center(
-      child: CircularProgressIndicator(),
+    return TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 9,
+      minute: int.tryParse(parts[1]) ?? 0,
     );
   }
 
-  final companies = state.companies;
+  // =============================================================
+  // FORMAT TIME
+  // =============================================================
 
-  return Form(
-    key: _formKey,
-    child: ListView(
-      shrinkWrap: true,
-      children: [
+  String _formatTime(
+      TimeOfDay time,
+      ) {
+    final hour =
+    time.hour.toString().padLeft(2, '0');
 
-        DropdownButtonFormField<String>(
-          value: _companyId,
-          decoration: const InputDecoration(
-            labelText: 'Company',
-            border: OutlineInputBorder(),
-          ),
-          items: companies.map((company) {
-            return DropdownMenuItem(
-              value: company.id,
-              child: Text(company.name),
-            );
-          }).toList(),
-          validator: (value) {
-            if (value == null) {
-              return 'Select company';
-            }
-            return null;
-          },
-          onChanged: (value) {
-            setState(() {
-              _companyId = value;
-            });
-          },
-        ),
+    final minute =
+    time.minute.toString().padLeft(2, '0');
 
-        const SizedBox(height: 16),
+    return '$hour:$minute:00';
+  }
 
-        TextFormField(
-          controller: _codeController,
-          decoration: const InputDecoration(
-            labelText: 'Code',
-            border: OutlineInputBorder(),
-          ),
-          validator: (v) =>
-          v == null || v.isEmpty
-              ? 'Required'
-              : null,
-        ),
+  // =============================================================
+  // DISPOSE
+  // =============================================================
 
-        const SizedBox(height: 16),
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _breakController.dispose();
+    _graceInController.dispose();
+    _graceOutController.dispose();
+    _lateController.dispose();
+    _halfDayController.dispose();
 
-        TextFormField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: 'Shift Name',
-            border: OutlineInputBorder(),
-          ),
-          validator: (v) =>
-          v == null || v.isEmpty
-              ? 'Required'
-              : null,
-        ),
+    super.dispose();
+  }
 
-        const SizedBox(height: 16),
+  // =============================================================
+  // PICK START TIME
+  // =============================================================
 
-        TextFormField(
-          controller: _descriptionController,
-          decoration: const InputDecoration(
-            labelText: 'Description',
-            border: OutlineInputBorder(),
-          ),
-          maxLines: 3,
-        ),
+  Future<void> _pickStartTime() async {
+    final result = await showTimePicker(
+      context: context,
+      initialTime: _startTime,
+    );
 
-        const SizedBox(height: 20),
+    if (result != null) {
+      setState(() {
+        _startTime = result;
+      });
+    }
+  }
 
-        ListTile(
-          shape: RoundedRectangleBorder(
-            borderRadius:
-            BorderRadius.circular(8),
-            side: const BorderSide(),
-          ),
-          title: const Text(
-            'Start Time',
-          ),
-          subtitle: Text(
-            _startTime.format(context),
-          ),
-          trailing: const Icon(
-            Icons.access_time,
-          ),
-          onTap: _pickStart,
-        ),
+  // =============================================================
+  // PICK END TIME
+  // =============================================================
 
-        const SizedBox(height: 12),
+  Future<void> _pickEndTime() async {
+    final result = await showTimePicker(
+      context: context,
+      initialTime: _endTime,
+    );
 
-        ListTile(
-          shape: RoundedRectangleBorder(
-            borderRadius:
-            BorderRadius.circular(8),
-            side: const BorderSide(),
-          ),
-          title: const Text(
-            'End Time',
-          ),
-          subtitle: Text(
-            _endTime.format(context),
-          ),
-          trailing: const Icon(
-            Icons.access_time,
-          ),
-          onTap: _pickEnd,
-        ),
+    if (result != null) {
+      setState(() {
+        _endTime = result;
+      });
+    }
+  }
 
-        const SizedBox(height: 20),
+  // =============================================================
+  // SAVE
+  // =============================================================
 
-        TextFormField(
-          controller: _breakController,
-          decoration: const InputDecoration(
-            labelText: 'Break Minutes',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType:
-          TextInputType.number,
-        ),
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-        const SizedBox(height: 16),
+    final name =
+    _nameController.text.trim();
 
-        TextFormField(
-          controller: _graceInController,
-          decoration: const InputDecoration(
-            labelText: 'Grace In Minutes',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType:
-          TextInputType.number,
-        ),
+    final description =
+    _descriptionController.text.trim();
 
-        const SizedBox(height: 16),
+    final breakMinutes =
+        int.tryParse(
+          _breakController.text.trim(),
+        ) ??
+            60;
 
-        TextFormField(
-          controller: _graceOutController,
-          decoration: const InputDecoration(
-            labelText: 'Grace Out Minutes',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType:
-          TextInputType.number,
-        ),
+    final graceInMinutes =
+        int.tryParse(
+          _graceInController.text.trim(),
+        ) ??
+            15;
 
-        const SizedBox(height: 16),
+    final graceOutMinutes =
+        int.tryParse(
+          _graceOutController.text.trim(),
+        ) ??
+            15;
 
-        TextFormField(
-          controller: _lateController,
-          decoration: const InputDecoration(
-            labelText:
-            'Late After Minutes',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType:
-          TextInputType.number,
-        ),
+    final lateAfterMinutes =
+        int.tryParse(
+          _lateController.text.trim(),
+        ) ??
+            15;
 
-        const SizedBox(height: 16),
+    final halfDayAfterMinutes =
+        int.tryParse(
+          _halfDayController.text.trim(),
+        ) ??
+            240;
 
-        TextFormField(
-          controller:
-          _halfDayController,
-          decoration:
-          const InputDecoration(
-            labelText:
-            'Half Day After Minutes',
-            border:
-            OutlineInputBorder(),
-          ),
-          keyboardType:
-          TextInputType.number,
-        ),
+    await widget.onSubmit(
+      name,
+      description,
+      _formatTime(_startTime),
+      _formatTime(_endTime),
+      breakMinutes,
+      graceInMinutes,
+      graceOutMinutes,
+      lateAfterMinutes,
+      halfDayAfterMinutes,
+      _weeklyOffDay,
+      _isNightShift,
+      _isFlexible,
+      _isActive,
+    );
+  }
 
-        const SizedBox(height: 16),
+  // =============================================================
+  // BUILD
+  // =============================================================
 
-        DropdownButtonFormField<int>(
-          value: _weeklyOff,
-          decoration:
-          const InputDecoration(
-            labelText:
-            'Weekly Off Day',
-            border:
-            OutlineInputBorder(),
-          ),
-          items: const [
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          // =======================================================
+          // SHIFT NAME
+          // =======================================================
 
-            DropdownMenuItem(
-              value: 0,
-              child: Text('Sunday'),
+          TextFormField(
+            controller: _nameController,
+            decoration:
+            const InputDecoration(
+              labelText: 'Shift Name',
+              border: OutlineInputBorder(),
             ),
+            textInputAction:
+            TextInputAction.next,
+            enabled: !widget.isLoading,
+            validator: (value) {
+              if (value == null ||
+                  value.trim().isEmpty) {
+                return 'Shift name is required';
+              }
 
-            DropdownMenuItem(
-              value: 1,
-              child: Text('Monday'),
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // DESCRIPTION
+          // =======================================================
+
+          TextFormField(
+            controller:
+            _descriptionController,
+            decoration:
+            const InputDecoration(
+              labelText: 'Description',
+              border: OutlineInputBorder(),
             ),
+            maxLines: 3,
+            enabled: !widget.isLoading,
+          ),
 
-            DropdownMenuItem(
-              value: 2,
-              child: Text('Tuesday'),
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // START TIME
+          // =======================================================
+
+          ListTile(
+            contentPadding:
+            const EdgeInsets.symmetric(
+              horizontal: 16,
             ),
-
-            DropdownMenuItem(
-              value: 3,
-              child: Text('Wednesday'),
+            shape: RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius.circular(8),
+              side: const BorderSide(),
             ),
-
-            DropdownMenuItem(
-              value: 4,
-              child: Text('Thursday'),
+            title:
+            const Text('Start Time'),
+            subtitle: Text(
+              _startTime.format(context),
             ),
-
-            DropdownMenuItem(
-              value: 5,
-              child: Text('Friday'),
+            trailing: const Icon(
+              Icons.access_time,
             ),
-
-            DropdownMenuItem(
-              value: 6,
-              child: Text('Saturday'),
-            ),
-          ],
-          onChanged: (value) {
-            setState(() {
-              _weeklyOff = value;
-            });
-          },
-        ),
-
-        const SizedBox(height: 20),
-
-        SwitchListTile(
-          value: _nightShift,
-          title:
-          const Text('Night Shift'),
-          onChanged: (v) {
-            setState(() {
-              _nightShift = v;
-            });
-          },
-        ),
-
-        SwitchListTile(
-          value: _flexible,
-          title:
-          const Text('Flexible Shift'),
-          onChanged: (v) {
-            setState(() {
-              _flexible = v;
-            });
-          },
-        ),
-
-        SwitchListTile(
-          value: _active,
-          title:
-          const Text('Active'),
-          onChanged: (v) {
-            setState(() {
-              _active = v;
-            });
-          },
-        ),
-
-        const SizedBox(height: 24),
-
-        SizedBox(
-          height: 50,
-          child: FilledButton(
-            onPressed: widget.isLoading
+            enabled: !widget.isLoading,
+            onTap: widget.isLoading
                 ? null
-                : _save,
-            child: widget.isLoading
-                ? const CircularProgressIndicator()
-                : Text(
-              widget.initialCode
-                  .isEmpty
-                  ? 'Save'
-                  : 'Update',
+                : _pickStartTime,
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // END TIME
+          // =======================================================
+
+          ListTile(
+            contentPadding:
+            const EdgeInsets.symmetric(
+              horizontal: 16,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius.circular(8),
+              side: const BorderSide(),
+            ),
+            title:
+            const Text('End Time'),
+            subtitle: Text(
+              _endTime.format(context),
+            ),
+            trailing: const Icon(
+              Icons.access_time,
+            ),
+            enabled: !widget.isLoading,
+            onTap: widget.isLoading
+                ? null
+                : _pickEndTime,
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // BREAK MINUTES
+          // =======================================================
+
+          TextFormField(
+            controller: _breakController,
+            decoration:
+            const InputDecoration(
+              labelText: 'Break Minutes',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType:
+            TextInputType.number,
+            textInputAction:
+            TextInputAction.next,
+            enabled: !widget.isLoading,
+            validator: (value) {
+              if (value == null ||
+                  value.trim().isEmpty) {
+                return 'Break minutes is required';
+              }
+
+              final minutes =
+              int.tryParse(
+                value.trim(),
+              );
+
+              if (minutes == null) {
+                return 'Invalid number';
+              }
+
+              if (minutes < 0) {
+                return 'Minutes cannot be negative';
+              }
+
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // GRACE IN
+          // =======================================================
+
+          TextFormField(
+            controller:
+            _graceInController,
+            decoration:
+            const InputDecoration(
+              labelText:
+              'Grace In Minutes',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType:
+            TextInputType.number,
+            textInputAction:
+            TextInputAction.next,
+            enabled: !widget.isLoading,
+            validator: (value) {
+              if (value == null ||
+                  value.trim().isEmpty) {
+                return 'Grace In Minutes is required';
+              }
+
+              final minutes =
+              int.tryParse(
+                value.trim(),
+              );
+
+              if (minutes == null) {
+                return 'Invalid number';
+              }
+
+              if (minutes < 0) {
+                return 'Minutes cannot be negative';
+              }
+
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // GRACE OUT
+          // =======================================================
+
+          TextFormField(
+            controller:
+            _graceOutController,
+            decoration:
+            const InputDecoration(
+              labelText:
+              'Grace Out Minutes',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType:
+            TextInputType.number,
+            textInputAction:
+            TextInputAction.next,
+            enabled: !widget.isLoading,
+            validator: (value) {
+              if (value == null ||
+                  value.trim().isEmpty) {
+                return 'Grace Out Minutes is required';
+              }
+
+              final minutes =
+              int.tryParse(
+                value.trim(),
+              );
+
+              if (minutes == null) {
+                return 'Invalid number';
+              }
+
+              if (minutes < 0) {
+                return 'Minutes cannot be negative';
+              }
+
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // LATE AFTER
+          // =======================================================
+
+          TextFormField(
+            controller: _lateController,
+            decoration:
+            const InputDecoration(
+              labelText:
+              'Late After Minutes',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType:
+            TextInputType.number,
+            textInputAction:
+            TextInputAction.next,
+            enabled: !widget.isLoading,
+            validator: (value) {
+              if (value == null ||
+                  value.trim().isEmpty) {
+                return 'Late After Minutes is required';
+              }
+
+              final minutes =
+              int.tryParse(
+                value.trim(),
+              );
+
+              if (minutes == null) {
+                return 'Invalid number';
+              }
+
+              if (minutes < 0) {
+                return 'Minutes cannot be negative';
+              }
+
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // HALF DAY AFTER
+          // =======================================================
+
+          TextFormField(
+            controller:
+            _halfDayController,
+            decoration:
+            const InputDecoration(
+              labelText:
+              'Half Day After Minutes',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType:
+            TextInputType.number,
+            textInputAction:
+            TextInputAction.next,
+            enabled: !widget.isLoading,
+            validator: (value) {
+              if (value == null ||
+                  value.trim().isEmpty) {
+                return 'Half Day After Minutes is required';
+              }
+
+              final minutes =
+              int.tryParse(
+                value.trim(),
+              );
+
+              if (minutes == null) {
+                return 'Invalid number';
+              }
+
+              if (minutes < 0) {
+                return 'Minutes cannot be negative';
+              }
+
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // WEEKLY OFF
+          // =======================================================
+
+          DropdownButtonFormField<int>(
+            value: _weeklyOffDay,
+            decoration:
+            const InputDecoration(
+              labelText:
+              'Weekly Off Day',
+              border:
+              OutlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: 0,
+                child: Text('Sunday'),
+              ),
+              DropdownMenuItem(
+                value: 1,
+                child: Text('Monday'),
+              ),
+              DropdownMenuItem(
+                value: 2,
+                child: Text('Tuesday'),
+              ),
+              DropdownMenuItem(
+                value: 3,
+                child: Text('Wednesday'),
+              ),
+              DropdownMenuItem(
+                value: 4,
+                child: Text('Thursday'),
+              ),
+              DropdownMenuItem(
+                value: 5,
+                child: Text('Friday'),
+              ),
+              DropdownMenuItem(
+                value: 6,
+                child: Text('Saturday'),
+              ),
+            ],
+            onChanged:
+            widget.isLoading
+                ? null
+                : (value) {
+              setState(() {
+                _weeklyOffDay = value;
+              });
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // =======================================================
+          // NIGHT SHIFT
+          // =======================================================
+
+          SwitchListTile(
+            contentPadding:
+            EdgeInsets.zero,
+            title:
+            const Text('Night Shift'),
+            value: _isNightShift,
+            onChanged:
+            widget.isLoading
+                ? null
+                : (value) {
+              setState(() {
+                _isNightShift = value;
+              });
+            },
+          ),
+
+          // =======================================================
+          // FLEXIBLE SHIFT
+          // =======================================================
+
+          SwitchListTile(
+            contentPadding:
+            EdgeInsets.zero,
+            title:
+            const Text('Flexible Shift'),
+            value: _isFlexible,
+            onChanged:
+            widget.isLoading
+                ? null
+                : (value) {
+              setState(() {
+                _isFlexible = value;
+              });
+            },
+          ),
+
+          // =======================================================
+          // ACTIVE
+          // =======================================================
+
+          SwitchListTile(
+            contentPadding:
+            EdgeInsets.zero,
+            title:
+            const Text('Active'),
+            value: _isActive,
+            onChanged:
+            widget.isLoading
+                ? null
+                : (value) {
+              setState(() {
+                _isActive = value;
+              });
+            },
+          ),
+
+          const SizedBox(height: 24),
+
+          // =======================================================
+          // SAVE / UPDATE BUTTON
+          // =======================================================
+
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: FilledButton(
+              onPressed:
+              widget.isLoading
+                  ? null
+                  : _save,
+              child: widget.isLoading
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child:
+                CircularProgressIndicator(
+                  strokeWidth: 2,
+                ),
+              )
+                  : Text(
+                widget.initialName
+                    .trim()
+                    .isEmpty
+                    ? 'Save'
+                    : 'Update',
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }

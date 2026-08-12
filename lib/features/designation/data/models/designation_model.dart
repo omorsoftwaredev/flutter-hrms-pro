@@ -4,7 +4,6 @@ class DesignationModel extends DesignationEntity {
   const DesignationModel({
     required super.id,
     required super.companyId,
-    required super.code,
     required super.name,
     required super.description,
     required super.grade,
@@ -16,29 +15,26 @@ class DesignationModel extends DesignationEntity {
   });
 
   factory DesignationModel.fromJson(
-      Map<String, dynamic> json) {
+      Map<String, dynamic> json,
+      ) {
     return DesignationModel(
-      id: json['id'] ?? '',
-      companyId: json['company_id'] ?? '',
-      code: json['code'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      grade: json['grade'] ?? 1,
+      id: json['id']?.toString() ?? '',
+      companyId: json['company_id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      grade: (json['grade'] as num?)?.toInt() ?? 1,
       displayOrder:
-      json['display_order'] ?? 0,
+      (json['display_order'] as num?)?.toInt() ?? 0,
       baseSalary:
-      (json['base_salary'] ?? 0)
-          .toDouble(),
-      isActive:
-      json['is_active'] ?? true,
+      (json['base_salary'] as num?)?.toDouble() ?? 0.0,
+      isActive: json['is_active'] as bool? ?? true,
       createdAt: DateTime.parse(
-        json['created_at'],
+        json['created_at'].toString(),
       ),
-      updatedAt:
-      json['updated_at'] == null
+      updatedAt: json['updated_at'] == null
           ? null
           : DateTime.parse(
-        json['updated_at'],
+        json['updated_at'].toString(),
       ),
     );
   }
@@ -47,17 +43,14 @@ class DesignationModel extends DesignationEntity {
     return {
       'id': id,
       'company_id': companyId,
-      'code': code,
       'name': name,
       'description': description,
       'grade': grade,
       'display_order': displayOrder,
       'base_salary': baseSalary,
       'is_active': isActive,
-      'created_at':
-      createdAt.toIso8601String(),
-      'updated_at':
-      updatedAt?.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
     };
   }
 }

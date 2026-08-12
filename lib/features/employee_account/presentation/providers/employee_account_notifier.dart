@@ -6,417 +6,275 @@ import 'employee_account_state.dart';
 
 class EmployeeAccountNotifier
     extends StateNotifier<EmployeeAccountState> {
-
   EmployeeAccountNotifier(this._repository)
       : super(EmployeeAccountState.initial());
 
-
   final EmployeeAccountRepository _repository;
 
-
   //==============================================================
-  // Load Accounts
+  // LOAD ACCOUNTS
   //==============================================================
 
   Future<void> loadAccounts() async {
-
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-    );
-
-
     try {
+      state = state.copyWith(
+        isLoading: true,
+        error: null,
+      );
 
-      final accounts =
-      await _repository.getAccounts();
-
+      final accounts = await _repository.getAccounts();
 
       state = state.copyWith(
         isLoading: false,
         accounts: accounts,
         filteredAccounts: accounts,
       );
-
-
     } catch (e) {
-
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
       );
-
     }
-
   }
 
-
+  //==============================================================
+  // REFRESH
+  //==============================================================
 
   Future<void> refresh() async {
     await loadAccounts();
   }
 
-
-
   //==============================================================
-  // Get By ID
+  // GET ACCOUNT BY ID
   //==============================================================
 
   Future<void> getAccountById(
       String id,
       ) async {
-
     try {
-
-      final account =
-      await _repository.getAccountById(id);
-
+      final account = await _repository.getAccountById(
+        id.trim(),
+      );
 
       state = state.copyWith(
         selectedAccount: account,
+        error: null,
       );
-
-
     } catch (e) {
-
       state = state.copyWith(
         error: e.toString(),
       );
 
+      rethrow;
     }
-
   }
 
-
+  //==============================================================
+  // CLEAR SELECTION
+  //==============================================================
 
   void clearSelection() {
-
     state = state.copyWith(
       selectedAccount: null,
     );
-
   }
 
-
-
   //==============================================================
-  // Create
+  // CREATE ACCOUNT
   //==============================================================
 
   Future<void> createAccount(
       EmployeeAccountEntity account,
       ) async {
-
-
-    state = state.copyWith(
-      isSaving: true,
-      error: null,
-    );
-
-
     try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
 
       await _repository.createAccount(account);
-
-
-      await loadAccounts();
-
 
       state = state.copyWith(
         isSaving: false,
       );
 
-
+      await loadAccounts();
     } catch (e) {
-
       state = state.copyWith(
         isSaving: false,
         error: e.toString(),
       );
 
       rethrow;
-
     }
-
   }
 
-
-
   //==============================================================
-  // Update
+  // UPDATE ACCOUNT
   //==============================================================
 
   Future<void> updateAccount(
       EmployeeAccountEntity account,
       ) async {
-
-
-    state = state.copyWith(
-      isSaving: true,
-      error: null,
-    );
-
-
     try {
+      state = state.copyWith(
+        isSaving: true,
+        error: null,
+      );
 
       await _repository.updateAccount(account);
-
-
-      await loadAccounts();
-
 
       state = state.copyWith(
         isSaving: false,
       );
 
-
+      await loadAccounts();
     } catch (e) {
-
       state = state.copyWith(
         isSaving: false,
         error: e.toString(),
       );
 
       rethrow;
-
     }
-
   }
 
-
-
-
   //==============================================================
-  // Delete
+  // DELETE ACCOUNT
   //==============================================================
 
   Future<void> deleteAccount(
       String id,
       ) async {
-
-
     try {
+      final accountId = id.trim();
 
-      await _repository.deleteAccount(id);
+      if (accountId.isEmpty) {
+        throw Exception(
+          'Employee account ID is required.',
+        );
+      }
 
+      state = state.copyWith(
+        error: null,
+      );
+
+      await _repository.deleteAccount(
+        accountId,
+      );
 
       await loadAccounts();
-
-
     } catch (e) {
-
-
       state = state.copyWith(
         error: e.toString(),
       );
 
-
       rethrow;
-
     }
-
   }
 
-
-
-
-
   //==============================================================
-  // Toggle Active
+  // TOGGLE ACTIVE
   //==============================================================
 
   Future<void> toggleActive(
       EmployeeAccountEntity account,
       ) async {
-
-
-    final updated =
-    account.copyWith(
-
-      isActive:
-      !account.isActive,
-
-      updatedAt:
-      DateTime.now(),
-
+    final updated = account.copyWith(
+      isActive: !account.isActive,
+      updatedAt: DateTime.now(),
     );
 
-
     await updateAccount(updated);
-
   }
 
-
-
-
-
   //==============================================================
-  // Toggle Login Permission
+  // TOGGLE LOGIN PERMISSION
   //==============================================================
 
   Future<void> toggleCanLogin(
       EmployeeAccountEntity account,
       ) async {
-
-
-    final updated =
-    account.copyWith(
-
-      canLogin:
-      !account.canLogin,
-
-      updatedAt:
-      DateTime.now(),
-
+    final updated = account.copyWith(
+      canLogin: !account.canLogin,
+      updatedAt: DateTime.now(),
     );
 
-
     await updateAccount(updated);
-
   }
 
-
-
-
-
   //==============================================================
-  // Toggle Lock
+  // TOGGLE ACCOUNT LOCK
   //==============================================================
 
   Future<void> toggleLock(
       EmployeeAccountEntity account,
       ) async {
+    final shouldLock = !account.isLocked;
 
-
-    final locked =
-    !account.isLocked;
-
-
-    final updated =
-    account.copyWith(
-
-      isLocked: locked,
-
-
+    final updated = account.copyWith(
+      isLocked: shouldLock,
       accountLockedAt:
-      locked
-          ? DateTime.now()
-          : null,
-
-
-      updatedAt:
-      DateTime.now(),
-
+      shouldLock ? DateTime.now() : account.accountLockedAt,
+      updatedAt: DateTime.now(),
     );
 
-
     await updateAccount(updated);
-
   }
 
-
-
-
-
   //==============================================================
-  // Search
+  // SEARCH
   //==============================================================
 
   void search(
       String keyword,
       ) {
+    final query = keyword.trim().toLowerCase();
 
-
-    final value =
-    keyword
-        .trim()
-        .toLowerCase();
-
-
-
-    if (value.isEmpty) {
-
-
+    if (query.isEmpty) {
       state = state.copyWith(
-
         search: '',
-
-        filteredAccounts:
-        state.accounts,
-
+        filteredAccounts: state.accounts,
       );
 
-
       return;
-
     }
 
+    final filtered = state.accounts.where(
+          (account) {
+        final username =
+        account.username.toLowerCase();
 
+        final employeeId =
+        account.employeeId.toLowerCase();
 
+        final employeeName =
+            account.employeeName
+                ?.toLowerCase() ??
+                '';
 
+        final departmentName =
+            account.departmentName
+                ?.toLowerCase() ??
+                '';
 
-    final filtered =
-    state.accounts.where((e) {
+        final companyName =
+            account.companyName
+                ?.toLowerCase() ??
+                '';
 
-
-      final username =
-      e.username.toLowerCase();
-
-
-
-      final employeeId =
-      e.employeeId.toLowerCase();
-
-
-
-      final employeeName =
-          e.employeeName
-              ?.toLowerCase()
-              ?? '';
-
-
-
-      final departmentName =
-          e.departmentName
-              ?.toLowerCase()
-              ?? '';
-
-
-
-      final companyName =
-          e.companyName
-              ?.toLowerCase()
-              ?? '';
-
-
-
-
-      return username.contains(value) ||
-
-          employeeId.contains(value) ||
-
-          employeeName.contains(value) ||
-
-          departmentName.contains(value) ||
-
-          companyName.contains(value);
-
-
-
-    }).toList();
-
-
-
+        return username.contains(query) ||
+            employeeId.contains(query) ||
+            employeeName.contains(query) ||
+            departmentName.contains(query) ||
+            companyName.contains(query);
+      },
+    ).toList();
 
     state = state.copyWith(
-
-      search: keyword,
-
-      filteredAccounts:
-      filtered,
-
+      search: query,
+      filteredAccounts: filtered,
     );
-
   }
-
 }

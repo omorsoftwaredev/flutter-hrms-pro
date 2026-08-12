@@ -1,347 +1,269 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_detail_tile.dart';
 import '../../../../core/widgets/app_status_chip.dart';
 
 import '../../domain/entities/role_permissions_view_entity.dart';
 
-
-
 class RolePermissionsViewPage extends StatelessWidget {
-
-
   const RolePermissionsViewPage({
     super.key,
     required this.data,
   });
 
-
-
   final RolePermissionsViewEntity data;
-
-
 
   @override
   Widget build(BuildContext context) {
-
-
     final permission = data.permission;
 
-
-
     return Scaffold(
-
+      // =========================================================
+      // APP BAR
+      // =========================================================
 
       appBar: AppBar(
-
         title: const Text(
           'Role Permission Details',
         ),
-
       ),
 
+      // =========================================================
+      // BODY
+      // =========================================================
 
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // ===================================================
+            // HEADER
+            // ===================================================
 
-
-      body: ListView(
-
-
-        padding:
-        const EdgeInsets.all(16),
-
-
-
-        children: [
-
-
-
-
-          Card(
-
-
-            elevation: 2,
-
-
-            child: Padding(
-
-
-              padding:
-              const EdgeInsets.all(24),
-
-
-
+            AppCard(
               child: Column(
-
-
                 children: [
-
-
-
                   const CircleAvatar(
-
-
-                    radius: 36,
-
-
+                    radius: 40,
                     child: Icon(
-
                       Icons.security,
-
-                      size:40,
-
+                      size: 42,
                     ),
-
                   ),
 
-
-
-
-                  const SizedBox(height:16),
-
-
-
+                  const SizedBox(
+                    height: 16,
+                  ),
 
                   Text(
-
                     permission.moduleName,
-
-                    style:
-                    Theme.of(context)
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
                         .textTheme
                         .headlineSmall,
-
                   ),
 
+                  const SizedBox(
+                    height: 8,
+                  ),
 
+                  Text(
+                    data.roleName,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium,
+                  ),
 
+                  const SizedBox(
+                    height: 16,
+                  ),
 
-                  const SizedBox(height:8),
-
-
-
-
+                  // ------------------------------------------------
+                  // View permission as primary status
+                  // ------------------------------------------------
 
                   AppStatusChip(
-
-                    isActive:
-                    permission.canView,
-
+                    isActive: permission.canView,
                   ),
-
-
-
                 ],
-
-
               ),
-
-
             ),
 
+            const SizedBox(
+              height: 20,
+            ),
 
-          ),
+            // ===================================================
+            // DETAILS
+            // ===================================================
 
-
-
-
-
-          const SizedBox(height:16),
-
-
-
-
-
-          Card(
-
-
-            elevation:2,
-
-
-            child: Padding(
-
-
-              padding:
-              const EdgeInsets.all(16),
-
-
-
+            AppCard(
               child: Column(
-
-
                 children: [
-
-
-
+                  // ------------------------------------------------
+                  // COMPANY
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Company',
-
-                    value:
-                    data.companyName,
-
+                    icon: Icons.business,
+                    title: 'Company',
+                    value: data.companyName,
                   ),
 
-
-
+                  // ------------------------------------------------
+                  // ROLE
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Role',
-
-                    value:
-                    data.roleName,
-
+                    icon: Icons.admin_panel_settings,
+                    title: 'Role',
+                    value: data.roleName,
                   ),
 
-
-
-
+                  // ------------------------------------------------
+                  // MODULE
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Module Name',
-
-                    value:
-                    permission.moduleName,
-
+                    icon: Icons.extension,
+                    title: 'Module Name',
+                    value: permission.moduleName,
                   ),
 
-
-
+                  // ------------------------------------------------
+                  // VIEW
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'View Permission',
-
-                    value:
-                    permission.canView
+                    icon: Icons.visibility,
+                    title: 'View Permission',
+                    value: permission.canView
                         ? 'Allowed'
                         : 'Denied',
-
                   ),
 
-
-
-
+                  // ------------------------------------------------
+                  // CREATE
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Create Permission',
-
-                    value:
-                    permission.canCreate
+                    icon: Icons.add_circle_outline,
+                    title: 'Create Permission',
+                    value: permission.canCreate
                         ? 'Allowed'
                         : 'Denied',
-
                   ),
 
-
-
-
+                  // ------------------------------------------------
+                  // UPDATE
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Update Permission',
-
-                    value:
-                    permission.canUpdate
+                    icon: Icons.edit,
+                    title: 'Update Permission',
+                    value: permission.canUpdate
                         ? 'Allowed'
                         : 'Denied',
-
                   ),
 
-
-
-
+                  // ------------------------------------------------
+                  // DELETE
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Delete Permission',
-
-                    value:
-                    permission.canDelete
+                    icon: Icons.delete_outline,
+                    title: 'Delete Permission',
+                    value: permission.canDelete
                         ? 'Allowed'
                         : 'Denied',
-
                   ),
 
-
-
-
+                  // ------------------------------------------------
+                  // EXPORT
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Export Permission',
-
-                    value:
-                    permission.canExport
+                    icon: Icons.download,
+                    title: 'Export Permission',
+                    value: permission.canExport
                         ? 'Allowed'
                         : 'Denied',
-
                   ),
 
-
-
-
+                  // ------------------------------------------------
+                  // APPROVE
+                  // ------------------------------------------------
 
                   AppDetailTile(
-
-                    title:'Approve Permission',
-
-                    value:
-                    permission.canApprove
+                    icon: Icons.check_circle_outline,
+                    title: 'Approve Permission',
+                    value: permission.canApprove
                         ? 'Allowed'
                         : 'Denied',
-
                   ),
-
-
-
-
-
-                  AppDetailTile(
-
-                    title:'Created At',
-
-                    value:
-                    permission.createdAt.toString(),
-
-                  ),
-
-
-
-
-                  AppDetailTile(
-
-                    title:'Updated At',
-
-                    value:
-                    permission.updatedAt?.toString()
-                        ??
-                        '-',
-
-                  ),
-
-
-
                 ],
-
               ),
-
             ),
 
-          ),
+            const SizedBox(
+              height: 20,
+            ),
 
+            // ===================================================
+            // AUDIT INFORMATION
+            // ===================================================
 
+            AppCard(
+              child: Column(
+                children: [
+                  // ------------------------------------------------
+                  // CREATED AT
+                  // ------------------------------------------------
 
-        ],
+                  AppDetailTile(
+                    icon: Icons.access_time,
+                    title: 'Created At',
+                    value: permission.createdAt.toString(),
+                  ),
 
+                  // ------------------------------------------------
+                  // CREATED BY
+                  // ------------------------------------------------
+
+                  AppDetailTile(
+                    icon: Icons.person_add_alt_1,
+                    title: 'Created By',
+                    value: permission.createdBy ?? '-',
+                  ),
+
+                  // ------------------------------------------------
+                  // UPDATED AT
+                  // ------------------------------------------------
+
+                  AppDetailTile(
+                    icon: Icons.update,
+                    title: 'Updated At',
+                    value:
+                    permission.updatedAt?.toString() ?? '-',
+                  ),
+
+                  // ------------------------------------------------
+                  // UPDATED BY
+                  // ------------------------------------------------
+
+                  AppDetailTile(
+                    icon: Icons.person_outline,
+                    title: 'Updated By',
+                    value: permission.updatedBy ?? '-',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-
-
     );
-
   }
-
 }

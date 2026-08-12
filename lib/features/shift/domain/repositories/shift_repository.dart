@@ -15,12 +15,12 @@ abstract class ShiftRepository {
       ShiftEntity shift,
       );
 
-  Future<void> deleteShift(
-      String id,
-      );
-
   Future<void> updateShiftStatus({
     required String id,
     required bool isActive,
   });
+
+  Future<void> deleteShift(
+      String id,
+      );
 }

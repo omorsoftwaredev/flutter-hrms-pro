@@ -17,7 +17,6 @@ class EmployeeAccountModel extends EmployeeAccountEntity {
     super.canLogin,
     super.isActive,
     super.isLocked,
-
     super.failedLoginAttempts,
 
     super.lastLoginAt,
@@ -39,51 +38,115 @@ class EmployeeAccountModel extends EmployeeAccountEntity {
     super.updatedAt,
   });
 
+  // =============================================================
+  // FROM JSON
+  // =============================================================
+
   factory EmployeeAccountModel.fromJson(
       Map<String, dynamic> json,
       ) {
     return EmployeeAccountModel(
-      id: json['id'] ?? '',
+      // ---------------------------------------------------------
+      // ID
+      // ---------------------------------------------------------
 
-      companyId: json['company_id'] ?? '',
-      departmentId: json['department_id'] ?? '',
-      employeeId: json['employee_id'] ?? '',
+      id: json['id']?.toString() ?? '',
 
-      // Relation Data
-      employeeName: json['employees']?['full_name'],
-      departmentName: json['departments']?['name'],
-      companyName: json['companies']?['name'],
+      // ---------------------------------------------------------
+      // COMPANY
+      // ---------------------------------------------------------
 
-      username: json['username'] ?? '',
-      passwordHash: json['password_hash'] ?? '',
+      companyId:
+      json['company_id']?.toString() ?? '',
 
-      canLogin: json['can_login'] ?? true,
-      isActive: json['is_active'] ?? true,
-      isLocked: json['is_locked'] ?? false,
+      // ---------------------------------------------------------
+      // DEPARTMENT
+      // ---------------------------------------------------------
+
+      departmentId:
+      json['department_id']?.toString() ?? '',
+
+      // ---------------------------------------------------------
+      // EMPLOYEE
+      // ---------------------------------------------------------
+
+      employeeId:
+      json['employee_id']?.toString() ?? '',
+
+      // ---------------------------------------------------------
+      // RELATION DATA
+      // ---------------------------------------------------------
+
+      employeeName:
+      json['employees'] is Map<String, dynamic>
+          ? json['employees']['full_name']?.toString()
+          : null,
+
+      departmentName:
+      json['departments'] is Map<String, dynamic>
+          ? json['departments']['name']?.toString()
+          : null,
+
+      companyName:
+      json['companies'] is Map<String, dynamic>
+          ? json['companies']['name']?.toString()
+          : null,
+
+      // ---------------------------------------------------------
+      // ACCOUNT
+      // ---------------------------------------------------------
+
+      username:
+      json['username']?.toString() ?? '',
+
+      passwordHash:
+      json['password_hash']?.toString() ?? '',
+
+      canLogin:
+      json['can_login'] ?? true,
+
+      isActive:
+      json['is_active'] ?? true,
+
+      isLocked:
+      json['is_locked'] ?? false,
 
       failedLoginAttempts:
       json['failed_login_attempts'] ?? 0,
 
-      lastLoginAt: json['last_login_at'] != null
-          ? DateTime.parse(json['last_login_at'])
+      // ---------------------------------------------------------
+      // LOGIN
+      // ---------------------------------------------------------
+
+      lastLoginAt:
+      json['last_login_at'] != null
+          ? DateTime.parse(
+        json['last_login_at'].toString(),
+      )
           : null,
 
-      lastLoginIp: json['last_login_ip'],
+      lastLoginIp:
+      json['last_login_ip']?.toString(),
+
+      // ---------------------------------------------------------
+      // PASSWORD
+      // ---------------------------------------------------------
 
       passwordChangedAt:
       json['password_changed_at'] != null
           ? DateTime.parse(
-        json['password_changed_at'],
+        json['password_changed_at'].toString(),
       )
           : null,
 
       passwordResetToken:
-      json['password_reset_token'],
+      json['password_reset_token']?.toString(),
 
       passwordResetExpireAt:
       json['password_reset_expire_at'] != null
           ? DateTime.parse(
-        json['password_reset_expire_at'],
+        json['password_reset_expire_at']
+            .toString(),
       )
           : null,
 
@@ -93,30 +156,58 @@ class EmployeeAccountModel extends EmployeeAccountEntity {
       passwordExpireAt:
       json['password_expire_at'] != null
           ? DateTime.parse(
-        json['password_expire_at'],
+        json['password_expire_at'].toString(),
       )
           : null,
 
       accountLockedAt:
       json['account_locked_at'] != null
           ? DateTime.parse(
-        json['account_locked_at'],
+        json['account_locked_at'].toString(),
       )
           : null,
 
-      createdBy: json['created_by'],
+      // ---------------------------------------------------------
+      // CREATED BY
+      // ---------------------------------------------------------
 
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : null,
+      createdBy:
+      json['created_by']?.toString(),
 
-      updatedBy: json['updated_by'],
+      // ---------------------------------------------------------
+      // UPDATED BY
+      // ---------------------------------------------------------
 
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'])
+      updatedBy:
+      json['updated_by']?.toString(),
+
+      // ---------------------------------------------------------
+      // CREATED AT
+      // ---------------------------------------------------------
+
+      createdAt:
+      json['created_at'] != null
+          ? DateTime.parse(
+        json['created_at'].toString(),
+      )
+          : DateTime.now(),
+
+      // ---------------------------------------------------------
+      // UPDATED AT
+      // ---------------------------------------------------------
+
+      updatedAt:
+      json['updated_at'] != null
+          ? DateTime.parse(
+        json['updated_at'].toString(),
+      )
           : null,
     );
   }
+
+  // =============================================================
+  // FROM MAP
+  // =============================================================
 
   factory EmployeeAccountModel.fromMap(
       Map<String, dynamic> map,
@@ -124,33 +215,50 @@ class EmployeeAccountModel extends EmployeeAccountEntity {
     return EmployeeAccountModel.fromJson(map);
   }
 
+  // =============================================================
+  // TO JSON
+  // =============================================================
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
 
       'company_id': companyId,
+
       'department_id': departmentId,
+
       'employee_id': employeeId,
 
-      // Display fields (DB-তে যাবে না)
-      'employee_name': employeeName,
-      'department_name': departmentName,
-      'company_name': companyName,
+      // ---------------------------------------------------------
+      // ACCOUNT
+      // ---------------------------------------------------------
 
       'username': username,
+
       'password_hash': passwordHash,
 
       'can_login': canLogin,
+
       'is_active': isActive,
+
       'is_locked': isLocked,
 
       'failed_login_attempts':
       failedLoginAttempts,
 
+      // ---------------------------------------------------------
+      // LOGIN
+      // ---------------------------------------------------------
+
       'last_login_at':
       lastLoginAt?.toIso8601String(),
 
-      'last_login_ip': lastLoginIp,
+      'last_login_ip':
+      lastLoginIp,
+
+      // ---------------------------------------------------------
+      // PASSWORD
+      // ---------------------------------------------------------
 
       'password_changed_at':
       passwordChangedAt?.toIso8601String(),
@@ -173,11 +281,31 @@ class EmployeeAccountModel extends EmployeeAccountEntity {
       accountLockedAt
           ?.toIso8601String(),
 
-      'created_by': createdBy,
+      // ---------------------------------------------------------
+      // CREATED BY
+      // ---------------------------------------------------------
+
+      'created_by':
+      createdBy,
+
+      // ---------------------------------------------------------
+      // UPDATED BY
+      // ---------------------------------------------------------
+
+      'updated_by':
+      updatedBy,
+
+      // ---------------------------------------------------------
+      // CREATED AT
+      // ---------------------------------------------------------
+
       'created_at':
       createdAt?.toIso8601String(),
 
-      'updated_by': updatedBy,
+      // ---------------------------------------------------------
+      // UPDATED AT
+      // ---------------------------------------------------------
+
       'updated_at':
       updatedAt?.toIso8601String(),
     };

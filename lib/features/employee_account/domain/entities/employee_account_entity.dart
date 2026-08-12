@@ -1,42 +1,7 @@
+import 'package:flutter/foundation.dart';
+
+@immutable
 class EmployeeAccountEntity {
-  final String id;
-
-  final String companyId;
-  final String departmentId;
-  final String employeeId;
-
-  // Display fields
-  final String? employeeName;
-  final String? companyName;
-  final String? departmentName;
-
-  final String username;
-  final String passwordHash;
-
-  final bool canLogin;
-  final bool isActive;
-  final bool isLocked;
-
-  final int failedLoginAttempts;
-
-  final DateTime? lastLoginAt;
-  final String? lastLoginIp;
-
-  final DateTime? passwordChangedAt;
-
-  final String? passwordResetToken;
-  final DateTime? passwordResetExpireAt;
-
-  final bool forceChangePassword;
-  final DateTime? passwordExpireAt;
-  final DateTime? accountLockedAt;
-
-  final String? createdBy;
-  final DateTime? createdAt;
-
-  final String? updatedBy;
-  final DateTime? updatedAt;
-
   const EmployeeAccountEntity({
     required this.id,
 
@@ -44,9 +9,17 @@ class EmployeeAccountEntity {
     required this.departmentId,
     required this.employeeId,
 
+    // =========================================================
+    // DISPLAY / RELATION DATA
+    // =========================================================
+
     this.employeeName,
     this.companyName,
     this.departmentName,
+
+    // =========================================================
+    // ACCOUNT
+    // =========================================================
 
     required this.username,
     required this.passwordHash,
@@ -57,8 +30,16 @@ class EmployeeAccountEntity {
 
     this.failedLoginAttempts = 0,
 
+    // =========================================================
+    // LOGIN
+    // =========================================================
+
     this.lastLoginAt,
     this.lastLoginIp,
+
+    // =========================================================
+    // PASSWORD
+    // =========================================================
 
     this.passwordChangedAt,
 
@@ -69,12 +50,85 @@ class EmployeeAccountEntity {
     this.passwordExpireAt,
     this.accountLockedAt,
 
+    // =========================================================
+    // AUDIT
+    // =========================================================
+
     this.createdBy,
     this.createdAt,
 
     this.updatedBy,
     this.updatedAt,
   });
+
+  // =============================================================
+  // ID
+  // =============================================================
+
+  final String id;
+
+  // =============================================================
+  // COMPANY / RELATIONS
+  // =============================================================
+
+  final String companyId;
+  final String departmentId;
+  final String employeeId;
+
+  // =============================================================
+  // DISPLAY / RELATION DATA
+  // =============================================================
+
+  final String? employeeName;
+  final String? companyName;
+  final String? departmentName;
+
+  // =============================================================
+  // ACCOUNT
+  // =============================================================
+
+  final String username;
+  final String passwordHash;
+
+  final bool canLogin;
+  final bool isActive;
+  final bool isLocked;
+
+  final int failedLoginAttempts;
+
+  // =============================================================
+  // LOGIN
+  // =============================================================
+
+  final DateTime? lastLoginAt;
+  final String? lastLoginIp;
+
+  // =============================================================
+  // PASSWORD
+  // =============================================================
+
+  final DateTime? passwordChangedAt;
+
+  final String? passwordResetToken;
+  final DateTime? passwordResetExpireAt;
+
+  final bool forceChangePassword;
+  final DateTime? passwordExpireAt;
+  final DateTime? accountLockedAt;
+
+  // =============================================================
+  // AUDIT
+  // =============================================================
+
+  final String? createdBy;
+  final DateTime? createdAt;
+
+  final String? updatedBy;
+  final DateTime? updatedAt;
+
+  // =============================================================
+  // COPY WITH
+  // =============================================================
 
   EmployeeAccountEntity copyWith({
     String? id,
@@ -115,34 +169,82 @@ class EmployeeAccountEntity {
     DateTime? updatedAt,
   }) {
     return EmployeeAccountEntity(
+      // ---------------------------------------------------------
+      // ID
+      // ---------------------------------------------------------
+
       id: id ?? this.id,
 
-      companyId: companyId ?? this.companyId,
-      departmentId: departmentId ?? this.departmentId,
-      employeeId: employeeId ?? this.employeeId,
+      // ---------------------------------------------------------
+      // COMPANY / RELATIONS
+      // ---------------------------------------------------------
 
-      employeeName: employeeName ?? this.employeeName,
-      companyName: companyName ?? this.companyName,
-      departmentName: departmentName ?? this.departmentName,
+      companyId:
+      companyId ?? this.companyId,
 
-      username: username ?? this.username,
-      passwordHash: passwordHash ?? this.passwordHash,
+      departmentId:
+      departmentId ?? this.departmentId,
 
-      canLogin: canLogin ?? this.canLogin,
-      isActive: isActive ?? this.isActive,
-      isLocked: isLocked ?? this.isLocked,
+      employeeId:
+      employeeId ?? this.employeeId,
+
+      // ---------------------------------------------------------
+      // DISPLAY
+      // ---------------------------------------------------------
+
+      employeeName:
+      employeeName ?? this.employeeName,
+
+      companyName:
+      companyName ?? this.companyName,
+
+      departmentName:
+      departmentName ?? this.departmentName,
+
+      // ---------------------------------------------------------
+      // ACCOUNT
+      // ---------------------------------------------------------
+
+      username:
+      username ?? this.username,
+
+      passwordHash:
+      passwordHash ?? this.passwordHash,
+
+      canLogin:
+      canLogin ?? this.canLogin,
+
+      isActive:
+      isActive ?? this.isActive,
+
+      isLocked:
+      isLocked ?? this.isLocked,
 
       failedLoginAttempts:
-      failedLoginAttempts ?? this.failedLoginAttempts,
+      failedLoginAttempts ??
+          this.failedLoginAttempts,
 
-      lastLoginAt: lastLoginAt ?? this.lastLoginAt,
-      lastLoginIp: lastLoginIp ?? this.lastLoginIp,
+      // ---------------------------------------------------------
+      // LOGIN
+      // ---------------------------------------------------------
+
+      lastLoginAt:
+      lastLoginAt ?? this.lastLoginAt,
+
+      lastLoginIp:
+      lastLoginIp ?? this.lastLoginIp,
+
+      // ---------------------------------------------------------
+      // PASSWORD
+      // ---------------------------------------------------------
 
       passwordChangedAt:
-      passwordChangedAt ?? this.passwordChangedAt,
+      passwordChangedAt ??
+          this.passwordChangedAt,
 
       passwordResetToken:
-      passwordResetToken ?? this.passwordResetToken,
+      passwordResetToken ??
+          this.passwordResetToken,
 
       passwordResetExpireAt:
       passwordResetExpireAt ??
@@ -160,11 +262,60 @@ class EmployeeAccountEntity {
       accountLockedAt ??
           this.accountLockedAt,
 
-      createdBy: createdBy ?? this.createdBy,
-      createdAt: createdAt ?? this.createdAt,
+      // ---------------------------------------------------------
+      // AUDIT
+      // ---------------------------------------------------------
 
-      updatedBy: updatedBy ?? this.updatedBy,
-      updatedAt: updatedAt ?? this.updatedAt,
+      createdBy:
+      createdBy ?? this.createdBy,
+
+      createdAt:
+      createdAt ?? this.createdAt,
+
+      updatedBy:
+      updatedBy ?? this.updatedBy,
+
+      updatedAt:
+      updatedAt ?? this.updatedAt,
     );
+  }
+
+  // =============================================================
+  // EQUALITY
+  // =============================================================
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is EmployeeAccountEntity &&
+            runtimeType == other.runtimeType &&
+            id == other.id;
+  }
+
+  // =============================================================
+  // HASH CODE
+  // =============================================================
+
+  @override
+  int get hashCode => id.hashCode;
+
+  // =============================================================
+  // TO STRING
+  // =============================================================
+
+  @override
+  String toString() {
+    return 'EmployeeAccountEntity('
+        'id: $id, '
+        'companyId: $companyId, '
+        'departmentId: $departmentId, '
+        'employeeId: $employeeId, '
+        'username: $username, '
+        'employeeName: $employeeName, '
+        'isActive: $isActive, '
+        'isLocked: $isLocked, '
+        'createdBy: $createdBy, '
+        'updatedBy: $updatedBy'
+        ')';
   }
 }

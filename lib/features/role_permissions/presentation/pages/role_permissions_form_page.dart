@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/auth/current_user_provider.dart';
 import '../../../../core/router/route_paths.dart';
 
-import '../../../company/presentation/providers/company_provider.dart';
 import '../../../role/presentation/providers/role_provider.dart';
 
 import '../../domain/entities/role_permissions_entity.dart';
@@ -13,7 +13,6 @@ import '../providers/role_permissions_provider.dart';
 import '../widgets/role_permissions_form.dart';
 
 class RolePermissionsFormPage extends ConsumerStatefulWidget {
-
   const RolePermissionsFormPage({
     super.key,
     this.permission,
@@ -21,14 +20,10 @@ class RolePermissionsFormPage extends ConsumerStatefulWidget {
 
   final RolePermissionsEntity? permission;
 
-
   @override
   ConsumerState<RolePermissionsFormPage> createState() =>
       _RolePermissionsFormPageState();
-
 }
-
-
 
 class _RolePermissionsFormPageState
     extends ConsumerState<RolePermissionsFormPage> {
@@ -36,310 +31,395 @@ class _RolePermissionsFormPageState
 
   @override
   void initState() {
-
     super.initState();
 
-
     Future.microtask(() async {
-
-      await ref
-          .read(companyProvider.notifier)
-          .loadCompanies();
-
-
       await ref
           .read(roleProvider.notifier)
           .loadRoles();
-
-
     });
-
   }
 
-
-
-
-
-
-
   @override
-  Widget build(
-      BuildContext context,
-      ) {
+  Widget build(BuildContext context) {
+    // ===========================================================
+    // CURRENT LOGGED-IN USER
+    // ===========================================================
 
+    final user = ref.watch(currentUserProvider);
 
-    final permission =
-        widget.permission;
+    // ===========================================================
+    // ROLE PERMISSION STATE
+    // ===========================================================
 
-
-
-    final state =
-    ref.watch(
+    final state = ref.watch(
       rolePermissionsProvider,
     );
 
+    // ===========================================================
+    // USER VALIDATION
+    // ===========================================================
 
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Role Permission'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Logged-in user information is not available.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
 
+    // ===========================================================
+    // CURRENT USER ID
+    // ===========================================================
+
+    final currentUserId = user.userId.trim();
+
+    if (currentUserId.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Role Permission'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Logged-in user ID is not available.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ===========================================================
+    // CURRENT COMPANY ID
+    // ===========================================================
+    //
+    // CREATE:
+    // CurrentUser.companyId
+    //
+    // EDIT:
+    // Existing permission.companyId
+    //
+    // ===========================================================
+
+    final companyId = isEdit
+        ? widget.permission!.companyId.trim()
+        : user.companyId.trim();
+
+    // ===========================================================
+    // COMPANY VALIDATION
+    // ===========================================================
+
+    if (companyId.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Role Permission'),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Company information is not available for this account.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ===========================================================
+    // DEBUG
+    // ===========================================================
+
+    debugPrint(
+      '================================================',
+    );
+
+    debugPrint(
+      'ROLE PERMISSION FORM',
+    );
+
+    debugPrint(
+      'User ID       => $currentUserId',
+    );
+
+    debugPrint(
+      'Login Name    => ${user.loginName}',
+    );
+
+    debugPrint(
+      'User Type     => ${user.userType.name}',
+    );
+
+    debugPrint(
+      'Company ID    => $companyId',
+    );
+
+    debugPrint(
+      'Permission ID => ${widget.permission?.id}',
+    );
+
+    debugPrint(
+      'Is Edit       => $isEdit',
+    );
+
+    debugPrint(
+      '================================================',
+    );
+
+    // ===========================================================
+    // PAGE
+    // ===========================================================
 
     return Scaffold(
-
-
       appBar: AppBar(
-
         title: Text(
-
           isEdit
               ? 'Edit Permission'
               : 'Add Permission',
-
         ),
-
       ),
 
-
-
-
-
       body: SafeArea(
-
-
-        child: Padding(
-
-
-          padding:
-          const EdgeInsets.all(16),
-
-
-
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
 
           child: RolePermissionsForm(
+            // ===================================================
+            // COMPANY
+            // ===================================================
 
+            initialCompanyId: companyId,
 
-
-            initialCompanyId:
-
-            permission?.companyId ?? '',
-
-
-
-
+            // ===================================================
+            // ROLE
+            // ===================================================
 
             initialRoleId:
+            widget.permission?.roleId ?? '',
 
-            permission?.roleId ?? '',
-
-
-
-
-
+            // ===================================================
+            // MODULE
+            // ===================================================
 
             initialModuleName:
+            widget.permission?.moduleName ?? '',
 
-            permission?.moduleName ?? '',
-
-
-
-
-
+            // ===================================================
+            // PERMISSIONS
+            // ===================================================
 
             initialCanView:
-
-            permission?.canView ?? false,
-
-
-
-
+            widget.permission?.canView ?? false,
 
             initialCanCreate:
-
-            permission?.canCreate ?? false,
-
-
-
-
+            widget.permission?.canCreate ?? false,
 
             initialCanUpdate:
-
-            permission?.canUpdate ?? false,
-
-
-
-
+            widget.permission?.canUpdate ?? false,
 
             initialCanDelete:
-
-            permission?.canDelete ?? false,
-
-
-
-
+            widget.permission?.canDelete ?? false,
 
             initialCanExport:
-
-            permission?.canExport ?? false,
-
-
-
-
+            widget.permission?.canExport ?? false,
 
             initialCanApprove:
+            widget.permission?.canApprove ?? false,
 
-            permission?.canApprove ?? false,
+            // ===================================================
+            // LOADING
+            // ===================================================
 
+            isLoading: state.isSaving,
 
-
-
-
-
-            isLoading:
-
-            state.isSaving,
-
-
-
-
-
-
+            // ===================================================
+            // SUBMIT
+            // ===================================================
 
             onSubmit: (
-
-
-                companyId,
-
-
+                submittedCompanyId,
                 roleId,
-
-
                 moduleName,
-
-
                 canView,
-
-
                 canCreate,
-
-
                 canUpdate,
-
-
                 canDelete,
-
-
                 canExport,
-
-
                 canApprove,
-
-
                 ) async {
+              // =================================================
+              // COMPANY
+              // =================================================
+              //
+              // Form থেকে companyId আসলেও আমরা সেটার উপর
+              // নির্ভর করছি না।
+              //
+              // Page-এর validated companyId ব্যবহার করছি।
+              //
+              // =================================================
 
+              final finalCompanyId = companyId;
 
+              // =================================================
+              // ROLE VALIDATION
+              // =================================================
 
-              final entity =
+              final finalRoleId = roleId.trim();
 
-              RolePermissionsEntity(
+              if (finalRoleId.isEmpty) {
+                throw Exception(
+                  'Role is required.',
+                );
+              }
 
+              // =================================================
+              // ENTITY
+              // =================================================
 
-                id:
+              final entity = RolePermissionsEntity(
+                // ------------------------------------------------
+                // ID
+                // ------------------------------------------------
 
-                permission?.id ?? '',
+                id: widget.permission?.id ?? '',
 
+                // ------------------------------------------------
+                // COMPANY
+                // ------------------------------------------------
 
+                companyId: finalCompanyId,
 
+                // ------------------------------------------------
+                // ROLE
+                // ------------------------------------------------
 
-                companyId:
+                roleId: finalRoleId,
 
-                companyId,
+                // ------------------------------------------------
+                // MODULE
+                // ------------------------------------------------
 
+                moduleName: moduleName.trim(),
 
+                // ------------------------------------------------
+                // PERMISSIONS
+                // ------------------------------------------------
 
+                canView: canView,
 
-                roleId:
+                canCreate: canCreate,
 
-                roleId,
+                canUpdate: canUpdate,
 
+                canDelete: canDelete,
 
+                canExport: canExport,
 
+                canApprove: canApprove,
 
-                moduleName:
-
-                moduleName,
-
-
-
-
-                canView:
-
-                canView,
-
-
-
-
-                canCreate:
-
-                canCreate,
-
-
-
-
-                canUpdate:
-
-                canUpdate,
-
-
-
-
-                canDelete:
-
-                canDelete,
-
-
-
-
-                canExport:
-
-                canExport,
-
-
-
-
-                canApprove:
-
-                canApprove,
-
-
-
+                // ------------------------------------------------
+                // CREATED AT
+                // ------------------------------------------------
 
                 createdAt:
-
-                permission?.createdAt ??
+                widget.permission?.createdAt ??
                     DateTime.now(),
 
+                // ------------------------------------------------
+                // UPDATED AT
+                // ------------------------------------------------
 
+                updatedAt: DateTime.now(),
 
+                // ------------------------------------------------
+                // CREATED BY
+                // ------------------------------------------------
+                //
+                // CREATE:
+                // current logged-in user
+                //
+                // UPDATE:
+                // original created_by preserve হবে।
+                //
+                // ------------------------------------------------
 
-                updatedAt:
+                createdBy: isEdit
+                    ? widget.permission!.createdBy
+                    : currentUserId,
 
-                DateTime.now(),
+                // ------------------------------------------------
+                // UPDATED BY
+                // ------------------------------------------------
+                //
+                // CREATE:
+                // current logged-in user
+                //
+                // UPDATE:
+                // current logged-in user
+                //
+                // ------------------------------------------------
 
-
+                updatedBy: currentUserId,
               );
 
+              // =================================================
+              // DEBUG ENTITY
+              // =================================================
 
+              debugPrint(
+                '============== ROLE PERMISSION SAVE ==============',
+              );
 
+              debugPrint(
+                'Mode        => '
+                    '${isEdit ? 'UPDATE' : 'CREATE'}',
+              );
 
+              debugPrint(
+                'Permission  => ${entity.id}',
+              );
 
+              debugPrint(
+                'Company ID  => ${entity.companyId}',
+              );
 
+              debugPrint(
+                'Role ID     => ${entity.roleId}',
+              );
 
+              debugPrint(
+                'Module      => ${entity.moduleName}',
+              );
+
+              debugPrint(
+                'Created By  => ${entity.createdBy}',
+              );
+
+              debugPrint(
+                'Updated By  => ${entity.updatedBy}',
+              );
+
+              debugPrint(
+                '====================================================',
+              );
 
               try {
+                // =================================================
+                // UPDATE
+                // =================================================
 
-
-
-                if(isEdit){
-
-
-
+                if (isEdit) {
                   await ref
                       .read(
                     rolePermissionsProvider
@@ -348,13 +428,13 @@ class _RolePermissionsFormPageState
                       .updateRolePermission(
                     entity,
                   );
+                }
 
+                // =================================================
+                // CREATE
+                // =================================================
 
-
-                }else{
-
-
-
+                else {
                   await ref
                       .read(
                     rolePermissionsProvider
@@ -363,118 +443,67 @@ class _RolePermissionsFormPageState
                       .createRolePermission(
                     entity,
                   );
-
-
-
                 }
 
+                // =================================================
+                // CONTEXT CHECK
+                // =================================================
 
+                if (!context.mounted) {
+                  return;
+                }
 
+                // =================================================
+                // SUCCESS MESSAGE
+                // =================================================
 
-
-
-
-
-                if(!context.mounted) return;
-
-
-
-
-
-
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
-
-
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(
                   SnackBar(
-
-                    content:
-
-                    Text(
-
+                    content: Text(
                       isEdit
-
                           ? 'Permission updated successfully.'
-
                           : 'Permission created successfully.',
-
                     ),
-
                   ),
-
-
                 );
 
-
-
-
-
-
+                // =================================================
+                // BACK TO LIST
+                // =================================================
 
                 context.go(
-
                   RoutePaths.rolePermissions,
+                );
+              } catch (e) {
+                // =================================================
+                // ERROR
+                // =================================================
 
+                debugPrint(
+                  'Role Permission Save Error => $e',
                 );
 
+                if (!context.mounted) {
+                  return;
+                }
 
-
-
-
-
-
-              } catch(e) {
-
-
-
-                if(!context.mounted) return;
-
-
-
-
-
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
-
-
-
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(
                   SnackBar(
-
-                    content:
-
-                    Text(
-
+                    backgroundColor: Colors.red,
+                    content: Text(
                       e.toString(),
-
                     ),
-
                   ),
-
-
                 );
-
-
               }
-
-
-
             },
-
-
           ),
-
-
-
         ),
-
-
       ),
-
-
     );
-
-
   }
-
-
 }

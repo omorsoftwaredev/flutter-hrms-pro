@@ -26,63 +26,97 @@ class ShiftFormPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            }
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         title: Text(
           isEdit
               ? 'Edit Shift'
               : 'Add Shift',
         ),
       ),
+
       body: SafeArea(
-        child: Padding(
-          padding:
-          const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: ShiftForm(
-            initialCompanyId:
-            shift?.companyId ?? '',
-            initialCode:
-            shift?.code ?? '',
-            initialName:
-            shift?.name ?? '',
-            initialDescription:
-            shift?.description ?? '',
+            // =====================================================
+            // INITIAL VALUES
+            // =====================================================
+
             initialStartTime:
             shift?.startTime ??
                 '09:00:00',
+
             initialEndTime:
             shift?.endTime ??
                 '18:00:00',
+
+            initialName:
+            shift?.name ?? '',
+
+            initialDescription:
+            shift?.description ?? '',
+
             initialBreakMinutes:
             shift?.breakMinutes ??
                 60,
+
             initialGraceInMinutes:
             shift?.graceInMinutes ??
                 15,
+
             initialGraceOutMinutes:
             shift?.graceOutMinutes ??
                 15,
+
             initialLateAfterMinutes:
-            shift
-                ?.lateAfterMinutes ??
+            shift?.lateAfterMinutes ??
                 15,
+
             initialHalfDayAfterMinutes:
-            shift
-                ?.halfDayAfterMinutes ??
+            shift?.halfDayAfterMinutes ??
                 240,
+
             initialWeeklyOffDay:
             shift?.weeklyOffDay,
+
             initialNightShift:
             shift?.isNightShift ??
                 false,
+
             initialFlexible:
             shift?.isFlexible ??
                 false,
+
             initialActive:
-            shift?.isActive ?? true,
+            shift?.isActive ??
+                true,
+
             isLoading:
             state.isSaving,
+
+            // =====================================================
+            // SUBMIT
+            // =====================================================
+            //
+            // companyId নেই
+            // code নেই
+            //
+            // companyId:
+            //     CurrentUser.companyId
+            //
+            // code:
+            //     Database trigger
+            //
+            // =====================================================
+
             onSubmit: (
-                companyId,
-                code,
                 name,
                 description,
                 startTime,
@@ -97,58 +131,142 @@ class ShiftFormPage extends ConsumerWidget {
                 flexible,
                 active,
                 ) async {
-              final entity =
-              ShiftEntity(
+              final entity = ShiftEntity(
                 id: shift?.id ?? '',
+
+                // -------------------------------------------------
+                // IMPORTANT
+                //
+                // companyId manually দেওয়া হচ্ছে না।
+                //
+                // Repository:
+                //     CurrentUser.companyId
+                //
+                // থেকে company scope করবে।
+                //
+                // -------------------------------------------------
+
                 companyId:
-                companyId,
-                code: code,
+                shift?.companyId ??
+                    '',
+
+                // -------------------------------------------------
+                // IMPORTANT
+                //
+                // code manually দেওয়া হচ্ছে না।
+                //
+                // Create:
+                //     Database trigger code generate করবে।
+                //
+                // Update:
+                //     Existing code অপরিবর্তিত থাকবে।
+                //
+                // -------------------------------------------------
+
+
                 name: name,
+
                 description:
                 description,
+
                 startTime:
                 startTime,
-                endTime: endTime,
+
+                endTime:
+                endTime,
+
                 breakMinutes:
                 breakMinutes,
+
                 graceInMinutes:
                 graceIn,
+
                 graceOutMinutes:
                 graceOut,
+
                 lateAfterMinutes:
                 lateAfter,
+
                 halfDayAfterMinutes:
                 halfDayAfter,
+
                 weeklyOffDay:
                 weeklyOff,
+
                 isNightShift:
                 nightShift,
+
                 isFlexible:
                 flexible,
+
                 isActive:
                 active,
+
                 createdAt:
-                shift
-                    ?.createdAt ??
+                shift?.createdAt ??
                     DateTime.now(),
+
                 updatedAt:
-                DateTime.now(),
+                shift?.updatedAt,
               );
 
               try {
+                // =================================================
+                // UPDATE
+                // =================================================
+
                 if (isEdit) {
                   await ref
-                      .read(shiftProvider.notifier)
-                      .updateShift(entity);
-                } else {
-                  await ref
-                      .read(shiftProvider.notifier)
-                      .createShift(entity);
+                      .read(
+                    shiftProvider
+                        .notifier,
+                  )
+                      .updateShift(
+                    entity,
+                  );
                 }
 
-                if (!context.mounted) return;
+                // =================================================
+                // CREATE
+                // =================================================
 
-                ScaffoldMessenger.of(context).showSnackBar(
+                else {
+                  await ref
+                      .read(
+                    shiftProvider
+                        .notifier,
+                  )
+                      .createShift(
+                    entity,
+                  );
+                }
+
+                if (!context.mounted) {
+                  return;
+                }
+
+                // =================================================
+                // RELOAD SHIFT LIST
+                // =================================================
+
+                await ref
+                    .read(
+                  shiftProvider
+                      .notifier,
+                )
+                    .loadShifts();
+
+                if (!context.mounted) {
+                  return;
+                }
+
+                // =================================================
+                // SUCCESS MESSAGE
+                // =================================================
+
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(
                   SnackBar(
                     content: Text(
                       isEdit
@@ -158,18 +276,32 @@ class ShiftFormPage extends ConsumerWidget {
                   ),
                 );
 
-                context.go(RoutePaths.shifts);
+                // =================================================
+                // BACK TO SHIFT LIST
+                // =================================================
 
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(
+                    RoutePaths.shifts,
+                  );
+                }
               } catch (e) {
-                if (!context.mounted) return;
+                if (!context.mounted) {
+                  return;
+                }
 
-                ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(
                   SnackBar(
-                    content: Text(e.toString()),
+                    content: Text(
+                      e.toString(),
+                    ),
                   ),
                 );
               }
-
             },
           ),
         ),

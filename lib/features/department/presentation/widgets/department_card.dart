@@ -42,11 +42,6 @@ class DepartmentCard extends StatelessWidget {
                       department.name,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      department.code,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
                   ],
                 ),
               ),
@@ -108,22 +103,6 @@ class DepartmentCard extends StatelessWidget {
                   department.description.isEmpty
                       ? '-'
                       : department.description,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              const Icon(Icons.person_outline, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  department.managerName.isEmpty
-                      ? 'No Manager'
-                      : department.managerName,
                 ),
               ),
             ],

@@ -18,23 +18,27 @@ class EmployeeAccountMenu extends StatelessWidget {
     return AppCard(
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
+
         onTap: () {
           context.push(
             RoutePaths.employeesAccounts,
           );
         },
+
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Row(
             children: [
+              //=================================================
+              // Icon
+              //=================================================
 
               Container(
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
                   color: Colors.indigo.shade50,
-                  borderRadius:
-                  BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.manage_accounts,
@@ -45,20 +49,21 @@ class EmployeeAccountMenu extends StatelessWidget {
 
               const SizedBox(width: 16),
 
+              //=================================================
+              // Content
+              //=================================================
+
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       'Employee Accounts',
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
                           ?.copyWith(
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
@@ -70,18 +75,20 @@ class EmployeeAccountMenu extends StatelessWidget {
                           .textTheme
                           .bodySmall,
                     ),
-
                   ],
                 ),
               ),
 
               const SizedBox(width: 12),
 
+              //=================================================
+              // Arrow
+              //=================================================
+
               const Icon(
                 Icons.arrow_forward_ios,
                 size: 18,
               ),
-
             ],
           ),
         ),
