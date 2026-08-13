@@ -2,9 +2,24 @@
 /// Flutter HRMS Pro
 /// Supervisor Remote DataSource
 ///
-/// Version : 4.1.0
+/// Version : 6.0.0
+///
+/// Responsibilities:
+/// - Load departments by company
+/// - Load employees by company + department
+/// - Load supervisors by company
+/// - Create supervisor
+/// - Update supervisor
+/// - Delete supervisor
+/// - Supervisor department assignments
+///
+/// IMPORTANT:
+/// - No unnecessary database fields are requested.
+/// - Base tables use select() where possible.
+/// - Related department/employee data is loaded safely.
 /// ===============================================================
 
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/services/supabase_service.dart';
@@ -14,80 +29,363 @@ class SupervisorRemoteDataSource {
   // CLIENT
   // =============================================================
 
-  final _client = SupabaseService.client;
+  final SupabaseClient _client = SupabaseService.client;
 
   // =============================================================
-  // COMPANIES
-  // =============================================================
-
-  Future<List<Map<String, dynamic>>> getCompanies() async {
-    final response = await _client
-        .from('companies')
-        .select('*')
-        .order('name');
-
-    return List<Map<String, dynamic>>.from(response);
-  }
-
-  // =============================================================
-  // DEPARTMENTS BY COMPANY
+  // GET DEPARTMENTS
+  //
+  // শুধু actual department rows load করা হবে।
+  //
+  // Explicit non-existing fields যেমন:
+  // manager_name
+  // phone
+  // email
+  // location
+  //
+  // request করা হবে না।
   // =============================================================
 
   Future<List<Map<String, dynamic>>> getDepartments(
       String companyId,
       ) async {
+    final id = companyId.trim();
+
+    if (id.isEmpty) {
+      throw Exception(
+        'Company ID is required.',
+      );
+    }
+
+    debugPrint(
+      '[SupervisorRemoteDataSource] GET DEPARTMENTS',
+    );
+
+    debugPrint(
+      '[SupervisorRemoteDataSource] COMPANY ID = $id',
+    );
+
     final response = await _client
         .from('departments')
-        .select('''
-          id,
-          company_id,
-          code,
-          name,
-          description,
-          manager_name,
-          phone,
-          email,
-          location,
-          is_active,
-          created_at,
-          updated_at
-        ''')
-        .eq('company_id', companyId)
-        .eq('is_active', true)
-        .order('name');
+        .select()
+        .eq(
+      'company_id',
+      id,
+    )
+        .eq(
+      'is_active',
+      true,
+    )
+        .order(
+      'name',
+    );
 
-    return List<Map<String, dynamic>>.from(response);
+    final result =
+    List<Map<String, dynamic>>.from(
+      response,
+    );
+
+    debugPrint(
+      '[SupervisorRemoteDataSource] DEPARTMENTS FOUND = ${result.length}',
+    );
+
+    return result;
   }
 
   // =============================================================
-  // EMPLOYEES BY COMPANY + DEPARTMENT
+  // GET EMPLOYEES
+  //
+  // Department অনুযায়ী active employees load হবে।
   // =============================================================
 
   Future<List<Map<String, dynamic>>> getEmployees({
     required String companyId,
     required String departmentId,
   }) async {
+    final company = companyId.trim();
+    final department = departmentId.trim();
+
+    if (company.isEmpty) {
+      throw Exception(
+        'Company ID is required.',
+      );
+    }
+
+    if (department.isEmpty) {
+      throw Exception(
+        'Department ID is required.',
+      );
+    }
+
+    debugPrint(
+      '[SupervisorRemoteDataSource] GET EMPLOYEES',
+    );
+
+    debugPrint(
+      '[SupervisorRemoteDataSource] COMPANY ID = $company',
+    );
+
+    debugPrint(
+      '[SupervisorRemoteDataSource] DEPARTMENT ID = $department',
+    );
+
     final response = await _client
         .from('employees')
-        .select('''
-          id,
-          company_id,
-          department_id,
-          employee_code,
-          first_name,
-          last_name,
-          full_name,
-          email,
-          mobile,
-          employee_status,
-          is_active
-        ''')
-        .eq('company_id', companyId)
-        .eq('department_id', departmentId)
-        .eq('is_active', true)
-        .order('full_name');
+        .select()
+        .eq(
+      'company_id',
+      company,
+    )
+        .eq(
+      'department_id',
+      department,
+    )
+        .eq(
+      'is_active',
+      true,
+    )
+        .order(
+      'full_name',
+    );
 
-    return List<Map<String, dynamic>>.from(response);
+    final result =
+    List<Map<String, dynamic>>.from(
+      response,
+    );
+
+    debugPrint(
+      '[SupervisorRemoteDataSource] EMPLOYEES FOUND = ${result.length}',
+    );
+
+    return result;
+  }
+
+  // =============================================================
+  // GET SUPERVISORS
+  //
+  // প্রথমে supervisor base rows।
+  // তারপর department + employee information আলাদাভাবে
+  // load করে local map-এর মধ্যে attach করা হচ্ছে।
+  //
+  // এতে Supabase relation syntax-এর উপর dependency কমে যায়।
+  // =============================================================
+
+  Future<List<Map<String, dynamic>>> getSupervisors(
+      String companyId,
+      ) async {
+    final id = companyId.trim();
+
+    if (id.isEmpty) {
+      throw Exception(
+        'Company ID is required.',
+      );
+    }
+
+    debugPrint('');
+    debugPrint(
+      '=====================================================',
+    );
+    debugPrint(
+      'SUPERVISOR GET START',
+    );
+    debugPrint(
+      'COMPANY ID = $id',
+    );
+    debugPrint(
+      '=====================================================',
+    );
+
+    // -----------------------------------------------------------
+    // SUPERVISOR BASE DATA
+    // -----------------------------------------------------------
+
+    final response = await _client
+        .from('supervisors')
+        .select()
+        .eq(
+      'company_id',
+      id,
+    )
+        .order(
+      'created_at',
+      ascending: false,
+    );
+
+    final supervisors =
+    List<Map<String, dynamic>>.from(
+      response,
+    );
+
+    debugPrint(
+      'SUPERVISOR BASE COUNT = ${supervisors.length}',
+    );
+
+    if (supervisors.isEmpty) {
+      debugPrint(
+        'NO SUPERVISORS FOUND',
+      );
+
+      return [];
+    }
+
+    // -----------------------------------------------------------
+    // DEPARTMENT IDS
+    // -----------------------------------------------------------
+
+    final departmentIds = supervisors
+        .map(
+          (item) =>
+          item['department_id']?.toString(),
+    )
+        .where(
+          (id) =>
+      id != null &&
+          id.trim().isNotEmpty,
+    )
+        .map(
+          (id) => id!.trim(),
+    )
+        .toSet()
+        .toList();
+
+    // -----------------------------------------------------------
+    // EMPLOYEE IDS
+    // -----------------------------------------------------------
+
+    final employeeIds = supervisors
+        .map(
+          (item) =>
+          item['employee_id']?.toString(),
+    )
+        .where(
+          (id) =>
+      id != null &&
+          id.trim().isNotEmpty,
+    )
+        .map(
+          (id) => id!.trim(),
+    )
+        .toSet()
+        .toList();
+
+    // -----------------------------------------------------------
+    // LOAD DEPARTMENTS
+    // -----------------------------------------------------------
+
+    final Map<String, Map<String, dynamic>>
+    departmentMap = {};
+
+    if (departmentIds.isNotEmpty) {
+      final departmentResponse =
+      await _client
+          .from('departments')
+          .select()
+          .eq(
+        'company_id',
+        id,
+      )
+          .inFilter(
+        'id',
+        departmentIds,
+      );
+
+      for (final item
+      in List<Map<String, dynamic>>.from(
+        departmentResponse,
+      )) {
+        final departmentId =
+        item['id']?.toString();
+
+        if (departmentId != null &&
+            departmentId.isNotEmpty) {
+          departmentMap[departmentId] =
+              item;
+        }
+      }
+    }
+
+    // -----------------------------------------------------------
+    // LOAD EMPLOYEES
+    // -----------------------------------------------------------
+
+    final Map<String, Map<String, dynamic>>
+    employeeMap = {};
+
+    if (employeeIds.isNotEmpty) {
+      final employeeResponse =
+      await _client
+          .from('employees')
+          .select()
+          .eq(
+        'company_id',
+        id,
+      )
+          .inFilter(
+        'id',
+        employeeIds,
+      );
+
+      for (final item
+      in List<Map<String, dynamic>>.from(
+        employeeResponse,
+      )) {
+        final employeeId =
+        item['id']?.toString();
+
+        if (employeeId != null &&
+            employeeId.isNotEmpty) {
+          employeeMap[employeeId] =
+              item;
+        }
+      }
+    }
+
+    // -----------------------------------------------------------
+    // ATTACH RELATED DATA
+    // -----------------------------------------------------------
+
+    final result =
+    supervisors.map(
+          (supervisor) {
+        final map =
+        Map<String, dynamic>.from(
+          supervisor,
+        );
+
+        final departmentId =
+        supervisor['department_id']
+            ?.toString();
+
+        final employeeId =
+        supervisor['employee_id']
+            ?.toString();
+
+        map['departments'] =
+        departmentId == null
+            ? null
+            : departmentMap[
+        departmentId
+        ];
+
+        map['employees'] =
+        employeeId == null
+        ? null
+            : employeeMap[
+        employeeId
+        ];
+
+        return map;
+      },
+    ).toList();
+
+    debugPrint(
+      'SUPERVISOR FINAL COUNT = ${result.length}',
+    );
+
+    debugPrint(
+      'SUPERVISOR GET SUCCESS',
+    );
+
+    return result;
   }
 
   // =============================================================
@@ -97,37 +395,21 @@ class SupervisorRemoteDataSource {
   Future<Map<String, dynamic>> getSupervisorById(
       String supervisorId,
       ) async {
+    final id = supervisorId.trim();
+
+    if (id.isEmpty) {
+      throw Exception(
+        'Supervisor ID is required.',
+      );
+    }
+
     final response = await _client
         .from('supervisors')
-        .select('''
-          id,
-          company_id,
-          department_id,
-          employee_id,
-          is_active,
-          created_at,
-          updated_at,
-
-          departments:department_id (
-            id,
-            company_id,
-            code,
-            name
-          ),
-
-          employees:employee_id (
-            id,
-            company_id,
-            department_id,
-            employee_code,
-            first_name,
-            last_name,
-            full_name,
-            email,
-            mobile
-          )
-        ''')
-        .eq('id', supervisorId)
+        .select()
+        .eq(
+      'id',
+      id,
+    )
         .maybeSingle();
 
     if (response == null) {
@@ -136,208 +418,361 @@ class SupervisorRemoteDataSource {
       );
     }
 
-    return Map<String, dynamic>.from(response);
+    final supervisor =
+    Map<String, dynamic>.from(
+      response,
+    );
+
+    final companyId =
+    supervisor['company_id']?.toString();
+
+    final departmentId =
+    supervisor['department_id']?.toString();
+
+    final employeeId =
+    supervisor['employee_id']?.toString();
+
+    if (companyId != null &&
+        departmentId != null) {
+      final departmentResponse =
+      await _client
+          .from('departments')
+          .select()
+          .eq(
+        'id',
+        departmentId,
+      )
+          .eq(
+        'company_id',
+        companyId,
+      )
+          .maybeSingle();
+
+      supervisor['departments'] =
+          departmentResponse;
+    }
+
+    if (companyId != null &&
+        employeeId != null) {
+      final employeeResponse =
+      await _client
+          .from('employees')
+          .select()
+          .eq(
+        'id',
+        employeeId,
+      )
+          .eq(
+        'company_id',
+        companyId,
+      )
+          .maybeSingle();
+
+      supervisor['employees'] =
+          employeeResponse;
+    }
+
+    return supervisor;
   }
 
   // =============================================================
-// GET SUPERVISOR DEPARTMENT ASSIGNMENTS
-// =============================================================
+  // CREATE SUPERVISOR
+  // =============================================================
+
+  Future<Map<String, dynamic>> createSupervisor({
+    required String companyId,
+    required String departmentId,
+    required String employeeId,
+  }) async {
+    final company = companyId.trim();
+    final department = departmentId.trim();
+    final employee = employeeId.trim();
+
+    if (company.isEmpty) {
+      throw Exception(
+        'Company is required.',
+      );
+    }
+
+    if (department.isEmpty) {
+      throw Exception(
+        'Department is required.',
+      );
+    }
+
+    if (employee.isEmpty) {
+      throw Exception(
+        'Employee is required.',
+      );
+    }
+
+    final insertData = {
+      'company_id': company,
+      'department_id': department,
+      'employee_id': employee,
+      'is_active': true,
+    };
+
+    debugPrint(
+      'CREATE SUPERVISOR DATA = $insertData',
+    );
+
+    final response = await _client
+        .from('supervisors')
+        .insert(
+      insertData,
+    )
+        .select()
+        .single();
+
+    return _buildSupervisorWithRelations(
+      Map<String, dynamic>.from(
+        response,
+      ),
+    );
+  }
+
+  // =============================================================
+  // UPDATE SUPERVISOR
+  // =============================================================
+
+  Future<Map<String, dynamic>> updateSupervisor({
+    required String supervisorId,
+    required String companyId,
+    required String departmentId,
+    required String employeeId,
+    required bool isActive,
+  }) async {
+    final id = supervisorId.trim();
+    final company = companyId.trim();
+    final department = departmentId.trim();
+    final employee = employeeId.trim();
+
+    if (id.isEmpty) {
+      throw Exception(
+        'Supervisor ID is required.',
+      );
+    }
+
+    if (company.isEmpty ||
+        department.isEmpty ||
+        employee.isEmpty) {
+      throw Exception(
+        'Invalid supervisor data.',
+      );
+    }
+
+    final updateData = {
+      'company_id': company,
+      'department_id': department,
+      'employee_id': employee,
+      'is_active': isActive,
+    };
+
+    debugPrint(
+      'UPDATE SUPERVISOR ID = $id',
+    );
+
+    debugPrint(
+      'UPDATE SUPERVISOR DATA = $updateData',
+    );
+
+    final response = await _client
+        .from('supervisors')
+        .update(
+      updateData,
+    )
+        .eq(
+      'id',
+      id,
+    )
+        .select()
+        .single();
+
+    return _buildSupervisorWithRelations(
+      Map<String, dynamic>.from(
+        response,
+      ),
+    );
+  }
+
+  // =============================================================
+  // DELETE SUPERVISOR
+  // =============================================================
+
+  Future<void> deleteSupervisor(
+      String supervisorId,
+      ) async {
+    final id = supervisorId.trim();
+
+    if (id.isEmpty) {
+      throw Exception(
+        'Supervisor ID is required.',
+      );
+    }
+
+    await _client
+        .from('supervisors')
+        .delete()
+        .eq(
+      'id',
+      id,
+    );
+  }
+
+  // =============================================================
+  // BUILD SUPERVISOR WITH RELATIONS
+  // =============================================================
+
+  Future<Map<String, dynamic>>
+  _buildSupervisorWithRelations(
+      Map<String, dynamic> supervisor,
+      ) async {
+    final companyId =
+    supervisor['company_id']?.toString();
+
+    final departmentId =
+    supervisor['department_id']?.toString();
+
+    final employeeId =
+    supervisor['employee_id']?.toString();
+
+    if (companyId != null &&
+        departmentId != null) {
+      supervisor['departments'] =
+      await _client
+          .from('departments')
+          .select()
+          .eq(
+        'id',
+        departmentId,
+      )
+          .eq(
+        'company_id',
+        companyId,
+      )
+          .maybeSingle();
+    }
+
+    if (companyId != null &&
+        employeeId != null) {
+      supervisor['employees'] =
+      await _client
+          .from('employees')
+          .select()
+          .eq(
+        'id',
+        employeeId,
+      )
+          .eq(
+        'company_id',
+        companyId,
+      )
+          .maybeSingle();
+    }
+
+    return supervisor;
+  }
+
+  // =============================================================
+  // GET SUPERVISOR DEPARTMENT ASSIGNMENTS
+  // =============================================================
 
   Future<List<Map<String, dynamic>>>
   getSupervisorDepartmentAssignments({
     required String companyId,
     required String supervisorId,
   }) async {
-    final response = await Supabase.instance.client
+    final company = companyId.trim();
+    final supervisor = supervisorId.trim();
+
+    if (company.isEmpty) {
+      throw Exception(
+        'Company is required.',
+      );
+    }
+
+    if (supervisor.isEmpty) {
+      throw Exception(
+        'Supervisor is required.',
+      );
+    }
+
+    final response = await _client
         .from('supervisor_departments')
-        .select('''
-        id,
-        company_id,
-        supervisor_id,
-        department_id,
-        created_at,
-        departments (
-          id,
-          name
-        )
-      ''')
+        .select()
         .eq(
       'company_id',
-      companyId,
+      company,
     )
         .eq(
       'supervisor_id',
-      supervisorId,
+      supervisor,
     )
         .order(
       'created_at',
       ascending: true,
     );
 
-    return List<Map<String, dynamic>>.from(
+    final assignments =
+    List<Map<String, dynamic>>.from(
       response,
     );
-  }
-  // =============================================================
-// UPDATE SUPERVISOR DEPARTMENT ASSIGNMENTS
-//
-// Final selected departments-এর সাথে database synchronize করবে.
-//
-// Existing:
-// A B C D E
-//
-// New:
-// A B C
-//
-// Result:
-// D এবং E delete হবে.
-//
-// New department থাকলে সেটাও insert হবে.
-// =============================================================
 
-  Future<void> updateSupervisorDepartmentAssignments({
-    required String companyId,
-    required String supervisorId,
-    required List<String> departmentIds,
-  }) async {
-    final client =
-        Supabase.instance.client;
+    // -----------------------------------------------------------
+    // LOAD DEPARTMENT DETAILS
+    // -----------------------------------------------------------
 
-    // ===========================================================
-    // CURRENT ASSIGNMENTS
-    // ===========================================================
+    for (final assignment in assignments) {
+      final departmentId =
+      assignment['department_id']
+          ?.toString();
 
-    final currentResponse = await client
-        .from('supervisor_departments')
-        .select('''
-        id,
-        department_id
-      ''')
-        .eq(
-      'company_id',
-      companyId,
-    )
-        .eq(
-      'supervisor_id',
-      supervisorId,
-    );
+      if (departmentId == null ||
+          departmentId.isEmpty) {
+        continue;
+      }
 
-    final currentAssignments =
-    List<Map<String, dynamic>>.from(
-      currentResponse,
-    );
-
-    final currentDepartmentIds =
-    currentAssignments
-        .map(
-          (item) =>
-          item['department_id']?.toString(),
-    )
-        .whereType<String>()
-        .toSet();
-
-    final selectedDepartmentIds =
-    departmentIds.toSet();
-
-    // ===========================================================
-    // DELETE
-    //
-    // Database-এ আছে কিন্তু নতুন selection-এ নেই
-    // ===========================================================
-
-    final departmentIdsToDelete =
-    currentDepartmentIds
-        .difference(
-      selectedDepartmentIds,
-    )
-        .toList();
-
-    for (final departmentId
-    in departmentIdsToDelete) {
-      await client
-          .from('supervisor_departments')
-          .delete()
+      final department =
+      await _client
+          .from('departments')
+          .select()
           .eq(
-        'company_id',
-        companyId,
-      )
-          .eq(
-        'supervisor_id',
-        supervisorId,
-      )
-          .eq(
-        'department_id',
+        'id',
         departmentId,
-      );
+      )
+          .maybeSingle();
+
+      assignment['departments'] =
+          department;
     }
 
-    // ===========================================================
-    // INSERT
-    //
-    // Selection-এ আছে কিন্তু database-এ নেই
-    // ===========================================================
-
-    final departmentIdsToInsert =
-    selectedDepartmentIds
-        .difference(
-      currentDepartmentIds,
-    )
-        .toList();
-
-    if (departmentIdsToInsert.isEmpty) {
-      return;
-    }
-
-    final insertData =
-    departmentIdsToInsert
-        .map(
-          (departmentId) {
-        return {
-          'company_id': companyId,
-          'supervisor_id': supervisorId,
-          'department_id':
-          departmentId,
-        };
-      },
-    )
-        .toList();
-
-    await client
-        .from('supervisor_departments')
-        .insert(
-      insertData,
-    );
+    return assignments;
   }
-  // ===============================================================
-// ASSIGN SUPERVISOR DEPARTMENTS
-// ===============================================================
+
+  // =============================================================
+  // ASSIGN SUPERVISOR DEPARTMENTS
+  // =============================================================
 
   Future<int> assignSupervisorDepartments({
     required String companyId,
     required String supervisorId,
     required List<String> departmentIds,
   }) async {
-    if (companyId.trim().isEmpty) {
+    final company = companyId.trim();
+    final supervisor = supervisorId.trim();
+
+    if (company.isEmpty) {
       throw Exception(
         'Company is required.',
       );
     }
 
-    if (supervisorId.trim().isEmpty) {
+    if (supervisor.isEmpty) {
       throw Exception(
         'Supervisor is required.',
       );
     }
-
-    if (departmentIds.isEmpty) {
-      throw Exception(
-        'At least one department is required.',
-      );
-    }
-
-    // =============================================================
-    // REMOVE DUPLICATE DEPARTMENT IDS
-    // =============================================================
 
     final uniqueDepartmentIds =
     departmentIds
@@ -352,35 +787,33 @@ class SupervisorRemoteDataSource {
 
     if (uniqueDepartmentIds.isEmpty) {
       throw Exception(
-        'At least one valid department is required.',
+        'Please select at least one department.',
       );
     }
 
-    // =============================================================
-    // CHECK EXISTING ASSIGNMENTS
-    //
-    // Same supervisor + same department
-    // must not be inserted twice.
-    // =============================================================
-
-    final existingRows = await _client
+    final existingRows =
+    await _client
         .from('supervisor_departments')
-        .select('department_id')
+        .select(
+      'department_id',
+    )
         .eq(
       'company_id',
-      companyId,
+      company,
     )
         .eq(
       'supervisor_id',
-      supervisorId,
+      supervisor,
     )
         .inFilter(
       'department_id',
       uniqueDepartmentIds,
     );
 
-    final existingDepartmentIds =
-    (existingRows as List)
+    final existingIds =
+    List<Map<String, dynamic>>.from(
+      existingRows,
+    )
         .map(
           (row) =>
           row['department_id']
@@ -389,409 +822,159 @@ class SupervisorRemoteDataSource {
         .whereType<String>()
         .toSet();
 
-    // =============================================================
-    // ONLY NEW ASSIGNMENTS
-    // =============================================================
-
-    final newDepartmentIds =
+    final newIds =
     uniqueDepartmentIds
         .where(
-          (departmentId) =>
-      !existingDepartmentIds
-          .contains(departmentId),
+          (id) =>
+      !existingIds.contains(id),
     )
         .toList();
 
-    // =============================================================
-    // EVERYTHING ALREADY ASSIGNED
-    // =============================================================
-
-    if (newDepartmentIds.isEmpty) {
+    if (newIds.isEmpty) {
       return 0;
     }
 
-    // =============================================================
-    // BUILD INSERT DATA
-    // =============================================================
-
     final rows =
-    newDepartmentIds
+    newIds
         .map(
           (departmentId) => {
-        'company_id': companyId,
-        'supervisor_id': supervisorId,
+        'company_id': company,
+        'supervisor_id': supervisor,
         'department_id': departmentId,
       },
     )
         .toList();
 
-    // =============================================================
-    // INSERT
-    //
-    // id + created_at are generated by database.
-    // =============================================================
+    await _client
+        .from('supervisor_departments')
+        .insert(
+      rows,
+    );
+
+    return newIds.length;
+  }
+
+  // =============================================================
+  // UPDATE SUPERVISOR DEPARTMENT ASSIGNMENTS
+  // =============================================================
+
+  Future<void>
+  updateSupervisorDepartmentAssignments({
+    required String companyId,
+    required String supervisorId,
+    required List<String> departmentIds,
+  }) async {
+    final company = companyId.trim();
+    final supervisor = supervisorId.trim();
+
+    if (company.isEmpty) {
+      throw Exception(
+        'Company is required.',
+      );
+    }
+
+    if (supervisor.isEmpty) {
+      throw Exception(
+        'Supervisor is required.',
+      );
+    }
+
+    final selectedIds =
+    departmentIds
+        .map(
+          (id) => id.trim(),
+    )
+        .where(
+          (id) => id.isNotEmpty,
+    )
+        .toSet();
+
+    final currentResponse =
+    await _client
+        .from('supervisor_departments')
+        .select(
+      'id, department_id',
+    )
+        .eq(
+      'company_id',
+      company,
+    )
+        .eq(
+      'supervisor_id',
+      supervisor,
+    );
+
+    final currentRows =
+    List<Map<String, dynamic>>.from(
+      currentResponse,
+    );
+
+    final currentIds =
+    currentRows
+        .map(
+          (row) =>
+          row['department_id']
+              ?.toString(),
+    )
+        .whereType<String>()
+        .toSet();
+
+    // -----------------------------------------------------------
+    // DELETE REMOVED DEPARTMENTS
+    // -----------------------------------------------------------
+
+    final deleteIds =
+    currentIds.difference(
+      selectedIds,
+    );
+
+    for (final departmentId
+    in deleteIds) {
+      await _client
+          .from('supervisor_departments')
+          .delete()
+          .eq(
+        'company_id',
+        company,
+      )
+          .eq(
+        'supervisor_id',
+        supervisor,
+      )
+          .eq(
+        'department_id',
+        departmentId,
+      );
+    }
+
+    // -----------------------------------------------------------
+    // INSERT NEW DEPARTMENTS
+    // -----------------------------------------------------------
+
+    final insertIds =
+    selectedIds.difference(
+      currentIds,
+    );
+
+    if (insertIds.isEmpty) {
+      return;
+    }
+
+    final rows =
+    insertIds
+        .map(
+          (departmentId) => {
+        'company_id': company,
+        'supervisor_id': supervisor,
+        'department_id': departmentId,
+      },
+    )
+        .toList();
 
     await _client
         .from('supervisor_departments')
-        .insert(rows);
-
-    return newDepartmentIds.length;
-  }
-
-  // =============================================================
-  // GET SUPERVISORS BY COMPANY
-  // =============================================================
-
-  // =============================================================
-// GET SUPERVISORS BY COMPANY
-// =============================================================
-
-  Future<List<Map<String, dynamic>>> getSupervisors(
-      String companyId,
-      ) async {
-    print('');
-    print(
-      '=====================================================',
+        .insert(
+      rows,
     );
-    print(
-      'SUPABASE GET SUPERVISORS',
-    );
-    print(
-      'COMPANY ID = $companyId',
-    );
-    print(
-      '=====================================================',
-    );
-
-    try {
-      final response = await _client
-          .from('supervisors')
-          .select('''
-          id,
-          company_id,
-          department_id,
-          employee_id,
-          is_active,
-          created_at,
-          updated_at,
-
-          companies:company_id (
-            id,
-            name
-          ),
-
-          departments:department_id (
-            id,
-            company_id,
-            name,
-            code
-          ),
-
-          employees:employee_id (
-            id,
-            company_id,
-            department_id,
-            employee_code,
-            full_name,
-            first_name,
-            last_name,
-            email,
-            mobile
-          )
-        ''')
-          .eq(
-        'company_id',
-        companyId,
-      )
-          .order(
-        'created_at',
-        ascending: false,
-      );
-
-      print('');
-      print(
-        '=====================================================',
-      );
-      print(
-        'SUPABASE GET SUPERVISORS SUCCESS',
-      );
-      print(
-        'SUPERVISOR COUNT = ${response.length}',
-      );
-      print(
-        'SUPERVISOR DATA = $response',
-      );
-      print(
-        '=====================================================',
-      );
-
-      return List<Map<String, dynamic>>.from(
-        response,
-      );
-    } on PostgrestException catch (e) {
-      print('');
-      print(
-        '=====================================================',
-      );
-      print(
-        'SUPABASE GET SUPERVISORS ERROR',
-      );
-      print(
-        'CODE = ${e.code}',
-      );
-      print(
-        'MESSAGE = ${e.message}',
-      );
-      print(
-        'DETAIL = ${e.details}',
-      );
-      print(
-        'HINT = ${e.hint}',
-      );
-      print(
-        '=====================================================',
-      );
-
-      rethrow;
-    } catch (e) {
-      print('');
-      print(
-        '=====================================================',
-      );
-      print(
-        'GET SUPERVISORS UNKNOWN ERROR',
-      );
-      print(
-        'ERROR = $e',
-      );
-      print(
-        '=====================================================',
-      );
-
-      rethrow;
-    }
-  }
-
-  // =============================================================
-  // CREATE SUPERVISOR
-  // =============================================================
-
-  Future<Map<String, dynamic>> createSupervisor({
-    required String companyId,
-    required String departmentId,
-    required String employeeId,
-  }) async {
-    // ===========================================================
-    // DEBUG
-    // ===========================================================
-
-    final insertData = <String, dynamic>{
-      'company_id': companyId,
-      'department_id': departmentId,
-      'employee_id': employeeId,
-      'is_active': true,
-    };
-
-    print('');
-    print(
-      '=====================================================',
-    );
-
-    print(
-      'SUPABASE SUPERVISOR INSERT START',
-    );
-
-    print(
-      'SUPABASE SUPERVISOR INSERT DATA = $insertData',
-    );
-
-    print(
-      '=====================================================',
-    );
-
-    // ===========================================================
-    // INSERT
-    // ===========================================================
-
-    try {
-      final response = await _client
-          .from('supervisors')
-          .insert(insertData)
-          .select('''
-            id,
-            company_id,
-            department_id,
-            employee_id,
-            is_active,
-            created_at,
-            updated_at,
-
-            departments:department_id (
-              id,
-              name,
-              code
-            ),
-
-            employees:employee_id (
-              id,
-              employee_code,
-              full_name,
-              first_name,
-              last_name,
-              email,
-              mobile
-            )
-          ''')
-          .single();
-
-      // =========================================================
-      // SUCCESS
-      // =========================================================
-
-      print('');
-      print(
-        '=====================================================',
-      );
-
-      print(
-        'SUPABASE SUPERVISOR INSERT SUCCESS',
-      );
-
-      print(
-        'SUPERVISOR RESPONSE = $response',
-      );
-
-      print(
-        '=====================================================',
-      );
-
-      return Map<String, dynamic>.from(
-        response,
-      );
-    } on PostgrestException catch (e) {
-      print('SUPABASE SUPERVISOR INSERT ERROR = $e');
-      rethrow;
-    }
-  }
-
-  // =============================================================
-  // UPDATE SUPERVISOR
-  // =============================================================
-
-  Future<Map<String, dynamic>> updateSupervisor({
-    required String supervisorId,
-    required String companyId,
-    required String departmentId,
-    required String employeeId,
-    required bool isActive,
-  }) async {
-    final updateData = <String, dynamic>{
-      'company_id': companyId,
-      'department_id': departmentId,
-      'employee_id': employeeId,
-      'is_active': isActive,
-      'updated_at':
-      DateTime.now()
-          .toUtc()
-          .toIso8601String(),
-    };
-
-    print('');
-    print(
-      '=====================================================',
-    );
-
-    print(
-      'SUPABASE SUPERVISOR UPDATE',
-    );
-
-    print(
-      'SUPERVISOR ID = $supervisorId',
-    );
-
-    print(
-      'UPDATE DATA = $updateData',
-    );
-
-    print(
-      '=====================================================',
-    );
-
-    try {
-      final response = await _client
-          .from('supervisors')
-          .update(updateData)
-          .eq('id', supervisorId)
-          .select('''
-            id,
-            company_id,
-            department_id,
-            employee_id,
-            is_active,
-            created_at,
-            updated_at,
-
-            departments:department_id (
-              id,
-              name,
-              code
-            ),
-
-            employees:employee_id (
-              id,
-              employee_code,
-              full_name,
-              first_name,
-              last_name,
-              email,
-              mobile
-            )
-          ''')
-          .single();
-
-      return Map<String, dynamic>.from(
-        response,
-      );
-    } catch (e) {
-      print(
-        'SUPABASE SUPERVISOR UPDATE ERROR = $e',
-      );
-
-      rethrow;
-    }
-  }
-
-  // =============================================================
-  // DELETE SUPERVISOR
-  // =============================================================
-
-  Future<void> deleteSupervisor(
-      String supervisorId,
-      ) async {
-    print('');
-    print(
-      'SUPABASE SUPERVISOR DELETE',
-    );
-
-    print(
-      'SUPERVISOR ID = $supervisorId',
-    );
-
-    try {
-      await _client
-          .from('supervisors')
-          .delete()
-          .eq('id', supervisorId);
-
-      print(
-        'SUPABASE SUPERVISOR DELETE SUCCESS',
-      );
-    } catch (e) {
-      print(
-        'SUPABASE SUPERVISOR DELETE ERROR = $e',
-      );
-
-      rethrow;
-    }
   }
 }

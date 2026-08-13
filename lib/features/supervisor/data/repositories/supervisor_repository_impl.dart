@@ -29,15 +29,6 @@ class SupervisorRepositoryImpl
       );
 
   // =============================================================
-  // COMPANIES
-  // =============================================================
-
-  @override
-  Future<List<Map<String, dynamic>>> getCompanies() async {
-    return await remoteDataSource.getCompanies();
-  }
-
-  // =============================================================
   // GET SUPERVISORS
   // =============================================================
 

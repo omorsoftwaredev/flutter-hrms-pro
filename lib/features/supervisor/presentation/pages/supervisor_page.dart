@@ -1,96 +1,265 @@
 /// ===============================================================
 /// Flutter HRMS Pro
-/// Supervisor CRUD Page
+/// Supervisor Management Page
 ///
-/// Version : 6.0.0
+/// Responsibilities:
+/// - Use current logged-in user's company
+/// - Load departments
+/// - Load supervisors
+/// - Open supervisor create form
+/// - Load employees by department
+/// - Create supervisor
+/// - Refresh supervisor list
+/// - Toggle supervisor status
+/// - Delete supervisor
+///
+/// Design:
+/// - Similar to DesignationListPage
+/// - No company dropdown
+/// - No success/error alert dialog
+/// - Uses SnackBar for feedback
 /// ===============================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/auth/current_user_provider.dart';
+
 import '../providers/supervisor_provider.dart';
 import '../providers/supervisor_state.dart';
+
 import '../widgets/supervisor_form.dart';
 import '../widgets/supervisor_table.dart';
 
 class SupervisorPage extends ConsumerStatefulWidget {
-  const SupervisorPage({
-    super.key,
-  });
+  const SupervisorPage({super.key});
 
   @override
-  ConsumerState<SupervisorPage> createState() =>
-      _SupervisorCrudPageState();
+  ConsumerState<SupervisorPage> createState() => _SupervisorPageState();
 }
 
-class _SupervisorCrudPageState
-    extends ConsumerState<SupervisorPage> {
-  // =============================================================
+// =================================================================
+// STATE
+// =================================================================
+
+class _SupervisorPageState extends ConsumerState<SupervisorPage> {
+  // ===============================================================
   // INIT
-  // =============================================================
+  // ===============================================================
 
   @override
   void initState() {
     super.initState();
 
     Future.microtask(() async {
-      final notifier =
-      ref.read(supervisorProvider.notifier);
-
-      await notifier.loadCompanies();
+      await _initialize();
     });
   }
 
-  // =============================================================
-  // COMPANY CHANGED
-  // =============================================================
+  // ===============================================================
+  // INITIALIZE
+  // ===============================================================
 
-  Future<void> _onCompanyChanged(
-      String? companyId,
-      ) async {
-    if (companyId == null ||
-        companyId.isEmpty) {
+  Future<void> _initialize() async {
+    final notifier = ref.read(supervisorProvider.notifier);
+
+    final user = ref.read(currentUserProvider);
+
+    debugPrint('========================================');
+    debugPrint('SUPERVISOR PAGE INITIALIZE');
+    debugPrint('CURRENT USER = $user');
+    debugPrint('========================================');
+
+    final companyId = _getCompanyIdFromUser(user);
+
+    debugPrint('CURRENT COMPANY ID = $companyId');
+
+    if (companyId == null || companyId.isEmpty) {
+      notifier.setError('Current user company is not available.');
+
       return;
     }
 
-    final notifier =
-    ref.read(supervisorProvider.notifier);
+    try {
+      // -----------------------------------------------------------
+      // SELECT CURRENT COMPANY
+      //
+      // Provider-এর ভিতর থেকে:
+      // - departments load
+      // - supervisors load
+      // করবে।
+      // -----------------------------------------------------------
 
-    // ===========================================================
-    // COMPANY SELECT
-    // ===========================================================
+      await notifier.selectCompany(companyId);
 
-    await notifier.selectCompany(
-      companyId,
-    );
+      if (!mounted) {
+        return;
+      }
 
-    // ===========================================================
-    // LOAD SUPERVISORS
-    // ===========================================================
+      final state = ref.read(supervisorProvider);
 
-    await notifier.loadSupervisors(
-      companyId,
+      debugPrint(
+        'DEPARTMENTS LOADED = '
+        '${state.departments.length}',
+      );
+
+      debugPrint(
+        'SUPERVISORS LOADED = '
+        '${state.supervisors.length}',
+      );
+
+      debugPrint('SUPERVISOR PAGE INITIALIZE COMPLETE');
+
+      debugPrint('========================================');
+    } catch (e) {
+      debugPrint('SUPERVISOR INITIALIZE ERROR = $e');
+    }
+  }
+
+  // ===============================================================
+  // GET COMPANY ID
+  // ===============================================================
+
+  String? _getCompanyIdFromUser(dynamic user) {
+    if (user == null) {
+      return null;
+    }
+
+    // -------------------------------------------------------------
+    // companyId
+    // -------------------------------------------------------------
+
+    try {
+      final value = user.companyId;
+
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value.toString().trim();
+      }
+    } catch (_) {}
+
+    // -------------------------------------------------------------
+    // company_id
+    // -------------------------------------------------------------
+
+    try {
+      final value = user.company_id;
+
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value.toString().trim();
+      }
+    } catch (_) {}
+
+    // -------------------------------------------------------------
+    // Map
+    // -------------------------------------------------------------
+
+    if (user is Map) {
+      final value = user['company_id'] ?? user['companyId'];
+
+      if (value != null && value.toString().trim().isNotEmpty) {
+        return value.toString().trim();
+      }
+    }
+
+    return null;
+  }
+
+  // ===============================================================
+  // CURRENT COMPANY ID
+  // ===============================================================
+
+  String? _currentCompanyId() {
+    final state = ref.read(supervisorProvider);
+
+    final stateCompany = state.selectedCompanyId;
+
+    if (stateCompany != null && stateCompany.trim().isNotEmpty) {
+      return stateCompany.trim();
+    }
+
+    final user = ref.read(currentUserProvider);
+
+    return _getCompanyIdFromUser(user);
+  }
+
+  // ===============================================================
+  // DEPARTMENT CHANGED
+  // ===============================================================
+
+  Future<void> _onDepartmentChanged(String? departmentId) async {
+    if (departmentId == null || departmentId.trim().isEmpty) {
+      return;
+    }
+
+    final companyId = _currentCompanyId();
+
+    if (companyId == null || companyId.isEmpty) {
+      _showSnackBar('Current user company is not available.', isError: true);
+
+      return;
+    }
+
+    debugPrint('========================================');
+    debugPrint('SUPERVISOR DEPARTMENT CHANGED');
+    debugPrint('COMPANY ID = $companyId');
+    debugPrint('DEPARTMENT ID = $departmentId');
+    debugPrint('========================================');
+
+    final notifier = ref.read(supervisorProvider.notifier);
+
+    await notifier.selectDepartment(
+      companyId: companyId,
+      departmentId: departmentId,
     );
   }
 
-  // =============================================================
+  // ===============================================================
   // OPEN CREATE FORM
-  // =============================================================
+  // ===============================================================
 
   Future<void> _openCreateForm() async {
-    final notifier =
-    ref.read(supervisorProvider.notifier);
+    final companyId = _currentCompanyId();
 
-    // -----------------------------------------------------------
-    // Company list নিশ্চিত করি
-    // -----------------------------------------------------------
+    if (companyId == null || companyId.isEmpty) {
+      _showSnackBar('Current user company is not available.', isError: true);
 
-    final currentState =
-    ref.read(supervisorProvider);
-
-    if (currentState.companies.isEmpty) {
-      await notifier.loadCompanies();
+      return;
     }
+
+    final notifier = ref.read(supervisorProvider.notifier);
+
+    // -------------------------------------------------------------
+    // MAKE SURE DEPARTMENTS ARE AVAILABLE
+    // -------------------------------------------------------------
+
+    var state = ref.read(supervisorProvider);
+
+    if (state.departments.isEmpty) {
+      await notifier.loadDepartments(companyId);
+
+      if (!mounted) {
+        return;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // RELOAD STATE
+    // -------------------------------------------------------------
+
+    state = ref.read(supervisorProvider);
+
+    if (state.departments.isEmpty) {
+      _showSnackBar(
+        'No departments found for the current company.',
+        isError: true,
+      );
+
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // OPEN FORM
+    // -------------------------------------------------------------
 
     if (!mounted) {
       return;
@@ -101,136 +270,23 @@ class _SupervisorCrudPageState
       barrierDismissible: false,
       builder: (dialogContext) {
         return Consumer(
-          builder: (
-              context,
-              ref,
-              child,
-              ) {
-            final state =
-            ref.watch(supervisorProvider);
+          builder: (context, ref, child) {
+            final currentState = ref.watch(supervisorProvider);
 
             return Dialog(
-              insetPadding:
-              const EdgeInsets.symmetric(
+              insetPadding: const EdgeInsets.symmetric(
                 horizontal: 24,
                 vertical: 24,
               ),
               child: ConstrainedBox(
-                constraints:
-                const BoxConstraints(
-                  maxWidth: 600,
-                ),
+                constraints: const BoxConstraints(maxWidth: 600),
                 child: SingleChildScrollView(
-                  padding:
-                  const EdgeInsets.all(20),
-                  child: SupervisorForm(
-                    companies:
-                    state.companies,
-
-                    departments:
-                    state.departments,
-
-                    employees:
-                    state.employees,
-
-                    isSaving:
-                    state.isSaving,
-
-                    // =================================================
-                    // COMPANY SELECT
-                    // =================================================
-
-                    onCompanyChanged:
-                        (
-                        String? companyId,
-                        ) async {
-                      if (companyId == null ||
-                          companyId.isEmpty) {
-                        return;
-                      }
-
-                      await notifier
-                          .selectCompany(
-                        companyId,
-                      );
-                    },
-
-                    // =================================================
-                    // DEPARTMENT SELECT
-                    // =================================================
-
-                    onDepartmentChanged:
-                        (
-                        String? departmentId,
-                        ) async {
-                      if (departmentId == null ||
-                          departmentId.isEmpty) {
-                        return;
-                      }
-
-                      final selectedCompany =
-                          ref
-                              .read(
-                            supervisorProvider,
-                          )
-                              .selectedCompanyId;
-
-                      if (selectedCompany == null ||
-                          selectedCompany.isEmpty) {
-                        return;
-                      }
-
-                      await notifier
-                          .selectDepartment(
-                        companyId:
-                        selectedCompany,
-                        departmentId:
-                        departmentId,
-                      );
-                    },
-
-                    // =================================================
-                    // CREATE SUPERVISOR
-                    // =================================================
-
-                    onSubmit:
-                        (
-                        Map<String, dynamic> data,
-                        ) async {
-                      final success =
-                      await notifier
-                          .createSupervisor(
-                        data,
-                      );
-
-                      if (!context.mounted) {
-                        return;
-                      }
-
-                      if (success) {
-                        Navigator.of(
-                          context,
-                        ).pop();
-
-                        // =============================================
-                        // REFRESH CURRENT COMPANY SUPERVISORS
-                        // =============================================
-
-                        final selectedCompany =
-                            ref
-                                .read(
-                              supervisorProvider,
-                            )
-                                .selectedCompanyId;
-
-                        if (selectedCompany != null &&
-                            selectedCompany.isNotEmpty) {
-                          await notifier
-                              .loadSupervisors(
-                            selectedCompany,
-                          );
-                        }
-                      }
+                  padding: const EdgeInsets.all(20),
+                  child: SupervisorPageForm(
+                    state: currentState,
+                    onDepartmentChanged: _onDepartmentChanged,
+                    onSubmit: (Map<String, dynamic> data) async {
+                      await _createSupervisor(data, dialogContext);
                     },
                   ),
                 ),
@@ -242,149 +298,150 @@ class _SupervisorCrudPageState
     );
   }
 
-  // =============================================================
-  // REFRESH
-  // =============================================================
+  // ===============================================================
+  // CREATE SUPERVISOR
+  // ===============================================================
 
-  Future<void> _refresh() async {
-    final state =
-    ref.read(supervisorProvider);
+  Future<void> _createSupervisor(
+    Map<String, dynamic> data,
+    BuildContext dialogContext,
+  ) async {
+    final companyId = _currentCompanyId();
 
-    final companyId =
-        state.selectedCompanyId;
-
-    // ===========================================================
-    // NO COMPANY SELECTED
-    // ===========================================================
-
-    if (companyId == null ||
-        companyId.isEmpty) {
-      await ref
-          .read(
-        supervisorProvider.notifier,
-      )
-          .loadCompanies();
+    if (companyId == null || companyId.isEmpty) {
+      _showSnackBar('Current user company is not available.', isError: true);
 
       return;
     }
 
-    // ===========================================================
-    // REFRESH SUPERVISORS
-    // ===========================================================
+    final notifier = ref.read(supervisorProvider.notifier);
 
-    await ref
-        .read(
-      supervisorProvider.notifier,
-    )
-        .loadSupervisors(
-      companyId,
-    );
-  }
+    final createData = <String, dynamic>{...data, 'company_id': companyId};
 
-  // =============================================================
-  // ERROR DIALOG
-  // =============================================================
-// =============================================================
-// TOGGLE SUPERVISOR STATUS
-// =============================================================
+    debugPrint('========================================');
+    debugPrint('SUPERVISOR CREATE');
+    debugPrint('CREATE DATA = $createData');
+    debugPrint('========================================');
 
-  Future<void> _toggleSupervisor(
-      Map<String, dynamic> supervisor,
-      ) async {
-    final supervisorId =
-    supervisor['id']?.toString();
+    final success = await notifier.createSupervisor(createData);
 
-    if (supervisorId == null ||
-        supervisorId.isEmpty) {
-      await _showErrorDialog(
-        'Invalid supervisor ID.',
+    if (!mounted) {
+      return;
+    }
+
+    if (!success) {
+      final error = ref.read(supervisorProvider).errorMessage;
+
+      _showSnackBar(
+        error == null || error.trim().isEmpty
+            ? 'Failed to create supervisor.'
+            : error,
+        isError: true,
       );
 
       return;
     }
 
-    final isActive =
-        supervisor['is_active'] == true;
+    // -------------------------------------------------------------
+    // CLOSE FORM
+    // -------------------------------------------------------------
 
-    final employee =
-    supervisor['employees'];
+    if (dialogContext.mounted) {
+      Navigator.of(dialogContext).pop();
+    }
+
+    // -------------------------------------------------------------
+    // REFRESH LIST
+    // -------------------------------------------------------------
+
+    await notifier.loadSupervisors(companyId);
+
+    if (!mounted) {
+      return;
+    }
+
+    _showSnackBar('Supervisor created successfully.');
+  }
+
+  // ===============================================================
+  // REFRESH
+  // ===============================================================
+
+  Future<void> _refresh() async {
+    final companyId = _currentCompanyId();
+
+    if (companyId == null || companyId.isEmpty) {
+      _showSnackBar('Current user company is not available.', isError: true);
+
+      return;
+    }
+
+    final notifier = ref.read(supervisorProvider.notifier);
+
+    debugPrint('SUPERVISOR REFRESH = $companyId');
+
+    await notifier.selectCompany(companyId);
+  }
+
+  // ===============================================================
+  // TOGGLE STATUS
+  // ===============================================================
+
+  Future<void> _toggleSupervisor(Map<String, dynamic> supervisor) async {
+    final supervisorId = supervisor['id']?.toString();
+
+    if (supervisorId == null || supervisorId.trim().isEmpty) {
+      _showSnackBar('Invalid supervisor ID.', isError: true);
+
+      return;
+    }
+
+    final isActive = supervisor['is_active'] == true;
+
+    // -------------------------------------------------------------
+    // EMPLOYEE NAME
+    // -------------------------------------------------------------
+
+    final employee = supervisor['employees'];
 
     String employeeName = 'this supervisor';
 
     if (employee is Map) {
-      final fullName =
-      employee['full_name']
-          ?.toString()
-          .trim();
+      final fullName = employee['full_name']?.toString().trim();
 
-      if (fullName != null &&
-          fullName.isNotEmpty) {
+      if (fullName != null && fullName.isNotEmpty) {
         employeeName = fullName;
       }
     }
 
-    final action =
-    isActive
-        ? 'Deactivate'
-        : 'Activate';
+    final action = isActive ? 'Deactivate' : 'Activate';
 
-    // ===========================================================
+    // -------------------------------------------------------------
     // CONFIRM
-    // ===========================================================
+    // -------------------------------------------------------------
 
-    final confirmed =
-    await showDialog<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                isActive
-                    ? Icons.toggle_off_outlined
-                    : Icons.toggle_on_outlined,
-                color: isActive
-                    ? Colors.orange
-                    : Colors.green,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                '$action Supervisor?',
-              ),
-            ],
-          ),
+          title: Text('$action Supervisor?'),
           content: Text(
             'Are you sure you want to '
-                '${action.toLowerCase()} '
-                '$employeeName?',
+            '${action.toLowerCase()} '
+            '$employeeName?',
           ),
           actions: [
-            TextButton(
+            OutlinedButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(false);
+                Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(
-                'Cancel',
-              ),
+              child: const Text('Cancel'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                isActive
-                    ? Colors.orange
-                    : Colors.green,
-              ),
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(true);
+                Navigator.of(dialogContext).pop(true);
               },
-              child: Text(
-                action,
-              ),
+              child: Text(action),
             ),
           ],
         );
@@ -395,24 +452,17 @@ class _SupervisorCrudPageState
       return;
     }
 
-    // ===========================================================
+    // -------------------------------------------------------------
     // UPDATE
-    // ===========================================================
+    // -------------------------------------------------------------
 
-    final notifier =
-    ref.read(
-      supervisorProvider.notifier,
-    );
+    final notifier = ref.read(supervisorProvider.notifier);
 
-    final success =
-    await notifier.updateSupervisor({
+    final success = await notifier.updateSupervisor({
       'id': supervisor['id'],
-      'company_id':
-      supervisor['company_id'],
-      'department_id':
-      supervisor['department_id'],
-      'employee_id':
-      supervisor['employee_id'],
+      'company_id': supervisor['company_id'],
+      'department_id': supervisor['department_id'],
+      'employee_id': supervisor['employee_id'],
       'is_active': !isActive,
     });
 
@@ -420,118 +470,80 @@ class _SupervisorCrudPageState
       return;
     }
 
-    // ===========================================================
-    // ERROR
-    // ===========================================================
-
     if (!success) {
-      final error =
-          ref.read(
-            supervisorProvider,
-          ).errorMessage;
+      final error = ref.read(supervisorProvider).errorMessage;
 
-      if (error != null &&
-          error.trim().isNotEmpty) {
-        await _showErrorDialog(
-          error,
-        );
-      }
-    }
-
-    // ===========================================================
-    // SUCCESS
-    // ===========================================================
-
-    // আপনার ref.listen already success dialog দেখাবে।
-  }
-  // =============================================================
-// DELETE SUPERVISOR
-// =============================================================
-
-  Future<void> _deleteSupervisor(
-      Map<String, dynamic> supervisor,
-      ) async {
-    final supervisorId =
-    supervisor['id']?.toString();
-
-    if (supervisorId == null ||
-        supervisorId.isEmpty) {
-      await _showErrorDialog(
-        'Invalid supervisor ID.',
+      _showSnackBar(
+        error == null || error.trim().isEmpty
+            ? 'Failed to update supervisor.'
+            : error,
+        isError: true,
       );
 
       return;
     }
 
-    final employee =
-    supervisor['employees'];
+    _showSnackBar(
+      isActive
+          ? '$employeeName deactivated successfully.'
+          : '$employeeName activated successfully.',
+    );
+  }
 
-    String employeeName =
-        'this supervisor';
+  // ===============================================================
+  // DELETE SUPERVISOR
+  // ===============================================================
+
+  Future<void> _deleteSupervisor(Map<String, dynamic> supervisor) async {
+    final supervisorId = supervisor['id']?.toString();
+
+    if (supervisorId == null || supervisorId.trim().isEmpty) {
+      _showSnackBar('Invalid supervisor ID.', isError: true);
+
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // EMPLOYEE NAME
+    // -------------------------------------------------------------
+
+    final employee = supervisor['employees'];
+
+    String employeeName = 'this supervisor';
 
     if (employee is Map) {
-      final fullName =
-      employee['full_name']
-          ?.toString()
-          .trim();
+      final fullName = employee['full_name']?.toString().trim();
 
-      if (fullName != null &&
-          fullName.isNotEmpty) {
+      if (fullName != null && fullName.isNotEmpty) {
         employeeName = fullName;
       }
     }
 
-    // ===========================================================
+    // -------------------------------------------------------------
     // CONFIRM DELETE
-    // ===========================================================
+    // -------------------------------------------------------------
 
-    final confirmed =
-    await showDialog<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(
-                Icons.delete_outline,
-                color: Colors.red,
-              ),
-              SizedBox(width: 10),
-              Text(
-                'Delete Supervisor?',
-              ),
-            ],
-          ),
+          title: const Text('Delete Supervisor'),
           content: Text(
             'Are you sure you want to delete '
-                '$employeeName as a supervisor?\n\n'
-                'This action cannot be undone.',
+            '$employeeName as a supervisor?',
           ),
           actions: [
-            TextButton(
+            OutlinedButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(false);
+                Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(
-                'Cancel',
-              ),
+              child: const Text('Cancel'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                Colors.red,
-              ),
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(true);
+                Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(
-                'Delete',
-              ),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -542,284 +554,76 @@ class _SupervisorCrudPageState
       return;
     }
 
-    // ===========================================================
+    // -------------------------------------------------------------
     // DELETE
-    // ===========================================================
+    // -------------------------------------------------------------
 
-    final notifier =
-    ref.read(
-      supervisorProvider.notifier,
-    );
+    final notifier = ref.read(supervisorProvider.notifier);
 
-    final success =
-    await notifier.deleteSupervisor(
-      supervisorId,
-    );
+    final success = await notifier.deleteSupervisor(supervisorId);
 
     if (!mounted) {
       return;
     }
-
-    // ===========================================================
-    // ERROR
-    // ===========================================================
 
     if (!success) {
-      final error =
-          ref.read(
-            supervisorProvider,
-          ).errorMessage;
+      final error = ref.read(supervisorProvider).errorMessage;
 
-      if (error != null &&
-          error.trim().isNotEmpty) {
-        await _showErrorDialog(
-          error,
-        );
-      }
+      _showSnackBar(
+        error == null || error.trim().isEmpty
+            ? 'Failed to delete supervisor.'
+            : error,
+        isError: true,
+      );
+
+      return;
     }
 
-    // Success হলে আপনার ref.listen
-    // automatically success dialog দেখাবে।
+    _showSnackBar('$employeeName deleted successfully.');
   }
-  Future<void> _showErrorDialog(
-      String message,
-      ) async {
+
+  // ===============================================================
+  // SNACKBAR
+  // ===============================================================
+
+  void _showSnackBar(String message, {bool isError = false}) {
     if (!mounted) {
       return;
     }
 
-    await showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.orange,
-                size: 28,
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                'Already Exists',
-              ),
-            ],
-          ),
-          content: Text(
-            message,
-            style: const TextStyle(
-              fontSize: 15,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop();
-              },
-              child: const Text(
-                'OK',
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      );
   }
 
-  // =============================================================
-  // SUCCESS DIALOG
-  // =============================================================
-
-  Future<void> _showSuccessDialog(
-      String message,
-      ) async {
-    if (!mounted) {
-      return;
-    }
-
-    await showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                color: Colors.green,
-                size: 28,
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                'Success',
-              ),
-            ],
-          ),
-          content: Text(
-            message,
-            style: const TextStyle(
-              fontSize: 15,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop();
-              },
-              child: const Text(
-                'OK',
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // =============================================================
+  // ===============================================================
   // BUILD
-  // =============================================================
+  // ===============================================================
 
   @override
-  Widget build(
-      BuildContext context,
-      ) {
-    // ===========================================================
-    // LISTENER
-    // ===========================================================
-
-    ref.listen<SupervisorState>(
-      supervisorProvider,
-          (
-          previous,
-          next,
-          ) {
-        // -------------------------------------------------------
-        // ERROR
-        // -------------------------------------------------------
-
-        final error =
-            next.errorMessage;
-
-        if (error != null &&
-            error.trim().isNotEmpty &&
-            error !=
-                previous?.errorMessage) {
-          WidgetsBinding.instance
-              .addPostFrameCallback(
-                (_) async {
-              if (!mounted) {
-                return;
-              }
-
-              await _showErrorDialog(
-                error,
-              );
-
-              if (!mounted) {
-                return;
-              }
-
-              ref
-                  .read(
-                supervisorProvider
-                    .notifier,
-              )
-                  .clearError();
-            },
-          );
-        }
-
-        // -------------------------------------------------------
-        // SUCCESS
-        // -------------------------------------------------------
-
-        final success =
-            next.successMessage;
-
-        if (success != null &&
-            success.trim().isNotEmpty &&
-            success !=
-                previous?.successMessage) {
-          WidgetsBinding.instance
-              .addPostFrameCallback(
-                (_) async {
-              if (!mounted) {
-                return;
-              }
-
-              await _showSuccessDialog(
-                success,
-              );
-
-              if (!mounted) {
-                return;
-              }
-
-              ref
-                  .read(
-                supervisorProvider
-                    .notifier,
-              )
-                  .clearSuccess();
-            },
-          );
-        }
-      },
-    );
-
-    // ===========================================================
-    // STATE
-    // ===========================================================
-
-    final state =
-    ref.watch(
-      supervisorProvider,
-    );
-
-    // ===========================================================
-    // SCAFFOLD
-    // ===========================================================
+  Widget build(BuildContext context) {
+    final state = ref.watch(supervisorProvider);
 
     return Scaffold(
-      backgroundColor:
-      const Color(0xFFF8F9FC),
+      backgroundColor: const Color(0xFFF8F9FC),
+
       // ===========================================================
       // APP BAR
       // ===========================================================
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
 
-        // ---------------------------------------------------------
-        // BACK BUTTON
-        // ---------------------------------------------------------
-
         leading: IconButton(
           tooltip: 'Back',
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black87,
-          ),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
-
-        // ---------------------------------------------------------
-        // TITLE
-        // ---------------------------------------------------------
 
         title: const Text(
           'Supervisor Management',
@@ -830,91 +634,43 @@ class _SupervisorCrudPageState
           ),
         ),
 
-        // ---------------------------------------------------------
-        // REFRESH
-        // ---------------------------------------------------------
-
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            onPressed:
-            state.isLoading
-                ? null
-                : _refresh,
-            icon: const Icon(
-              Icons.refresh,
-              color: Colors.black87,
-            ),
+            onPressed: state.isLoading ? null : _refresh,
+            icon: const Icon(Icons.refresh, color: Colors.black87),
           ),
-
-          const SizedBox(
-            width: 8,
-          ),
+          const SizedBox(width: 8),
         ],
 
         bottom: PreferredSize(
-          preferredSize:
-          const Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: Colors.black12,
-          ),
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.black12),
         ),
       ),
 
-      // =========================================================
-      // ADD SUPERVISOR
-      // =========================================================
-
-      floatingActionButton:
-      FloatingActionButton.extended(
-        onPressed:
-        state.isSaving
-            ? null
-            : _openCreateForm,
-        icon: const Icon(
-          Icons.add,
-        ),
-        label: const Text(
-          'Add Supervisor',
-        ),
+      // ===========================================================
+      // ADD
+      // ===========================================================
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: state.isSaving ? null : _openCreateForm,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Supervisor'),
       ),
 
-      // =========================================================
+      // ===========================================================
       // BODY
-      // =========================================================
-
+      // ===========================================================
       body: SafeArea(
         child: Padding(
-          padding:
-          const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // =================================================
-              // HEADER
-              // =================================================
-              // =================================================
-              // COMPANY FILTER
-              // =================================================
+              _buildCompanyInfo(state),
 
-              _buildCompanyDropdown(
-                state,
-              ),
+              const SizedBox(height: 16),
 
-              const SizedBox(
-                height: 16,
-              ),
-
-              // =================================================
-              // CONTENT
-              // =================================================
-
-              Expanded(
-                child:
-                _buildContent(
-                  state,
-                ),
-              ),
+              Expanded(child: _buildContent(state)),
             ],
           ),
         ),
@@ -922,128 +678,100 @@ class _SupervisorCrudPageState
     );
   }
 
-  // =============================================================
-  // COMPANY DROPDOWN
-  // =============================================================
+  // ===============================================================
+  // COMPANY INFO
+  // ===============================================================
 
-  Widget _buildCompanyDropdown(
-      SupervisorState state,
-      ) {
+  Widget _buildCompanyInfo(SupervisorState state) {
+    final companyId = state.selectedCompanyId;
+
     return Card(
       elevation: 0,
-      shape:
-      RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.circular(
-          12,
-        ),
-        side:
-        const BorderSide(
-          color: Colors.black12,
-        ),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.black12),
       ),
       child: Padding(
-        padding:
-        const EdgeInsets.all(14),
-        child:
-        DropdownButtonFormField<String>(
-          value:
-          state.selectedCompanyId,
-          decoration:
-          const InputDecoration(
-            labelText:
-            'Company',
-            hintText:
-            'Select company',
-            prefixIcon:
-            Icon(
-              Icons.business_outlined,
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.business_outlined, color: Colors.blue),
             ),
-            border:
-            OutlineInputBorder(),
-          ),
-          items:
-          state.companies.map(
-                (
-                company,
-                ) {
-              final id =
-              company['id']
-                  ?.toString();
 
-              final name =
-                  company['name']
-                      ?.toString() ??
-                      '-';
+            const SizedBox(width: 12),
 
-              if (id == null ||
-                  id.isEmpty) {
-                return null;
-              }
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Current Company',
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    companyId == null || companyId.isEmpty
+                        ? 'Company not available'
+                        : 'Company selected',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-              return DropdownMenuItem<
-                  String>(
-                value: id,
-                child:
-                Text(name),
-              );
-            },
-          ).whereType<
-              DropdownMenuItem<
-                  String>>().toList(),
-          onChanged:
-          state.isLoading
-              ? null
-              : _onCompanyChanged,
+            if (state.isLoading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  // =============================================================
+  // ===============================================================
   // CONTENT
-  // =============================================================
+  // ===============================================================
 
-  Widget _buildContent(
-      SupervisorState state,
-      ) {
-    // ===========================================================
-    // NO COMPANY SELECTED
-    // ===========================================================
+  Widget _buildContent(SupervisorState state) {
+    // -------------------------------------------------------------
+    // COMPANY NOT AVAILABLE
+    // -------------------------------------------------------------
 
-    if (state.selectedCompanyId ==
-        null ||
-        state.selectedCompanyId!
-            .isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.business_outlined,
-              size: 65,
-              color: Colors.black38,
-            ),
-            SizedBox(
-              height: 14,
-            ),
-            Text(
-              'Select a company',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight:
-                FontWeight.w600,
+    if (state.selectedCompanyId == null || state.selectedCompanyId!.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _initialize,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            SizedBox(height: 120),
+            Icon(Icons.business_outlined, size: 65, color: Colors.black38),
+            SizedBox(height: 14),
+            Center(
+              child: Text(
+                'Company not available',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
             ),
-            SizedBox(
-              height: 6,
-            ),
-            Text(
-              'Select a company to view its supervisors.',
-              style: TextStyle(
-                color:
-                Colors.black54,
+            SizedBox(height: 6),
+            Center(
+              child: Text(
+                'Current user company could not be loaded.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54),
               ),
             ),
           ],
@@ -1051,81 +779,129 @@ class _SupervisorCrudPageState
       );
     }
 
-    // ===========================================================
+    // -------------------------------------------------------------
     // LOADING
-    // ===========================================================
+    // -------------------------------------------------------------
 
     if (state.isLoading) {
-      return const Center(
-        child:
-        CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
-    // ===========================================================
+    // -------------------------------------------------------------
     // ERROR
-    // ===========================================================
+    // -------------------------------------------------------------
 
     if (state.hasError) {
-      return Center(
-        child: Padding(
-          padding:
-          const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize:
-            MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 50,
-                color: Colors.red,
-              ),
-
-              const SizedBox(
-                height: 12,
-              ),
-
-              Text(
-                state.errorMessage ??
-                    'Something went wrong.',
-                textAlign:
-                TextAlign.center,
-              ),
-
-              const SizedBox(
-                height: 16,
-              ),
-
-              ElevatedButton.icon(
-                onPressed:
-                _refresh,
-                icon:
-                const Icon(
-                  Icons.refresh,
-                ),
-                label:
-                const Text(
-                  'Retry',
+      return RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            const SizedBox(height: 120),
+            const Icon(Icons.error_outline, size: 55, color: Colors.red),
+            const SizedBox(height: 12),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  state.errorMessage ?? 'Something went wrong.',
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: _refresh,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            ),
+          ],
         ),
       );
     }
 
-    // ===========================================================
-    // SUPERVISOR TABLE
-    // ===========================================================
+    // -------------------------------------------------------------
+    // EMPTY
+    // -------------------------------------------------------------
 
-    return SupervisorTable(
-      supervisors: state.supervisors,
+    if (state.supervisors.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            SizedBox(height: 120),
+            Icon(
+              Icons.supervisor_account_outlined,
+              size: 70,
+              color: Colors.black26,
+            ),
+            SizedBox(height: 16),
+            Center(
+              child: Text(
+                'No supervisors found',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ),
+            SizedBox(height: 6),
+            Center(
+              child: Text(
+                'Add a supervisor to this company.',
+                style: TextStyle(color: Colors.black54),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
-      onToggleStatus:
-      _toggleSupervisor,
+    // -------------------------------------------------------------
+    // SUPERVISOR LIST / TABLE
+    // -------------------------------------------------------------
 
-      onDelete:
-      _deleteSupervisor,
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: SupervisorTable(
+        supervisors: state.supervisors,
+        onToggleStatus: _toggleSupervisor,
+        onDelete: _deleteSupervisor,
+      ),
+    );
+  }
+}
+
+// =================================================================
+// FORM ADAPTER
+// =================================================================
+
+class SupervisorPageForm extends StatelessWidget {
+  final SupervisorState state;
+
+  final Future<void> Function(String? departmentId) onDepartmentChanged;
+
+  final Future<void> Function(Map<String, dynamic> data) onSubmit;
+
+  const SupervisorPageForm({
+    super.key,
+    required this.state,
+    required this.onDepartmentChanged,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SupervisorForm(
+      departments: state.departments,
+
+      employees: state.employees,
+
+      isSaving: state.isSaving,
+
+      onDepartmentChanged: onDepartmentChanged,
+
+      onSubmit: onSubmit,
     );
   }
 }

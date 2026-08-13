@@ -300,13 +300,17 @@ class CompanyDashboardRouter {
         );
       },
     ),
+    // GoRoute(
+    //   path: RoutePaths.supervisors,
+    //   builder: (context, state) =>
+    //   const SupervisorPage(),
+    // ),
     GoRoute(
       path: RoutePaths.supervisors,
+      name: RouteNames.supervisors,
       builder: (context, state) =>
-      // const SupervisorPage(),
       const SupervisorPage(),
     ),
-
 
     GoRoute(
       path: RoutePaths.supervisorAssignment,

@@ -10,11 +10,6 @@ import '../entities/employee.dart';
 import '../entities/supervisor.dart';
 
 abstract class SupervisorRepository {
-  // =============================================================
-  // COMPANIES
-  // =============================================================
-
-  Future<List<Map<String, dynamic>>> getCompanies();
 
   // =============================================================
   // SUPERVISOR CRUD

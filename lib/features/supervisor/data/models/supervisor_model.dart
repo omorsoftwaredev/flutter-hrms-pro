@@ -16,6 +16,8 @@ class SupervisorModel extends Supervisor {
     required super.isActive,
     required super.createdAt,
     required super.updatedAt,
+    required super.createdBy,
+    required super.updatedBy,
   });
 
   factory SupervisorModel.fromMap(
@@ -41,6 +43,8 @@ class SupervisorModel extends Supervisor {
         map['updated_at'].toString(),
       )
           : null,
+      createdBy: map['created_by']?.toString(),
+      updatedBy: map['updated_by']?.toString(),
     );
   }
 
@@ -55,6 +59,11 @@ class SupervisorModel extends Supervisor {
       createdAt?.toIso8601String(),
       'updated_at':
       updatedAt?.toIso8601String(),
+
+      if (createdBy != null && createdBy!.isNotEmpty)
+        'created_by': createdBy,
+      if (updatedBy != null && updatedBy!.isNotEmpty)
+        'updated_by': updatedBy,
     };
   }
 }

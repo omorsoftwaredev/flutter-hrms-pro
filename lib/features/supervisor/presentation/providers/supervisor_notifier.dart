@@ -2,19 +2,22 @@
 /// Flutter HRMS Pro
 /// Supervisor Notifier
 ///
-/// Version : 5.0.0
+/// Version : 6.0.0
 ///
 /// Responsibilities:
-/// - Company loading
+/// - Current user
+/// - Company selection
 /// - Department loading
 /// - Employee loading
+/// - Supervisor loading
 /// - Supervisor CRUD
 /// - Supervisor status toggle
 /// - Supervisor department assignment
-/// - Supervisor department assignment edit
+/// - Supervisor department assignment update
+/// - Error / success handling
 /// ===============================================================
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -27,19 +30,19 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // =============================================================
   // CONSTRUCTOR
   // =============================================================
-
-  SupervisorNotifier(Ref ref)
-    : _ref = ref,
-      _remoteDataSource = SupervisorRemoteDataSource(),
-      super(const SupervisorState()) {
-    _loadCurrentUser();
-  }
-
   // =============================================================
   // REF
   // =============================================================
 
   final Ref _ref;
+  SupervisorNotifier(Ref ref)
+      : _ref = ref,
+        _remoteDataSource = SupervisorRemoteDataSource(),
+        super(const SupervisorState()) {
+    _loadCurrentUser();
+  }
+
+
 
   // =============================================================
   // DATASOURCE
@@ -54,47 +57,20 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   void _loadCurrentUser() {
     final user = _ref.read(currentUserProvider);
 
-    state = state.copyWith(currentUser: user);
-  }
-
-  // =============================================================
-  // LOAD COMPANIES
-  // =============================================================
-
-  Future<void> loadCompanies() async {
-    try {
-      state = state.copyWith(isLoading: true, clearError: true);
-
-      final companies = await _remoteDataSource.getCompanies();
-
-      state = state.copyWith(isLoading: false, companies: companies);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _cleanError(e));
-    }
+    state = state.copyWith(
+      currentUser: user,
+    );
   }
 
   // =============================================================
   // SELECT COMPANY
-  //
-  // Company change হলে:
-  //
-  // 1. Company save
-  // 2. Old departments clear
-  // 3. Old employees clear
-  // 4. Old supervisors clear
-  // 5. New departments load
-  // 6. New supervisors load
   // =============================================================
 
   Future<void> selectCompany(String companyId) async {
-    // -----------------------------------------------------------
-    // CLEAN COMPANY ID
-    // -----------------------------------------------------------
-
     final id = companyId.trim();
 
     // -----------------------------------------------------------
-    // CLEAR OLD DATA
+    // RESET COMPANY DEPENDENT DATA
     // -----------------------------------------------------------
 
     state = state.copyWith(
@@ -102,30 +78,81 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
       departments: const [],
       employees: const [],
       supervisors: const [],
+      assignments: const [],
       clearSelectedSupervisor: true,
       clearError: true,
       clearSuccess: true,
     );
 
     // -----------------------------------------------------------
-    // INVALID COMPANY
+    // EMPTY COMPANY
     // -----------------------------------------------------------
 
     if (id.isEmpty) {
       return;
     }
 
-    // -----------------------------------------------------------
-    // LOAD DEPARTMENTS
-    // -----------------------------------------------------------
+    try {
+      state = state.copyWith(
+        isLoading: true,
+        clearError: true,
+      );
 
-    await loadDepartments(id);
+      _log('SELECT COMPANY: $id');
 
-    // -----------------------------------------------------------
-    // LOAD SUPERVISORS
-    // -----------------------------------------------------------
+      // ---------------------------------------------------------
+      // LOAD DEPARTMENTS
+      // ---------------------------------------------------------
 
-    await loadSupervisors(id);
+      final departments =
+      await _remoteDataSource.getDepartments(id);
+
+      // ---------------------------------------------------------
+      // LOAD SUPERVISORS
+      // ---------------------------------------------------------
+
+      final supervisors =
+      await _remoteDataSource.getSupervisors(id);
+
+      // ---------------------------------------------------------
+      // CHECK CURRENT COMPANY
+      // ---------------------------------------------------------
+
+      if (state.selectedCompanyId != id) {
+        _log('COMPANY CHANGED. IGNORING OLD RESPONSE.');
+        return;
+      }
+
+      // ---------------------------------------------------------
+      // UPDATE STATE
+      // ---------------------------------------------------------
+
+      state = state.copyWith(
+        isLoading: false,
+        departments: departments,
+        supervisors: supervisors,
+        clearError: true,
+      );
+
+      _log(
+        'COMPANY LOADED: departments=${departments.length}, '
+            'supervisors=${supervisors.length}',
+      );
+    } on PostgrestException catch (e) {
+      _log('SELECT COMPANY DB ERROR: ${e.message}');
+
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      _log('SELECT COMPANY ERROR: $e');
+
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _cleanError(e),
+      );
+    }
   }
 
   // =============================================================
@@ -147,11 +174,41 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
         clearError: true,
       );
 
-      final departments = await _remoteDataSource.getDepartments(id);
+      _log('LOAD DEPARTMENTS: $id');
 
-      state = state.copyWith(isLoading: false, departments: departments);
+      final departments =
+      await _remoteDataSource.getDepartments(id);
+
+      // ---------------------------------------------------------
+      // PREVENT OLD RESPONSE
+      // ---------------------------------------------------------
+
+      if (state.selectedCompanyId != id) {
+        return;
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        departments: departments,
+      );
+
+      _log(
+        'DEPARTMENTS FOUND: ${departments.length}',
+      );
+    } on PostgrestException catch (e) {
+      _log('LOAD DEPARTMENTS DB ERROR: ${e.message}');
+
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: DatabaseErrorHelper.getMessage(e),
+      );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _cleanError(e));
+      _log('LOAD DEPARTMENTS ERROR: $e');
+
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _cleanError(e),
+      );
     }
   }
 
@@ -163,25 +220,21 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
     required String companyId,
     required String? departmentId,
   }) async {
-    // -----------------------------------------------------------
-    // CLEAR OLD EMPLOYEES
-    // -----------------------------------------------------------
+    state = state.copyWith(
+      employees: const [],
+      clearError: true,
+    );
 
-    state = state.copyWith(employees: const [], clearError: true);
+    final department = departmentId?.trim();
 
-    // -----------------------------------------------------------
-    // NO DEPARTMENT
-    // -----------------------------------------------------------
-
-    if (departmentId == null || departmentId.trim().isEmpty) {
+    if (department == null || department.isEmpty) {
       return;
     }
 
-    // -----------------------------------------------------------
-    // LOAD EMPLOYEES
-    // -----------------------------------------------------------
-
-    await loadEmployees(companyId: companyId, departmentId: departmentId);
+    await loadEmployees(
+      companyId: companyId,
+      departmentId: department,
+    );
   }
 
   // =============================================================
@@ -206,14 +259,39 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
         clearError: true,
       );
 
-      final employees = await _remoteDataSource.getEmployees(
+      _log(
+        'LOAD EMPLOYEES: company=$company, '
+            'department=$department',
+      );
+
+      final employees =
+      await _remoteDataSource.getEmployees(
         companyId: company,
         departmentId: department,
       );
 
-      state = state.copyWith(isLoading: false, employees: employees);
+      state = state.copyWith(
+        isLoading: false,
+        employees: employees,
+      );
+
+      _log(
+        'EMPLOYEES FOUND: ${employees.length}',
+      );
+    } on PostgrestException catch (e) {
+      _log('LOAD EMPLOYEES DB ERROR: ${e.message}');
+
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: DatabaseErrorHelper.getMessage(e),
+      );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _cleanError(e));
+      _log('LOAD EMPLOYEES ERROR: $e');
+
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _cleanError(e),
+      );
     }
   }
 
@@ -229,24 +307,73 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
     }
 
     try {
-      debugPrint('');
-      debugPrint('=====================================================');
-      debugPrint('LOAD SUPERVISORS');
-      debugPrint('COMPANY ID = $id');
-      debugPrint('=====================================================');
+      state = state.copyWith(
+        isLoading: true,
+        clearError: true,
+      );
 
-      final supervisors = await _remoteDataSource.getSupervisors(id);
+      _log('LOAD SUPERVISORS');
+      _log('COMPANY ID: $id');
 
-      debugPrint('SUPERVISORS FOUND = ${supervisors.length}');
+      final supervisors =
+      await _remoteDataSource.getSupervisors(id);
 
-      state = state.copyWith(supervisors: supervisors, isLoading: false);
+      // ---------------------------------------------------------
+      // PREVENT OLD RESPONSE
+      // ---------------------------------------------------------
 
-      debugPrint('=====================================================');
+      if (state.selectedCompanyId != id) {
+        _log('COMPANY CHANGED. IGNORING SUPERVISOR RESPONSE.');
+        return;
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        supervisors: supervisors,
+      );
+
+      _log(
+        'SUPERVISORS FOUND: ${supervisors.length}',
+      );
+    } on PostgrestException catch (e) {
+      _log(
+        'LOAD SUPERVISORS DB ERROR: ${e.message}',
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: DatabaseErrorHelper.getMessage(e),
+      );
     } catch (e) {
-      debugPrint('LOAD SUPERVISORS ERROR = $e');
+      _log(
+        'LOAD SUPERVISORS ERROR: $e',
+      );
 
-      state = state.copyWith(isLoading: false, errorMessage: _cleanError(e));
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: _cleanError(e),
+      );
     }
+  }
+
+  // =============================================================
+  // SELECT SUPERVISOR
+  // =============================================================
+
+  void selectSupervisor(
+      Map<String, dynamic>? supervisor,
+      ) {
+    state = state.copyWith(
+      selectedSupervisor: supervisor,
+      assignments: const [],
+      clearError: true,
+      clearSuccess: true,
+    );
+
+    _log(
+      'SELECTED SUPERVISOR: '
+          '${supervisor?['id']}',
+    );
   }
 
   // =============================================================
@@ -256,6 +383,7 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   void clearSupervisors() {
     state = state.copyWith(
       supervisors: const [],
+      assignments: const [],
       clearSelectedSupervisor: true,
     );
   }
@@ -264,7 +392,9 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // CREATE SUPERVISOR
   // =============================================================
 
-  Future<bool> createSupervisor(Map<String, dynamic> data) async {
+  Future<bool> createSupervisor(
+      Map<String, dynamic> data,
+      ) async {
     try {
       state = state.copyWith(
         isSaving: true,
@@ -273,36 +403,53 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
       );
 
       // ---------------------------------------------------------
-      // DATA
+      // READ DATA
       // ---------------------------------------------------------
 
-      final companyId = data['company_id']?.toString().trim();
+      final companyId =
+      data['company_id']?.toString().trim();
 
-      final departmentId = data['department_id']?.toString().trim();
+      final departmentId =
+      data['department_id']?.toString().trim();
 
-      final employeeId = data['employee_id']?.toString().trim();
+      final employeeId =
+      data['employee_id']?.toString().trim();
 
       // ---------------------------------------------------------
       // VALIDATION
       // ---------------------------------------------------------
 
       if (companyId == null || companyId.isEmpty) {
-        throw Exception('Company is required.');
+        throw Exception(
+          'Company is required.',
+        );
       }
 
       if (departmentId == null || departmentId.isEmpty) {
-        throw Exception('Department is required.');
+        throw Exception(
+          'Department is required.',
+        );
       }
 
       if (employeeId == null || employeeId.isEmpty) {
-        throw Exception('Employee is required.');
+        throw Exception(
+          'Employee is required.',
+        );
       }
 
+      _log(
+        'CREATE SUPERVISOR: '
+            'company=$companyId, '
+            'department=$departmentId, '
+            'employee=$employeeId',
+      );
+
       // ---------------------------------------------------------
-      // DATABASE INSERT
+      // DATABASE
       // ---------------------------------------------------------
 
-      final supervisor = await _remoteDataSource.createSupervisor(
+      final supervisor =
+      await _remoteDataSource.createSupervisor(
         companyId: companyId,
         departmentId: departmentId,
         employeeId: employeeId,
@@ -312,34 +459,52 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
       // UPDATE LOCAL LIST
       // ---------------------------------------------------------
 
-      final updatedList = [supervisor, ...state.supervisors];
+      final updatedList = <Map<String, dynamic>>[
+        supervisor,
+        ...state.supervisors,
+      ];
 
       state = state.copyWith(
         isSaving: false,
         supervisors: updatedList,
         selectedCompanyId: companyId,
-        successMessage: 'Supervisor created successfully.',
+        clearError: true,
+        successMessage:
+        'Supervisor created successfully.',
       );
+
+      _log('SUPERVISOR CREATED');
 
       return true;
     } on PostgrestException catch (e) {
-      debugPrint('CREATE SUPERVISOR DB ERROR = $e');
+      _log(
+        'CREATE SUPERVISOR DB ERROR: '
+            '${e.message}',
+      );
 
       if (e.code == '23505') {
-        setError('This employee is already assigned as a supervisor.');
-
-        return false;
+        setError(
+          'This employee is already assigned as a supervisor.',
+        );
+      } else {
+        setError(
+          DatabaseErrorHelper.getMessage(e),
+        );
       }
-
-      setError(DatabaseErrorHelper.getMessage(e));
 
       return false;
     } catch (e) {
-      setError(_cleanError(e));
+      _log('CREATE SUPERVISOR ERROR: $e');
+
+      setError(
+        _cleanError(e),
+      );
 
       return false;
     } finally {
-      state = state.copyWith(isSaving: false);
+      state = state.copyWith(
+        isSaving: false,
+      );
     }
   }
 
@@ -347,7 +512,9 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // UPDATE SUPERVISOR
   // =============================================================
 
-  Future<bool> updateSupervisor(Map<String, dynamic> data) async {
+  Future<bool> updateSupervisor(
+      Map<String, dynamic> data,
+      ) async {
     try {
       state = state.copyWith(
         isSaving: true,
@@ -356,39 +523,63 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
       );
 
       // ---------------------------------------------------------
-      // DATA
+      // READ DATA
       // ---------------------------------------------------------
 
-      final supervisorId = data['id']?.toString().trim();
+      final supervisorId =
+      data['id']?.toString().trim();
 
-      final companyId = data['company_id']?.toString().trim();
+      final companyId =
+      data['company_id']?.toString().trim();
 
-      final departmentId = data['department_id']?.toString().trim();
+      final departmentId =
+      data['department_id']?.toString().trim();
 
-      final employeeId = data['employee_id']?.toString().trim();
+      final employeeId =
+      data['employee_id']?.toString().trim();
 
-      final isActive = data['is_active'] == true;
+      final isActive =
+          data['is_active'] == true;
 
       // ---------------------------------------------------------
       // VALIDATION
       // ---------------------------------------------------------
 
       if (supervisorId == null ||
-          supervisorId.isEmpty ||
-          companyId == null ||
-          companyId.isEmpty ||
-          departmentId == null ||
-          departmentId.isEmpty ||
-          employeeId == null ||
-          employeeId.isEmpty) {
-        throw Exception('Invalid supervisor data.');
+          supervisorId.isEmpty) {
+        throw Exception(
+          'Invalid supervisor ID.',
+        );
       }
 
+      if (companyId == null || companyId.isEmpty) {
+        throw Exception(
+          'Company is required.',
+        );
+      }
+
+      if (departmentId == null || departmentId.isEmpty) {
+        throw Exception(
+          'Department is required.',
+        );
+      }
+
+      if (employeeId == null || employeeId.isEmpty) {
+        throw Exception(
+          'Employee is required.',
+        );
+      }
+
+      _log(
+        'UPDATE SUPERVISOR: $supervisorId',
+      );
+
       // ---------------------------------------------------------
-      // DATABASE UPDATE
+      // DATABASE
       // ---------------------------------------------------------
 
-      final updated = await _remoteDataSource.updateSupervisor(
+      final updated =
+      await _remoteDataSource.updateSupervisor(
         supervisorId: supervisorId,
         companyId: companyId,
         departmentId: departmentId,
@@ -400,37 +591,74 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
       // UPDATE LOCAL LIST
       // ---------------------------------------------------------
 
-      final list = state.supervisors.map((item) {
-        if (item['id']?.toString() == supervisorId) {
-          return updated;
-        }
+      final updatedList =
+      state.supervisors.map(
+            (item) {
+          if (item['id']?.toString() == supervisorId) {
+            return updated;
+          }
 
-        return item;
-      }).toList();
+          return item;
+        },
+      ).toList();
+
+      // ---------------------------------------------------------
+      // UPDATE SELECTED SUPERVISOR
+      // ---------------------------------------------------------
+
+      final selected =
+          state.selectedSupervisor;
+
+      final updatedSelected =
+      selected != null &&
+          selected['id']?.toString() == supervisorId
+          ? updated
+          : selected;
+
+      // ---------------------------------------------------------
+      // UPDATE STATE
+      // ---------------------------------------------------------
 
       state = state.copyWith(
         isSaving: false,
-        supervisors: list,
-        successMessage: 'Supervisor updated successfully.',
+        supervisors: updatedList,
+        selectedSupervisor: updatedSelected,
+        successMessage:
+        'Supervisor updated successfully.',
       );
+
+      _log('SUPERVISOR UPDATED');
 
       return true;
     } on PostgrestException catch (e) {
+      _log(
+        'UPDATE SUPERVISOR DB ERROR: '
+            '${e.message}',
+      );
+
       if (e.code == '23505') {
-        setError('This employee is already assigned as a supervisor.');
-
-        return false;
+        setError(
+          'This employee is already assigned as a supervisor.',
+        );
+      } else {
+        setError(
+          DatabaseErrorHelper.getMessage(e),
+        );
       }
-
-      setError(DatabaseErrorHelper.getMessage(e));
 
       return false;
     } catch (e) {
-      setError(_cleanError(e));
+      _log('UPDATE SUPERVISOR ERROR: $e');
+
+      setError(
+        _cleanError(e),
+      );
 
       return false;
     } finally {
-      state = state.copyWith(isSaving: false);
+      state = state.copyWith(
+        isSaving: false,
+      );
     }
   }
 
@@ -438,30 +666,57 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // TOGGLE SUPERVISOR STATUS
   // =============================================================
 
-  Future<bool> toggleSupervisor(Map<String, dynamic> supervisor) async {
-    final supervisorId = supervisor['id']?.toString();
+  Future<bool> toggleSupervisor(
+      Map<String, dynamic> supervisor,
+      ) async {
+    final supervisorId =
+    supervisor['id']?.toString().trim();
 
-    final companyId = supervisor['company_id']?.toString();
+    final companyId =
+    supervisor['company_id']?.toString().trim();
 
-    final departmentId = supervisor['department_id']?.toString();
+    final departmentId =
+    supervisor['department_id']?.toString().trim();
 
-    final employeeId = supervisor['employee_id']?.toString();
+    final employeeId =
+    supervisor['employee_id']?.toString().trim();
 
-    final currentStatus = supervisor['is_active'] == true;
+    final currentStatus =
+        supervisor['is_active'] == true;
 
     // -----------------------------------------------------------
     // VALIDATION
     // -----------------------------------------------------------
 
     if (supervisorId == null ||
-        supervisorId.isEmpty ||
-        companyId == null ||
-        companyId.isEmpty ||
-        departmentId == null ||
-        departmentId.isEmpty ||
-        employeeId == null ||
-        employeeId.isEmpty) {
-      setError('Invalid supervisor data.');
+        supervisorId.isEmpty) {
+      setError(
+        'Invalid supervisor ID.',
+      );
+
+      return false;
+    }
+
+    if (companyId == null || companyId.isEmpty) {
+      setError(
+        'Company is required.',
+      );
+
+      return false;
+    }
+
+    if (departmentId == null || departmentId.isEmpty) {
+      setError(
+        'Department is required.',
+      );
+
+      return false;
+    }
+
+    if (employeeId == null || employeeId.isEmpty) {
+      setError(
+        'Employee is required.',
+      );
 
       return false;
     }
@@ -483,11 +738,15 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // DELETE SUPERVISOR
   // =============================================================
 
-  Future<bool> deleteSupervisor(String supervisorId) async {
+  Future<bool> deleteSupervisor(
+      String supervisorId,
+      ) async {
     final id = supervisorId.trim();
 
     if (id.isEmpty) {
-      setError('Invalid supervisor ID.');
+      setError(
+        'Invalid supervisor ID.',
+      );
 
       return false;
     }
@@ -499,52 +758,86 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
         clearSuccess: true,
       );
 
+      _log('DELETE SUPERVISOR: $id');
+
       // ---------------------------------------------------------
-      // DATABASE DELETE
+      // DATABASE
       // ---------------------------------------------------------
 
       await _remoteDataSource.deleteSupervisor(id);
 
       // ---------------------------------------------------------
-      // REMOVE LOCAL ITEM
+      // REMOVE FROM LOCAL LIST
       // ---------------------------------------------------------
 
-      final list = state.supervisors.where((item) {
-        return item['id']?.toString() != id;
-      }).toList();
+      final updatedList =
+      state.supervisors.where(
+            (item) {
+          return item['id']?.toString() != id;
+        },
+      ).toList();
+
+      // ---------------------------------------------------------
+      // CHECK SELECTED
+      // ---------------------------------------------------------
+
+      final selected =
+          state.selectedSupervisor;
+
+      final shouldClearSelected =
+          selected != null &&
+              selected['id']?.toString() == id;
+
+      // ---------------------------------------------------------
+      // UPDATE STATE
+      // ---------------------------------------------------------
 
       state = state.copyWith(
         isDeleting: false,
-        supervisors: list,
-        successMessage: 'Supervisor deleted successfully.',
+        supervisors: updatedList,
+        assignments: shouldClearSelected
+            ? const []
+            : state.assignments,
+        clearSelectedSupervisor:
+        shouldClearSelected,
+        successMessage:
+        'Supervisor deleted successfully.',
       );
+
+      _log('SUPERVISOR DELETED');
 
       return true;
     } on PostgrestException catch (e) {
-      setError(DatabaseErrorHelper.getMessage(e));
+      _log(
+        'DELETE SUPERVISOR DB ERROR: '
+            '${e.message}',
+      );
+
+      setError(
+        DatabaseErrorHelper.getMessage(e),
+      );
 
       return false;
     } catch (e) {
-      setError(_cleanError(e));
+      _log('DELETE SUPERVISOR ERROR: $e');
+
+      setError(
+        _cleanError(e),
+      );
 
       return false;
     } finally {
-      state = state.copyWith(isDeleting: false);
+      state = state.copyWith(
+        isDeleting: false,
+      );
     }
   }
 
   // =============================================================
   // ASSIGN SUPERVISOR DEPARTMENTS
   //
-  // নতুন assignment:
-  //
-  // Supervisor = A
-  // Departments = [IT, HR, Accounts]
-  //
-  // Database:
-  // INSERT IT
-  // INSERT HR
-  // INSERT Accounts
+  // Adds new department assignments.
+  // Existing assignments should not be duplicated.
   // =============================================================
 
   Future<bool> assignSupervisorDepartments({
@@ -559,57 +852,91 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
         clearSuccess: true,
       );
 
+      final company = companyId.trim();
+      final supervisor = supervisorId.trim();
+
       // ---------------------------------------------------------
       // VALIDATION
       // ---------------------------------------------------------
 
-      final company = companyId.trim();
-      final supervisor = supervisorId.trim();
-
       if (company.isEmpty) {
-        throw Exception('Company is required.');
+        throw Exception(
+          'Company is required.',
+        );
       }
 
       if (supervisor.isEmpty) {
-        throw Exception('Supervisor is required.');
+        throw Exception(
+          'Supervisor is required.',
+        );
       }
 
-      if (departmentIds.isEmpty) {
-        throw Exception('Please select at least one department.');
-      }
-
-      // ---------------------------------------------------------
-      // CLEAN + UNIQUE IDS
-      // ---------------------------------------------------------
-
-      final uniqueDepartmentIds = departmentIds
-          .map((id) => id.toString().trim())
-          .where((id) => id.isNotEmpty)
+      final uniqueDepartmentIds =
+      departmentIds
+          .map(
+            (id) => id.toString().trim(),
+      )
+          .where(
+            (id) => id.isNotEmpty,
+      )
           .toSet()
           .toList();
 
       if (uniqueDepartmentIds.isEmpty) {
-        throw Exception('Please select at least one valid department.');
+        throw Exception(
+          'Please select at least one department.',
+        );
       }
 
+      _log(
+        'ASSIGN SUPERVISOR DEPARTMENTS',
+      );
+
+      _log(
+        'COMPANY: $company',
+      );
+
+      _log(
+        'SUPERVISOR: $supervisor',
+      );
+
+      _log(
+        'DEPARTMENTS: $uniqueDepartmentIds',
+      );
+
       // ---------------------------------------------------------
-      // DATABASE INSERT
+      // INSERT
       // ---------------------------------------------------------
 
-      final insertedCount = await _remoteDataSource.assignSupervisorDepartments(
+      final insertedCount =
+      await _remoteDataSource
+          .assignSupervisorDepartments(
         companyId: company,
         supervisorId: supervisor,
         departmentIds: uniqueDepartmentIds,
       );
 
       // ---------------------------------------------------------
-      // NOTHING NEW
+      // RELOAD
+      // ---------------------------------------------------------
+
+      final assignments =
+      await _remoteDataSource
+          .getSupervisorDepartmentAssignments(
+        companyId: company,
+        supervisorId: supervisor,
+      );
+
+      // ---------------------------------------------------------
+      // NO NEW ASSIGNMENT
       // ---------------------------------------------------------
 
       if (insertedCount == 0) {
         state = state.copyWith(
           isSaving: false,
-          successMessage: 'Selected departments are already assigned.',
+          assignments: assignments,
+          successMessage:
+          'Selected departments are already assigned.',
         );
 
         return true;
@@ -621,100 +948,125 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
 
       state = state.copyWith(
         isSaving: false,
-        successMessage: '$insertedCount department(s) assigned successfully.',
+        assignments: assignments,
+        successMessage:
+        '$insertedCount department(s) assigned successfully.',
       );
 
       return true;
     } on PostgrestException catch (e) {
-      debugPrint('ASSIGN SUPERVISOR DEPARTMENT DB ERROR = $e');
+      _log(
+        'ASSIGN DEPARTMENTS DB ERROR: '
+            '${e.message}',
+      );
 
-      setError(DatabaseErrorHelper.getMessage(e));
+      setError(
+        DatabaseErrorHelper.getMessage(e),
+      );
 
       return false;
     } catch (e) {
-      setError(_cleanError(e));
+      _log(
+        'ASSIGN DEPARTMENTS ERROR: $e',
+      );
+
+      setError(
+        _cleanError(e),
+      );
 
       return false;
     } finally {
-      state = state.copyWith(isSaving: false);
+      state = state.copyWith(
+        isSaving: false,
+      );
     }
   }
 
   // =============================================================
   // LOAD SUPERVISOR DEPARTMENT ASSIGNMENTS
-  //
-  // কাজ:
-  //
-  // Company select
-  //      ↓
-  // Supervisor select
-  //      ↓
-  // এই method database থেকে বের করবে:
-  //
-  // IT
-  // HR
-  // Accounts
-  //
-  // অর্থাৎ selected supervisor-এর বর্তমানে
-  // কোন department assigned আছে।
   // =============================================================
 
-  Future<List<Map<String, dynamic>>> loadSupervisorDepartmentAssignments({
+  Future<List<Map<String, dynamic>>>
+  loadSupervisorDepartmentAssignments({
     required String companyId,
     required String supervisorId,
   }) async {
     try {
+      final company = companyId.trim();
+      final supervisor = supervisorId.trim();
+
       // ---------------------------------------------------------
       // VALIDATION
       // ---------------------------------------------------------
 
-      final company = companyId.trim();
-      final supervisor = supervisorId.trim();
-
       if (company.isEmpty) {
-        throw Exception('Company is required.');
+        throw Exception(
+          'Company is required.',
+        );
       }
 
       if (supervisor.isEmpty) {
-        throw Exception('Supervisor is required.');
+        throw Exception(
+          'Supervisor is required.',
+        );
       }
 
-      debugPrint('');
-      debugPrint('=====================================================');
-      debugPrint('LOAD SUPERVISOR DEPARTMENT ASSIGNMENTS');
-      debugPrint('COMPANY ID = $company');
-      debugPrint('SUPERVISOR ID = $supervisor');
-      debugPrint('=====================================================');
+      _log(
+        'LOAD SUPERVISOR DEPARTMENT ASSIGNMENTS',
+      );
+
+      _log(
+        'COMPANY: $company',
+      );
+
+      _log(
+        'SUPERVISOR: $supervisor',
+      );
 
       // ---------------------------------------------------------
-      // DATABASE LOAD
+      // DATABASE
       // ---------------------------------------------------------
 
-      final assignments = await _remoteDataSource
+      final assignments =
+      await _remoteDataSource
           .getSupervisorDepartmentAssignments(
-            companyId: company,
-            supervisorId: supervisor,
-          );
+        companyId: company,
+        supervisorId: supervisor,
+      );
 
-      debugPrint('ASSIGNMENTS FOUND = ${assignments.length}');
+      // ---------------------------------------------------------
+      // STATE
+      // ---------------------------------------------------------
 
-      for (final item in assignments) {
-        debugPrint('ASSIGNMENT = $item');
-      }
+      state = state.copyWith(
+        assignments: assignments,
+        clearError: true,
+      );
 
-      debugPrint('=====================================================');
+      _log(
+        'ASSIGNMENTS FOUND: ${assignments.length}',
+      );
 
       return assignments;
     } on PostgrestException catch (e) {
-      debugPrint('LOAD ASSIGNMENTS DB ERROR = $e');
+      _log(
+        'LOAD ASSIGNMENTS DB ERROR: '
+            '${e.message}',
+      );
 
-      setError(DatabaseErrorHelper.getMessage(e));
+      setError(
+        DatabaseErrorHelper.getMessage(e),
+      );
 
       return [];
     } catch (e) {
-      debugPrint('LOAD ASSIGNMENTS ERROR = $e');
+      _log(
+        'LOAD ASSIGNMENTS ERROR: $e',
+      );
 
-      setError(_cleanError(e));
+      setError(
+        _cleanError(e),
+      );
 
       return [];
     }
@@ -723,37 +1075,7 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // =============================================================
   // UPDATE SUPERVISOR DEPARTMENT ASSIGNMENTS
   //
-  // IMPORTANT:
-  //
-  // এই method পুরো assignment list-কে final state হিসেবে ধরে।
-  //
-  // Example:
-  //
-  // আগে database:
-  //
-  // IT
-  // HR
-  // Accounts
-  // Finance
-  // Admin
-  //
-  // User এখন select করলো:
-  //
-  // IT
-  // HR
-  // Accounts
-  //
-  // তাহলে:
-  //
-  // Finance -> DELETE
-  // Admin   -> DELETE
-  //
-  // নতুন কিছু থাকলে:
-  //
-  // নতুন -> INSERT
-  //
-  // অর্থাৎ UI-তে final selected list
-  // database-এর final state হবে।
+  // Empty departmentIds = remove all assignments.
   // =============================================================
 
   Future<bool> updateSupervisorDepartmentAssignments({
@@ -768,108 +1090,155 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
         clearSuccess: true,
       );
 
+      final company = companyId.trim();
+      final supervisor = supervisorId.trim();
+
       // ---------------------------------------------------------
       // VALIDATION
       // ---------------------------------------------------------
 
-      final company = companyId.trim();
-      final supervisor = supervisorId.trim();
-
       if (company.isEmpty) {
-        throw Exception('Company is required.');
+        throw Exception(
+          'Company is required.',
+        );
       }
 
       if (supervisor.isEmpty) {
-        throw Exception('Supervisor is required.');
+        throw Exception(
+          'Supervisor is required.',
+        );
       }
 
       // ---------------------------------------------------------
       // CLEAN IDS
-      //
-      // Empty থাকলে বাদ যাবে।
-      // Duplicate থাকলে বাদ যাবে।
-      //
-      // Empty list allowed.
-      //
-      // কারণ user যদি সব department remove করে,
-      // তাহলে database-এ সব assignment DELETE হবে।
       // ---------------------------------------------------------
 
-      final uniqueDepartmentIds = departmentIds
-          .map((id) => id.toString().trim())
-          .where((id) => id.isNotEmpty)
+      final uniqueDepartmentIds =
+      departmentIds
+          .map(
+            (id) => id.toString().trim(),
+      )
+          .where(
+            (id) => id.isNotEmpty,
+      )
           .toSet()
           .toList();
 
-      debugPrint('');
-      debugPrint('=====================================================');
-      debugPrint('UPDATE SUPERVISOR DEPARTMENT ASSIGNMENTS');
-      debugPrint('COMPANY ID = $company');
-      debugPrint('SUPERVISOR ID = $supervisor');
-      debugPrint('FINAL DEPARTMENT IDS = $uniqueDepartmentIds');
-      debugPrint('=====================================================');
+      _log(
+        'UPDATE SUPERVISOR DEPARTMENT ASSIGNMENTS',
+      );
+
+      _log(
+        'COMPANY: $company',
+      );
+
+      _log(
+        'SUPERVISOR: $supervisor',
+      );
+
+      _log(
+        'FINAL DEPARTMENT IDS: '
+            '$uniqueDepartmentIds',
+      );
 
       // ---------------------------------------------------------
       // DATABASE UPDATE
       // ---------------------------------------------------------
 
-      await _remoteDataSource.updateSupervisorDepartmentAssignments(
+      await _remoteDataSource
+          .updateSupervisorDepartmentAssignments(
         companyId: company,
         supervisorId: supervisor,
         departmentIds: uniqueDepartmentIds,
       );
 
       // ---------------------------------------------------------
-      // SUCCESS
+      // RELOAD DATABASE STATE
+      // ---------------------------------------------------------
+
+      final assignments =
+      await _remoteDataSource
+          .getSupervisorDepartmentAssignments(
+        companyId: company,
+        supervisorId: supervisor,
+      );
+
+      // ---------------------------------------------------------
+      // UPDATE STATE
       // ---------------------------------------------------------
 
       state = state.copyWith(
         isSaving: false,
-        successMessage: 'Supervisor departments updated successfully.',
+        assignments: assignments,
+        successMessage:
+        'Supervisor departments updated successfully.',
       );
 
-      debugPrint('SUPERVISOR DEPARTMENT ASSIGNMENTS UPDATED SUCCESSFULLY');
+      _log(
+        'SUPERVISOR DEPARTMENT ASSIGNMENTS '
+            'UPDATED SUCCESSFULLY',
+      );
 
       return true;
     } on PostgrestException catch (e) {
-      debugPrint('UPDATE ASSIGNMENTS DB ERROR = $e');
+      _log(
+        'UPDATE ASSIGNMENTS DB ERROR: '
+            '${e.message}',
+      );
 
-      setError(DatabaseErrorHelper.getMessage(e));
+      setError(
+        DatabaseErrorHelper.getMessage(e),
+      );
 
       return false;
     } catch (e) {
-      debugPrint('UPDATE ASSIGNMENTS ERROR = $e');
+      _log(
+        'UPDATE ASSIGNMENTS ERROR: $e',
+      );
 
-      setError(_cleanError(e));
+      setError(
+        _cleanError(e),
+      );
 
       return false;
     } finally {
-      state = state.copyWith(isSaving: false);
+      state = state.copyWith(
+        isSaving: false,
+      );
     }
   }
 
   // =============================================================
-  // LOADING
+  // SET LOADING
   // =============================================================
 
   void setLoading(bool value) {
-    state = state.copyWith(isLoading: value);
+    state = state.copyWith(
+      isLoading: value,
+    );
   }
 
   // =============================================================
-  // SAVING
+  // SET SAVING
   // =============================================================
 
   void setSaving(bool value) {
-    state = state.copyWith(isSaving: value);
+    state = state.copyWith(
+      isSaving: value,
+    );
   }
 
   // =============================================================
-  // ERROR
+  // SET ERROR
   // =============================================================
 
   void setError(String message) {
-    state = state.copyWith(errorMessage: message, clearSuccess: true);
+    final cleanMessage = message.trim();
+
+    state = state.copyWith(
+      errorMessage: cleanMessage,
+      clearSuccess: true,
+    );
   }
 
   // =============================================================
@@ -877,7 +1246,9 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // =============================================================
 
   void clearError() {
-    state = state.copyWith(clearError: true);
+    state = state.copyWith(
+      clearError: true,
+    );
   }
 
   // =============================================================
@@ -885,7 +1256,9 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // =============================================================
 
   void clearSuccess() {
-    state = state.copyWith(clearSuccess: true);
+    state = state.copyWith(
+      clearSuccess: true,
+    );
   }
 
   // =============================================================
@@ -893,7 +1266,20 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // =============================================================
 
   void clearMessages() {
-    state = state.copyWith(clearError: true, clearSuccess: true);
+    state = state.copyWith(
+      clearError: true,
+      clearSuccess: true,
+    );
+  }
+
+  // =============================================================
+  // CLEAR ASSIGNMENTS
+  // =============================================================
+
+  void clearAssignments() {
+    state = state.copyWith(
+      assignments: const [],
+    );
   }
 
   // =============================================================
@@ -901,9 +1287,12 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
   // =============================================================
 
   void reset() {
-    final user = _ref.read(currentUserProvider);
+    final user =
+    _ref.read(currentUserProvider);
 
-    state = SupervisorState(currentUser: user);
+    state = SupervisorState(
+      currentUser: user,
+    );
   }
 
   // =============================================================
@@ -914,9 +1303,23 @@ class SupervisorNotifier extends StateNotifier<SupervisorState> {
     final text = error.toString();
 
     if (text.startsWith('Exception: ')) {
-      return text.substring(11);
+      return text.substring(
+        'Exception: '.length,
+      );
     }
 
     return text;
+  }
+
+  // =============================================================
+  // DEBUG LOGGER
+  // =============================================================
+
+  void _log(String message) {
+    if (kDebugMode) {
+      debugPrint(
+        '[SupervisorNotifier] $message',
+      );
+    }
   }
 }

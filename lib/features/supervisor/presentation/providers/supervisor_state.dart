@@ -2,7 +2,18 @@
 /// Flutter HRMS Pro
 /// Supervisor State
 ///
-/// Version : 3.2.0
+/// Version : 5.0.0
+///
+/// Responsibilities:
+/// - Supervisor loading state
+/// - Company state
+/// - Department state
+/// - Employee state
+/// - Supervisor state
+/// - Supervisor department assignments state
+/// - Selected supervisor state
+/// - Messages
+/// - Current user
 /// ===============================================================
 
 import '../../../../core/auth/current_user.dart';
@@ -27,12 +38,6 @@ class SupervisorState {
   final bool isDeleting;
 
   // =============================================================
-  // COMPANIES
-  // =============================================================
-
-  final List<Map<String, dynamic>> companies;
-
-  // =============================================================
   // DEPARTMENTS
   // =============================================================
 
@@ -51,7 +56,7 @@ class SupervisorState {
   final List<Map<String, dynamic>> supervisors;
 
   // =============================================================
-  // ASSIGNMENTS
+  // SUPERVISOR DEPARTMENT ASSIGNMENTS
   // =============================================================
 
   final List<Map<String, dynamic>> assignments;
@@ -94,8 +99,6 @@ class SupervisorState {
     this.isLoading = false,
     this.isSaving = false,
     this.isDeleting = false,
-
-    this.companies = const [],
     this.departments = const [],
     this.employees = const [],
     this.supervisors = const [],
@@ -140,75 +143,84 @@ class SupervisorState {
     CurrentUser? currentUser,
   }) {
     return SupervisorState(
-      // ===========================================================
+      // -----------------------------------------------------------
       // LOADING
-      // ===========================================================
+      // -----------------------------------------------------------
+
       isLoading: isLoading ?? this.isLoading,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // SAVING
-      // ===========================================================
+      // -----------------------------------------------------------
+
       isSaving: isSaving ?? this.isSaving,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // DELETING
-      // ===========================================================
+      // -----------------------------------------------------------
+
       isDeleting: isDeleting ?? this.isDeleting,
 
-      // ===========================================================
-      // COMPANIES
-      // ===========================================================
-      companies: companies ?? this.companies,
-
-      // ===========================================================
+      // -----------------------------------------------------------
       // DEPARTMENTS
-      // ===========================================================
+      // -----------------------------------------------------------
+
       departments: departments ?? this.departments,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // EMPLOYEES
-      // ===========================================================
+      // -----------------------------------------------------------
+
       employees: employees ?? this.employees,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // SUPERVISORS
-      // ===========================================================
+      // -----------------------------------------------------------
+
       supervisors: supervisors ?? this.supervisors,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // ASSIGNMENTS
-      // ===========================================================
+      // -----------------------------------------------------------
+
       assignments: assignments ?? this.assignments,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // SELECTED SUPERVISOR
-      // ===========================================================
+      // -----------------------------------------------------------
+
       selectedSupervisor: clearSelectedSupervisor
           ? null
           : selectedSupervisor ?? this.selectedSupervisor,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // SELECTED COMPANY
-      // ===========================================================
+      // -----------------------------------------------------------
+
       selectedCompanyId: clearSelectedCompany
           ? null
           : selectedCompanyId ?? this.selectedCompanyId,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // ERROR
-      // ===========================================================
-      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      // -----------------------------------------------------------
 
-      // ===========================================================
+      errorMessage: clearError
+          ? null
+          : errorMessage ?? this.errorMessage,
+
+      // -----------------------------------------------------------
       // SUCCESS
-      // ===========================================================
+      // -----------------------------------------------------------
+
       successMessage: clearSuccess
           ? null
           : successMessage ?? this.successMessage,
 
-      // ===========================================================
+      // -----------------------------------------------------------
       // CURRENT USER
-      // ===========================================================
+      // -----------------------------------------------------------
+
       currentUser: currentUser ?? this.currentUser,
     );
   }
@@ -216,8 +228,6 @@ class SupervisorState {
   // =============================================================
   // HELPERS
   // =============================================================
-
-  bool get hasCompanies => companies.isNotEmpty;
 
   bool get hasDepartments => departments.isNotEmpty;
 
@@ -227,11 +237,17 @@ class SupervisorState {
 
   bool get hasAssignments => assignments.isNotEmpty;
 
-  bool get hasSelectedCompany =>
-      selectedCompanyId != null && selectedCompanyId!.isNotEmpty;
+  bool get hasSelectedSupervisor => selectedSupervisor != null;
 
-  bool get hasError => errorMessage != null && errorMessage!.trim().isNotEmpty;
+  bool get hasSelectedCompany =>
+      selectedCompanyId != null &&
+          selectedCompanyId!.trim().isNotEmpty;
+
+  bool get hasError =>
+      errorMessage != null &&
+          errorMessage!.trim().isNotEmpty;
 
   bool get hasSuccess =>
-      successMessage != null && successMessage!.trim().isNotEmpty;
+      successMessage != null &&
+          successMessage!.trim().isNotEmpty;
 }

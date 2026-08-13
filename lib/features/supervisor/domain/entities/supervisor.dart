@@ -13,6 +13,8 @@ class Supervisor {
   final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? createdBy;
+  final String? updatedBy;
 
   const Supervisor({
     required this.id,
@@ -22,6 +24,8 @@ class Supervisor {
     required this.isActive,
     this.createdAt,
     this.updatedAt,
+    this.createdBy,
+    this.updatedBy,
   });
 
   // =============================================================
@@ -34,10 +38,8 @@ class Supervisor {
     return Supervisor(
       id: map['id']?.toString() ?? '',
       companyId: map['company_id']?.toString() ?? '',
-      departmentId:
-      map['department_id']?.toString() ?? '',
-      employeeId:
-      map['employee_id']?.toString() ?? '',
+      departmentId: map['department_id']?.toString() ?? '',
+      employeeId: map['employee_id']?.toString() ?? '',
       isActive:
       map['is_active'] as bool? ?? true,
       createdAt: map['created_at'] != null
@@ -50,6 +52,8 @@ class Supervisor {
         map['updated_at'].toString(),
       )
           : null,
+      createdBy: map['created_by']?.toString() ?? '',
+      updatedBy: map['updated_by']?.toString() ?? '',
     );
   }
 
@@ -68,6 +72,8 @@ class Supervisor {
       createdAt?.toIso8601String(),
       'updated_at':
       updatedAt?.toIso8601String(),
+      'created_by': createdBy,
+      'updated_by': updatedBy,
     };
   }
 }

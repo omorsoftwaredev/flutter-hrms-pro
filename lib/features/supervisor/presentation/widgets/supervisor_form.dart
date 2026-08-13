@@ -2,58 +2,90 @@
 /// Flutter HRMS Pro
 /// Supervisor Form
 ///
-/// Version : 5.0.0
+/// Version : 5.1.0
+///
+/// Responsibilities:
+/// - Department selection
+/// - Employee selection
+/// - Supervisor creation form
+///
+/// Company ID:
+/// - Form থেকে company select করা হবে না
+/// - Current logged-in user's company context ব্যবহার হবে
+/// - Parent/Notifier create করার সময় company_id provide করবে
 /// ===============================================================
 
 import 'package:flutter/material.dart';
 
 class SupervisorForm extends StatefulWidget {
-  final List<Map<String, dynamic>> companies;
+  // =============================================================
+  // DEPARTMENTS
+  // =============================================================
+
   final List<Map<String, dynamic>> departments;
+
+  // =============================================================
+  // EMPLOYEES
+  // =============================================================
+
   final List<Map<String, dynamic>> employees;
+
+  // =============================================================
+  // SAVING
+  // =============================================================
 
   final bool isSaving;
 
-  final Future<void> Function(String? companyId)? onCompanyChanged;
+  // =============================================================
+  // DEPARTMENT CHANGED
+  // =============================================================
 
-  final Future<void> Function(String? departmentId)?
-  onDepartmentChanged;
+  final Future<void> Function(String? departmentId)? onDepartmentChanged;
 
-  final Future<void> Function(
-      Map<String, dynamic> data,
-      )? onSubmit;
+  // =============================================================
+  // SUBMIT
+  // =============================================================
+
+  final Future<void> Function(Map<String, dynamic> data)? onSubmit;
+
+  // =============================================================
+  // CONSTRUCTOR
+  // =============================================================
 
   const SupervisorForm({
     super.key,
-    this.companies = const [],
     this.departments = const [],
     this.employees = const [],
     this.isSaving = false,
-    this.onCompanyChanged,
     this.onDepartmentChanged,
     this.onSubmit,
   });
 
   @override
-  State<SupervisorForm> createState() =>
-      _SupervisorFormState();
+  State<SupervisorForm> createState() => _SupervisorFormState();
 }
 
-class _SupervisorFormState
-    extends State<SupervisorForm> {
+// ===============================================================
+// STATE
+// ===============================================================
+
+class _SupervisorFormState extends State<SupervisorForm> {
   // =============================================================
-  // FORM
+  // FORM KEY
   // =============================================================
 
-  final GlobalKey<FormState> _formKey =
-  GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // =============================================================
-  // SELECTED VALUES
+  // SELECTED DEPARTMENT
   // =============================================================
 
-  String? _companyId;
   String? _departmentId;
+
+  // =============================================================
+  // SELECTED EMPLOYEE
+  // =============================================================
+
   String? _employeeId;
 
   // =============================================================
@@ -71,179 +103,97 @@ class _SupervisorFormState
     return Form(
       key: _formKey,
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // =======================================================
           // TITLE
           // =======================================================
-
           const Text(
             'Create Supervisor',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 6),
 
           const Text(
-            'Select company, department and employee.',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.black54,
-            ),
+            'Select department and employee.',
+            style: TextStyle(fontSize: 13, color: Colors.black54),
           ),
 
           const SizedBox(height: 22),
 
           // =======================================================
-          // COMPANY
-          // =======================================================
-
-          DropdownButtonFormField<String>(
-            value: _companyId,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Company',
-              hintText: 'Select company',
-              prefixIcon: Icon(
-                Icons.business_outlined,
-              ),
-              border: OutlineInputBorder(),
-            ),
-            items: widget.companies.map(
-                  (company) {
-                final id =
-                company['id']?.toString();
-
-                final name =
-                    company['name']?.toString() ??
-                        company['company_name']
-                            ?.toString() ??
-                        '-';
-
-                return DropdownMenuItem<String>(
-                  value: id,
-                  child: Text(
-                    name,
-                    overflow:
-                    TextOverflow.ellipsis,
-                  ),
-                );
-              },
-            ).toList(),
-            onChanged:
-            widget.isSaving || _submitting
-                ? null
-                : (value) async {
-              if (value == null ||
-                  value.isEmpty) {
-                return;
-              }
-
-              setState(() {
-                _companyId = value;
-
-                // Company change হলে
-                // নিচের selection reset
-                _departmentId = null;
-                _employeeId = null;
-              });
-
-              debugPrint(
-                'SUPERVISOR FORM '
-                    'COMPANY = $value',
-              );
-
-              await widget
-                  .onCompanyChanged
-                  ?.call(value);
-            },
-            validator: (value) {
-              if (value == null ||
-                  value.isEmpty) {
-                return 'Please select company';
-              }
-
-              return null;
-            },
-          ),
-
-          const SizedBox(height: 18),
-
-          // =======================================================
           // DEPARTMENT
           // =======================================================
-
           DropdownButtonFormField<String>(
             value: _departmentId,
             isExpanded: true,
             decoration: const InputDecoration(
               labelText: 'Department',
               hintText: 'Select department',
-              prefixIcon: Icon(
-                Icons.apartment_outlined,
-              ),
+              prefixIcon: Icon(Icons.apartment_outlined),
               border: OutlineInputBorder(),
             ),
-            items: widget.departments.map(
-                  (department) {
-                final id =
-                department['id']?.toString();
 
-                final name =
-                    department['name']?.toString() ??
-                        department['department_name']
-                            ?.toString() ??
-                        '-';
+            // -----------------------------------------------------
+            // DEPARTMENT ITEMS
+            // -----------------------------------------------------
+            items: widget.departments.map((department) {
+              final id = department['id']?.toString();
 
-                return DropdownMenuItem<String>(
-                  value: id,
-                  child: Text(
-                    name,
-                    overflow:
-                    TextOverflow.ellipsis,
-                  ),
-                );
-              },
-            ).toList(),
-            onChanged:
-            widget.isSaving || _submitting
-                ? null
-                : _companyId == null
+              final name =
+                  department['name']?.toString() ??
+                  department['department_name']?.toString() ??
+                  '-';
+
+              return DropdownMenuItem<String>(
+                value: id,
+                child: Text(name, overflow: TextOverflow.ellipsis),
+              );
+            }).toList(),
+
+            // -----------------------------------------------------
+            // DEPARTMENT CHANGE
+            // -----------------------------------------------------
+            onChanged: widget.isSaving || _submitting
                 ? null
                 : (value) async {
-              if (value == null ||
-                  value.isEmpty) {
-                return;
-              }
+                    if (value == null || value.isEmpty) {
+                      return;
+                    }
 
-              setState(() {
-                _departmentId =
-                    value;
+                    setState(() {
+                      _departmentId = value;
 
-                _employeeId = null;
-              });
+                      // Department change হলে
+                      // আগের employee clear হবে।
+                      _employeeId = null;
+                    });
 
-              debugPrint(
-                'SUPERVISOR FORM '
-                    'DEPARTMENT = $value',
-              );
+                    debugPrint(
+                      '================================================',
+                    );
 
-              await widget
-                  .onDepartmentChanged
-                  ?.call(value);
-            },
+                    debugPrint('SUPERVISOR FORM');
+
+                    debugPrint('DEPARTMENT SELECTED = $value');
+
+                    debugPrint(
+                      '================================================',
+                    );
+
+                    // -------------------------------------------------
+                    // LOAD EMPLOYEES
+                    // -------------------------------------------------
+
+                    await widget.onDepartmentChanged?.call(value);
+                  },
+
+            // -----------------------------------------------------
+            // VALIDATION
+            // -----------------------------------------------------
             validator: (value) {
-              if (_companyId == null ||
-                  _companyId!.isEmpty) {
-                return 'Select company first';
-              }
-
-              if (value == null ||
-                  value.isEmpty) {
+              if (value == null || value.isEmpty) {
                 return 'Please select department';
               }
 
@@ -256,83 +206,82 @@ class _SupervisorFormState
           // =======================================================
           // EMPLOYEE
           // =======================================================
-
           DropdownButtonFormField<String>(
             value: _employeeId,
             isExpanded: true,
             decoration: const InputDecoration(
               labelText: 'Employee',
               hintText: 'Select employee',
-              prefixIcon: Icon(
-                Icons.person_outline,
-              ),
+              prefixIcon: Icon(Icons.person_outline),
               border: OutlineInputBorder(),
             ),
-            items: widget.employees.map(
-                  (employee) {
-                final id =
-                employee['id']?.toString();
 
-                final name =
-                    employee['full_name']
-                        ?.toString() ??
-                        employee['employee_name']
-                            ?.toString() ??
-                        '${employee['first_name'] ?? ''} '
-                            '${employee['last_name'] ?? ''}'
-                            .trim();
+            // -----------------------------------------------------
+            // EMPLOYEE ITEMS
+            // -----------------------------------------------------
+            items: widget.employees.map((employee) {
+              final id = employee['id']?.toString();
 
-                final code =
-                    employee['employee_code']
-                        ?.toString() ??
-                        '';
+              final fullName =
+                  employee['full_name']?.toString() ??
+                  employee['employee_name']?.toString() ??
+                  '${employee['first_name'] ?? ''} '
+                          '${employee['last_name'] ?? ''}'
+                      .trim();
 
-                final label =
-                code.isEmpty
-                    ? name
-                    : '$name ($code)';
+              final employeeCode = employee['employee_code']?.toString() ?? '';
 
-                return DropdownMenuItem<String>(
-                  value: id,
-                  child: Text(
-                    label.isEmpty
-                        ? '-'
-                        : label,
-                    overflow:
-                    TextOverflow.ellipsis,
-                  ),
-                );
-              },
-            ).toList(),
-            onChanged:
-            widget.isSaving || _submitting
+              final label = employeeCode.isEmpty
+                  ? fullName
+                  : '$fullName ($employeeCode)';
+
+              return DropdownMenuItem<String>(
+                value: id,
+                child: Text(
+                  label.isEmpty ? '-' : label,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+
+            // -----------------------------------------------------
+            // EMPLOYEE CHANGE
+            // -----------------------------------------------------
+            onChanged: widget.isSaving || _submitting
                 ? null
                 : _departmentId == null
                 ? null
                 : (value) {
-              if (value == null ||
-                  value.isEmpty) {
-                return;
-              }
+                    if (value == null || value.isEmpty) {
+                      return;
+                    }
 
-              setState(() {
-                _employeeId =
-                    value;
-              });
+                    setState(() {
+                      _employeeId = value;
+                    });
 
-              debugPrint(
-                'SUPERVISOR FORM '
-                    'EMPLOYEE = $value',
-              );
-            },
+                    debugPrint(
+                      '================================================',
+                    );
+
+                    debugPrint('SUPERVISOR FORM');
+
+                    debugPrint('EMPLOYEE SELECTED = $value');
+
+                    debugPrint(
+                      '================================================',
+                    );
+                  },
+
+            // -----------------------------------------------------
+            // VALIDATION
+            // -----------------------------------------------------
             validator: (value) {
-              if (_departmentId == null ||
-                  _departmentId!.isEmpty) {
+              if (_departmentId == null || _departmentId!.isEmpty) {
                 return 'Select department first';
               }
 
-              if (value == null ||
-                  value.isEmpty) {
+              if (value == null || value.isEmpty) {
                 return 'Please select employee';
               }
 
@@ -345,40 +294,27 @@ class _SupervisorFormState
           // =======================================================
           // SUMMARY
           // =======================================================
-
-          if (_companyId != null &&
-              _departmentId != null &&
-              _employeeId != null)
+          if (_departmentId != null && _employeeId != null)
             Container(
               width: double.infinity,
-              padding:
-              const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.green
-                    .withOpacity(.08),
-                borderRadius:
-                BorderRadius.circular(10),
-                border: Border.all(
-                  color: Colors.green
-                      .withOpacity(.25),
-                ),
+                color: Colors.green.withOpacity(.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.green.withOpacity(.25)),
               ),
               child: const Row(
                 children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    color: Colors.green,
-                  ),
+                  Icon(Icons.check_circle_outline, color: Colors.green),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'All information selected. '
-                          'You can create the supervisor now.',
+                      'You can create the supervisor now.',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.green,
-                        fontWeight:
-                        FontWeight.w600,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -391,34 +327,28 @@ class _SupervisorFormState
           // =======================================================
           // CREATE BUTTON
           // =======================================================
-
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton.icon(
-              onPressed:
-              widget.isSaving ||
-                  _submitting
-                  ? null
-                  : _submit,
-              icon:
-              widget.isSaving ||
-                  _submitting
+              onPressed: widget.isSaving || _submitting ? null : _submit,
+
+              // ---------------------------------------------------
+              // ICON
+              // ---------------------------------------------------
+              icon: widget.isSaving || _submitting
                   ? const SizedBox(
-                width: 18,
-                height: 18,
-                child:
-                CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
-              )
-                  : const Icon(
-                Icons
-                    .supervisor_account_outlined,
-              ),
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.supervisor_account_outlined),
+
+              // ---------------------------------------------------
+              // LABEL
+              // ---------------------------------------------------
               label: Text(
-                widget.isSaving ||
-                    _submitting
+                widget.isSaving || _submitting
                     ? 'Creating...'
                     : 'Create Supervisor',
               ),
@@ -434,42 +364,24 @@ class _SupervisorFormState
   // =============================================================
 
   Future<void> _submit() async {
-    debugPrint(
-      '================================================',
-    );
+    debugPrint('================================================');
 
-    debugPrint(
-      'SUPERVISOR CREATE BUTTON CLICKED',
-    );
+    debugPrint('SUPERVISOR CREATE BUTTON CLICKED');
 
-    debugPrint(
-      'company_id = $_companyId',
-    );
+    debugPrint('department_id = $_departmentId');
 
-    debugPrint(
-      'department_id = $_departmentId',
-    );
+    debugPrint('employee_id = $_employeeId');
 
-    debugPrint(
-      'employee_id = $_employeeId',
-    );
-
-    debugPrint(
-      '================================================',
-    );
+    debugPrint('================================================');
 
     // ===========================================================
-    // VALIDATE
+    // VALIDATE FORM
     // ===========================================================
 
-    final valid =
-        _formKey.currentState?.validate() ??
-            false;
+    final valid = _formKey.currentState?.validate() ?? false;
 
     if (!valid) {
-      debugPrint(
-        'SUPERVISOR FORM VALIDATION FAILED',
-      );
+      debugPrint('SUPERVISOR FORM VALIDATION FAILED');
 
       return;
     }
@@ -478,25 +390,29 @@ class _SupervisorFormState
     // SAFETY CHECK
     // ===========================================================
 
-    if (_companyId == null ||
-        _departmentId == null ||
-        _employeeId == null) {
+    if (_departmentId == null ||
+        _departmentId!.isEmpty ||
+        _employeeId == null ||
+        _employeeId!.isEmpty) {
       debugPrint(
         'SUPERVISOR CREATE FAILED: '
-            'Required ID missing',
+        'Required ID missing',
       );
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please select company, department and employee.',
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select department and employee.'),
           ),
-        ),
-      );
+        );
+      }
 
       return;
     }
+
+    // ===========================================================
+    // START SUBMITTING
+    // ===========================================================
 
     setState(() {
       _submitting = true;
@@ -504,46 +420,47 @@ class _SupervisorFormState
 
     // ===========================================================
     // DATA
+    //
+    // IMPORTANT:
+    //
+    // company_id এখানে Form থেকে নেওয়া হচ্ছে না।
+    //
+    // Current logged-in user's company_id
+    // Parent/Notifier/Repository layer থেকে
+    // database operation-এর সময় নেওয়া হবে।
     // ===========================================================
 
-    final data =
-    <String, dynamic>{
-      'company_id': _companyId,
+    final data = <String, dynamic>{
       'department_id': _departmentId,
       'employee_id': _employeeId,
-      'status': 'active',
+      'status': true,
     };
 
-    debugPrint(
-      'SUPERVISOR CREATE DATA = $data',
-    );
+    debugPrint('SUPERVISOR CREATE DATA = $data');
+
+    // ===========================================================
+    // SUBMIT
+    // ===========================================================
 
     try {
       await widget.onSubmit?.call(data);
 
-      debugPrint(
-        'SUPERVISOR FORM SUBMIT CALLBACK COMPLETED',
-      );
+      debugPrint('SUPERVISOR FORM SUBMIT CALLBACK COMPLETED');
     } catch (e, stackTrace) {
-      debugPrint(
-        'SUPERVISOR CREATE ERROR = $e',
-      );
+      debugPrint('SUPERVISOR CREATE ERROR = $e');
 
-      debugPrint(
-        'STACK TRACE = $stackTrace',
-      );
+      debugPrint('STACK TRACE = $stackTrace');
 
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-          SnackBar(
-            content: Text(
-              'Create Supervisor failed: $e',
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Create Supervisor failed: $e')));
       }
     } finally {
+      // =========================================================
+      // STOP SUBMITTING
+      // =========================================================
+
       if (mounted) {
         setState(() {
           _submitting = false;

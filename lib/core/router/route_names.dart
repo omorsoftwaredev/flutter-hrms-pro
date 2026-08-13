@@ -86,6 +86,7 @@ class RouteNames {
   static const employeeCreate = 'employee-create';
   static const employeeEdit = 'employee-edit';
   static const employeeView = 'employee-view';
+  static const supervisors = 'supervisors';
 
 
   // Employee Account
