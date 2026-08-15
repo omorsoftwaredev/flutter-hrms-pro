@@ -11,22 +11,24 @@ class SupervisorAttendanceRepository {
 
   // ===========================================================
   // GET SUPERVISOR
-  //
-  // Logged-in user's employee_id দিয়ে supervisors table check.
   // ===========================================================
 
   Future<Map<String, dynamic>?> getSupervisorByEmployeeId(
       String employeeId,
       ) async {
     try {
+      final id = employeeId.trim();
+
+      if (id.isEmpty) {
+        return null;
+      }
+
       final response = await _supabase
           .from('supervisors')
-          .select(
-        'id, employee_id, company_id, is_active',
-      )
+          .select()
           .eq(
         'employee_id',
-        employeeId,
+        id,
       )
           .eq(
         'is_active',
@@ -34,162 +36,240 @@ class SupervisorAttendanceRepository {
       )
           .maybeSingle();
 
-      return response;
+      if (response == null) {
+        return null;
+      }
+
+      return Map<String, dynamic>.from(response);
     } on PostgrestException catch (e) {
       throw Exception(
         DatabaseErrorHelper.getMessage(e),
       );
+    } catch (e) {
+      rethrow;
     }
   }
 
   // ===========================================================
   // GET SUPERVISOR DEPARTMENT IDS
-  //
-  // supervisor_departments table থেকে শুধু assigned
-  // department IDs নেওয়া হবে।
   // ===========================================================
 
   Future<List<String>> getSupervisorDepartmentIds(
       String supervisorId,
       ) async {
     try {
+      final id = supervisorId.trim();
+
+      if (id.isEmpty) {
+        return [];
+      }
+
       final response = await _supabase
           .from('supervisor_departments')
           .select('department_id')
           .eq(
         'supervisor_id',
-        supervisorId,
+        id,
       );
 
-      return response
-          .map<String>(
-            (row) => row['department_id'].toString(),
+      return List<Map<String, dynamic>>.from(response)
+          .map(
+            (row) => row['department_id']?.toString(),
       )
+          .whereType<String>()
+          .map((id) => id.trim())
+          .where((id) => id.isNotEmpty)
           .toList();
     } on PostgrestException catch (e) {
       throw Exception(
         DatabaseErrorHelper.getMessage(e),
       );
+    } catch (e) {
+      rethrow;
     }
   }
 
   // ===========================================================
   // GET ASSIGNED DEPARTMENTS
+  //
+  // supervisor_departments
+  //        ↓
+  // department IDs
+  //        ↓
+  // departments
+  //
+  // No assumed department fields.
   // ===========================================================
 
-  Future<List<Map<String, dynamic>>>
-  getSupervisorDepartments(
+  Future<List<Map<String, dynamic>>> getSupervisorDepartments(
       String supervisorId,
       ) async {
     try {
-      final response = await _supabase
+      final id = supervisorId.trim();
+
+      if (id.isEmpty) {
+        return [];
+      }
+
+      final assignmentResponse = await _supabase
           .from('supervisor_departments')
-          .select(
-        '''
-            department_id,
-            departments (
-              id,
-              company_id,
-              code,
-              name,
-              description,
-              manager_name,
-              phone,
-              email,
-              location,
-              is_active,
-              created_at,
-              updated_at
-            )
-            ''',
-      )
+          .select()
           .eq(
         'supervisor_id',
-        supervisorId,
+        id,
+      )
+          .order(
+        'created_at',
+        ascending: true,
       );
 
-      return response
-          .map<Map<String, dynamic>>(
-            (row) {
-          final department =
-          row['departments'];
+      final assignments =
+      List<Map<String, dynamic>>.from(
+        assignmentResponse,
+      );
 
-          if (department is Map<String, dynamic>) {
-            return department;
-          }
+      if (assignments.isEmpty) {
+        return [];
+      }
 
-          return <String, dynamic>{
-            'id': row['department_id'],
-          };
-        },
+      final departmentIds = assignments
+          .map(
+            (row) => row['department_id']?.toString(),
       )
+          .whereType<String>()
+          .map((id) => id.trim())
+          .where((id) => id.isNotEmpty)
+          .toSet()
           .toList();
+
+      if (departmentIds.isEmpty) {
+        return [];
+      }
+
+      final departmentResponse = await _supabase
+          .from('departments')
+          .select()
+          .inFilter(
+        'id',
+        departmentIds,
+      );
+
+      final departments =
+      List<Map<String, dynamic>>.from(
+        departmentResponse,
+      );
+
+      final Map<String, Map<String, dynamic>>
+      departmentMap = {};
+
+      for (final department in departments) {
+        final departmentId =
+        department['id']?.toString();
+
+        if (departmentId != null &&
+            departmentId.trim().isNotEmpty) {
+          departmentMap[departmentId.trim()] =
+          Map<String, dynamic>.from(
+            department,
+          );
+        }
+      }
+
+      final result = <Map<String, dynamic>>[];
+
+      for (final assignment in assignments) {
+        final departmentId =
+        assignment['department_id']?.toString();
+
+        if (departmentId == null ||
+            departmentId.trim().isEmpty) {
+          continue;
+        }
+
+        final department =
+        departmentMap[departmentId.trim()];
+
+        if (department != null) {
+          result.add(department);
+        }
+      }
+
+      return result;
     } on PostgrestException catch (e) {
       throw Exception(
         DatabaseErrorHelper.getMessage(e),
       );
+    } catch (e) {
+      rethrow;
     }
   }
 
   // ===========================================================
   // GET EMPLOYEES BY DEPARTMENT
   //
-  // Supervisor-এর assigned department-এর মধ্যেই employee
-  // পাওয়া যাবে।
+  // Department-এর active employees.
+  //
+  // select() ব্যবহার করা হচ্ছে যাতে unnecessary
+  // schema dependency না থাকে।
   // ===========================================================
-
-  // =============================================================
-// GET EMPLOYEES BY DEPARTMENT
-// =============================================================
 
   Future<List<Map<String, dynamic>>>
   getEmployeesByDepartment(
       String departmentId,
       ) async {
-    final response = await _supabase
-        .from('employees')
-        .select(
-      '''
-        id,
-        employee_code,
-        first_name,
-        last_name,
-        full_name,
-        department_id,
-        is_active,
-        departments (
-          id,
-          name
-        )
-        ''',
-    )
-        .eq(
-      'department_id',
-      departmentId,
-    )
-        .eq(
-      'is_active',
-      true,
-    )
-        .order(
-      'employee_code',
-      ascending: true,
-    );
+    try {
+      final id = departmentId.trim();
 
-    return response
-        .map<Map<String, dynamic>>(
-          (row) => Map<String, dynamic>.from(row),
-    )
-        .toList();
+      if (id.isEmpty) {
+        return [];
+      }
+
+      final response = await _supabase
+          .from('employees')
+          .select()
+          .eq(
+        'department_id',
+        id,
+      )
+          .eq(
+        'is_active',
+        true,
+      )
+          .order(
+        'employee_code',
+        ascending: true,
+      );
+
+      return List<Map<String, dynamic>>.from(
+        response,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   // ===========================================================
   // GET TODAY ATTENDANCE
   //
-  // All Employees mode-এর জন্য।
+  // Supervisor-এর assigned department-এর
+  // active employees-এর today's attendance.
   //
-  // এখানে selected department-এর আজকের attendance
-  // নেওয়া হবে।
+  // IMPORTANT:
+  //
+  // attendance -> employees relation ব্যবহার করা হচ্ছে না।
+  //
+  // Step 1:
+  // employees থেকে employee IDs
+  //
+  // Step 2:
+  // attendance থেকে today's attendance
+  //
+  // Step 3:
+  // employee data local map দিয়ে attach
   // ===========================================================
 
   Future<List<Map<String, dynamic>>>
@@ -197,29 +277,68 @@ class SupervisorAttendanceRepository {
       String departmentId,
       ) async {
     try {
-      final today = DateTime.now()
-          .toIso8601String()
-          .split('T')
-          .first;
+      final department = departmentId.trim();
 
-      final response = await _supabase
-          .from('attendance')
-          .select(
-        '''
-            *,
-            employees!inner(
-              id,
-              employee_code,
-              first_name,
-              last_name,
-              full_name,
-              department_id
-            )
-            ''',
+      if (department.isEmpty) {
+        return [];
+      }
+
+      final today = _formatDate(
+        DateTime.now(),
+      );
+
+      // ---------------------------------------------------------
+      // STEP 1
+      // GET ACTIVE EMPLOYEES
+      // ---------------------------------------------------------
+
+      final employeeResponse = await _supabase
+          .from('employees')
+          .select()
+          .eq(
+        'department_id',
+        department,
       )
           .eq(
-        'employees.department_id',
-        departmentId,
+        'is_active',
+        true,
+      );
+
+      final employees =
+      List<Map<String, dynamic>>.from(
+        employeeResponse,
+      );
+
+      if (employees.isEmpty) {
+        return [];
+      }
+
+      final employeeIds = employees
+          .map(
+            (employee) =>
+            employee['id']?.toString(),
+      )
+          .whereType<String>()
+          .map((id) => id.trim())
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      if (employeeIds.isEmpty) {
+        return [];
+      }
+
+      // ---------------------------------------------------------
+      // STEP 2
+      // GET TODAY ATTENDANCE
+      // ---------------------------------------------------------
+
+      final attendanceResponse = await _supabase
+          .from('attendance')
+          .select()
+          .inFilter(
+        'employee_id',
+        employeeIds,
       )
           .eq(
         'attendance_date',
@@ -230,24 +349,74 @@ class SupervisorAttendanceRepository {
         ascending: true,
       );
 
-      return response
-          .map<Map<String, dynamic>>(
-            (row) => Map<String, dynamic>.from(row),
-      )
-          .toList();
+      final attendance =
+      List<Map<String, dynamic>>.from(
+        attendanceResponse,
+      );
+
+      // ---------------------------------------------------------
+      // STEP 3
+      // EMPLOYEE MAP
+      // ---------------------------------------------------------
+
+      final Map<String, Map<String, dynamic>>
+      employeeMap = {};
+
+      for (final employee in employees) {
+        final employeeId =
+        employee['id']?.toString();
+
+        if (employeeId != null &&
+            employeeId.trim().isNotEmpty) {
+          employeeMap[employeeId.trim()] =
+          Map<String, dynamic>.from(
+            employee,
+          );
+        }
+      }
+
+      // ---------------------------------------------------------
+      // STEP 4
+      // ATTACH EMPLOYEE DATA
+      // ---------------------------------------------------------
+
+      final result = <Map<String, dynamic>>[];
+
+      for (final attendanceRow in attendance) {
+        final map =
+        Map<String, dynamic>.from(
+          attendanceRow,
+        );
+
+        final employeeId =
+        attendanceRow['employee_id']
+            ?.toString();
+
+        if (employeeId != null &&
+            employeeId.trim().isNotEmpty) {
+          map['employees'] =
+          employeeMap[employeeId.trim()];
+        } else {
+          map['employees'] = null;
+        }
+
+        result.add(map);
+      }
+
+      return result;
     } on PostgrestException catch (e) {
       throw Exception(
         DatabaseErrorHelper.getMessage(e),
       );
+    } catch (e) {
+      rethrow;
     }
   }
 
   // ===========================================================
   // GET EMPLOYEE ATTENDANCE
   //
-  // Selected Employee mode-এর জন্য।
-  //
-  // Existing getEmployeeAttendanceReport() touch করা হচ্ছে না।
+  // Selected Employee mode.
   // ===========================================================
 
   Future<List<Map<String, dynamic>>>
@@ -257,18 +426,21 @@ class SupervisorAttendanceRepository {
         required DateTime to,
       }) async {
     try {
-      final fromDate =
-      _formatDate(from);
+      final id = employeeId.trim();
 
-      final toDate =
-      _formatDate(to);
+      if (id.isEmpty) {
+        return [];
+      }
+
+      final fromDate = _formatDate(from);
+      final toDate = _formatDate(to);
 
       final response = await _supabase
           .from('attendance')
           .select()
           .eq(
         'employee_id',
-        employeeId,
+        id,
       )
           .gte(
         'attendance_date',
@@ -283,22 +455,23 @@ class SupervisorAttendanceRepository {
         ascending: true,
       );
 
-      return response
-          .map<Map<String, dynamic>>(
-            (row) => Map<String, dynamic>.from(row),
-      )
-          .toList();
+      return List<Map<String, dynamic>>.from(
+        response,
+      );
     } on PostgrestException catch (e) {
       throw Exception(
         DatabaseErrorHelper.getMessage(e),
       );
+    } catch (e) {
+      rethrow;
     }
   }
 
   // ===========================================================
-  // CHECK EMPLOYEE BELONGS TO SUPERVISOR DEPARTMENT
+  // CHECK EMPLOYEE BELONGS TO SUPERVISOR
   //
-  // Selected employee access validation.
+  // Supervisor-এর assigned department-এর বাইরে
+  // employee access করতে পারবে না।
   // ===========================================================
 
   Future<bool> isEmployeeUnderSupervisor({
@@ -306,16 +479,27 @@ class SupervisorAttendanceRepository {
     required String employeeId,
   }) async {
     try {
-      final departments =
-      await getSupervisorDepartmentIds(
-        supervisorId,
-      );
+      final supervisor =
+      supervisorId.trim();
 
-      if (departments.isEmpty) {
+      final employee =
+      employeeId.trim();
+
+      if (supervisor.isEmpty ||
+          employee.isEmpty) {
         return false;
       }
 
-      final employee =
+      final departmentIds =
+      await getSupervisorDepartmentIds(
+        supervisor,
+      );
+
+      if (departmentIds.isEmpty) {
+        return false;
+      }
+
+      final employeeResponse =
       await _supabase
           .from('employees')
           .select(
@@ -323,28 +507,32 @@ class SupervisorAttendanceRepository {
       )
           .eq(
         'id',
-        employeeId,
+        employee,
       )
           .maybeSingle();
 
-      if (employee == null) {
+      if (employeeResponse == null) {
         return false;
       }
 
       final employeeDepartmentId =
-      employee['department_id']?.toString();
+      employeeResponse['department_id']
+          ?.toString();
 
-      if (employeeDepartmentId == null) {
+      if (employeeDepartmentId == null ||
+          employeeDepartmentId.trim().isEmpty) {
         return false;
       }
 
-      return departments.contains(
-        employeeDepartmentId,
+      return departmentIds.contains(
+        employeeDepartmentId.trim(),
       );
     } on PostgrestException catch (e) {
       throw Exception(
         DatabaseErrorHelper.getMessage(e),
       );
+    } catch (e) {
+      rethrow;
     }
   }
 

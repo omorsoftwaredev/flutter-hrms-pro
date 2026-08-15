@@ -16,12 +16,6 @@ class GetAttendanceUseCase {
     return repository.getById(id);
   }
 
-  Future<List<AttendanceEntity>> byCompany(
-      String companyId,
-      ) {
-    return repository.byCompany(companyId);
-  }
-
   Future<List<AttendanceEntity>> byDepartment(
       String departmentId,
       ) {

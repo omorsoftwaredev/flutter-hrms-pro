@@ -30,11 +30,6 @@ abstract class IAttendanceRepository {
       String employeeId,
       );
 
-  /// Company Wise
-  Future<List<AttendanceEntity>> byCompany(
-      String companyId,
-      );
-
   /// Department Wise
   Future<List<AttendanceEntity>> byDepartment(
       String departmentId,

@@ -13,7 +13,7 @@ import '../../../core/auth/current_user.dart';
 import '../../../core/auth/current_user_provider.dart';
 import '../../../core/router/route_paths.dart';
 
-import '../../dashboard/widgets/dashboard_app_bar.dart';
+import '../../../core/widgets/dashboard_appBar.dart';
 import '../widgets/company_dashboard_sidebar.dart';
 
 class CompanyDashboardPage extends ConsumerWidget {

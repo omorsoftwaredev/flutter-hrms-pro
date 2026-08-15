@@ -1,3 +1,10 @@
+/// ===============================================================
+/// Flutter HRMS Pro
+/// Attendance History Page
+///
+/// Version : 2.0.0
+/// ===============================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,8 +25,16 @@ class AttendanceHistoryPage extends ConsumerStatefulWidget {
 
 class _AttendanceHistoryPageState
     extends ConsumerState<AttendanceHistoryPage> {
+  // =============================================================
+  // SEARCH CONTROLLER
+  // =============================================================
+
   final TextEditingController _searchController =
   TextEditingController();
+
+  // =============================================================
+  // INITIALIZE
+  // =============================================================
 
   @override
   void initState() {
@@ -32,11 +47,19 @@ class _AttendanceHistoryPageState
     });
   }
 
+  // =============================================================
+  // REFRESH
+  // =============================================================
+
   Future<void> _refresh() async {
     await ref
         .read(attendanceProvider.notifier)
-        .loadAttendance();
+        .refresh();
   }
+
+  // =============================================================
+  // BUILD
+  // =============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +69,7 @@ class _AttendanceHistoryPageState
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Attendance History",
+          'Attendance History',
         ),
         centerTitle: true,
       ),
@@ -54,7 +77,10 @@ class _AttendanceHistoryPageState
       body: Column(
         children: [
 
-          /// Search
+          // =====================================================
+          // SEARCH
+          // =====================================================
+
           Padding(
             padding: const EdgeInsets.all(12),
             child: AttendanceSearchBar(
@@ -69,28 +95,108 @@ class _AttendanceHistoryPageState
             ),
           ),
 
+          // =====================================================
+          // ATTENDANCE LIST
+          // =====================================================
+
           Expanded(
             child: attendanceState.when(
-              loading: () => const Center(
-                child:
-                CircularProgressIndicator(),
-              ),
+              // -------------------------------------------------
+              // LOADING
+              // -------------------------------------------------
 
-              error: (e, st) => Center(
-                child: Text(
-                  e.toString(),
-                ),
-              ),
+              loading: () {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
+
+              // -------------------------------------------------
+              // ERROR
+              // -------------------------------------------------
+
+              error: (error, stackTrace) {
+                return Center(
+                  child: Padding(
+                    padding:
+                    const EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisSize:
+                      MainAxisSize.min,
+                      children: [
+
+                        const Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Colors.redAccent,
+                        ),
+
+                        const SizedBox(
+                          height: 12,
+                        ),
+
+                        Text(
+                          error.toString(),
+                          textAlign:
+                          TextAlign.center,
+                        ),
+
+                        const SizedBox(
+                          height: 16,
+                        ),
+
+                        ElevatedButton.icon(
+                          onPressed: _refresh,
+                          icon: const Icon(
+                            Icons.refresh,
+                          ),
+                          label: const Text(
+                            'Retry',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+
+              // -------------------------------------------------
+              // DATA
+              // -------------------------------------------------
 
               data: (attendanceList) {
+
+                // ------------------------------------------------
+                // EMPTY
+                // ------------------------------------------------
+
                 if (attendanceList.isEmpty) {
-                  return const AttendanceEmptyWidget();
+                  return RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: ListView(
+                      physics:
+                      const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(
+                          height: 220,
+                        ),
+                        AttendanceEmptyWidget(),
+                      ],
+                    ),
+                  );
                 }
+
+                // ------------------------------------------------
+                // LIST
+                // ------------------------------------------------
 
                 return RefreshIndicator(
                   onRefresh: _refresh,
 
                   child: ListView.builder(
+                    physics:
+                    const AlwaysScrollableScrollPhysics(),
+
                     padding:
                     const EdgeInsets.all(12),
 
@@ -99,23 +205,81 @@ class _AttendanceHistoryPageState
 
                     itemBuilder:
                         (context, index) {
+
                       final attendance =
                       attendanceList[index];
 
                       return AttendanceCard(
-                        attendance: attendance,
+                        attendance:
+                        attendance,
+
+                        // ------------------------------------------------
+                        // DETAILS
+                        // ------------------------------------------------
 
                         onTap: () {
-                          // Next Step
-                          // Attendance Detail Page
+                          Navigator.pushNamed(
+                            context,
+                            '/attendance/details',
+                            arguments:
+                            attendance,
+                          );
                         },
 
-                        onEdit: () {
-                          // Edit Attendance
+                        // ------------------------------------------------
+                        // EDIT
+                        // ------------------------------------------------
+
+                        onEdit: () async {
+                          final result =
+                          await Navigator.pushNamed(
+                            context,
+                            '/attendance/edit',
+                            arguments:
+                            attendance,
+                          );
+
+                          if (result == true) {
+                            await _refresh();
+                          }
                         },
 
-                        onDelete: () {
-                          // Delete Attendance
+                        // ------------------------------------------------
+                        // DELETE
+                        // ------------------------------------------------
+
+                        onDelete: () async {
+                          final id =
+                              attendance.id;
+
+                          if (id == null ||
+                              id.trim().isEmpty) {
+                            return;
+                          }
+
+                          final success =
+                          await ref
+                              .read(
+                            attendanceProvider
+                                .notifier,
+                          )
+                              .delete(id);
+
+                          if (!mounted) {
+                            return;
+                          }
+
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                success
+                                    ? 'Attendance deleted successfully.'
+                                    : 'Failed to delete attendance.',
+                              ),
+                            ),
+                          );
                         },
                       );
                     },
@@ -128,6 +292,10 @@ class _AttendanceHistoryPageState
       ),
     );
   }
+
+  // =============================================================
+  // DISPOSE
+  // =============================================================
 
   @override
   void dispose() {

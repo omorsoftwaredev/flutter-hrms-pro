@@ -2,7 +2,7 @@
 /// HRMS Pro
 /// Supervisor Attendance Provider
 ///
-/// Version : 1.0.0
+/// Version : 1.1.0
 /// ===============================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,30 +19,22 @@ import 'supervisor_attendance_state.dart';
 // ===============================================================
 
 final supervisorAttendanceRepositoryProvider =
-Provider<SupervisorAttendanceRepository>(
-      (ref) {
-    return SupervisorAttendanceRepository();
-  },
-);
+    Provider<SupervisorAttendanceRepository>((ref) {
+      return SupervisorAttendanceRepository();
+    });
 
 // ===============================================================
 // SUPERVISOR ATTENDANCE PROVIDER
 // ===============================================================
 
 final supervisorAttendanceProvider =
-StateNotifierProvider<
-    SupervisorAttendanceNotifier,
-    SupervisorAttendanceState>(
-      (ref) {
-    return SupervisorAttendanceNotifier(
-      supervisorRepository:
-      ref.read(
-        supervisorAttendanceRepositoryProvider,
-      ),
-      attendanceRepository:
-      ref.read(
-        attendanceRepositoryProvider,
-      ),
-    );
-  },
-);
+    StateNotifierProvider<
+      SupervisorAttendanceNotifier,
+      SupervisorAttendanceState
+    >((ref) {
+      return SupervisorAttendanceNotifier(
+        ref: ref,
+        supervisorRepository: ref.read(supervisorAttendanceRepositoryProvider),
+        attendanceRepository: ref.read(attendanceRepositoryProvider),
+      );
+    });

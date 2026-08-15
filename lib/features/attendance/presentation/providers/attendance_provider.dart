@@ -1,3 +1,10 @@
+/// ===============================================================
+/// Flutter HRMS Pro
+/// Attendance Provider
+///
+/// Version : 1.0.0
+/// ===============================================================
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/attendance_model.dart';
@@ -32,7 +39,8 @@ final attendanceProvider = StateNotifierProvider<
 //==============================================================
 
 class AttendanceNotifier
-    extends StateNotifier<AsyncValue<List<AttendanceEntity>>> {
+    extends StateNotifier<
+        AsyncValue<List<AttendanceEntity>>> {
   AttendanceNotifier(this._repository)
       : super(const AsyncLoading()) {
     loadAttendance();
@@ -48,7 +56,8 @@ class AttendanceNotifier
     try {
       state = const AsyncLoading();
 
-      final attendance = await _repository.getAll();
+      final attendance =
+      await _repository.getAll();
 
       state = AsyncData(attendance);
     } catch (e, st) {
@@ -68,7 +77,9 @@ class AttendanceNotifier
   // SEARCH
   //============================================================
 
-  Future<void> search(String keyword) async {
+  Future<void> search(
+      String keyword,
+      ) async {
     try {
       if (keyword.trim().isEmpty) {
         await loadAttendance();
@@ -78,7 +89,9 @@ class AttendanceNotifier
       state = const AsyncLoading();
 
       final attendance =
-      await _repository.search(keyword.trim());
+      await _repository.search(
+        keyword.trim(),
+      );
 
       state = AsyncData(attendance);
     } catch (e, st) {
@@ -94,9 +107,10 @@ class AttendanceNotifier
       AttendanceEntity attendance,
       ) async {
     try {
-      // Entity -> Model
       final model =
-      AttendanceModel.fromEntity(attendance);
+      AttendanceModel.fromEntity(
+        attendance,
+      );
 
       await _repository.insert(model);
 
@@ -117,9 +131,10 @@ class AttendanceNotifier
       AttendanceEntity attendance,
       ) async {
     try {
-      // Entity -> Model
       final model =
-      AttendanceModel.fromEntity(attendance);
+      AttendanceModel.fromEntity(
+        attendance,
+      );
 
       await _repository.update(model);
 
@@ -136,7 +151,9 @@ class AttendanceNotifier
   // DELETE
   //============================================================
 
-  Future<bool> delete(String id) async {
+  Future<bool> delete(
+      String id,
+      ) async {
     try {
       await _repository.delete(id);
 
@@ -157,7 +174,8 @@ class AttendanceNotifier
       String employeeId,
       ) async {
     try {
-      return await _repository.getTodayAttendance(
+      return await _repository
+          .getTodayAttendance(
         employeeId,
       );
     } catch (_) {
@@ -173,9 +191,10 @@ class AttendanceNotifier
     required AttendanceEntity attendance,
   }) async {
     try {
-      // Entity -> Model
       final model =
-      AttendanceModel.fromEntity(attendance);
+      AttendanceModel.fromEntity(
+        attendance,
+      );
 
       await _repository.insert(model);
 
@@ -226,7 +245,8 @@ class AttendanceNotifier
       state = const AsyncLoading();
 
       final attendance =
-      await _repository.getEmployeeAttendance(
+      await _repository
+          .getEmployeeAttendance(
         employeeId,
       );
 
@@ -245,7 +265,8 @@ class AttendanceNotifier
       state = const AsyncLoading();
 
       final attendance =
-      await _repository.todayAttendance();
+      await _repository
+          .todayAttendance();
 
       state = AsyncData(attendance);
     } catch (e, st) {

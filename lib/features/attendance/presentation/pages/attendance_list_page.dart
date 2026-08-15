@@ -1,270 +1,222 @@
+/// ===============================================================
+/// Flutter HRMS Pro
+/// Supervisor Department Assignment Page
+///
+/// Version : 2.0.0
+/// ===============================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/widgets/app_loading.dart';
+import '../../../supervisor/presentation/providers/supervisor_provider.dart';
+import '../../../supervisor/presentation/widgets/supervisor_assignment_table.dart';
 
-import '../../domain/entities/attendance_entity.dart';
-import '../providers/attendance_provider.dart';
-
-import '../widgets/attendance_card.dart';
-import '../widgets/attendance_delete_dialog.dart';
-import '../widgets/attendance_empty_widget.dart';
-import '../widgets/attendance_filter_dialog.dart';
-import '../widgets/attendance_search_bar.dart';
-
-class AttendanceListPage extends ConsumerStatefulWidget {
-  const AttendanceListPage({super.key});
+class SupervisorAssignmentPage extends ConsumerStatefulWidget {
+  const SupervisorAssignmentPage({
+    super.key,
+  });
 
   @override
-  ConsumerState<AttendanceListPage> createState() =>
-      _AttendanceListPageState();
+  ConsumerState<SupervisorAssignmentPage> createState() =>
+      _SupervisorAssignmentPageState();
 }
 
-class _AttendanceListPageState
-    extends ConsumerState<AttendanceListPage> {
+class _SupervisorAssignmentPageState
+    extends ConsumerState<SupervisorAssignmentPage> {
 
-final TextEditingController _searchController =
-TextEditingController();
+  String? _selectedSupervisor;
+  String? _selectedDepartment;
 
-String _search = '';
-
-String? _status;
-
-@override
-void initState() {
-super.initState();
-
-Future.microtask(() {
-ref
-.read(attendanceProvider.notifier)
-.loadAttendance();
-});
-}
-
-@override
-void dispose() {
-_searchController.dispose();
-super.dispose();
-}
-
-Future<void> _refresh() async {
-await ref
-.read(attendanceProvider.notifier)
-.refresh();
-}
-
-@override
-Widget build(BuildContext context) {
-
-final state =
-ref.watch(attendanceProvider);
-
-return Scaffold(
-
-appBar: AppBar(
-title: const Text('Attendance'),
-
-actions: [
-
-IconButton(
-icon: const Icon(
-Icons.filter_alt,
-),
-onPressed: () async {
-
-final result =
-await showDialog<String>(
-context: context,
-builder: (_) =>
-AttendanceFilterDialog(
-selectedStatus: _status,
-),
-);
-
-if (result != null) {
-setState(() {
-_status = result;
-});
-}
-},
-),
-
-],
-),
-
-floatingActionButton:
-FloatingActionButton(
-child: const Icon(Icons.add),
-onPressed: () {
-Navigator.pushNamed(
-context,
-'/attendance/add',
-);
-},
-),
-
-body: Column(
-
-children: [
-
-Padding(
-padding:
-const EdgeInsets.all(16),
-child: AttendanceSearchBar(
-controller:
-_searchController,
-onChanged: (value) {
-setState(() {
-_search = value;
-});
-},
-),
-),
-
-Expanded(
-
-child: state.when(
-
-loading: () =>
-const AppLoading(),
-
-error: (error, stack) {
-
-return Center(
-child: Text(
-error.toString(),
-),
-);
-
-},
-
-data: (attendance) {
-
-List<AttendanceEntity> items =
-List.from(attendance);
-
-if (_search.isNotEmpty) {
-
-items = items.where((e) {
-
-return e.attendanceNo
-.toLowerCase()
-.contains(
-_search.toLowerCase(),
-) ||
-
-(e.shiftName ?? '')
-.toLowerCase()
-.contains(
-_search.toLowerCase(),
-);
-
-}).toList();
-
-}
-
-if (_status != null) {
-
-items = items.where((e) {
-
-return e.attendanceStatus ==
-_status;
-
-}).toList();
-
-}
-
-if (items.isEmpty) {
-
-return const AttendanceEmptyWidget();
-
-}
-
-return RefreshIndicator(
-
-onRefresh: _refresh,
-
-child: ListView.builder(
-
-padding:
-const EdgeInsets.all(16),
-
-itemCount: items.length,
-
-itemBuilder:
-(context, index) {
-
-final item =
-items[index];
-return AttendanceCard(
-  attendance: item,
-
-  onTap: () {
-    Navigator.pushNamed(
-      context,
-      '/attendance/details',
-      arguments: item,
-    );
-  },
-
-  onEdit: () async {
-    final result =
-    await Navigator.pushNamed(
-      context,
-      '/attendance/edit',
-      arguments: item,
+  @override
+  Widget build(BuildContext context) {
+    final supervisorState = ref.watch(
+      supervisorProvider,
     );
 
-    if (result == true) {
-      await _refresh();
-    }
-  },
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FC),
 
-  onDelete: () async {
-    final ok =
-    await showAttendanceDeleteDialog(
-      context,
-    );
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
 
-    if (ok == true) {
-      final success = await ref
-          .read(
-        attendanceProvider.notifier,
-      )
-          .delete(item.id!);
+          // ===================================================
+          // HEADER
+          // ===================================================
 
-      if (!mounted) return;
-
-      if (success) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Attendance deleted successfully.',
+          const Text(
+            'Department Assignment',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        );
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Failed to delete attendance.',
+
+          const SizedBox(
+            height: 5,
+          ),
+
+          const Text(
+            'Assign or unassign departments to supervisors.',
+            style: TextStyle(
+              color: Colors.black54,
             ),
           ),
-        );
-      }
-    }
-  },
-);
-},
-),
-);
-},
-),
-),
-],
-),
-);
-}
+
+          const SizedBox(
+            height: 20,
+          ),
+
+          // ===================================================
+          // ASSIGNMENT ACTION CARD
+          // ===================================================
+
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: const BorderSide(
+                color: Colors.black12,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+                children: [
+
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.link_outlined,
+                        color: Color(0xFF673AB7),
+                      ),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        'Assign Department',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(
+                    height: 18,
+                  ),
+
+                  // ------------------------------------------------
+                  // SUPERVISOR
+                  // ------------------------------------------------
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedSupervisor,
+                    decoration:
+                    const InputDecoration(
+                      labelText: 'Supervisor',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(
+                        Icons.supervisor_account_outlined,
+                      ),
+                    ),
+
+                    items: const [],
+
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSupervisor = value;
+                      });
+                    },
+
+                    hint: const Text(
+                      'Select supervisor',
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 14,
+                  ),
+
+                  // ------------------------------------------------
+                  // DEPARTMENT
+                  // ------------------------------------------------
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedDepartment,
+                    decoration:
+                    const InputDecoration(
+                      labelText: 'Department',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(
+                        Icons.apartment_outlined,
+                      ),
+                    ),
+
+                    items: const [],
+
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedDepartment = value;
+                      });
+                    },
+
+                    hint: const Text(
+                      'Select department',
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 16,
+                  ),
+
+                  // ------------------------------------------------
+                  // ASSIGN BUTTON
+                  // ------------------------------------------------
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed:
+                      _selectedSupervisor == null ||
+                          _selectedDepartment == null
+                          ? null
+                          : () {
+                        // Assignment action
+                        //
+                        // এখানে তোমার existing
+                        // SupervisorNotifier method
+                        // call করবে।
+                      },
+                      icon: const Icon(
+                        Icons.link,
+                      ),
+                      label: const Text(
+                        'Assign Department',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(
+            height: 20,
+          ),
+
+          // ===================================================
+          // ASSIGNMENT TABLE
+          // ===================================================
+
+          const SupervisorAssignmentTable(
+            assignments: [],
+          ),
+        ],
+      ),
+    );
+  }
 }

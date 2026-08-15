@@ -4,207 +4,494 @@ import '../../../../core/helpers/database_error_helper.dart';
 import '../../../../core/services/supabase_service.dart';
 
 import '../../domain/entities/attendance_entity.dart';
+import '../../domain/entities/attendance_report_entity.dart';
 import '../models/attendance_model.dart';
 import '../models/attendance_report_model.dart';
-import '../../domain/entities/attendance_report_entity.dart';
+
 class AttendanceRepository {
+  //==============================================================
+  // CLIENT
+  //==============================================================
+
   final SupabaseClient _supabase =
       SupabaseService.client;
 
   static const String _table = 'attendance';
-  Future<List<AttendanceReportModel>> getEmployeeAttendanceReport({
-    required String employeeId,
-    required DateTime from,
-    required DateTime to,
-  }) async {
-    final fromDate =
-    DateTime(from.year, from.month, from.day);
 
-    final toDate =
-    DateTime(to.year, to.month, to.day);
-
-    final response = await _supabase
-        .from('attendance')
-        .select()
-        .eq('employee_id', employeeId)
-        .gte(
-      'attendance_date',
-      _formatDate(fromDate),
-    )
-        .lte(
-      'attendance_date',
-      _formatDate(toDate),
-    )
-        .order(
-      'attendance_date',
-      ascending: true,
-    );
-
-    final rows = response
-        .map<AttendanceModel>(
-          (json) => AttendanceModel.fromMap(json),
-    )
-        .toList();
-
-    final Map<String, AttendanceModel> attendanceMap = {};
-
-    for (final attendance in rows) {
-      attendanceMap[_formatDate(attendance.attendanceDate)] =
-          attendance;
-    }
-
-    final List<AttendanceReportModel> result = [];
-
-    DateTime current = fromDate;
-
-    while (!current.isAfter(toDate)) {
-      final key = _formatDate(current);
-
-      final attendance = attendanceMap[key];
-
-      // Weekend
-      final isWeekend =
-          current.weekday == DateTime.friday ||
-              current.weekday == DateTime.saturday;
-
-      // ------------------------------------------------
-      // Attendance exists
-      // ------------------------------------------------
-
-      if (attendance != null) {
-        AttendanceReportStatus status;
-
-        if (attendance.isLeave) {
-          status = AttendanceReportStatus.leave;
-        } else if (attendance.isHoliday) {
-          status = AttendanceReportStatus.holiday;
-        } else if (attendance.lateMinutes > 0 ||
-            attendance.attendanceStatus.toUpperCase() ==
-                'LATE') {
-          status = AttendanceReportStatus.late;
-        } else {
-          status = AttendanceReportStatus.present;
-        }
-
-        result.add(
-          AttendanceReportModel(
-            date: current,
-            status: status,
-            checkInTime: attendance.checkInTime,
-            checkOutTime: attendance.checkOutTime,
-            checkInAddress: attendance.checkInAddress,
-            checkOutAddress: attendance.checkOutAddress,
-            lateMinutes: attendance.lateMinutes,
-            earlyExitMinutes:
-            attendance.earlyExitMinutes,
-            workMinutes: attendance.workMinutes,
-            isWeekend: attendance.isWeekend,
-            isHoliday: attendance.isHoliday,
-            isLeave: attendance.isLeave,
-          ),
-        );
-      }
-
-      // ------------------------------------------------
-      // No attendance row
-      // ------------------------------------------------
-
-      else {
-        AttendanceReportStatus status;
-
-        if (isWeekend) {
-          status = AttendanceReportStatus.dayOff;
-        } else {
-          status = AttendanceReportStatus.absent;
-        }
-
-        result.add(
-          AttendanceReportModel(
-            date: current,
-            status: status,
-            isWeekend: isWeekend,
-          ),
-        );
-      }
-
-      current =
-          current.add(const Duration(days: 1));
-    }
-
-    return result;
-  }
-//==============================================================
-// SUPERVISOR - TODAY ATTENDANCE BY EMPLOYEES
-//==============================================================
-//
-// Existing employee report method untouched.
-//
-// This method is used by Supervisor Attendance Report
-// for "All Employees -> Today Attendance".
-//
-// employeeIds:
-// Supervisor-এর selected department-এর employee IDs.
-//
-//==============================================================
-
-  Future<List<AttendanceEntity>> getTodayAttendanceByEmployees(
-      List<String> employeeIds,
-      ) async {
-    if (employeeIds.isEmpty) {
-      return [];
-    }
-
-    final today = DateTime.now()
-        .toIso8601String()
-        .split('T')
-        .first;
-
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .inFilter(
-      'employee_id',
-      employeeIds,
-    )
-        .eq(
-      'attendance_date',
-      today,
-    )
-        .order(
-      'check_in_time',
-      ascending: true,
-    );
-
-    return response
-        .map<AttendanceEntity>(
-          (json) => AttendanceModel.fromMap(json),
-    )
-        .toList();
-  }
+  //==============================================================
+  // FORMAT DATE
+  //==============================================================
 
   String _formatDate(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-'
         '${date.day.toString().padLeft(2, '0')}';
   }
+
+  //==============================================================
+  // GET EMPLOYEE ATTENDANCE REPORT
+  //==============================================================
+
+  Future<List<AttendanceReportModel>>
+  getEmployeeAttendanceReport({
+    required String employeeId,
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    try {
+      final employee = employeeId.trim();
+
+      if (employee.isEmpty) {
+        throw Exception(
+          'Employee ID is required.',
+        );
+      }
+
+      final fromDate = DateTime(
+        from.year,
+        from.month,
+        from.day,
+      );
+
+      final toDate = DateTime(
+        to.year,
+        to.month,
+        to.day,
+      );
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'employee_id',
+        employee,
+      )
+          .gte(
+        'attendance_date',
+        _formatDate(fromDate),
+      )
+          .lte(
+        'attendance_date',
+        _formatDate(toDate),
+      )
+          .order(
+        'attendance_date',
+        ascending: true,
+      );
+
+      final rows = response
+          .map<AttendanceModel>(
+            (json) => AttendanceModel.fromMap(json),
+      )
+          .toList();
+
+      final Map<String, AttendanceModel>
+      attendanceMap = {};
+
+      for (final attendance in rows) {
+        attendanceMap[
+        _formatDate(
+          attendance.attendanceDate,
+        )
+        ] = attendance;
+      }
+
+      final List<AttendanceReportModel>
+      result = [];
+
+      DateTime current = fromDate;
+
+      while (!current.isAfter(toDate)) {
+        final key = _formatDate(current);
+
+        final attendance =
+        attendanceMap[key];
+
+        final isWeekend =
+            current.weekday == DateTime.friday ||
+                current.weekday == DateTime.saturday;
+
+        if (attendance != null) {
+          AttendanceReportStatus status;
+
+          if (attendance.isLeave) {
+            status =
+                AttendanceReportStatus.leave;
+          } else if (attendance.isHoliday) {
+            status =
+                AttendanceReportStatus.holiday;
+          } else if (
+          attendance.lateMinutes > 0 ||
+              attendance.attendanceStatus
+                  .toUpperCase() ==
+                  'LATE') {
+            status =
+                AttendanceReportStatus.late;
+          } else {
+            status =
+                AttendanceReportStatus.present;
+          }
+
+          result.add(
+            AttendanceReportModel(
+              date: current,
+              status: status,
+              checkInTime:
+              attendance.checkInTime,
+              checkOutTime:
+              attendance.checkOutTime,
+              checkInAddress:
+              attendance.checkInAddress,
+              checkOutAddress:
+              attendance.checkOutAddress,
+              lateMinutes:
+              attendance.lateMinutes,
+              earlyExitMinutes:
+              attendance.earlyExitMinutes,
+              workMinutes:
+              attendance.workMinutes,
+              isWeekend:
+              attendance.isWeekend ||
+                  isWeekend,
+              isHoliday:
+              attendance.isHoliday,
+              isLeave:
+              attendance.isLeave,
+            ),
+          );
+        } else {
+          final status = isWeekend
+              ? AttendanceReportStatus.dayOff
+              : AttendanceReportStatus.absent;
+
+          result.add(
+            AttendanceReportModel(
+              date: current,
+              status: status,
+              isWeekend: isWeekend,
+            ),
+          );
+        }
+
+        current = current.add(
+          const Duration(days: 1),
+        );
+      }
+
+      return result;
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // SUPERVISOR
+  // TODAY ATTENDANCE BY EMPLOYEES
+  //
+  // Supervisor selected department-এর
+  // employee IDs পাঠাবে।
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  getTodayAttendanceByEmployees(
+      List<String> employeeIds,
+      ) async {
+    try {
+      final ids = employeeIds
+          .map(
+            (id) => id.trim(),
+      )
+          .where(
+            (id) => id.isNotEmpty,
+      )
+          .toSet()
+          .toList();
+
+      if (ids.isEmpty) {
+        return [];
+      }
+
+      final today = _formatDate(
+        DateTime.now(),
+      );
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .inFilter(
+        'employee_id',
+        ids,
+      )
+          .eq(
+        'attendance_date',
+        today,
+      )
+          .order(
+        'check_in_time',
+        ascending: true,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (json) =>
+            AttendanceModel.fromMap(json),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // SUPERVISOR
+  // TODAY ATTENDANCE BY COMPANY + DEPARTMENT
+  //
+  // All Employees mode-এর জন্য।
+  //
+  // IMPORTANT:
+  // এখানে employees relation ব্যবহার করা হচ্ছে না।
+  // Direct attendance table query।
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  getSupervisorTodayAttendance({
+    required String companyId,
+    required String departmentId,
+  }) async {
+    try {
+      final company =
+      companyId.trim();
+
+      final department =
+      departmentId.trim();
+
+      if (company.isEmpty) {
+        throw Exception(
+          'Company ID is required.',
+        );
+      }
+
+      if (department.isEmpty) {
+        throw Exception(
+          'Department ID is required.',
+        );
+      }
+
+      final today = _formatDate(
+        DateTime.now(),
+      );
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'company_id',
+        company,
+      )
+          .eq(
+        'department_id',
+        department,
+      )
+          .eq(
+        'attendance_date',
+        today,
+      )
+          .order(
+        'check_in_time',
+        ascending: true,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (json) =>
+            AttendanceModel.fromMap(json),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // SUPERVISOR
+  // EMPLOYEE ATTENDANCE DATE RANGE
+  //
+  // Selected Employee mode-এর জন্য।
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  getSupervisorEmployeeAttendance({
+    required String employeeId,
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    try {
+      final employee =
+      employeeId.trim();
+
+      if (employee.isEmpty) {
+        throw Exception(
+          'Employee ID is required.',
+        );
+      }
+
+      final fromDate =
+      _formatDate(from);
+
+      final toDate =
+      _formatDate(to);
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'employee_id',
+        employee,
+      )
+          .gte(
+        'attendance_date',
+        fromDate,
+      )
+          .lte(
+        'attendance_date',
+        toDate,
+      )
+          .order(
+        'attendance_date',
+        ascending: true,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (json) =>
+            AttendanceModel.fromMap(json),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // SUPERVISOR
+  // DEPARTMENT DATE RANGE
+  //
+  // Future Supervisor reports/dashboard-এর জন্য।
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  getSupervisorDepartmentAttendance({
+    required String companyId,
+    required String departmentId,
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    try {
+      final company =
+      companyId.trim();
+
+      final department =
+      departmentId.trim();
+
+      if (company.isEmpty) {
+        throw Exception(
+          'Company ID is required.',
+        );
+      }
+
+      if (department.isEmpty) {
+        throw Exception(
+          'Department ID is required.',
+        );
+      }
+
+      final fromDate =
+      _formatDate(from);
+
+      final toDate =
+      _formatDate(to);
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'company_id',
+        company,
+      )
+          .eq(
+        'department_id',
+        department,
+      )
+          .gte(
+        'attendance_date',
+        fromDate,
+      )
+          .lte(
+        'attendance_date',
+        toDate,
+      )
+          .order(
+        'attendance_date',
+        ascending: true,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (json) =>
+            AttendanceModel.fromMap(json),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   //==============================================================
   // GET ALL
   //==============================================================
 
   Future<List<AttendanceEntity>> getAll() async {
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
 
-    return response
-        .map<AttendanceEntity>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -214,27 +501,40 @@ class AttendanceRepository {
   Future<AttendanceEntity?> getById(
       String id,
       ) async {
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .eq('id', id)
-        .maybeSingle();
+    try {
+      final attendanceId = id.trim();
 
-    if (response == null) {
-      return null;
+      if (attendanceId.isEmpty) {
+        return null;
+      }
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'id',
+        attendanceId,
+      )
+          .maybeSingle();
+
+      if (response == null) {
+        return null;
+      }
+
+      return AttendanceModel.fromMap(
+        response,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
     }
-
-    return AttendanceModel.fromMap(response);
   }
 
   //==============================================================
   // INSERT
-  //
-  // IMPORTANT:
-  // id পাঠানো হচ্ছে না।
-  // Supabase:
-  // gen_random_uuid()
-  // দিয়ে id তৈরি করবে।
   //==============================================================
 
   Future<void> insert(
@@ -242,15 +542,14 @@ class AttendanceRepository {
       ) async {
     try {
       await _supabase
-          .from('attendance')
+          .from(_table)
           .insert(
         attendance.toInsertMap(),
       );
     } on PostgrestException catch (e) {
-      final message =
-      DatabaseErrorHelper.getMessage(e);
-
-      throw Exception(message);
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
     } catch (e) {
       rethrow;
     }
@@ -263,27 +562,35 @@ class AttendanceRepository {
   Future<void> update(
       AttendanceEntity attendance,
       ) async {
-    if (attendance.id == null ||
-        attendance.id!.isEmpty) {
-      throw Exception(
-        'Attendance ID is required for update.',
+    try {
+      if (attendance.id == null ||
+          attendance.id!.trim().isEmpty) {
+        throw Exception(
+          'Attendance ID is required for update.',
+        );
+      }
+
+      final model =
+      AttendanceModel.fromEntity(
+        attendance,
       );
+
+      await _supabase
+          .from(_table)
+          .update(
+        model.toUpdateMap(),
+      )
+          .eq(
+        'id',
+        attendance.id!,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
     }
-
-    final model =
-    AttendanceModel.fromEntity(
-      attendance,
-    );
-
-    await _supabase
-        .from(_table)
-        .update(
-      model.toUpdateMap(),
-    )
-        .eq(
-      'id',
-      attendance.id!,
-    );
   }
 
   //==============================================================
@@ -293,10 +600,30 @@ class AttendanceRepository {
   Future<void> delete(
       String id,
       ) async {
-    await _supabase
-        .from(_table)
-        .delete()
-        .eq('id', id);
+    try {
+      final attendanceId =
+      id.trim();
+
+      if (attendanceId.isEmpty) {
+        throw Exception(
+          'Attendance ID is required.',
+        );
+      }
+
+      await _supabase
+          .from(_table)
+          .delete()
+          .eq(
+        'id',
+        attendanceId,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -306,24 +633,39 @@ class AttendanceRepository {
   Future<List<AttendanceEntity>> search(
       String keyword,
       ) async {
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .or(
-      'attendance_no.ilike.%$keyword%,'
-          'shift_name.ilike.%$keyword%,'
-          'attendance_status.ilike.%$keyword%',
-    )
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final value =
+      keyword.trim();
 
-    return response
-        .map<AttendanceEntity>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      if (value.isEmpty) {
+        return getAll();
+      }
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .or(
+        'attendance_no.ilike.%$value%,'
+            'shift_name.ilike.%$value%,'
+            'attendance_status.ilike.%$value%',
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -334,23 +676,38 @@ class AttendanceRepository {
   getEmployeeAttendance(
       String employeeId,
       ) async {
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .eq(
-      'employee_id',
-      employeeId,
-    )
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final employee =
+      employeeId.trim();
 
-    return response
-        .map<AttendanceEntity>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      if (employee.isEmpty) {
+        return [];
+      }
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'employee_id',
+        employee,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -359,25 +716,34 @@ class AttendanceRepository {
 
   Future<List<AttendanceEntity>>
   todayAttendance() async {
-    final today = DateTime.now()
-        .toIso8601String()
-        .split('T')
-        .first;
+    try {
+      final today =
+      _formatDate(DateTime.now());
 
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .eq(
-      'attendance_date',
-      today,
-    )
-        .order('check_in_time');
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'attendance_date',
+        today,
+      )
+          .order(
+        'check_in_time',
+        ascending: true,
+      );
 
-    return response
-        .map<AttendanceEntity>(
-          (e) => AttendanceModel.fromMap(e),
-    )
-        .toList();
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -391,25 +757,48 @@ class AttendanceRepository {
     double? longitude,
     String? deviceName,
     String? deviceId,
+    String? address,
+    double? accuracy,
   }) async {
-    await _supabase
-        .from(_table)
-        .update({
-      'check_in_time':
-      checkInTime.toIso8601String(),
-      'check_in_latitude':
-      latitude,
-      'check_in_longitude':
-      longitude,
-      'device_name':
-      deviceName,
-      'device_id':
-      deviceId,
-    })
-        .eq(
-      'id',
-      attendanceId,
-    );
+    try {
+      final id =
+      attendanceId.trim();
+
+      if (id.isEmpty) {
+        throw Exception(
+          'Attendance ID is required.',
+        );
+      }
+
+      await _supabase
+          .from(_table)
+          .update({
+        'check_in_time':
+        checkInTime.toIso8601String(),
+        'check_in_latitude':
+        latitude,
+        'check_in_longitude':
+        longitude,
+        'check_in_address':
+        address,
+        'check_in_accuracy':
+        accuracy,
+        'device_name':
+        deviceName,
+        'device_id':
+        deviceId,
+      })
+          .eq(
+        'id',
+        id,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -421,21 +810,44 @@ class AttendanceRepository {
     required DateTime checkOutTime,
     double? latitude,
     double? longitude,
+    String? address,
+    double? accuracy,
   }) async {
-    await _supabase
-        .from(_table)
-        .update({
-      'check_out_time':
-      checkOutTime.toIso8601String(),
-      'check_out_latitude':
-      latitude,
-      'check_out_longitude':
-      longitude,
-    })
-        .eq(
-      'id',
-      attendanceId,
-    );
+    try {
+      final id =
+      attendanceId.trim();
+
+      if (id.isEmpty) {
+        throw Exception(
+          'Attendance ID is required.',
+        );
+      }
+
+      await _supabase
+          .from(_table)
+          .update({
+        'check_out_time':
+        checkOutTime.toIso8601String(),
+        'check_out_latitude':
+        latitude,
+        'check_out_longitude':
+        longitude,
+        'check_out_address':
+        address,
+        'check_out_accuracy':
+        accuracy,
+      })
+          .eq(
+        'id',
+        id,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -443,24 +855,30 @@ class AttendanceRepository {
   //==============================================================
 
   Future<int> totalPresentToday() async {
-    final today = DateTime.now()
-        .toIso8601String()
-        .split('T')
-        .first;
+    try {
+      final today =
+      _formatDate(DateTime.now());
 
-    final response = await _supabase
-        .from(_table)
-        .select('id')
-        .eq(
-      'attendance_date',
-      today,
-    )
-        .eq(
-      'attendance_status',
-      'PRESENT',
-    );
+      final response = await _supabase
+          .from(_table)
+          .select('id')
+          .eq(
+        'attendance_date',
+        today,
+      )
+          .eq(
+        'attendance_status',
+        'PRESENT',
+      );
 
-    return response.length;
+      return response.length;
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -469,20 +887,28 @@ class AttendanceRepository {
 
   Future<List<AttendanceEntity>>
   getAttendanceHistory() async {
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .order(
-      'attendance_date',
-      ascending: false,
-    );
+    try {
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
 
-    return response
-        .map<AttendanceEntity>(
-          (json) =>
-          AttendanceModel.fromMap(json),
-    )
-        .toList();
+      return response
+          .map<AttendanceEntity>(
+            (json) =>
+            AttendanceModel.fromMap(json),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -493,35 +919,48 @@ class AttendanceRepository {
   getTodayAttendance(
       String employeeId,
       ) async {
-    final today = DateTime.now()
-        .toIso8601String()
-        .split('T')
-        .first;
+    try {
+      final employee =
+      employeeId.trim();
 
-    final response = await _supabase
-        .from(_table)
-        .select()
-        .eq(
-      'employee_id',
-      employeeId,
-    )
-        .eq(
-      'attendance_date',
-      today,
-    )
-        .maybeSingle();
+      if (employee.isEmpty) {
+        return null;
+      }
 
-    if (response == null) {
-      return null;
+      final today =
+      _formatDate(DateTime.now());
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'employee_id',
+        employee,
+      )
+          .eq(
+        'attendance_date',
+        today,
+      )
+          .maybeSingle();
+
+      if (response == null) {
+        return null;
+      }
+
+      return AttendanceModel.fromMap(
+        response,
+      );
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
     }
-
-    return AttendanceModel.fromMap(
-      response,
-    );
   }
 
   //==============================================================
-  // ALREADY CHECKED IN?
+  // ALREADY CHECKED IN
   //==============================================================
 
   Future<bool> alreadyCheckedIn(
@@ -536,7 +975,7 @@ class AttendanceRepository {
   }
 
   //==============================================================
-  // ALREADY CHECKED OUT?
+  // ALREADY CHECKED OUT
   //==============================================================
 
   Future<bool> alreadyCheckedOut(
@@ -565,5 +1004,215 @@ class AttendanceRepository {
     return getTodayAttendance(
       employeeId,
     );
+  }
+
+  //==============================================================
+  // BY COMPANY
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  byCompany(
+      String companyId,
+      ) async {
+    try {
+      final company =
+      companyId.trim();
+
+      if (company.isEmpty) {
+        return [];
+      }
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'company_id',
+        company,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // BY DEPARTMENT
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  byDepartment(
+      String departmentId,
+      ) async {
+    try {
+      final department =
+      departmentId.trim();
+
+      if (department.isEmpty) {
+        return [];
+      }
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'department_id',
+        department,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // BY STATUS
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  byStatus(
+      String status,
+      ) async {
+    try {
+      final value =
+      status.trim();
+
+      if (value.isEmpty) {
+        return [];
+      }
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'attendance_status',
+        value,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // BY DATE
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  byDate(
+      DateTime date,
+      ) async {
+    try {
+      final selectedDate =
+      _formatDate(date);
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .eq(
+        'attendance_date',
+        selectedDate,
+      )
+          .order(
+        'check_in_time',
+        ascending: true,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //==============================================================
+  // BY DATE RANGE
+  //==============================================================
+
+  Future<List<AttendanceEntity>>
+  byDateRange({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    try {
+      final fromDate =
+      _formatDate(from);
+
+      final toDate =
+      _formatDate(to);
+
+      final response = await _supabase
+          .from(_table)
+          .select()
+          .gte(
+        'attendance_date',
+        fromDate,
+      )
+          .lte(
+        'attendance_date',
+        toDate,
+      )
+          .order(
+        'attendance_date',
+        ascending: false,
+      );
+
+      return response
+          .map<AttendanceEntity>(
+            (e) => AttendanceModel.fromMap(e),
+      )
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

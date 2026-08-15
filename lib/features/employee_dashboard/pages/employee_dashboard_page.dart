@@ -14,7 +14,7 @@ import '../../../core/auth/current_user_provider.dart';
 import '../../../core/auth/permissions.dart';
 import '../../../core/router/route_paths.dart';
 
-import '../../dashboard/widgets/dashboard_app_bar.dart';
+import '../../../core/widgets/dashboard_appBar.dart';
 import '../widgets/employee_dashboard_sidebar.dart';
 
 class EmployeeDashboardPage extends ConsumerWidget {
