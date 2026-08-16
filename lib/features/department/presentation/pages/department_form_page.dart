@@ -9,37 +9,19 @@ import '../providers/department_provider.dart';
 import '../widgets/department_form.dart';
 
 class DepartmentFormPage extends ConsumerWidget {
-  const DepartmentFormPage({
-    super.key,
-    this.department,
-  });
+  const DepartmentFormPage({super.key, this.department});
 
   final DepartmentEntity? department;
 
   bool get isEdit => department != null;
 
   @override
-  Widget build(
-      BuildContext context,
-      WidgetRef ref,
-      ) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     // ===========================================================
     // CURRENT LOGGED-IN USER
-    // ===========================================================
-    //
-    // IMPORTANT:
-    //
-    // তোমার authentication custom table based:
-    //
-    // Developer       → developers.id
-    // Company Owner   → company_accounts.id
-    // Employee        → employee_accounts.id
-    // Supervisor      → employee_accounts.id
-    //
-    // তাই এখানে Supabase Auth ব্যবহার করা হচ্ছে না।
-    //
-    // CurrentUser.userId-ই আমাদের application login user ID.
-    //
     // ===========================================================
 
     final user = ref.watch(currentUserProvider);
@@ -55,95 +37,44 @@ class DepartmentFormPage extends ConsumerWidget {
     // ===========================================================
 
     if (user == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Department'),
-        ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Logged-in user information is not available.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
+      return _buildErrorPage(
+        context: context,
+        title: isEdit ? 'Edit Department' : 'Add Department',
+        message: 'Logged-in user information is not available.',
       );
     }
 
     // ===========================================================
     // CURRENT APPLICATION USER ID
     // ===========================================================
-    //
-    // Company Owner login করলে:
-    //
-    // company_accounts.id
-    //        ↓
-    // AuthRepository
-    //        ↓
-    // CurrentUser.userId
-    //        ↓
-    // created_by / updated_by
-    //
-    // ===========================================================
 
     final String currentUserId = user.userId.trim();
 
-    // ===========================================================
-    // USER ID VALIDATION
-    // ===========================================================
-
     if (currentUserId.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Department'),
-        ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Logged-in user ID is not available.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
+      return _buildErrorPage(
+        context: context,
+        title: isEdit ? 'Edit Department' : 'Add Department',
+        message: 'Logged-in user ID is not available.',
       );
     }
 
     // ===========================================================
     // COMPANY ID
     // ===========================================================
-    //
-    // CREATE:
-    // CurrentUser.companyId
-    //
-    // EDIT:
-    // Existing Department.companyId
-    //
-    // ===========================================================
 
     final String companyId = isEdit
-        ? department!.companyId
+        ? department!.companyId.trim()
         : user.companyId.trim();
 
     // ===========================================================
-    // COMPANY ID VALIDATION
+    // COMPANY VALIDATION
     // ===========================================================
 
     if (companyId.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Department'),
-        ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Company information is not available for this account.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
+      return _buildErrorPage(
+        context: context,
+        title: isEdit ? 'Edit Department' : 'Add Department',
+        message: 'Company information is not available for this account.',
       );
     }
 
@@ -151,389 +82,631 @@ class DepartmentFormPage extends ConsumerWidget {
     // DEBUG
     // ===========================================================
 
-    debugPrint(
-      '================================================',
-    );
+    debugPrint('================================================');
 
-    debugPrint(
-      'DEPARTMENT FORM USER',
-    );
+    debugPrint('DEPARTMENT FORM USER');
 
-    debugPrint(
-      'User ID       => $currentUserId',
-    );
+    debugPrint('User ID       => $currentUserId');
 
-    debugPrint(
-      'Login Name    => ${user.loginName}',
-    );
+    debugPrint('Login Name    => ${user.loginName}');
 
-    debugPrint(
-      'User Type     => ${user.userType.name}',
-    );
+    debugPrint('User Type     => ${user.userType.name}');
 
-    debugPrint(
-      'Company ID    => $companyId',
-    );
+    debugPrint('Company ID    => $companyId');
 
-    debugPrint(
-      'Department ID => ${department?.id}',
-    );
+    debugPrint('Department ID => ${department?.id}');
 
-    debugPrint(
-      'Is Edit       => $isEdit',
-    );
+    debugPrint('Is Edit       => $isEdit');
 
-    debugPrint(
-      '================================================',
-    );
+    debugPrint('================================================');
 
     // ===========================================================
     // PAGE
     // ===========================================================
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
+
       // =========================================================
       // APP BAR
       // =========================================================
-
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(RoutePaths.departments);
+            }
+          },
+        ),
+
         title: Text(
-          isEdit
-              ? 'Edit Department'
-              : 'Add Department',
+          isEdit ? 'Edit Department' : 'Add Department',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
       // =========================================================
       // BODY
       // =========================================================
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: DepartmentForm(
-            // ===================================================
-            // INITIAL NAME
-            // ===================================================
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
 
-            initialName:
-            department?.name ?? '',
+            // ---------------------------------------------------
+            // RESPONSIVE BREAKPOINTS
+            // ---------------------------------------------------
 
-            // ===================================================
-            // INITIAL DESCRIPTION
-            // ===================================================
+            final bool isDesktop = width >= 1000;
+            final bool isTablet = width >= 600;
 
-            initialDescription:
-            department?.description ?? '',
+            final double horizontalPadding = isDesktop
+                ? 32
+                : isTablet
+                ? 24
+                : 14;
 
-            // ===================================================
-            // INITIAL PHONE
-            // ===================================================
+            final double verticalPadding = isDesktop ? 28 : 20;
 
-            initialPhone:
-            department?.phone ?? '',
+            // ---------------------------------------------------
+            // RESPONSIVE FORM WIDTH
+            // ---------------------------------------------------
 
-            // ===================================================
-            // INITIAL EMAIL
-            // ===================================================
+            final double maxFormWidth = isDesktop
+                ? 900
+                : isTablet
+                ? 760
+                : 600;
 
-            initialEmail:
-            department?.email ?? '',
+            return GestureDetector(
+              // -------------------------------------------------
+              // Hide keyboard when tapping outside a field.
+              // -------------------------------------------------
+              onTap: () {
+                FocusScope.of(context).unfocus();
+              },
 
-            // ===================================================
-            // INITIAL LOCATION
-            // ===================================================
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
 
-            initialLocation:
-            department?.location ?? '',
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  verticalPadding,
+                  horizontalPadding,
 
-            // ===================================================
-            // INITIAL ACTIVE
-            // ===================================================
+                  // Extra bottom space for keyboard / scrolling.
+                  isDesktop ? 32 : 24,
+                ),
 
-            initialIsActive:
-            department?.isActive ?? true,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxFormWidth),
 
-            // ===================================================
-            // LOADING
-            // ===================================================
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // =======================================
+                        // FORM HEADER
+                        // =======================================
+                        _buildPageHeader(context),
 
-            isLoading: state.isSaving,
+                        const SizedBox(height: 18),
 
-            // ===================================================
-            // SUBMIT
-            // ===================================================
+                        // =======================================
+                        // FORM
+                        // =======================================
+                        DepartmentForm(
+                          initialName: department?.name ?? '',
 
-            onSubmit: (
-                submittedCompanyId,
-                name,
-                description,
-                phone,
-                email,
-                location,
-                isActive,
-                ) async {
-              // =================================================
-              // IMPORTANT
-              // =================================================
-              //
-              // Form থেকে companyId আসলেও আমরা সেটার উপর
-              // নির্ভর করছি না।
-              //
-              // Page-এর validated companyId ব্যবহার করছি।
-              //
-              // =================================================
+                          initialDescription: department?.description ?? '',
 
-              final String finalCompanyId =
-                  companyId;
+                          initialPhone: department?.phone ?? '',
 
-              // =================================================
-              // ENTITY
-              // =================================================
+                          initialEmail: department?.email ?? '',
 
-              final entity = DepartmentEntity(
-                // ------------------------------------------------
-                // ID
-                // ------------------------------------------------
+                          initialLocation: department?.location ?? '',
 
-                id: department?.id ?? '',
+                          initialIsActive: department?.isActive ?? true,
 
-                // ------------------------------------------------
-                // COMPANY
-                // ------------------------------------------------
+                          isLoading: state.isSaving,
 
-                companyId: finalCompanyId,
+                          onSubmit:
+                              (
+                                submittedCompanyId,
+                                name,
+                                description,
+                                phone,
+                                email,
+                                location,
+                                isActive,
+                              ) async {
+                                // ===================================
+                                // IMPORTANT
+                                // ===================================
+                                //
+                                // Form থেকে companyId আসলেও
+                                // validated page-level companyId
+                                // ব্যবহার করছি.
+                                //
+                                // ===================================
 
-                // ------------------------------------------------
-                // DEPARTMENT
-                // ------------------------------------------------
+                                final String finalCompanyId = companyId;
 
-                name: name.trim(),
+                                // ===================================
+                                // ENTITY
+                                // ===================================
 
-                description:
-                description.trim(),
+                                final entity = DepartmentEntity(
+                                  // ---------------------------------
+                                  // ID
+                                  // ---------------------------------
+                                  id: department?.id ?? '',
 
-                phone: phone.trim(),
+                                  // ---------------------------------
+                                  // COMPANY
+                                  // ---------------------------------
+                                  companyId: finalCompanyId,
 
-                email: email.trim(),
+                                  // ---------------------------------
+                                  // DEPARTMENT
+                                  // ---------------------------------
+                                  name: name.trim(),
 
-                location:
-                location.trim(),
+                                  description: description.trim(),
 
-                isActive: isActive,
+                                  phone: phone.trim(),
 
-                // ------------------------------------------------
-                // CREATED AT
-                // ------------------------------------------------
-                //
-                // Database default now() ব্যবহার করবে CREATE-এর
-                // সময়।
-                //
-                // Existing record edit করলে original value
-                // preserve করছি।
-                //
-                // ------------------------------------------------
+                                  email: email.trim(),
 
-                createdAt:
-                department?.createdAt ??
-                    DateTime.now(),
+                                  location: location.trim(),
 
-                // ------------------------------------------------
-                // UPDATED AT
-                // ------------------------------------------------
-                //
-                // Database trigger:
-                //
-                // fn_set_updated_at()
-                //
-                // automatically update করবে।
-                //
-                // ------------------------------------------------
+                                  isActive: isActive,
 
-                updatedAt:
-                DateTime.now(),
+                                  // ---------------------------------
+                                  // CREATED AT
+                                  // ---------------------------------
+                                  createdAt:
+                                      department?.createdAt ?? DateTime.now(),
 
-                // ------------------------------------------------
-                // CREATED BY
-                // ------------------------------------------------
-                //
-                // CREATE:
-                //
-                // company_accounts.id
-                // অথবা login করা user-এর application ID
-                //
-                // UPDATE:
-                //
-                // Original created_by কখনো পরিবর্তন হবে না।
-                //
-                // ------------------------------------------------
+                                  // ---------------------------------
+                                  // UPDATED AT
+                                  // ---------------------------------
+                                  updatedAt: DateTime.now(),
 
-                createdBy: isEdit
-                    ? department!.createdBy
-                    : currentUserId,
+                                  // ---------------------------------
+                                  // CREATED BY
+                                  // ---------------------------------
+                                  createdBy: isEdit
+                                      ? department!.createdBy
+                                      : currentUserId,
 
-                // ------------------------------------------------
-                // UPDATED BY
-                // ------------------------------------------------
-                //
-                // CREATE:
-                // current logged-in user
-                //
-                // UPDATE:
-                // current logged-in user
-                //
-                // ------------------------------------------------
+                                  // ---------------------------------
+                                  // UPDATED BY
+                                  // ---------------------------------
+                                  updatedBy: currentUserId,
+                                );
 
-                updatedBy:
-                currentUserId,
-              );
+                                // ===================================
+                                // DEBUG ENTITY
+                                // ===================================
 
-              // =================================================
-              // DEBUG ENTITY
-              // =================================================
+                                debugPrint(
+                                  '================ DEPARTMENT SAVE ================',
+                                );
 
-              debugPrint(
-                '================ DEPARTMENT SAVE ================',
-              );
+                                debugPrint(
+                                  'Mode        => '
+                                  '${isEdit ? 'UPDATE' : 'CREATE'}',
+                                );
 
-              debugPrint(
-                'Mode        => '
-                    '${isEdit ? 'UPDATE' : 'CREATE'}',
-              );
+                                debugPrint('Department  => ${entity.name}');
 
-              debugPrint(
-                'Department  => ${entity.name}',
-              );
+                                debugPrint(
+                                  'Company ID  => ${entity.companyId}',
+                                );
 
-              debugPrint(
-                'Company ID  => ${entity.companyId}',
-              );
+                                debugPrint(
+                                  'Created By  => ${entity.createdBy}',
+                                );
 
-              debugPrint(
-                'Created By  => ${entity.createdBy}',
-              );
+                                debugPrint(
+                                  'Updated By  => ${entity.updatedBy}',
+                                );
 
-              debugPrint(
-                'Updated By  => ${entity.updatedBy}',
-              );
+                                debugPrint(
+                                  '==================================================',
+                                );
 
-              debugPrint(
-                '==================================================',
-              );
+                                try {
+                                  // =================================
+                                  // UPDATE
+                                  // =================================
 
-              try {
-                // =================================================
-                // UPDATE
-                // =================================================
+                                  if (isEdit) {
+                                    await ref
+                                        .read(departmentProvider.notifier)
+                                        .updateDepartment(entity);
 
-                if (isEdit) {
-                  await ref
-                      .read(
-                    departmentProvider
-                        .notifier,
-                  )
-                      .updateDepartment(
-                    entity,
-                  );
+                                    if (!context.mounted) {
+                                      return;
+                                    }
 
-                  if (!context.mounted) {
-                    return;
-                  }
+                                    _showSuccessSnackBar(
+                                      context,
+                                      'Department updated successfully.',
+                                    );
+                                  }
+                                  // =================================
+                                  // CREATE
+                                  // =================================
+                                  else {
+                                    await ref
+                                        .read(departmentProvider.notifier)
+                                        .createDepartment(entity);
 
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Department updated successfully.',
-                      ),
-                    ),
-                  );
-                }
+                                    if (!context.mounted) {
+                                      return;
+                                    }
 
-                // =================================================
-                // CREATE
-                // =================================================
+                                    _showSuccessSnackBar(
+                                      context,
+                                      'Department created successfully.',
+                                    );
+                                  }
 
-                else {
-                  await ref
-                      .read(
-                    departmentProvider
-                        .notifier,
-                  )
-                      .createDepartment(
-                    entity,
-                  );
+                                  // =================================
+                                  // RELOAD
+                                  // =================================
 
-                  if (!context.mounted) {
-                    return;
-                  }
+                                  await ref
+                                      .read(departmentProvider.notifier)
+                                      .loadDepartments();
 
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Department created successfully.',
-                      ),
-                    ),
-                  );
-                }
+                                  // =================================
+                                  // CONTEXT CHECK
+                                  // =================================
 
-                // =================================================
-                // RELOAD
-                // =================================================
+                                  if (!context.mounted) {
+                                    return;
+                                  }
 
-                await ref
-                    .read(
-                  departmentProvider.notifier,
-                )
-                    .loadDepartments();
+                                  // =================================
+                                  // BACK TO LIST
+                                  // =================================
 
-                // =================================================
-                // CONTEXT CHECK
-                // =================================================
+                                  context.go(RoutePaths.departments);
+                                } catch (e) {
+                                  // =================================
+                                  // ERROR DEBUG
+                                  // =================================
 
-                if (!context.mounted) {
-                  return;
-                }
+                                  debugPrint('Department Save Error => $e');
 
-                // =================================================
-                // BACK TO DEPARTMENT LIST
-                // =================================================
+                                  if (!context.mounted) {
+                                    return;
+                                  }
 
-                context.go(
-                  RoutePaths.departments,
-                );
-              } catch (e) {
-                // =================================================
-                // ERROR
-                // =================================================
+                                  _showErrorSnackBar(context, e.toString());
+                                }
+                              },
+                        ),
 
-                debugPrint(
-                  'Department Save Error => $e',
-                );
-
-                if (!context.mounted) {
-                  return;
-                }
-
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(
-                  SnackBar(
-                    backgroundColor:
-                    Colors.red,
-                    content: Text(
-                      e.toString(),
+                        // =======================================
+                        // BOTTOM SPACE
+                        // =======================================
+                        const SizedBox(height: 20),
+                      ],
                     ),
                   ),
-                );
-              }
-            },
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // PAGE HEADER
+  // =============================================================
+
+  Widget _buildPageHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final bool editing = isEdit;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: editing
+            ? colorScheme.secondaryContainer.withOpacity(.55)
+            : colorScheme.primaryContainer.withOpacity(.55),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: editing
+              ? colorScheme.secondary.withOpacity(.18)
+              : colorScheme.primary.withOpacity(.18),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // =====================================================
+          // ICON
+          // =====================================================
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: editing
+                  ? colorScheme.secondary.withOpacity(.12)
+                  : colorScheme.primary.withOpacity(.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              editing ? Icons.edit_note_rounded : Icons.apartment_rounded,
+              size: 26,
+              color: editing ? colorScheme.secondary : colorScheme.primary,
+            ),
+          ),
+
+          const SizedBox(width: 13),
+
+          // =====================================================
+          // TEXT
+          // =====================================================
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  editing ? 'Edit Department' : 'Add Department',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  editing
+                      ? 'Update the department information and settings.'
+                      : 'Create a new department for your company.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // ERROR PAGE
+  // =============================================================
+
+  Widget _buildErrorPage({
+    required BuildContext context,
+    required String title,
+    required String message,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+
+      appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(RoutePaths.departments);
+            }
+          },
+        ),
+
+        title: Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer.withOpacity(.55),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: colorScheme.error.withOpacity(.20)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: colorScheme.error.withOpacity(.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.error_outline_rounded,
+                        size: 30,
+                        color: colorScheme.error,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Text(
+                      'Unable to Open Department Form',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go(RoutePaths.departments);
+                          }
+                        },
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        label: const Text('Back to Departments'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  // =============================================================
+  // SUCCESS SNACKBAR
+  // =============================================================
+
+  void _showSuccessSnackBar(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: colorScheme.inverseSurface,
+          elevation: 0,
+          duration: const Duration(seconds: 3),
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          content: Row(
+            children: [
+              Icon(
+                Icons.check_circle_outline_rounded,
+                color: colorScheme.onInverseSurface,
+                size: 20,
+              ),
+
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onInverseSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
+
+  // =============================================================
+  // ERROR SNACKBAR
+  // =============================================================
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: colorScheme.error,
+          elevation: 0,
+          duration: const Duration(seconds: 4),
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                color: colorScheme.onError,
+                size: 20,
+              ),
+
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onError,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
   }
 }

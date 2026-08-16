@@ -4,7 +4,6 @@ class CompanyModel extends CompanyEntity {
   const CompanyModel({
     required super.id,
     required super.name,
-    required super.code,
     required super.email,
     required super.phone,
     required super.address,
@@ -23,7 +22,6 @@ class CompanyModel extends CompanyEntity {
     return CompanyModel(
       id: json['id'] as String,
       name: json['name'] ?? '',
-      code: json['code'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
       address: json['address'] ?? '',
@@ -45,7 +43,6 @@ class CompanyModel extends CompanyEntity {
     return {
       'id': id,
       'name': name,
-      'code': code,
       'email': email,
       'phone': phone,
       'address': address,

@@ -1,17 +1,21 @@
-/// ===============================================================
-/// Flutter HRMS Pro
-///
-/// Basic Attendance Rules Settings
-///
-/// Version : 1.0.0
-///
-/// Features:
-/// - Company-wise attendance rules
-/// - Logged-in company automatically detected
-/// - No company dropdown
-/// - Responsive UI
-/// - Light / Dark theme compatible
-/// ===============================================================
+// ===============================================================
+// Flutter HRMS Pro
+//
+// Attendance Rules Settings Page
+//
+// Version : 2.0.0
+//
+// Updated:
+// - Fully Theme Aware
+// - Light / Dark Theme Support
+// - Material 3 ColorScheme
+// - Responsive UI
+// - Company-wise attendance rules
+// - Logged-in company automatically detected
+// - No company dropdown
+// - No hardcoded UI colors
+// - FontWeight kept within standard Flutter values
+// ===============================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,39 +25,37 @@ import '../../../../core/auth/current_user.dart';
 import '../../../../core/auth/current_user_provider.dart';
 import '../../../../core/services/supabase_service.dart';
 
-class AttendanceRulesSettingsPage
-    extends ConsumerStatefulWidget {
+class AttendanceRulesSettingsPage extends ConsumerStatefulWidget {
   const AttendanceRulesSettingsPage({
     super.key,
   });
 
   @override
-  ConsumerState<AttendanceRulesSettingsPage>
-  createState() =>
+  ConsumerState<AttendanceRulesSettingsPage> createState() =>
       _AttendanceRulesSettingsPageState();
 }
 
 class _AttendanceRulesSettingsPageState
-    extends ConsumerState<
-        AttendanceRulesSettingsPage> {
-  static const Color primaryColor =
-  Color(0xFF2196F3);
+    extends ConsumerState<AttendanceRulesSettingsPage> {
+  // =============================================================
+  // CONTROLLERS
+  // =============================================================
 
-  final TextEditingController
-  _lateGraceController =
+  final TextEditingController _lateGraceController =
   TextEditingController();
 
-  final TextEditingController
-  _earlyLeaveGraceController =
+  final TextEditingController _earlyLeaveGraceController =
   TextEditingController();
 
-  final TextEditingController
-  _halfDayController =
+  final TextEditingController _halfDayController =
   TextEditingController();
 
-  final TextEditingController
-  _minimumHoursController =
+  final TextEditingController _minimumHoursController =
   TextEditingController();
+
+  // =============================================================
+  // STATE
+  // =============================================================
 
   bool isLoading = true;
   bool isSaving = false;
@@ -65,15 +67,22 @@ class _AttendanceRulesSettingsPageState
 
   String? errorMessage;
 
+  // =============================================================
+  // INIT
+  // =============================================================
+
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadRules();
     });
   }
+
+  // =============================================================
+  // DISPOSE
+  // =============================================================
 
   @override
   void dispose() {
@@ -86,7 +95,7 @@ class _AttendanceRulesSettingsPageState
   }
 
   // =============================================================
-  // LOAD
+  // LOAD RULES
   // =============================================================
 
   Future<void> _loadRules() async {
@@ -116,8 +125,7 @@ class _AttendanceRulesSettingsPageState
         );
       }
 
-      final response =
-      await SupabaseService.client
+      final response = await SupabaseService.client
           .from('company_attendance_rules')
           .select()
           .eq('company_id', companyId)
@@ -166,6 +174,10 @@ class _AttendanceRulesSettingsPageState
     }
   }
 
+  // =============================================================
+  // DEFAULT VALUES
+  // =============================================================
+
   void _setDefaultValues() {
     _lateGraceController.text = '10';
     _earlyLeaveGraceController.text = '10';
@@ -179,43 +191,41 @@ class _AttendanceRulesSettingsPageState
   }
 
   // =============================================================
-  // SAVE
+  // SAVE RULES
   // =============================================================
 
   Future<void> _saveRules() async {
     if (isSaving) return;
 
     try {
-      final lateGrace =
-      int.tryParse(
+      final lateGrace = int.tryParse(
         _lateGraceController.text.trim(),
       );
 
-      final earlyGrace =
-      int.tryParse(
+      final earlyGrace = int.tryParse(
         _earlyLeaveGraceController.text.trim(),
       );
 
-      final halfDay =
-      double.tryParse(
+      final halfDay = double.tryParse(
         _halfDayController.text.trim(),
       );
 
-      final minimumHours =
-      double.tryParse(
+      final minimumHours = double.tryParse(
         _minimumHoursController.text.trim(),
       );
 
-      if (lateGrace == null ||
-          lateGrace < 0) {
+      // ---------------------------------------------------------
+      // VALIDATION
+      // ---------------------------------------------------------
+
+      if (lateGrace == null || lateGrace < 0) {
         _showError(
           'Please enter a valid late grace period.',
         );
         return;
       }
 
-      if (earlyGrace == null ||
-          earlyGrace < 0) {
+      if (earlyGrace == null || earlyGrace < 0) {
         _showError(
           'Please enter a valid early leave grace period.',
         );
@@ -229,13 +239,16 @@ class _AttendanceRulesSettingsPageState
         return;
       }
 
-      if (minimumHours == null ||
-          minimumHours < 0) {
+      if (minimumHours == null || minimumHours < 0) {
         _showError(
           'Please enter valid minimum working hours.',
         );
         return;
       }
+
+      // ---------------------------------------------------------
+      // CURRENT USER
+      // ---------------------------------------------------------
 
       final CurrentUser? user =
       ref.read(currentUserProvider);
@@ -255,31 +268,47 @@ class _AttendanceRulesSettingsPageState
         );
       }
 
+      if (!mounted) return;
+
       setState(() {
         isSaving = true;
         errorMessage = null;
       });
+
+      // ---------------------------------------------------------
+      // UPSERT
+      // ---------------------------------------------------------
 
       await SupabaseService.client
           .from('company_attendance_rules')
           .upsert(
         {
           'company_id': companyId,
-          'late_grace_minutes': lateGrace,
+
+          'late_grace_minutes':
+          lateGrace,
+
           'early_leave_grace_minutes':
           earlyGrace,
+
           'late_attendance_allowed':
           lateAttendanceAllowed,
+
           'early_leave_allowed':
           earlyLeaveAllowed,
+
           'half_day_threshold_hours':
           halfDay,
+
           'minimum_working_hours':
           minimumHours,
+
           'check_in_required':
           checkInRequired,
+
           'check_out_required':
           checkOutRequired,
+
           'updated_at':
           DateTime.now()
               .toUtc()
@@ -294,15 +323,8 @@ class _AttendanceRulesSettingsPageState
         isSaving = false;
       });
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Attendance rules saved successfully.',
-          ),
-          behavior:
-          SnackBarBehavior.floating,
-        ),
+      _showSuccess(
+        'Attendance rules saved successfully.',
       );
     } catch (e) {
       if (!mounted) return;
@@ -319,17 +341,113 @@ class _AttendanceRulesSettingsPageState
   }
 
   // =============================================================
-  // ERROR
+  // SUCCESS MESSAGE
+  // =============================================================
+
+  void _showSuccess(String message) {
+    if (!mounted) return;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final messenger =
+    ScaffoldMessenger.of(context);
+
+    messenger.hideCurrentSnackBar();
+
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+
+        backgroundColor:
+        colorScheme.inverseSurface,
+
+        shape: RoundedRectangleBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+        ),
+
+        content: Row(
+          children: [
+            Icon(
+              Icons.check_circle_outline_rounded,
+              color:
+              colorScheme.onInverseSurface,
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color:
+                  colorScheme.onInverseSurface,
+                  fontWeight:
+                  FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // ERROR MESSAGE
   // =============================================================
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+    if (!mounted) return;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final messenger =
+    ScaffoldMessenger.of(context);
+
+    messenger.hideCurrentSnackBar();
+
+    messenger.showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
         behavior:
         SnackBarBehavior.floating,
+
+        backgroundColor:
+        colorScheme.errorContainer,
+
+        shape: RoundedRectangleBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+        ),
+
+        content: Row(
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              color:
+              colorScheme.onErrorContainer,
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: Text(
+                message,
+                maxLines: 3,
+                overflow:
+                TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color:
+                  colorScheme.onErrorContainer,
+                  fontWeight:
+                  FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -340,48 +458,69 @@ class _AttendanceRulesSettingsPageState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       backgroundColor:
-      Theme.of(context)
-          .scaffoldBackgroundColor,
+      colorScheme.surface,
+
+      // =========================================================
+      // APP BAR
+      // =========================================================
 
       appBar: AppBar(
         elevation: 0,
+        scrolledUnderElevation: 0,
+
         backgroundColor:
-        Theme.of(context)
-            .scaffoldBackgroundColor,
+        colorScheme.surface,
+
         foregroundColor:
-        Theme.of(context)
-            .colorScheme
-            .onSurface,
+        colorScheme.onSurface,
 
         leading: IconButton(
+          tooltip: 'Back',
+
           icon: const Icon(
-            Icons.arrow_back,
+            Icons.arrow_back_ios_new_rounded,
           ),
+
           onPressed: () {
             Navigator.pop(context);
           },
         ),
 
-        title: const Text(
+        title: Text(
           'Attendance Rules',
-          style: TextStyle(
-            fontSize: 20,
+          style: theme.textTheme.titleLarge?.copyWith(
             fontWeight:
             FontWeight.w600,
+            color:
+            colorScheme.onSurface,
           ),
         ),
       ),
 
+      // =========================================================
+      // BODY
+      // =========================================================
+
       body: SafeArea(
         child: isLoading
-            ? const Center(
+            ? Center(
           child:
-          CircularProgressIndicator(),
+          CircularProgressIndicator(
+            color:
+            colorScheme.primary,
+          ),
         )
             : _buildBody(),
       ),
+
+      // =========================================================
+      // SAVE BUTTON
+      // =========================================================
 
       bottomNavigationBar:
       SafeArea(
@@ -394,44 +533,68 @@ class _AttendanceRulesSettingsPageState
             16,
           ),
           child: SizedBox(
-            height: 48,
+            height: 52,
             width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: isSaving
+            child: FilledButton.icon(
+              onPressed:
+              isSaving
                   ? null
                   : _saveRules,
+
               icon: isSaving
-                  ? const SizedBox(
-                width: 18,
-                height: 18,
+                  ? SizedBox(
+                width: 19,
+                height: 19,
                 child:
                 CircularProgressIndicator(
                   strokeWidth: 2,
                   color:
-                  Colors.white,
+                  colorScheme
+                      .onPrimary,
                 ),
               )
                   : const Icon(
                 Icons.save_outlined,
               ),
+
               label: Text(
                 isSaving
                     ? 'Saving...'
                     : 'Save Attendance Rules',
               ),
+
               style:
-              ElevatedButton.styleFrom(
+              FilledButton.styleFrom(
                 backgroundColor:
-                primaryColor,
+                colorScheme.primary,
+
                 foregroundColor:
-                Colors.white,
+                colorScheme.onPrimary,
+
+                disabledBackgroundColor:
+                colorScheme
+                    .surfaceContainerHighest,
+
+                disabledForegroundColor:
+                colorScheme
+                    .onSurfaceVariant,
+
                 elevation: 0,
+
                 shape:
                 RoundedRectangleBorder(
                   borderRadius:
                   BorderRadius.circular(
-                    10,
+                    14,
                   ),
+                ),
+
+                textStyle:
+                theme.textTheme
+                    .labelLarge
+                    ?.copyWith(
+                  fontWeight:
+                  FontWeight.w600,
                 ),
               ),
             ),
@@ -451,25 +614,31 @@ class _AttendanceRulesSettingsPageState
           context,
           constraints,
           ) {
-        final isWide =
+        final bool isWide =
             constraints.maxWidth >= 700;
 
         return SingleChildScrollView(
+          physics:
+          const BouncingScrollPhysics(),
+
           padding:
           EdgeInsets.symmetric(
             horizontal:
             isWide ? 24 : 14,
             vertical: 16,
           ),
+
           child: Center(
             child: ConstrainedBox(
               constraints:
               const BoxConstraints(
                 maxWidth: 760,
               ),
+
               child: Column(
                 crossAxisAlignment:
                 CrossAxisAlignment.start,
+
                 children: [
                   _buildHeader(),
 
@@ -499,6 +668,10 @@ class _AttendanceRulesSettingsPageState
                   ),
 
                   _buildInformationCard(),
+
+                  const SizedBox(
+                    height: 12,
+                  ),
                 ],
               ),
             ),
@@ -513,76 +686,95 @@ class _AttendanceRulesSettingsPageState
   // =============================================================
 
   Widget _buildHeader() {
-    final primary =
-        Theme.of(context)
-            .colorScheme
-            .primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Container(
       width: double.infinity,
+
       padding:
       const EdgeInsets.all(18),
+
       decoration: BoxDecoration(
         color:
-        primary.withOpacity(.08),
+        colorScheme.primaryContainer,
+
         borderRadius:
-        BorderRadius.circular(16),
+        BorderRadius.circular(18),
+
+        border: Border.all(
+          color:
+          colorScheme.outlineVariant,
+        ),
       ),
+
       child: Row(
         children: [
           Container(
             width: 52,
             height: 52,
+
             decoration:
             BoxDecoration(
               color:
-              primary.withOpacity(.12),
+              colorScheme.primary,
+
               borderRadius:
-              BorderRadius.circular(
-                14,
-              ),
+              BorderRadius.circular(14),
             ),
+
             child: Icon(
               Icons.rule_outlined,
-              color: primary,
+
+              color:
+              colorScheme.onPrimary,
+
               size: 27,
             ),
           ),
+
           const SizedBox(
             width: 13,
           ),
+
           Expanded(
             child: Column(
               crossAxisAlignment:
               CrossAxisAlignment.start,
+
               children: [
                 Text(
                   'Basic Attendance Rules',
-                  style: Theme.of(context)
+
+                  style: theme
                       .textTheme
                       .titleLarge
                       ?.copyWith(
                     fontWeight:
-                    FontWeight.w700,
+                    FontWeight.w600,
+
+                    color:
+                    colorScheme
+                        .onPrimaryContainer,
                   ),
                 ),
+
                 const SizedBox(
-                  height: 4,
+                  height: 5,
                 ),
+
                 Text(
                   'Configure the basic attendance behavior for your company.',
-                  style: Theme.of(context)
+
+                  style: theme
                       .textTheme
                       .bodySmall
                       ?.copyWith(
                     color:
-                    Theme.of(
-                      context,
-                    )
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(
-                      .65,
+                    colorScheme
+                        .onPrimaryContainer
+                        .withValues(
+                      alpha: .72,
                     ),
                   ),
                 ),
@@ -601,15 +793,18 @@ class _AttendanceRulesSettingsPageState
   Widget _buildGracePeriodCard() {
     return _buildCard(
       title: 'Grace Period',
-      icon:
-      Icons.timer_outlined,
+      icon: Icons.timer_outlined,
       children: [
         _buildNumberField(
           controller:
           _lateGraceController,
+
           label:
           'Late Grace Period',
-          suffix: 'minutes',
+
+          suffix:
+          'minutes',
+
           helper:
           'Late attendance will be allowed within this period.',
         ),
@@ -621,9 +816,13 @@ class _AttendanceRulesSettingsPageState
         _buildNumberField(
           controller:
           _earlyLeaveGraceController,
+
           label:
           'Early Leave Grace Period',
-          suffix: 'minutes',
+
+          suffix:
+          'minutes',
+
           helper:
           'Early leaving will be allowed within this period.',
         ),
@@ -639,16 +838,21 @@ class _AttendanceRulesSettingsPageState
     return _buildCard(
       title:
       'Attendance Permissions',
+
       icon:
       Icons.verified_user_outlined,
+
       children: [
         _buildSwitchTile(
           title:
           'Late Attendance Allowed',
+
           subtitle:
           'Allow employees to check in after the scheduled start time.',
+
           value:
           lateAttendanceAllowed,
+
           onChanged: (value) {
             setState(() {
               lateAttendanceAllowed =
@@ -660,10 +864,13 @@ class _AttendanceRulesSettingsPageState
         _buildSwitchTile(
           title:
           'Early Leave Allowed',
+
           subtitle:
           'Allow employees to leave before the scheduled end time.',
+
           value:
           earlyLeaveAllowed,
+
           onChanged: (value) {
             setState(() {
               earlyLeaveAllowed =
@@ -675,10 +882,13 @@ class _AttendanceRulesSettingsPageState
         _buildSwitchTile(
           title:
           'Check-in Required',
+
           subtitle:
           'Employees must record their attendance check-in.',
+
           value:
           checkInRequired,
+
           onChanged: (value) {
             setState(() {
               checkInRequired =
@@ -690,10 +900,13 @@ class _AttendanceRulesSettingsPageState
         _buildSwitchTile(
           title:
           'Check-out Required',
+
           subtitle:
           'Employees must record their attendance check-out.',
+
           value:
           checkOutRequired,
+
           onChanged: (value) {
             setState(() {
               checkOutRequired =
@@ -713,15 +926,21 @@ class _AttendanceRulesSettingsPageState
     return _buildCard(
       title:
       'Working Hour Rules',
+
       icon:
       Icons.access_time_outlined,
+
       children: [
         _buildNumberField(
           controller:
           _halfDayController,
+
           label:
           'Half-Day Threshold',
-          suffix: 'hours',
+
+          suffix:
+          'hours',
+
           helper:
           'Worked hours below this threshold may be treated as half-day.',
         ),
@@ -733,9 +952,13 @@ class _AttendanceRulesSettingsPageState
         _buildNumberField(
           controller:
           _minimumHoursController,
+
           label:
           'Minimum Working Hours',
-          suffix: 'hours',
+
+          suffix:
+          'hours',
+
           helper:
           'Expected minimum working hours for a normal workday.',
         ),
@@ -744,7 +967,7 @@ class _AttendanceRulesSettingsPageState
   }
 
   // =============================================================
-  // CARD
+  // COMMON CARD
   // =============================================================
 
   Widget _buildCard({
@@ -752,49 +975,79 @@ class _AttendanceRulesSettingsPageState
     required IconData icon,
     required List<Widget> children,
   }) {
-    final primary =
-        Theme.of(context)
-            .colorScheme
-            .primary;
+    final theme = Theme.of(context);
+    final colorScheme =
+        theme.colorScheme;
 
     return Container(
       width: double.infinity,
+
       padding:
       const EdgeInsets.all(16),
+
       decoration: BoxDecoration(
         color:
-        Theme.of(context).cardColor,
+        colorScheme.surfaceContainerLow,
+
         borderRadius:
-        BorderRadius.circular(16),
+        BorderRadius.circular(18),
+
         border: Border.all(
           color:
-          Theme.of(context)
-              .dividerColor
-              .withOpacity(.5),
+          colorScheme.outlineVariant,
         ),
       ),
+
       child: Column(
         crossAxisAlignment:
         CrossAxisAlignment.start,
+
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: primary,
+              Container(
+                width: 40,
+                height: 40,
+
+                decoration:
+                BoxDecoration(
+                  color:
+                  colorScheme
+                      .secondaryContainer,
+
+                  borderRadius:
+                  BorderRadius.circular(12),
+                ),
+
+                child: Icon(
+                  icon,
+
+                  size: 20,
+
+                  color:
+                  colorScheme
+                      .onSecondaryContainer,
+                ),
               ),
+
               const SizedBox(
-                width: 10,
+                width: 11,
               ),
+
               Expanded(
                 child: Text(
                   title,
-                  style: Theme.of(context)
+
+                  style: theme
                       .textTheme
                       .titleMedium
                       ?.copyWith(
                     fontWeight:
-                    FontWeight.w700,
+                    FontWeight.w600,
+
+                    color:
+                    colorScheme
+                        .onSurface,
                   ),
                 ),
               ),
@@ -802,11 +1055,15 @@ class _AttendanceRulesSettingsPageState
           ),
 
           const SizedBox(
-            height: 12,
+            height: 13,
           ),
 
-          const Divider(
+          Divider(
             height: 1,
+
+            color:
+            colorScheme
+                .outlineVariant,
           ),
 
           const SizedBox(
@@ -826,35 +1083,151 @@ class _AttendanceRulesSettingsPageState
   Widget _buildNumberField({
     required TextEditingController
     controller,
+
     required String label,
+
     required String suffix,
+
     required String helper,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme =
+        theme.colorScheme;
+
     return TextField(
-      controller: controller,
+      controller:
+      controller,
+
       keyboardType:
       const TextInputType.numberWithOptions(
         decimal: true,
       ),
+
       inputFormatters: [
-        FilteringTextInputFormatter
-            .allow(
+        FilteringTextInputFormatter.allow(
           RegExp(r'[0-9.]'),
         ),
       ],
+
+      style: theme.textTheme.bodyMedium?.copyWith(
+        fontWeight:
+        FontWeight.w600,
+
+        color:
+        colorScheme.onSurface,
+      ),
+
       decoration:
       InputDecoration(
-        labelText: label,
-        suffixText: suffix,
-        helperText: helper,
+        labelText:
+        label,
+
+        suffixText:
+        suffix,
+
+        helperText:
+        helper,
+
+        filled: true,
+
+        fillColor:
+        colorScheme.surface,
+
+        labelStyle:
+        TextStyle(
+          color:
+          colorScheme
+              .onSurfaceVariant,
+        ),
+
+        suffixStyle:
+        TextStyle(
+          color:
+          colorScheme
+              .onSurfaceVariant,
+
+          fontWeight:
+          FontWeight.w600,
+        ),
+
+        helperStyle:
+        theme.textTheme.bodySmall?.copyWith(
+          color:
+          colorScheme
+              .onSurfaceVariant,
+        ),
+
         border:
-        const OutlineInputBorder(),
+        OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+
+          borderSide:
+          BorderSide(
+            color:
+            colorScheme
+                .outlineVariant,
+          ),
+        ),
+
+        enabledBorder:
+        OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+
+          borderSide:
+          BorderSide(
+            color:
+            colorScheme
+                .outlineVariant,
+          ),
+        ),
+
+        focusedBorder:
+        OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+
+          borderSide:
+          BorderSide(
+            color:
+            colorScheme.primary,
+
+            width: 1.5,
+          ),
+        ),
+
+        errorBorder:
+        OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+
+          borderSide:
+          BorderSide(
+            color:
+            colorScheme.error,
+          ),
+        ),
+
+        focusedErrorBorder:
+        OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+
+          borderSide:
+          BorderSide(
+            color:
+            colorScheme.error,
+
+            width: 1.5,
+          ),
+        ),
       ),
     );
   }
 
   // =============================================================
-  // SWITCH
+  // SWITCH TILE
   // =============================================================
 
   Widget _buildSwitchTile({
@@ -864,33 +1237,85 @@ class _AttendanceRulesSettingsPageState
     required ValueChanged<bool>
     onChanged,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme =
+        theme.colorScheme;
+
     return SwitchListTile.adaptive(
       contentPadding:
       EdgeInsets.zero,
+
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 14,
+
+        style: theme
+            .textTheme
+            .bodyLarge
+            ?.copyWith(
           fontWeight:
           FontWeight.w600,
+
+          color:
+          colorScheme.onSurface,
         ),
       ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 11,
-          color: Theme.of(context)
-              .colorScheme
-              .onSurface
-              .withOpacity(.60),
+
+      subtitle: Padding(
+        padding:
+        const EdgeInsets.only(
+          top: 3,
+        ),
+
+        child: Text(
+          subtitle,
+
+          style: theme
+              .textTheme
+              .bodySmall
+              ?.copyWith(
+            color:
+            colorScheme
+                .onSurfaceVariant,
+          ),
         ),
       ),
-      value: value,
-      onChanged: onChanged,
+
+      value:
+      value,
+
+      onChanged:
+      onChanged,
+
       activeColor:
-      Theme.of(context)
-          .colorScheme
-          .primary,
+      colorScheme.primary,
+
+      activeTrackColor:
+      colorScheme
+          .primaryContainer,
+
+      inactiveThumbColor:
+      colorScheme
+          .onSurfaceVariant,
+
+      inactiveTrackColor:
+      colorScheme
+          .surfaceContainerHighest,
+
+      trackOutlineColor:
+      WidgetStateProperty
+          .resolveWith(
+            (states) {
+          if (states.contains(
+            WidgetState.selected,
+          )) {
+            return colorScheme
+                .primary;
+          }
+
+          return colorScheme
+              .outline;
+        },
+      ),
     );
   }
 
@@ -899,42 +1324,72 @@ class _AttendanceRulesSettingsPageState
   // =============================================================
 
   Widget _buildError() {
+    final theme = Theme.of(context);
+    final colorScheme =
+        theme.colorScheme;
+
     return Container(
       width: double.infinity,
+
       margin:
       const EdgeInsets.only(
         bottom: 16,
       ),
+
       padding:
       const EdgeInsets.all(14),
+
       decoration: BoxDecoration(
         color:
-        Colors.red.withOpacity(.07),
+        colorScheme.errorContainer,
+
         borderRadius:
-        BorderRadius.circular(12),
+        BorderRadius.circular(14),
+
         border: Border.all(
           color:
-          Colors.red.withOpacity(.20),
+          colorScheme.error
+              .withValues(
+            alpha: .25,
+          ),
         ),
       ),
+
       child: Row(
         crossAxisAlignment:
         CrossAxisAlignment.start,
+
         children: [
-          const Icon(
-            Icons.error_outline,
-            color: Colors.red,
+          Icon(
+            Icons.error_outline_rounded,
+
+            color:
+            colorScheme
+                .onErrorContainer,
+
+            size: 21,
           ),
+
           const SizedBox(
-            width: 9,
+            width: 10,
           ),
+
           Expanded(
             child: Text(
-              errorMessage!,
-              style:
-              const TextStyle(
-                color: Colors.red,
-                fontSize: 12,
+              errorMessage ?? '',
+
+              style: theme
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(
+                color:
+                colorScheme
+                    .onErrorContainer,
+
+                fontWeight:
+                FontWeight.w600,
+
+                height: 1.4,
               ),
             ),
           ),
@@ -944,47 +1399,85 @@ class _AttendanceRulesSettingsPageState
   }
 
   // =============================================================
-  // INFORMATION
+  // INFORMATION CARD
   // =============================================================
 
   Widget _buildInformationCard() {
-    final primary =
-        Theme.of(context)
-            .colorScheme
-            .primary;
+    final theme = Theme.of(context);
+    final colorScheme =
+        theme.colorScheme;
 
     return Container(
       width: double.infinity,
+
       padding:
       const EdgeInsets.all(14),
+
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
+        color:
+        colorScheme
             .surfaceContainerHighest
-            .withOpacity(.40),
+            .withValues(
+          alpha: .45,
+        ),
+
         borderRadius:
         BorderRadius.circular(14),
+
+        border: Border.all(
+          color:
+          colorScheme
+              .outlineVariant,
+        ),
       ),
+
       child: Row(
         crossAxisAlignment:
         CrossAxisAlignment.start,
+
         children: [
-          Icon(
-            Icons.info_outline,
-            color: primary,
-            size: 20,
+          Container(
+            width: 34,
+            height: 34,
+
+            decoration:
+            BoxDecoration(
+              color:
+              colorScheme
+                  .primaryContainer,
+
+              borderRadius:
+              BorderRadius.circular(10),
+            ),
+
+            child: Icon(
+              Icons.info_outline_rounded,
+
+              color:
+              colorScheme
+                  .onPrimaryContainer,
+
+              size: 19,
+            ),
           ),
+
           const SizedBox(
-            width: 9,
+            width: 10,
           ),
+
           Expanded(
             child: Text(
               'These rules are stored separately for each company and automatically use the logged-in user’s company.',
-              style: Theme.of(context)
+
+              style: theme
                   .textTheme
                   .bodySmall
                   ?.copyWith(
-                height: 1.4,
+                color:
+                colorScheme
+                    .onSurfaceVariant,
+
+                height: 1.45,
               ),
             ),
           ),

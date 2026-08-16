@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/constants/app_colors.dart';
 import '../providers/login_controller.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -30,6 +28,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // ===============================================================
 
   Future<void> _login() async {
+    _usernameController.text = 'waltonomor';
+    _passwordController.text = 'waltonomor';
     final username = _usernameController.text.trim();
     final passwordHash = _passwordController.text;
 

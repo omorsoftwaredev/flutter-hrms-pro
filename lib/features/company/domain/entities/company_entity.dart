@@ -5,7 +5,6 @@ class CompanyEntity {
   const CompanyEntity({
     required this.id,
     required this.name,
-    required this.code,
     required this.email,
     required this.phone,
     required this.address,
@@ -23,8 +22,6 @@ class CompanyEntity {
   final String id;
 
   final String name;
-
-  final String code;
 
   final String email;
 
@@ -53,7 +50,6 @@ class CompanyEntity {
   CompanyEntity copyWith({
     String? id,
     String? name,
-    String? code,
     String? email,
     String? phone,
     String? address,
@@ -70,7 +66,6 @@ class CompanyEntity {
     return CompanyEntity(
       id: id ?? this.id,
       name: name ?? this.name,
-      code: code ?? this.code,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       address: address ?? this.address,

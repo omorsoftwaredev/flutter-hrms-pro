@@ -4,7 +4,6 @@ class Company {
   const Company({
     required this.id,
     required this.name,
-    required this.code,
     required this.email,
     required this.phone,
     required this.address,
@@ -13,7 +12,6 @@ class Company {
 
   final String id;
   final String name;
-  final String code;
   final String email;
   final String phone;
   final String address;

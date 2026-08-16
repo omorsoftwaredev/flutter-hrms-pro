@@ -2,9 +2,14 @@
 // Flutter HRMS Pro
 // Company Dashboard Sidebar
 //
-// Version : 2.6.0
+// Version : 2.7.0
 //
-// Updated:
+// Theme Aware:
+// - Light / Dark Theme Support
+// - Uses Theme.of(context).colorScheme
+// - No hard-coded background colors
+// - No hard-coded text colors
+// - No hard-coded primary colors
 // - Accordion style parent menu
 // - Only one parent group opens at a time
 // - Previous parent automatically closes
@@ -38,18 +43,6 @@ class _CompanyDashboardSidebarState
   // =============================================================
   // CURRENTLY OPEN GROUP
   // =============================================================
-  //
-  // Only ONE parent group can remain open at a time.
-  //
-  // Example:
-  // Organization open
-  //       ↓
-  // People click
-  //       ↓
-  // Organization closes
-  // People opens
-  //
-  // =============================================================
 
   String? _expandedGroup = 'Organization';
 
@@ -59,14 +52,9 @@ class _CompanyDashboardSidebarState
 
   void _toggleGroup(String group) {
     setState(() {
-      // Same group click করলে close হবে
       if (_expandedGroup == group) {
         _expandedGroup = null;
-      }
-
-      // অন্য group click করলে আগেরটা close হয়ে
-      // নতুন group open হবে
-      else {
+      } else {
         _expandedGroup = group;
       }
     });
@@ -90,13 +78,8 @@ class _CompanyDashboardSidebarState
 
   @override
   Widget build(BuildContext context) {
-    final CurrentUser? user = ref.watch(
-      currentUserProvider,
-    );
-
-    // ===========================================================
-    // USER LOADING
-    // ===========================================================
+    final CurrentUser? user =
+    ref.watch(currentUserProvider);
 
     if (user == null) {
       return const Drawer(
@@ -107,6 +90,9 @@ class _CompanyDashboardSidebarState
     }
 
     return Drawer(
+      backgroundColor:
+      Theme.of(context).colorScheme.surface,
+
       child: SafeArea(
         child: Column(
           children: [
@@ -114,7 +100,10 @@ class _CompanyDashboardSidebarState
             // USER HEADER
             // ===================================================
 
-            _buildUserHeader(user),
+            _buildUserHeader(
+              context,
+              user,
+            ),
 
             // ===================================================
             // MENU
@@ -122,7 +111,8 @@ class _CompanyDashboardSidebarState
 
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(
+                padding:
+                const EdgeInsets.fromLTRB(
                   10,
                   12,
                   10,
@@ -137,7 +127,9 @@ class _CompanyDashboardSidebarState
                     context,
                     title: 'Settings',
                     icon: Icons.settings_outlined,
-                    color: const Color(0xFF6366F1),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary,
                     children: [
                       _buildChildMenuItem(
                         context,
@@ -150,6 +142,7 @@ class _CompanyDashboardSidebarState
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
                         icon: Icons.fact_check_outlined,
@@ -171,8 +164,11 @@ class _CompanyDashboardSidebarState
                   _buildMenuGroup(
                     context,
                     title: 'Organization',
-                    icon: Icons.business_center_outlined,
-                    color: const Color(0xFF2196F3),
+                    icon:
+                    Icons.business_center_outlined,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary,
                     children: [
                       _buildChildMenuItem(
                         context,
@@ -185,6 +181,7 @@ class _CompanyDashboardSidebarState
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
                         icon: Icons.badge_outlined,
@@ -196,6 +193,7 @@ class _CompanyDashboardSidebarState
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
                         icon: Icons.schedule_outlined,
@@ -207,9 +205,11 @@ class _CompanyDashboardSidebarState
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.admin_panel_settings_outlined,
+                        icon:
+                        Icons.admin_panel_settings_outlined,
                         title: 'Roles',
                         onTap: () {
                           _navigate(
@@ -218,9 +218,11 @@ class _CompanyDashboardSidebarState
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.security_outlined,
+                        icon:
+                        Icons.security_outlined,
                         title: 'Role Permissions',
                         onTap: () {
                           _navigate(
@@ -239,12 +241,16 @@ class _CompanyDashboardSidebarState
                   _buildMenuGroup(
                     context,
                     title: 'People',
-                    icon: Icons.people_alt_outlined,
-                    color: const Color(0xFF10B981),
+                    icon:
+                    Icons.people_alt_outlined,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .secondary,
                     children: [
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.people_outline,
+                        icon:
+                        Icons.people_outline,
                         title: 'Employees',
                         onTap: () {
                           _navigate(
@@ -253,9 +259,11 @@ class _CompanyDashboardSidebarState
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.manage_accounts_outlined,
+                        icon:
+                        Icons.manage_accounts_outlined,
                         title: 'Employee Accounts',
                         onTap: () {
                           _navigate(
@@ -274,12 +282,16 @@ class _CompanyDashboardSidebarState
                   _buildMenuGroup(
                     context,
                     title: 'Supervision',
-                    icon: Icons.supervisor_account_outlined,
-                    color: const Color(0xFFF59E0B),
+                    icon:
+                    Icons.supervisor_account_outlined,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .tertiary,
                     children: [
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.supervisor_account_outlined,
+                        icon:
+                        Icons.supervisor_account_outlined,
                         title: 'Supervisors',
                         onTap: () {
                           _navigate(
@@ -288,36 +300,45 @@ class _CompanyDashboardSidebarState
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.assignment_ind_outlined,
+                        icon:
+                        Icons.assignment_ind_outlined,
                         title: 'Assign Departments',
                         onTap: () {
                           _navigate(
                             context,
-                            RoutePaths.supervisorDepartmentAssignments,
+                            RoutePaths
+                                .supervisorDepartmentAssignments,
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.account_tree_outlined,
+                        icon:
+                        Icons.account_tree_outlined,
                         title: 'Manage Departments',
                         onTap: () {
                           _navigate(
                             context,
-                            RoutePaths.supervisorDepartmentManage,
+                            RoutePaths
+                                .supervisorDepartmentManage,
                           );
                         },
                       ),
+
                       _buildChildMenuItem(
                         context,
-                        icon: Icons.analytics_outlined,
+                        icon:
+                        Icons.analytics_outlined,
                         title: 'Department Status',
                         onTap: () {
                           _navigate(
                             context,
-                            RoutePaths.supervisorDepartmentStatus,
+                            RoutePaths
+                                .supervisorDepartmentStatus,
                           );
                         },
                       ),
@@ -331,8 +352,11 @@ class _CompanyDashboardSidebarState
             // LOGOUT DIVIDER
             // =====================================================
 
-            const Divider(
+            Divider(
               height: 1,
+              color: Theme.of(context)
+                  .colorScheme
+                  .outlineVariant,
             ),
 
             // =====================================================
@@ -345,10 +369,9 @@ class _CompanyDashboardSidebarState
       ),
     );
   }
-
-  // =============================================================
-  // MENU GROUP
-  // =============================================================
+// =============================================================
+// MENU GROUP
+// =============================================================
 
   Widget _buildMenuGroup(
       BuildContext context, {
@@ -357,31 +380,22 @@ class _CompanyDashboardSidebarState
         required Color color,
         required List<Widget> children,
       }) {
-    // ===========================================================
-    // IMPORTANT
-    // ===========================================================
-    //
-    // এখানে Set ব্যবহার করা হয়নি।
-    //
-    // তাই একসাথে multiple parent open হতে পারবে না।
-    //
-    // ===========================================================
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     final bool isExpanded = _expandedGroup == title;
 
     return Container(
-      margin: const EdgeInsets.only(
-        bottom: 10,
-      ),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: isExpanded
-            ? color.withOpacity(.035)
-            : Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
+            ? color.withValues(alpha: 0.055)
+            : colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(17),
         border: Border.all(
           color: isExpanded
-              ? color.withOpacity(.18)
-              : Colors.grey.shade200,
+              ? color.withValues(alpha: 0.20)
+              : colorScheme.outlineVariant,
         ),
       ),
       child: Column(
@@ -393,7 +407,7 @@ class _CompanyDashboardSidebarState
           Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(17),
               onTap: () {
                 _toggleGroup(title);
               },
@@ -412,17 +426,16 @@ class _CompanyDashboardSidebarState
 
                     AnimatedContainer(
                       duration: const Duration(
-                        milliseconds: 200,
+                        milliseconds: 220,
                       ),
-                      width: 43,
-                      height: 43,
+                      curve: Curves.easeOut,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: color.withOpacity(
-                          isExpanded ? .14 : .09,
+                        color: color.withValues(
+                          alpha: isExpanded ? 0.15 : 0.09,
                         ),
-                        borderRadius: BorderRadius.circular(
-                          12,
-                        ),
+                        borderRadius: BorderRadius.circular(13),
                       ),
                       child: Icon(
                         icon,
@@ -431,12 +444,10 @@ class _CompanyDashboardSidebarState
                       ),
                     ),
 
-                    const SizedBox(
-                      width: 12,
-                    ),
+                    const SizedBox(width: 12),
 
                     // =================================================
-                    // GROUP TITLE
+                    // TITLE
                     // =================================================
 
                     Expanded(
@@ -444,12 +455,11 @@ class _CompanyDashboardSidebarState
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14.5,
+                        style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: isExpanded
                               ? color
-                              : Colors.grey.shade800,
+                              : colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -459,16 +469,17 @@ class _CompanyDashboardSidebarState
                     // =================================================
 
                     AnimatedRotation(
-                      turns: isExpanded ? .5 : 0,
+                      turns: isExpanded ? 0.5 : 0.0,
                       duration: const Duration(
-                        milliseconds: 200,
+                        milliseconds: 220,
                       ),
+                      curve: Curves.easeOut,
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
+                        size: 25,
                         color: isExpanded
                             ? color
-                            : Colors.grey.shade500,
-                        size: 24,
+                            : colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -478,21 +489,16 @@ class _CompanyDashboardSidebarState
           ),
 
           // =====================================================
-          // CHILDREN
+          // SUB MENU
           // =====================================================
 
-          AnimatedCrossFade(
+          AnimatedSize(
             duration: const Duration(
-              milliseconds: 220,
+              milliseconds: 250,
             ),
-            firstCurve: Curves.easeOut,
-            secondCurve: Curves.easeIn,
-            sizeCurve: Curves.easeInOut,
-            crossFadeState: isExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-            firstChild: const SizedBox.shrink(),
-            secondChild: Padding(
+            curve: Curves.easeInOut,
+            child: isExpanded
+                ? Padding(
               padding: const EdgeInsets.fromLTRB(
                 8,
                 0,
@@ -501,42 +507,42 @@ class _CompanyDashboardSidebarState
               ),
               child: Column(
                 children: [
-                  // =================================================
-                  // SEPARATOR
-                  // =================================================
+                  // =========================================
+                  // DIVIDER
+                  // =========================================
 
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 5,
+                      horizontal: 6,
                     ),
                     child: Divider(
                       height: 1,
-                      thickness: .8,
-                      color: color.withOpacity(.12),
+                      thickness: 0.8,
+                      color: color.withValues(
+                        alpha: 0.14,
+                      ),
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 7,
-                  ),
+                  const SizedBox(height: 7),
 
-                  // =================================================
-                  // CHILD ITEMS
-                  // =================================================
+                  // =========================================
+                  // CHILDREN
+                  // =========================================
 
                   ...children,
                 ],
               ),
-            ),
+            )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
     );
   }
-
   // =============================================================
-  // CHILD MENU ITEM
-  // =============================================================
+// CHILD MENU ITEM
+// =============================================================
 
   Widget _buildChildMenuItem(
       BuildContext context, {
@@ -544,15 +550,16 @@ class _CompanyDashboardSidebarState
         required String title,
         required VoidCallback onTap,
       }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: 6,
-      ),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(13),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
           onTap: onTap,
           child: Container(
             width: double.infinity,
@@ -561,40 +568,36 @@ class _CompanyDashboardSidebarState
               vertical: 10,
             ),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(13),
               border: Border.all(
-                color: Colors.grey.shade200,
+                color: colorScheme.outlineVariant,
               ),
             ),
             child: Row(
               children: [
                 // =================================================
-                // CHILD ICON
+                // ICON
                 // =================================================
 
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 37,
+                  height: 37,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2196F3)
-                        .withOpacity(.07),
-                    borderRadius: BorderRadius.circular(
-                      10,
-                    ),
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     icon,
-                    color: const Color(0xFF2196F3),
+                    color: colorScheme.onPrimaryContainer,
                     size: 19,
                   ),
                 ),
 
-                const SizedBox(
-                  width: 11,
-                ),
+                const SizedBox(width: 11),
 
                 // =================================================
-                // CHILD TITLE
+                // TITLE
                 // =================================================
 
                 Expanded(
@@ -602,9 +605,9 @@ class _CompanyDashboardSidebarState
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -615,8 +618,8 @@ class _CompanyDashboardSidebarState
 
                 Icon(
                   Icons.chevron_right_rounded,
-                  size: 19,
-                  color: Colors.grey.shade500,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
@@ -633,26 +636,42 @@ class _CompanyDashboardSidebarState
   Widget _buildLogout(
       BuildContext context,
       ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final Color errorColor =
+        colorScheme.error;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding:
+      const EdgeInsets.fromLTRB(
         10,
         8,
         10,
         10,
       ),
+
       child: Material(
         color: Colors.transparent,
+
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius:
+          BorderRadius.circular(14),
+
           onTap: () async {
             Navigator.pop(context);
 
             await ref
-                .read(authRepositoryProvider)
+                .read(
+              authRepositoryProvider,
+            )
                 .logout();
 
             ref
-                .read(currentUserProvider.notifier)
+                .read(
+              currentUserProvider
+                  .notifier,
+            )
                 .logout();
 
             if (context.mounted) {
@@ -661,36 +680,58 @@ class _CompanyDashboardSidebarState
               );
             }
           },
+
           child: Container(
-            padding: const EdgeInsets.symmetric(
+            padding:
+            const EdgeInsets.symmetric(
               horizontal: 10,
               vertical: 9,
             ),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(.035),
-              borderRadius: BorderRadius.circular(14),
+
+            decoration:
+            BoxDecoration(
+              color:
+              errorColor.withValues(
+                alpha: .07,
+              ),
+
+              borderRadius:
+              BorderRadius.circular(14),
+
               border: Border.all(
-                color: Colors.red.withOpacity(.10),
+                color:
+                errorColor.withValues(
+                  alpha: .18,
+                ),
               ),
             ),
+
             child: Row(
               children: [
-                // =================================================
+                // ===============================================
                 // LOGOUT ICON
-                // =================================================
+                // ===============================================
 
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(.08),
-                    borderRadius: BorderRadius.circular(
+
+                  decoration:
+                  BoxDecoration(
+                    color:
+                    errorColor.withValues(
+                      alpha: .10,
+                    ),
+
+                    borderRadius:
+                    BorderRadius.circular(
                       11,
                     ),
                   ),
-                  child: const Icon(
+
+                  child: Icon(
                     Icons.logout_rounded,
-                    color: Colors.red,
+                    color: errorColor,
                     size: 21,
                   ),
                 ),
@@ -699,28 +740,34 @@ class _CompanyDashboardSidebarState
                   width: 11,
                 ),
 
-                // =================================================
+                // ===============================================
                 // LOGOUT TEXT
-                // =================================================
+                // ===============================================
 
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Sign Out',
-                    style: TextStyle(
-                      color: Colors.red,
+
+                    style: theme
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(
+                      color: errorColor,
                       fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight:
+                      FontWeight.w700,
                     ),
                   ),
                 ),
 
-                // =================================================
+                // ===============================================
                 // ARROW
-                // =================================================
+                // ===============================================
 
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.red,
+                Icon(
+                  Icons
+                      .chevron_right_rounded,
+                  color: errorColor,
                   size: 20,
                 ),
               ],
@@ -736,30 +783,55 @@ class _CompanyDashboardSidebarState
   // =============================================================
 
   Widget _buildUserHeader(
+      BuildContext context,
       CurrentUser user,
       ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final String displayName =
     user.displayName.trim().isNotEmpty
         ? user.displayName
         : user.loginName;
 
+    final Color headerColor =
+        colorScheme.primary;
+
+    final Color headerOnColor =
+        colorScheme.onPrimary;
+
+    final Color headerMutedColor =
+    colorScheme.onPrimary.withValues(
+      alpha: .78,
+    );
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
+
+      padding:
+      const EdgeInsets.fromLTRB(
         17,
         20,
         17,
         17,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2196F3),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
+
+      decoration: BoxDecoration(
+        color: headerColor,
+
+        borderRadius:
+        const BorderRadius.only(
+          bottomLeft:
+          Radius.circular(20),
+          bottomRight:
+          Radius.circular(20),
         ),
       ),
+
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: [
           // =====================================================
           // PROFILE
@@ -770,19 +842,32 @@ class _CompanyDashboardSidebarState
               Container(
                 width: 56,
                 height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
+
+                decoration:
+                BoxDecoration(
+                  color:
+                  headerOnColor,
+                  borderRadius:
+                  BorderRadius.circular(
+                    15,
+                  ),
                 ),
+
                 child: Center(
                   child: Text(
                     displayName.isEmpty
                         ? '?'
-                        : displayName[0].toUpperCase(),
-                    style: const TextStyle(
-                      color: Color(0xFF2196F3),
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                        : displayName[0]
+                        .toUpperCase(),
+
+                    style: theme
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(
+                      color:
+                      headerColor,
+                      fontWeight:
+                      FontWeight.w800,
                     ),
                   ),
                 ),
@@ -796,15 +881,23 @@ class _CompanyDashboardSidebarState
                 child: Column(
                   crossAxisAlignment:
                   CrossAxisAlignment.start,
+
                   children: [
                     Text(
                       displayName,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      overflow:
+                      TextOverflow.ellipsis,
+
+                      style: theme
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(
+                        color:
+                        headerOnColor,
                         fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                        fontWeight:
+                        FontWeight.w800,
                       ),
                     ),
 
@@ -815,9 +908,15 @@ class _CompanyDashboardSidebarState
                     Text(
                       user.loginUser,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(.85),
+                      overflow:
+                      TextOverflow.ellipsis,
+
+                      style: theme
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(
+                        color:
+                        headerMutedColor,
                         fontSize: 12,
                       ),
                     ),
@@ -837,20 +936,30 @@ class _CompanyDashboardSidebarState
 
           Row(
             children: [
-              const Icon(
-                Icons.verified_user_outlined,
-                color: Colors.white,
+              Icon(
+                Icons
+                    .verified_user_outlined,
+                color:
+                headerOnColor,
                 size: 17,
               ),
+
               const SizedBox(
                 width: 7,
               ),
-              const Text(
+
+              Text(
                 'Login Information',
-                style: TextStyle(
-                  color: Colors.white,
+
+                style: theme
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(
+                  color:
+                  headerOnColor,
                   fontSize: 13,
-                  fontWeight: FontWeight.bold,
+                  fontWeight:
+                  FontWeight.w700,
                 ),
               ),
             ],
@@ -861,27 +970,37 @@ class _CompanyDashboardSidebarState
           ),
 
           _infoRow(
-            icon: Icons.person_outline,
+            context,
+            icon:
+            Icons.person_outline,
             label: 'Login Name',
             value: user.loginName,
           ),
 
           _infoRow(
-            icon: Icons.account_circle_outlined,
+            context,
+            icon:
+            Icons.account_circle_outlined,
             label: 'Login User',
             value: user.loginUser,
           ),
 
           _infoRow(
-            icon: Icons.admin_panel_settings_outlined,
+            context,
+            icon:
+            Icons.admin_panel_settings_outlined,
             label: 'Role',
             value: user.role.name,
           ),
 
           if (user.companyName != null &&
-              user.companyName!.trim().isNotEmpty)
+              user.companyName!
+                  .trim()
+                  .isNotEmpty)
             _infoRow(
-              icon: Icons.business_outlined,
+              context,
+              icon:
+              Icons.business_outlined,
               label: 'Company',
               value: user.companyName!,
             ),
@@ -896,19 +1015,30 @@ class _CompanyDashboardSidebarState
 
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(
+
+            padding:
+            const EdgeInsets.symmetric(
               horizontal: 10,
               vertical: 8,
             ),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.12),
-              borderRadius: BorderRadius.circular(10),
+
+            decoration:
+            BoxDecoration(
+              color:
+              headerOnColor.withValues(
+                alpha: .12,
+              ),
+
+              borderRadius:
+              BorderRadius.circular(10),
             ),
+
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.security_outlined,
-                  color: Colors.white,
+                  color:
+                  headerOnColor,
                   size: 16,
                 ),
 
@@ -919,16 +1049,23 @@ class _CompanyDashboardSidebarState
                 Expanded(
                   child: Text(
                     '${user.permissions.length} permissions available',
-                    style: const TextStyle(
-                      color: Colors.white,
+
+                    style: theme
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(
+                      color:
+                      headerOnColor,
                       fontSize: 11,
                     ),
                   ),
                 ),
 
-                const Icon(
-                  Icons.check_circle_outline,
-                  color: Colors.white,
+                Icon(
+                  Icons
+                      .check_circle_outline,
+                  color:
+                  headerOnColor,
                   size: 15,
                 ),
               ],
@@ -943,21 +1080,39 @@ class _CompanyDashboardSidebarState
   // INFO ROW
   // =============================================================
 
-  Widget _infoRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _infoRow(
+      BuildContext context, {
+        required IconData icon,
+        required String label,
+        required String value,
+      }) {
+    final colorScheme =
+        Theme.of(context).colorScheme;
+
+    final Color onHeader =
+        colorScheme.onPrimary;
+
+    final Color muted =
+    colorScheme.onPrimary
+        .withValues(alpha: .72);
+
     return Padding(
-      padding: const EdgeInsets.only(
+      padding:
+      const EdgeInsets.only(
         bottom: 6,
       ),
+
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(.85),
+            color:
+            onHeader.withValues(
+              alpha: .85,
+            ),
             size: 15,
           ),
 
@@ -967,19 +1122,31 @@ class _CompanyDashboardSidebarState
 
           SizedBox(
             width: 82,
+
             child: Text(
               label,
-              style: TextStyle(
-                color: Colors.white.withOpacity(.72),
+
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(
+                color: muted,
                 fontSize: 10.5,
               ),
             ),
           ),
 
-          const Text(
+          Text(
             ':',
-            style: TextStyle(
-              color: Colors.white70,
+
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(
+              color:
+              onHeader.withValues(
+                alpha: .70,
+              ),
               fontSize: 11,
             ),
           ),
@@ -990,13 +1157,22 @@ class _CompanyDashboardSidebarState
 
           Expanded(
             child: Text(
-              value.trim().isEmpty ? '-' : value,
+              value.trim().isEmpty
+                  ? '-'
+                  : value,
+
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
+              overflow:
+              TextOverflow.ellipsis,
+
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(
+                color: onHeader,
                 fontSize: 10.5,
-                fontWeight: FontWeight.w600,
+                fontWeight:
+                FontWeight.w600,
               ),
             ),
           ),

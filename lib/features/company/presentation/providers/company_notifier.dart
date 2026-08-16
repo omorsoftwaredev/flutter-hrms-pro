@@ -160,9 +160,6 @@ class CompanyNotifier extends StateNotifier<CompanyState> {
       return company.name
           .toLowerCase()
           .contains(query) ||
-          company.code
-              .toLowerCase()
-              .contains(query) ||
           company.email
               .toLowerCase()
               .contains(query) ||

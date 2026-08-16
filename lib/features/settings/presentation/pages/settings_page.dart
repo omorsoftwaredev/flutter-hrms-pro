@@ -3,13 +3,16 @@
 ///
 /// Settings Page
 ///
-/// Version : 1.0.0
+/// Version : 2.0.0
 ///
 /// Features:
+/// - Fully theme aware
+/// - Light / Dark / System compatible
 /// - Responsive settings layout
+/// - Mobile / Tablet / Desktop
 /// - Appearance
-/// - Company Settings
 /// - Attendance Settings
+/// - Existing routes preserved
 /// ===============================================================
 
 import 'package:flutter/material.dart';
@@ -20,71 +23,103 @@ import '../../../../core/router/route_paths.dart';
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  static const Color primaryColor = Color(0xFF2196F3);
+  // ===============================================================
+  // BUILD
+  // ===============================================================
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
+      backgroundColor: colorScheme.surface,
+
+      // ===========================================================
+      // APP BAR
+      // ===========================================================
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
 
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black87,
+            Icons.arrow_back_rounded,
           ),
           onPressed: () {
             context.pop();
           },
         ),
 
-        title: const Text(
+        title: Text(
           'Settings',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
+          style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
           ),
         ),
       ),
 
+      // ===========================================================
+      // BODY
+      // ===========================================================
+
       body: SafeArea(
         child: LayoutBuilder(
-          builder: (context, constraints) {
+          builder: (
+              context,
+              constraints,
+              ) {
             final width = constraints.maxWidth;
 
             // =====================================================
-            // RESPONSIVE BREAKPOINT
+            // RESPONSIVE BREAKPOINTS
             // =====================================================
 
-            final isDesktop = width >= 900;
+            final bool isDesktop = width >= 900;
 
-            final horizontalPadding = width >= 1200
-                ? 40.0
-                : width >= 600
-                ? 24.0
-                : 12.0;
+            final double horizontalPadding;
+
+            if (width >= 1200) {
+              horizontalPadding = 40;
+            } else if (width >= 600) {
+              horizontalPadding = 24;
+            } else {
+              horizontalPadding = 12;
+            }
 
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding,
                 vertical: 20,
               ),
+
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     maxWidth: 1100,
                   ),
+
                   child: Column(
                     crossAxisAlignment:
                     CrossAxisAlignment.start,
+
                     children: [
+                      // =========================================
+                      // HEADER
+                      // =========================================
+
                       _buildPageHeader(context),
 
                       const SizedBox(height: 20),
+
+                      // =========================================
+                      // RESPONSIVE CONTENT
+                      // =========================================
 
                       if (isDesktop)
                         _buildDesktopLayout(context)
@@ -101,50 +136,88 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  // =============================================================
+  // ===============================================================
   // PAGE HEADER
-  // =============================================================
+  // ===============================================================
 
-  Widget _buildPageHeader(BuildContext context) {
+  Widget _buildPageHeader(
+      BuildContext context,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
+
       padding: const EdgeInsets.all(20),
+
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: colorScheme.primaryContainer
+            .withOpacity(0.45),
+
+        borderRadius: BorderRadius.circular(18),
+
         border: Border.all(
-          color: Colors.grey.shade200,
+          color: colorScheme.outlineVariant
+              .withOpacity(0.65),
         ),
       ),
+
       child: Row(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: [
+          // =======================================================
+          // ICON
+          // =======================================================
+
           Container(
-            width: 52,
-            height: 52,
+            width: 54,
+            height: 54,
+
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(.10),
-              borderRadius: BorderRadius.circular(14),
+              color: colorScheme.primary
+                  .withOpacity(0.12),
+
+              borderRadius:
+              BorderRadius.circular(15),
             ),
-            child: const Icon(
+
+            alignment: Alignment.center,
+
+            child: Icon(
               Icons.settings_outlined,
-              color: primaryColor,
+              color: colorScheme.primary,
               size: 28,
             ),
           ),
 
           const SizedBox(width: 14),
 
+          // =======================================================
+          // TEXT
+          // =======================================================
+
           Expanded(
             child: Column(
               crossAxisAlignment:
               CrossAxisAlignment.start,
+
               children: [
-                const Text(
+                Text(
                   'Settings',
-                  style: TextStyle(
-                    fontSize: 18,
+                  maxLines: 1,
+                  overflow:
+                  TextOverflow.ellipsis,
+
+                  style: theme
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color:
+                    colorScheme.onSurface,
                   ),
                 ),
 
@@ -153,10 +226,16 @@ class SettingsPage extends StatelessWidget {
                 Text(
                   'Manage your application preferences and defaults.',
                   maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
+                  overflow:
+                  TextOverflow.ellipsis,
+
+                  style: theme
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                    color:
+                    colorScheme.onSurfaceVariant,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -167,59 +246,73 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  // =============================================================
-  // DESKTOP
-  // =============================================================
+  // ===============================================================
+  // DESKTOP LAYOUT
+  // ===============================================================
 
   Widget _buildDesktopLayout(
       BuildContext context,
       ) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
+
       children: [
         Expanded(
-          child: _buildAppearanceCard(context),
+          child: _buildAppearanceCard(
+            context,
+          ),
         ),
 
         const SizedBox(width: 16),
 
         Expanded(
-          child: _buildAttendanceSettingsCard(context),
+          child: _buildAttendanceSettingsCard(
+            context,
+          ),
         ),
       ],
     );
   }
 
-  // =============================================================
-  // MOBILE / TABLET
-  // =============================================================
+  // ===============================================================
+  // MOBILE / TABLET LAYOUT
+  // ===============================================================
 
   Widget _buildMobileLayout(
       BuildContext context,
       ) {
     return Column(
       children: [
-        _buildAppearanceCard(context),
+        _buildAppearanceCard(
+          context,
+        ),
 
         const SizedBox(height: 14),
 
-        _buildAttendanceSettingsCard(context),
+        _buildAttendanceSettingsCard(
+          context,
+        ),
       ],
     );
   }
 
-  // =============================================================
+  // ===============================================================
   // APPEARANCE
-  // =============================================================
+  // ===============================================================
 
   Widget _buildAppearanceCard(
       BuildContext context,
       ) {
+    final colorScheme =
+        Theme.of(context).colorScheme;
+
     return _SettingsCard(
       icon: Icons.palette_outlined,
       title: 'Appearance',
-      subtitle: 'Customize the application appearance.',
-      iconColor: Colors.deepPurple,
+      subtitle:
+      'Customize the application appearance.',
+      iconColor: colorScheme.primary,
       onTap: () {
         context.push(
           RoutePaths.appearanceSettings,
@@ -229,24 +322,29 @@ class SettingsPage extends StatelessWidget {
         _PreviewItem(
           icon: Icons.brightness_6_outlined,
           title: 'Theme',
-          subtitle: 'Light / Dark / System',
+          subtitle:
+          'Light / Dark / System',
         ),
       ],
     );
   }
 
-  // =============================================================
+  // ===============================================================
   // ATTENDANCE SETTINGS
-  // =============================================================
+  // ===============================================================
 
   Widget _buildAttendanceSettingsCard(
       BuildContext context,
       ) {
+    final colorScheme =
+        Theme.of(context).colorScheme;
+
     return _SettingsCard(
       icon: Icons.fact_check_outlined,
       title: 'Attendance Settings',
-      subtitle: 'Configure working days and attendance rules.',
-      iconColor: Colors.teal,
+      subtitle:
+      'Configure working days and attendance rules.',
+      iconColor: colorScheme.secondary,
       onTap: () {
         context.push(
           RoutePaths.attendanceSettings,
@@ -256,28 +354,35 @@ class SettingsPage extends StatelessWidget {
         _PreviewItem(
           icon: Icons.calendar_month_outlined,
           title: 'Working Days',
-          subtitle: 'Configure weekly working days',
+          subtitle:
+          'Configure weekly working days',
         ),
+
         SizedBox(height: 10),
+
         _PreviewItem(
           icon: Icons.weekend_outlined,
           title: 'Weekend',
-          subtitle: 'Configure weekly weekend',
+          subtitle:
+          'Configure weekly weekend',
         ),
+
         SizedBox(height: 10),
+
         _PreviewItem(
           icon: Icons.rule_outlined,
           title: 'Attendance Rules',
-          subtitle: 'Basic attendance preferences',
+          subtitle:
+          'Basic attendance preferences',
         ),
       ],
     );
   }
 }
 
-// ===============================================================
+// ===================================================================
 // SETTINGS CARD
-// ===============================================================
+// ===================================================================
 
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({
@@ -298,35 +403,72 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: colorScheme.surface,
+
+      borderRadius:
+      BorderRadius.circular(18),
+
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius:
+        BorderRadius.circular(18),
+
         onTap: onTap,
+
         child: Container(
           width: double.infinity,
+
           padding: const EdgeInsets.all(18),
+
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            color: colorScheme.surface,
+
+            borderRadius:
+            BorderRadius.circular(18),
+
             border: Border.all(
-              color: Colors.grey.shade200,
+              color:
+              colorScheme.outlineVariant,
             ),
           ),
+
           child: Column(
             crossAxisAlignment:
             CrossAxisAlignment.start,
+
             children: [
+              // =================================================
+              // CARD HEADER
+              // =================================================
+
               Row(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+
                 children: [
+                  // =============================================
+                  // ICON
+                  // =============================================
+
                   Container(
                     width: 46,
                     height: 46,
+
                     decoration: BoxDecoration(
-                      color: iconColor.withOpacity(.10),
+                      color: iconColor
+                          .withOpacity(0.12),
+
                       borderRadius:
-                      BorderRadius.circular(13),
+                      BorderRadius.circular(
+                        13,
+                      ),
                     ),
+
+                    alignment: Alignment.center,
+
                     child: Icon(
                       icon,
                       color: iconColor,
@@ -336,53 +478,90 @@ class _SettingsCard extends StatelessWidget {
 
                   const SizedBox(width: 12),
 
+                  // =============================================
+                  // TITLE + SUBTITLE
+                  // =============================================
+
                   Expanded(
                     child: Column(
                       crossAxisAlignment:
                       CrossAxisAlignment.start,
+
                       children: [
                         Text(
                           title,
                           maxLines: 1,
                           overflow:
                           TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 16,
+
+                          style: theme
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
                             fontWeight:
                             FontWeight.w700,
-                            color: Colors.black87,
+                            color:
+                            colorScheme
+                                .onSurface,
                           ),
                         ),
 
-                        const SizedBox(height: 4),
+                        const SizedBox(
+                          height: 4,
+                        ),
 
                         Text(
                           subtitle,
                           maxLines: 2,
                           overflow:
                           TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
+
+                          style: theme
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
                             color:
-                            Colors.grey.shade600,
+                            colorScheme
+                                .onSurfaceVariant,
+                            height: 1.35,
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Colors.grey,
+                  const SizedBox(width: 8),
+
+                  // =============================================
+                  // ARROW
+                  // =============================================
+
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color:
+                    colorScheme
+                        .onSurfaceVariant,
                   ),
                 ],
               ),
 
               const SizedBox(height: 16),
 
-              const Divider(height: 1),
+              // =================================================
+              // DIVIDER
+              // =================================================
+
+              Divider(
+                height: 1,
+                color:
+                colorScheme.outlineVariant,
+              ),
 
               const SizedBox(height: 14),
+
+              // =================================================
+              // PREVIEW ITEMS
+              // =================================================
 
               ...children,
             ],
@@ -393,9 +572,9 @@ class _SettingsCard extends StatelessWidget {
   }
 }
 
-// ===============================================================
+// ===================================================================
 // PREVIEW ITEM
-// ===============================================================
+// ===================================================================
 
 class _PreviewItem extends StatelessWidget {
   const _PreviewItem({
@@ -410,47 +589,114 @@ class _PreviewItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 18,
-          color: Colors.grey.shade600,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 9,
+      ),
+
+      decoration: BoxDecoration(
+        color: colorScheme
+            .surfaceContainerHighest
+            .withOpacity(0.35),
+
+        borderRadius:
+        BorderRadius.circular(12),
+
+        border: Border.all(
+          color:
+          colorScheme.outlineVariant
+              .withOpacity(0.55),
         ),
+      ),
 
-        const SizedBox(width: 10),
+      child: Row(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
 
-        Expanded(
-          child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
+        children: [
+          // =====================================================
+          // ICON
+          // =====================================================
 
-              const SizedBox(height: 2),
+          Container(
+            width: 34,
+            height: 34,
 
-              Text(
-                subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
+            decoration: BoxDecoration(
+              color: colorScheme.primary
+                  .withOpacity(0.10),
+
+              borderRadius:
+              BorderRadius.circular(9),
+            ),
+
+            alignment: Alignment.center,
+
+            child: Icon(
+              icon,
+              size: 18,
+              color: colorScheme.primary,
+            ),
           ),
-        ),
-      ],
+
+          const SizedBox(width: 10),
+
+          // =====================================================
+          // TEXT
+          // =====================================================
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow:
+                  TextOverflow.ellipsis,
+
+                  style: theme
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(
+                    fontWeight:
+                    FontWeight.w600,
+                    color:
+                    colorScheme.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow:
+                  TextOverflow.ellipsis,
+
+                  style: theme
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                    color:
+                    colorScheme
+                        .onSurfaceVariant,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

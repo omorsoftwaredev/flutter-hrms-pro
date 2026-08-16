@@ -7,214 +7,379 @@ import '../providers/designation_provider.dart';
 import '../widgets/designation_form.dart';
 
 class DesignationFormPage extends ConsumerWidget {
-  const DesignationFormPage({
-    super.key,
-    this.designation,
-  });
+  const DesignationFormPage({super.key, this.designation});
 
   final DesignationEntity? designation;
 
   bool get isEdit => designation != null;
 
   @override
-  Widget build(
-      BuildContext context,
-      WidgetRef ref,
-      ) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final state = ref.watch(designationProvider);
 
     return Scaffold(
+      // ===========================================================
+      // APP BAR
+      // ===========================================================
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+
         leading: IconButton(
+          tooltip: 'Back',
           onPressed: () {
             if (context.canPop()) {
               context.pop();
             }
           },
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
         ),
+
         title: Text(
-          isEdit
-              ? 'Edit Designation'
-              : 'Add Designation',
+          isEdit ? 'Edit Designation' : 'Add Designation',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
+      // ===========================================================
+      // BODY
+      // ===========================================================
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: DesignationForm(
-            // =====================================================
-            // INITIAL VALUES
-            // =====================================================
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
 
-            initialName:
-            designation?.name ?? '',
+            final bool isDesktop = width >= 1000;
+            final bool isTablet = width >= 600;
 
-            initialDescription:
-            designation?.description ?? '',
+            final double horizontalPadding = isDesktop
+                ? 32
+                : isTablet
+                ? 24
+                : 14;
 
-            initialGrade:
-            designation?.grade ?? 1,
+            final double verticalPadding = isDesktop
+                ? 28
+                : isTablet
+                ? 24
+                : 16;
 
-            initialDisplayOrder:
-            designation?.displayOrder ?? 0,
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                verticalPadding,
+                horizontalPadding,
+                32,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // =========================================
+                      // PAGE HEADER
+                      // =========================================
+                      _buildHeader(context),
 
-            initialBaseSalary:
-            designation?.baseSalary ?? 0,
+                      const SizedBox(height: 18),
 
-            initialIsActive:
-            designation?.isActive ?? true,
+                      // =========================================
+                      // FORM
+                      // =========================================
+                      DesignationForm(
+                        // =========================================
+                        // INITIAL NAME
+                        // =========================================
+                        initialName: designation?.name ?? '',
 
-            isLoading: state.isSaving,
+                        // =========================================
+                        // INITIAL DESCRIPTION
+                        // =========================================
+                        initialDescription: designation?.description ?? '',
 
-            // =====================================================
-            // SUBMIT
-            // =====================================================
-            //
-            // Company ID নেই
-            // Code নেই
-            //
-            // Company ID:
-            //     CurrentUser.companyId
-            //
-            // Code:
-            //     Database trigger
-            //
-            // =====================================================
+                        // =========================================
+                        // INITIAL GRADE
+                        // =========================================
+                        initialGrade: designation?.grade ?? 1,
 
-            onSubmit: (
-                name,
-                description,
-                grade,
-                displayOrder,
-                baseSalary,
-                isActive,
-                ) async {
-              final entity =
-              DesignationEntity(
-                id: designation?.id ?? '',
+                        // =========================================
+                        // INITIAL DISPLAY ORDER
+                        // =========================================
+                        initialDisplayOrder: designation?.displayOrder ?? 0,
 
-                // -------------------------------------------------
-                // IMPORTANT
-                //
-                // এখানে companyId manually দেওয়া হচ্ছে না।
-                //
-                // Provider/Notifier CurrentUser.companyId
-                // থেকে company scope করবে।
-                //
-                // -------------------------------------------------
+                        // =========================================
+                        // INITIAL BASE SALARY
+                        // =========================================
+                        initialBaseSalary: designation?.baseSalary ?? 0,
 
-                companyId:
-                designation?.companyId ?? '',
+                        // =========================================
+                        // INITIAL ACTIVE
+                        // =========================================
+                        initialIsActive: designation?.isActive ?? true,
 
-                name: name,
+                        // =========================================
+                        // LOADING
+                        // =========================================
+                        isLoading: state.isSaving,
 
-                description: description,
+                        // =========================================
+                        // SUBMIT
+                        // =========================================
+                        onSubmit:
+                            (
+                              name,
+                              description,
+                              grade,
+                              displayOrder,
+                              baseSalary,
+                              isActive,
+                            ) async {
+                              // =======================================
+                              // ENTITY
+                              // =======================================
 
-                grade: grade,
+                              final entity = DesignationEntity(
+                                id: designation?.id ?? '',
 
-                displayOrder: displayOrder,
+                                // -------------------------------------
+                                // COMPANY ID
+                                // -------------------------------------
+                                //
+                                // Existing logic preserved.
+                                //
+                                // CREATE:
+                                // Provider/Notifier CurrentUser.companyId
+                                // থেকে company scope করবে.
+                                //
+                                // UPDATE:
+                                // Existing designation.companyId
+                                // preserve করা হচ্ছে.
+                                //
+                                // -------------------------------------
+                                companyId: designation?.companyId ?? '',
 
-                baseSalary: baseSalary,
+                                // -------------------------------------
+                                // DESIGNATION
+                                // -------------------------------------
+                                name: name,
 
-                isActive: isActive,
+                                description: description,
 
-                createdAt:
-                designation?.createdAt ??
-                    DateTime.now(),
+                                // -------------------------------------
+                                // GRADE
+                                // -------------------------------------
+                                grade: grade,
 
-                updatedAt:
-                designation?.updatedAt,
-              );
+                                // -------------------------------------
+                                // DISPLAY ORDER
+                                // -------------------------------------
+                                displayOrder: displayOrder,
 
-              try {
-                // =================================================
-                // UPDATE
-                // =================================================
+                                // -------------------------------------
+                                // BASE SALARY
+                                // -------------------------------------
+                                baseSalary: baseSalary,
 
-                if (isEdit) {
-                  await ref
-                      .read(
-                    designationProvider
-                        .notifier,
-                  )
-                      .updateDesignation(
-                    entity,
-                  );
-                }
+                                // -------------------------------------
+                                // ACTIVE
+                                // -------------------------------------
+                                isActive: isActive,
 
-                // =================================================
-                // CREATE
-                // =================================================
+                                // -------------------------------------
+                                // CREATED AT
+                                // -------------------------------------
+                                createdAt:
+                                    designation?.createdAt ?? DateTime.now(),
 
-                else {
-                  await ref
-                      .read(
-                    designationProvider
-                        .notifier,
-                  )
-                      .createDesignation(
-                    entity,
-                  );
-                }
+                                // -------------------------------------
+                                // UPDATED AT
+                                // -------------------------------------
+                                updatedAt: designation?.updatedAt,
+                              );
 
-                if (!context.mounted) {
-                  return;
-                }
+                              try {
+                                // =====================================
+                                // UPDATE
+                                // =====================================
 
-                // =================================================
-                // RELOAD LIST
-                // =================================================
+                                if (isEdit) {
+                                  await ref
+                                      .read(designationProvider.notifier)
+                                      .updateDesignation(entity);
+                                }
+                                // =====================================
+                                // CREATE
+                                // =====================================
+                                else {
+                                  await ref
+                                      .read(designationProvider.notifier)
+                                      .createDesignation(entity);
+                                }
 
-                await ref
-                    .read(
-                  designationProvider
-                      .notifier,
-                )
-                    .loadDesignations();
+                                // =====================================
+                                // CONTEXT CHECK
+                                // =====================================
 
-                if (!context.mounted) {
-                  return;
-                }
+                                if (!context.mounted) {
+                                  return;
+                                }
 
-                // =================================================
-                // BACK TO DESIGNATION LIST
-                // =================================================
-                //
-                // push না করে pop করছি।
-                //
-                // কারণ Add/Edit page থেকে list page-এ এসেছি।
-                //
-                // এতে duplicate list page তৈরি হবে না।
-                //
-                // =================================================
+                                // =====================================
+                                // RELOAD LIST
+                                // =====================================
 
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(
-                    '/designations',
-                  );
-                }
-              } catch (e) {
-                if (!context.mounted) {
-                  return;
-                }
+                                await ref
+                                    .read(designationProvider.notifier)
+                                    .loadDesignations();
 
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      e.toString(),
-                    ),
+                                // =====================================
+                                // CONTEXT CHECK
+                                // =====================================
+
+                                if (!context.mounted) {
+                                  return;
+                                }
+
+                                // =====================================
+                                // BACK TO DESIGNATION LIST
+                                // =====================================
+
+                                if (context.canPop()) {
+                                  context.pop();
+                                } else {
+                                  context.go('/designations');
+                                }
+                              } catch (e) {
+                                // =====================================
+                                // ERROR
+                                // =====================================
+
+                                if (!context.mounted) {
+                                  return;
+                                }
+
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: colorScheme.error,
+                                      behavior: SnackBarBehavior.fixed,
+                                      content: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Icon(
+                                            Icons.error_outline_rounded,
+                                            color: colorScheme.onError,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              e.toString(),
+                                              style: theme.textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                    color: colorScheme.onError,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                              }
+                            },
+                      ),
+                    ],
                   ),
-                );
-              }
-            },
-          ),
+                ),
+              ),
+            );
+          },
         ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // PAGE HEADER
+  // =============================================================
+
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer.withOpacity(.55),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.primary.withOpacity(.15)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // =======================================================
+          // ICON
+          // =======================================================
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              isEdit ? Icons.edit_outlined : Icons.badge_outlined,
+              color: colorScheme.primary,
+              size: 27,
+            ),
+          ),
+
+          const SizedBox(width: 13),
+
+          // =======================================================
+          // TEXT
+          // =======================================================
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isEdit ? 'Edit Designation' : 'Add Designation',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  isEdit
+                      ? 'Update the designation information and settings.'
+                      : 'Create a new designation with the required information.',
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

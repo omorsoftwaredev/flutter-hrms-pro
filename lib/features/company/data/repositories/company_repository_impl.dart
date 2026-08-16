@@ -63,7 +63,6 @@ class CompanyRepositoryImpl implements CompanyRepository {
       ) async {
     try {
       await _client.from('companies').insert({
-        'code': company.code,
         'name': company.name,
         'phone': company.phone,
         'email': company.email,
@@ -91,7 +90,6 @@ class CompanyRepositoryImpl implements CompanyRepository {
         .from('companies')
         .update({
       'name': company.name,
-      'code': company.code,
       'email': company.email,
       'phone': company.phone,
       'address': company.address,

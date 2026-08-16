@@ -56,12 +56,6 @@ class CompanyCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      company.code,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                      ),
-                    ),
                   ],
                 ),
               ),

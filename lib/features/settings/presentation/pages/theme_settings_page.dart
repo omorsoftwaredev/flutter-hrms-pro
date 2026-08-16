@@ -3,12 +3,11 @@
 ///
 /// Appearance Settings Page
 ///
-/// Version : 1.0.1
+/// Version : 2.0.0
 ///
 /// Features:
-/// - Light Theme
-/// - Dark Theme
-/// - System Theme
+/// - Fully Theme Aware
+/// - Light / Dark / System
 /// - Responsive UI
 /// - Instant Theme Change
 /// ===============================================================
@@ -28,54 +27,39 @@ class ThemeSettingsPage extends ConsumerWidget {
       BuildContext context,
       WidgetRef ref,
       ) {
-    // ===========================================================
-    // CURRENT THEME MODE
-    // ===========================================================
-
-    final ThemeMode themeMode = ref.watch(
-      themeModeProvider,
-    );
+    final ThemeMode themeMode =
+    ref.watch(themeModeProvider);
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // ===========================================================
-    // SCAFFOLD
-    // ===========================================================
-
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-
-      // =========================================================
-      // APP BAR
-      // =========================================================
+      backgroundColor: colorScheme.surface,
 
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: theme.scaffoldBackgroundColor,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
 
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(
-            Icons.arrow_back,
+            Icons.arrow_back_rounded,
           ),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
 
-        title: const Text(
-          'Theme Settings ',
-          style: TextStyle(
-            fontSize: 20,
+        title: Text(
+          'Theme Settings',
+          style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
           ),
         ),
       ),
-
-      // =========================================================
-      // BODY
-      // =========================================================
 
       body: SafeArea(
         child: LayoutBuilder(
@@ -83,42 +67,35 @@ class ThemeSettingsPage extends ConsumerWidget {
               context,
               constraints,
               ) {
-            final bool isWide =
-                constraints.maxWidth >= 700;
+            final width = constraints.maxWidth;
+            final isWide = width >= 700;
+
+            final horizontalPadding =
+            width >= 1000
+                ? 32.0
+                : isWide
+                ? 24.0
+                : 16.0;
 
             return Center(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: isWide
-                      ? 760
-                      : double.infinity,
+                constraints: const BoxConstraints(
+                  maxWidth: 760,
                 ),
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isWide
-                        ? 24
-                        : 16,
-                    vertical: 16,
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    16,
+                    horizontalPadding,
+                    32,
                   ),
                   child: Column(
                     crossAxisAlignment:
                     CrossAxisAlignment.start,
                     children: [
-                      // =================================================
-                      // HEADER
-                      // =================================================
+                      _buildHeader(context),
 
-                      _buildHeader(
-                        context,
-                      ),
-
-                      const SizedBox(
-                        height: 20,
-                      ),
-
-                      // =================================================
-                      // THEME CARD
-                      // =================================================
+                      const SizedBox(height: 20),
 
                       _buildThemeCard(
                         context,
@@ -126,17 +103,9 @@ class ThemeSettingsPage extends ConsumerWidget {
                         themeMode,
                       ),
 
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
 
-                      // =================================================
-                      // INFORMATION
-                      // =================================================
-
-                      _buildInformationCard(
-                        context,
-                      ),
+                      _buildInformationCard(context),
                     ],
                   ),
                 ),
@@ -156,51 +125,41 @@ class ThemeSettingsPage extends ConsumerWidget {
       BuildContext context,
       ) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.primary.withOpacity(
-          0.08,
-        ),
-        borderRadius: BorderRadius.circular(
-          18,
+        color:
+        colors.primaryContainer.withOpacity(0.45),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color:
+          colors.outlineVariant.withOpacity(0.65),
         ),
       ),
       child: Row(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
         children: [
-          // =====================================================
-          // ICON
-          // =====================================================
-
           Container(
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(
-                0.12,
-              ),
+              color:
+              colors.primary.withOpacity(0.12),
               borderRadius:
-              BorderRadius.circular(
-                16,
-              ),
+              BorderRadius.circular(16),
             ),
             child: Icon(
               Icons.palette_outlined,
               size: 30,
-              color: colorScheme.primary,
+              color: colors.primary,
             ),
           ),
 
-          const SizedBox(
-            width: 15,
-          ),
-
-          // =====================================================
-          // TEXT
-          // =====================================================
+          const SizedBox(width: 15),
 
           Expanded(
             child: Column(
@@ -209,23 +168,22 @@ class ThemeSettingsPage extends ConsumerWidget {
               children: [
                 Text(
                   'Appearance',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight:
-                    FontWeight.w700,
+                  style:
+                  theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colors.onSurface,
                   ),
                 ),
 
-                const SizedBox(
-                  height: 4,
-                ),
+                const SizedBox(height: 4),
 
                 Text(
                   'Customize how HRMS Pro looks on your device.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface
-                        .withOpacity(
-                      0.65,
-                    ),
+                  style:
+                  theme.textTheme.bodyMedium?.copyWith(
+                    color:
+                    colors.onSurfaceVariant,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -246,40 +204,30 @@ class ThemeSettingsPage extends ConsumerWidget {
       ThemeMode themeMode,
       ) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(
-          18,
-        ),
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: theme.dividerColor.withOpacity(
-            0.5,
-          ),
+          color: colors.outlineVariant,
         ),
       ),
       child: Column(
         crossAxisAlignment:
         CrossAxisAlignment.start,
         children: [
-          // =====================================================
-          // TITLE
-          // =====================================================
-
           Row(
             children: [
               Icon(
                 Icons.brightness_6_outlined,
-                color: colorScheme.primary,
+                color: colors.primary,
               ),
 
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
 
               Expanded(
                 child: Column(
@@ -288,25 +236,20 @@ class ThemeSettingsPage extends ConsumerWidget {
                   children: [
                     Text(
                       'Theme',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight:
-                        FontWeight.w700,
+                      style:
+                      theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 3,
-                    ),
+                    const SizedBox(height: 3),
 
                     Text(
-                      _themeDescription(
-                        themeMode,
-                      ),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurface
-                            .withOpacity(
-                          0.60,
-                        ),
+                      _themeDescription(themeMode),
+                      style:
+                      theme.textTheme.bodySmall?.copyWith(
+                        color:
+                        colors.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -315,21 +258,14 @@ class ThemeSettingsPage extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(
-            height: 18,
-          ),
+          const SizedBox(height: 18),
 
-          const Divider(
+          Divider(
             height: 1,
+            color: colors.outlineVariant,
           ),
 
-          const SizedBox(
-            height: 8,
-          ),
-
-          // =====================================================
-          // LIGHT
-          // =====================================================
+          const SizedBox(height: 8),
 
           _buildThemeOption(
             context: context,
@@ -338,13 +274,10 @@ class ThemeSettingsPage extends ConsumerWidget {
             title: 'Light',
             subtitle:
             'Always use the light theme.',
-            icon: Icons.light_mode_outlined,
+            icon:
+            Icons.light_mode_outlined,
             value: ThemeMode.light,
           ),
-
-          // =====================================================
-          // DARK
-          // =====================================================
 
           _buildThemeOption(
             context: context,
@@ -353,13 +286,10 @@ class ThemeSettingsPage extends ConsumerWidget {
             title: 'Dark',
             subtitle:
             'Always use the dark theme.',
-            icon: Icons.dark_mode_outlined,
+            icon:
+            Icons.dark_mode_outlined,
             value: ThemeMode.dark,
           ),
-
-          // =====================================================
-          // SYSTEM
-          // =====================================================
 
           _buildThemeOption(
             context: context,
@@ -368,7 +298,8 @@ class ThemeSettingsPage extends ConsumerWidget {
             title: 'System',
             subtitle:
             'Follow your device theme.',
-            icon: Icons.settings_suggest_outlined,
+            icon:
+            Icons.settings_suggest_outlined,
             value: ThemeMode.system,
           ),
         ],
@@ -390,111 +321,66 @@ class ThemeSettingsPage extends ConsumerWidget {
     required ThemeMode value,
   }) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
-    // ===========================================================
-    // SELECTED
-    // ===========================================================
-
-    final bool selected =
-        themeMode == value;
-
-    final Color primary =
-        colorScheme.primary;
+    final selected = themeMode == value;
 
     return InkWell(
       borderRadius:
       BorderRadius.circular(14),
-
-      // =========================================================
-      // CLICK
-      // =========================================================
-
       onTap: () {
         ref
-            .read(
-          themeModeProvider.notifier,
-        )
+            .read(themeModeProvider.notifier)
             .setTheme(value);
       },
-
       child: Container(
         width: double.infinity,
-
-        margin: const EdgeInsets.only(
-          top: 4,
-          bottom: 4,
-        ),
-
+        margin:
+        const EdgeInsets.symmetric(vertical: 4),
         padding:
         const EdgeInsets.symmetric(
           horizontal: 12,
           vertical: 12,
         ),
-
         decoration: BoxDecoration(
           color: selected
-              ? primary.withOpacity(
-            0.07,
-          )
-              : Colors.transparent,
-
+              ? colors.primary
+              .withOpacity(0.07)
+              : colors.surface,
           borderRadius:
           BorderRadius.circular(14),
-
           border: Border.all(
             color: selected
-                ? primary.withOpacity(
-              0.35,
-            )
-                : Colors.transparent,
+                ? colors.primary
+                .withOpacity(0.35)
+                : colors.outlineVariant
+                .withOpacity(0.45),
           ),
         ),
-
         child: Row(
           children: [
-            // =================================================
-            // ICON
-            // =================================================
-
             Container(
               width: 42,
               height: 42,
-
               decoration: BoxDecoration(
                 color: selected
-                    ? primary.withOpacity(
-                  0.12,
-                )
-                    : colorScheme
+                    ? colors.primary
+                    .withOpacity(0.12)
+                    : colors
                     .surfaceContainerHighest,
-
                 borderRadius:
-                BorderRadius.circular(
-                  12,
-                ),
+                BorderRadius.circular(12),
               ),
-
               child: Icon(
                 icon,
                 size: 22,
                 color: selected
-                    ? primary
-                    : colorScheme
-                    .onSurface
-                    .withOpacity(
-                  0.65,
-                ),
+                    ? colors.primary
+                    : colors.onSurfaceVariant,
               ),
             ),
 
-            const SizedBox(
-              width: 12,
-            ),
-
-            // =================================================
-            // TEXT
-            // =================================================
+            const SizedBox(width: 12),
 
             Expanded(
               child: Column(
@@ -503,66 +389,42 @@ class ThemeSettingsPage extends ConsumerWidget {
                 children: [
                   Text(
                     title,
-                    style: theme.textTheme.bodyLarge?.copyWith(
+                    style:
+                    theme.textTheme.bodyLarge?.copyWith(
                       fontWeight:
                       FontWeight.w600,
+                      color:
+                      colors.onSurface,
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 3,
-                  ),
+                  const SizedBox(height: 3),
 
                   Text(
                     subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme
-                          .onSurface
-                          .withOpacity(
-                        0.60,
-                      ),
+                    style:
+                    theme.textTheme.bodySmall?.copyWith(
+                      color:
+                      colors.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(
-              width: 8,
-            ),
-
-            // =================================================
-            // RADIO
-            // =================================================
-
             Radio<ThemeMode>(
               value: value,
-
               groupValue: themeMode,
-
               onChanged: (newValue) {
-                if (newValue == null) {
-                  return;
+                if (newValue != null) {
+                  ref
+                      .read(
+                    themeModeProvider.notifier,
+                  )
+                      .setTheme(newValue);
                 }
-
-                ref
-                    .read(
-                  themeModeProvider.notifier,
-                )
-                    .setTheme(newValue);
               },
-
-              activeColor: primary,
-
-              materialTapTargetSize:
-              MaterialTapTargetSize
-                  .shrinkWrap,
-
-              visualDensity:
-              const VisualDensity(
-                horizontal: -2,
-                vertical: -2,
-              ),
+              activeColor: colors.primary,
             ),
           ],
         ),
@@ -578,50 +440,41 @@ class ThemeSettingsPage extends ConsumerWidget {
       BuildContext context,
       ) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-
       decoration: BoxDecoration(
-        color: colorScheme
+        color: colors
             .surfaceContainerHighest
-            .withOpacity(
-          0.45,
-        ),
-
+            .withOpacity(0.45),
         borderRadius:
         BorderRadius.circular(16),
+        border: Border.all(
+          color:
+          colors.outlineVariant.withOpacity(0.55),
+        ),
       ),
-
       child: Row(
         crossAxisAlignment:
         CrossAxisAlignment.start,
-
         children: [
-          // =====================================================
-          // INFO ICON
-          // =====================================================
-
           Icon(
             Icons.info_outline,
             size: 21,
-            color: colorScheme.primary,
+            color: colors.primary,
           ),
 
-          const SizedBox(
-            width: 10,
-          ),
-
-          // =====================================================
-          // INFO TEXT
-          // =====================================================
+          const SizedBox(width: 10),
 
           Expanded(
             child: Text(
               'Theme changes are applied immediately across HRMS Pro.',
-              style: theme.textTheme.bodySmall?.copyWith(
+              style:
+              theme.textTheme.bodySmall?.copyWith(
+                color:
+                colors.onSurfaceVariant,
                 height: 1.4,
               ),
             ),
@@ -641,10 +494,8 @@ class ThemeSettingsPage extends ConsumerWidget {
     switch (mode) {
       case ThemeMode.light:
         return 'Light theme is currently selected.';
-
       case ThemeMode.dark:
         return 'Dark theme is currently selected.';
-
       case ThemeMode.system:
         return 'Following your device theme.';
     }

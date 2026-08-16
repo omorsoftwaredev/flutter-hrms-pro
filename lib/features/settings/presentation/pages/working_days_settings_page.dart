@@ -3,14 +3,19 @@
 ///
 /// Working Days Settings Page
 ///
-/// Version : 1.0.0
+/// Version : 1.2.0
 ///
 /// Features:
 /// - Company-wise working days
 /// - No company dropdown
 /// - Uses logged-in user's company
 /// - Responsive UI
+/// - Light / Dark / System theme aware
 /// - Save working-day configuration
+/// - Quick working-day actions
+/// - Success / Error feedback
+/// - Mobile / Tablet / Desktop friendly
+/// - Safe bottom action layout
 /// ===============================================================
 
 import 'package:flutter/material.dart';
@@ -32,12 +37,18 @@ class WorkingDaysSettingsPage extends ConsumerStatefulWidget {
 
 class _WorkingDaysSettingsPageState
     extends ConsumerState<WorkingDaysSettingsPage> {
-  static const Color primaryColor = Color(0xFF2196F3);
+  // =============================================================
+  // STATE
+  // =============================================================
 
   bool isLoading = true;
   bool isSaving = false;
 
   String? errorMessage;
+
+  // =============================================================
+  // WORKING DAYS
+  // =============================================================
 
   final List<_WorkingDay> days = [
     _WorkingDay(
@@ -84,6 +95,10 @@ class _WorkingDaysSettingsPageState
     ),
   ];
 
+  // =============================================================
+  // INIT
+  // =============================================================
+
   @override
   void initState() {
     super.initState();
@@ -94,7 +109,7 @@ class _WorkingDaysSettingsPageState
   }
 
   // =============================================================
-  // LOAD
+  // LOAD WORKING DAYS
   // =============================================================
 
   Future<void> _loadWorkingDays() async {
@@ -108,7 +123,12 @@ class _WorkingDaysSettingsPageState
     });
 
     try {
-      final CurrentUser? user = ref.read(currentUserProvider);
+      // =========================================================
+      // CURRENT USER
+      // =========================================================
+
+      final CurrentUser? user =
+      ref.read(currentUserProvider);
 
       if (user == null) {
         throw Exception(
@@ -116,7 +136,11 @@ class _WorkingDaysSettingsPageState
         );
       }
 
-      final companyId = user.companyId;
+      // =========================================================
+      // COMPANY ID
+      // =========================================================
+
+      final String? companyId = user.companyId;
 
       if (companyId == null ||
           companyId.trim().isEmpty) {
@@ -125,7 +149,12 @@ class _WorkingDaysSettingsPageState
         );
       }
 
-      final response = await SupabaseService.client
+      // =========================================================
+      // SUPABASE QUERY
+      // =========================================================
+
+      final response =
+      await SupabaseService.client
           .from('company_working_days')
           .select(
         'day_of_week, is_working_day',
@@ -138,24 +167,38 @@ class _WorkingDaysSettingsPageState
         'day_of_week',
       );
 
-      final rows = List<Map<String, dynamic>>.from(
+      // =========================================================
+      // RESPONSE
+      // =========================================================
+
+      final List<Map<String, dynamic>> rows =
+      List<Map<String, dynamic>>.from(
         response,
       );
 
-      if (rows.isNotEmpty) {
-        for (final day in days) {
-          final row = rows.cast<Map<String, dynamic>?>().firstWhere(
-                (item) =>
-            item?['day_of_week'] == day.dayNumber,
-            orElse: () => null,
-          );
+      // =========================================================
+      // APPLY DATABASE VALUES
+      // =========================================================
 
-          if (row != null) {
-            day.isWorkingDay =
-                row['is_working_day'] == true;
+      for (final day in days) {
+        Map<String, dynamic>? matchedRow;
+
+        for (final row in rows) {
+          if (row['day_of_week'] == day.dayNumber) {
+            matchedRow = row;
+            break;
           }
         }
+
+        if (matchedRow != null) {
+          day.isWorkingDay =
+              matchedRow['is_working_day'] == true;
+        }
       }
+
+      // =========================================================
+      // COMPLETE
+      // =========================================================
 
       if (!mounted) {
         return;
@@ -177,7 +220,7 @@ class _WorkingDaysSettingsPageState
   }
 
   // =============================================================
-  // SAVE
+  // SAVE WORKING DAYS
   // =============================================================
 
   Future<void> _saveWorkingDays() async {
@@ -186,6 +229,10 @@ class _WorkingDaysSettingsPageState
     }
 
     try {
+      // =========================================================
+      // CURRENT USER
+      // =========================================================
+
       final CurrentUser? user =
       ref.read(currentUserProvider);
 
@@ -195,7 +242,11 @@ class _WorkingDaysSettingsPageState
         );
       }
 
-      final companyId = user.companyId;
+      // =========================================================
+      // COMPANY ID
+      // =========================================================
+
+      final String? companyId = user.companyId;
 
       if (companyId == null ||
           companyId.trim().isEmpty) {
@@ -204,12 +255,21 @@ class _WorkingDaysSettingsPageState
         );
       }
 
+      // =========================================================
+      // START SAVING
+      // =========================================================
+
       setState(() {
         isSaving = true;
         errorMessage = null;
       });
 
-      final payload = days.map((day) {
+      // =========================================================
+      // PAYLOAD
+      // =========================================================
+
+      final List<Map<String, dynamic>> payload =
+      days.map((day) {
         return {
           'company_id': companyId,
           'day_of_week': day.dayNumber,
@@ -217,13 +277,20 @@ class _WorkingDaysSettingsPageState
         };
       }).toList();
 
+      // =========================================================
+      // UPSERT
+      // =========================================================
+
       await SupabaseService.client
           .from('company_working_days')
           .upsert(
         payload,
-        onConflict:
-        'company_id,day_of_week',
+        onConflict: 'company_id,day_of_week',
       );
+
+      // =========================================================
+      // COMPLETE
+      // =========================================================
 
       if (!mounted) {
         return;
@@ -233,13 +300,8 @@ class _WorkingDaysSettingsPageState
         isSaving = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Working days saved successfully.',
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
+      _showSuccessSnackBar(
+        'Working days saved successfully.',
       );
     } catch (e) {
       if (!mounted) {
@@ -251,16 +313,125 @@ class _WorkingDaysSettingsPageState
         errorMessage = e.toString();
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Failed to save working days.\n$e',
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
-        ),
+      _showErrorSnackBar(
+        'Failed to save working days.\n$e',
       );
     }
+  }
+
+  // =============================================================
+  // SUCCESS SNACKBAR
+  // =============================================================
+
+  void _showSuccessSnackBar(
+      String message,
+      ) {
+    if (!mounted) {
+      return;
+    }
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final messenger =
+    ScaffoldMessenger.of(context);
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.fixed,
+          backgroundColor:
+          colorScheme.inverseSurface,
+          elevation: 0,
+          duration: const Duration(
+            seconds: 3,
+          ),
+          content: Row(
+            children: [
+              Icon(
+                Icons.check_circle_outline_rounded,
+                color:
+                colorScheme.onInverseSurface,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: theme
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(
+                    color:
+                    colorScheme.onInverseSurface,
+                    fontWeight:
+                    FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
+
+  // =============================================================
+  // ERROR SNACKBAR
+  // =============================================================
+
+  void _showErrorSnackBar(
+      String message,
+      ) {
+    if (!mounted) {
+      return;
+    }
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final messenger =
+    ScaffoldMessenger.of(context);
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.fixed,
+          backgroundColor:
+          colorScheme.error,
+          elevation: 0,
+          duration: const Duration(
+            seconds: 4,
+          ),
+          content: Row(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                color: colorScheme.onError,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: theme
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(
+                    color:
+                    colorScheme.onError,
+                    fontWeight:
+                    FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
   }
 
   // =============================================================
@@ -268,86 +439,124 @@ class _WorkingDaysSettingsPageState
   // =============================================================
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+      BuildContext context,
+      ) {
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
     return Scaffold(
       backgroundColor:
-      Theme.of(context).scaffoldBackgroundColor,
+      colorScheme.surface,
+
+      // =========================================================
+      // APP BAR
+      // =========================================================
 
       appBar: AppBar(
         elevation: 0,
+        scrolledUnderElevation: 0,
         backgroundColor:
-        Theme.of(context).scaffoldBackgroundColor,
+        colorScheme.surface,
         foregroundColor:
-        Theme.of(context).colorScheme.onSurface,
+        colorScheme.onSurface,
+
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(
-            Icons.arrow_back,
+            Icons.arrow_back_rounded,
           ),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+
+        title: Text(
           'Working Days',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          style: theme
+              .textTheme
+              .titleLarge
+              ?.copyWith(
+            fontWeight:
+            FontWeight.w600,
           ),
         ),
       ),
+
+      // =========================================================
+      // BODY
+      //
+      // IMPORTANT:
+      // bottomNavigationBar ব্যবহার করছি না।
+      //
+      // এতে Floating SnackBar + bottomNavigationBar
+      // conflict হবে না।
+      // =========================================================
 
       body: SafeArea(
-        child: isLoading
-            ? const Center(
-          child: CircularProgressIndicator(),
-        )
-            : _buildBody(),
-      ),
+        child: Column(
+          children: [
+            // ===================================================
+            // CONTENT
+            // ===================================================
 
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            16,
-            8,
-            16,
-            16,
+            Expanded(
+              child: isLoading
+                  ? _buildLoading()
+                  : _buildBody(),
+            ),
+
+            // ===================================================
+            // SAVE BUTTON
+            // ===================================================
+
+            if (!isLoading)
+              _buildBottomSaveButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // LOADING
+  // =============================================================
+
+  Widget _buildLoading() {
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
+    return Center(
+      child: Column(
+        mainAxisSize:
+        MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(
+            color:
+            colorScheme.primary,
           ),
-          child: SizedBox(
-            height: 48,
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed:
-              isSaving ? null : _saveWorkingDays,
-              icon: isSaving
-                  ? const SizedBox(
-                width: 18,
-                height: 18,
-                child:
-                CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-                  : const Icon(
-                Icons.save_outlined,
-              ),
-              label: Text(
-                isSaving
-                    ? 'Saving...'
-                    : 'Save Working Days',
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(10),
-                ),
-              ),
+
+          const SizedBox(
+            height: 14,
+          ),
+
+          Text(
+            'Loading working days...',
+            style: theme
+                .textTheme
+                .bodyMedium
+                ?.copyWith(
+              color: colorScheme
+                  .onSurfaceVariant,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -362,32 +571,70 @@ class _WorkingDaysSettingsPageState
           context,
           constraints,
           ) {
-        final isWide =
-            constraints.maxWidth >= 700;
+        final double width =
+            constraints.maxWidth;
+
+        // =======================================================
+        // RESPONSIVE
+        // =======================================================
+
+        final bool isDesktop =
+            width >= 1000;
+
+        final bool isTablet =
+            width >= 600;
+
+        final double horizontalPadding =
+        isDesktop
+            ? 32
+            : isTablet
+            ? 24
+            : 14;
 
         return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: isWide ? 24 : 14,
-            vertical: 16,
+          physics:
+          const BouncingScrollPhysics(),
+
+          padding:
+          EdgeInsets.fromLTRB(
+            horizontalPadding,
+            16,
+            horizontalPadding,
+            24,
           ),
+
           child: Center(
             child: ConstrainedBox(
               constraints:
               const BoxConstraints(
                 maxWidth: 760,
               ),
+
               child: Column(
                 crossAxisAlignment:
                 CrossAxisAlignment.start,
+
                 children: [
+                  // =================================================
+                  // HEADER
+                  // =================================================
+
                   _buildHeader(),
 
                   const SizedBox(
                     height: 16,
                   ),
 
+                  // =================================================
+                  // ERROR
+                  // =================================================
+
                   if (errorMessage != null)
                     _buildError(),
+
+                  // =================================================
+                  // WORKING DAYS
+                  // =================================================
 
                   _buildWorkingDaysCard(),
 
@@ -395,7 +642,19 @@ class _WorkingDaysSettingsPageState
                     height: 16,
                   ),
 
+                  // =================================================
+                  // INFORMATION
+                  // =================================================
+
                   _buildInformationCard(),
+
+                  // =================================================
+                  // EXTRA BOTTOM SPACE
+                  // =================================================
+
+                  const SizedBox(
+                    height: 24,
+                  ),
                 ],
               ),
             ),
@@ -410,45 +669,85 @@ class _WorkingDaysSettingsPageState
   // =============================================================
 
   Widget _buildHeader() {
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
     final primary =
-        Theme.of(context).colorScheme.primary;
+        colorScheme.primary;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: primary.withOpacity(.08),
+
+      padding:
+      const EdgeInsets.all(18),
+
+      decoration:
+      BoxDecoration(
+        color: colorScheme
+            .primaryContainer
+            .withOpacity(.55),
+
         borderRadius:
-        BorderRadius.circular(16),
+        BorderRadius.circular(18),
+
+        border: Border.all(
+          color: primary
+              .withOpacity(.15),
+        ),
       ),
+
       child: Row(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
         children: [
+          // =====================================================
+          // ICON
+          // =====================================================
+
           Container(
             width: 52,
             height: 52,
-            decoration: BoxDecoration(
-              color:
-              primary.withOpacity(.12),
+
+            decoration:
+            BoxDecoration(
+              color: primary
+                  .withOpacity(.12),
+
               borderRadius:
-              BorderRadius.circular(14),
+              BorderRadius.circular(
+                14,
+              ),
             ),
+
             child: Icon(
-              Icons.calendar_month_outlined,
+              Icons
+                  .calendar_month_outlined,
               color: primary,
               size: 27,
             ),
           ),
+
           const SizedBox(
             width: 13,
           ),
+
+          // =====================================================
+          // TEXT
+          // =====================================================
+
           Expanded(
             child: Column(
               crossAxisAlignment:
               CrossAxisAlignment.start,
+
               children: [
                 Text(
                   'Working Days',
-                  style: Theme.of(context)
+                  style: theme
                       .textTheme
                       .titleLarge
                       ?.copyWith(
@@ -456,19 +755,24 @@ class _WorkingDaysSettingsPageState
                     FontWeight.w700,
                   ),
                 ),
+
                 const SizedBox(
                   height: 4,
                 ),
+
                 Text(
                   'Configure the weekly working schedule for your company.',
-                  style: Theme.of(context)
+                  maxLines: 3,
+                  overflow:
+                  TextOverflow.ellipsis,
+
+                  style: theme
                       .textTheme
                       .bodySmall
                       ?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(.65),
+                    color: colorScheme
+                        .onSurfaceVariant,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -484,58 +788,142 @@ class _WorkingDaysSettingsPageState
   // =============================================================
 
   Widget _buildWorkingDaysCard() {
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+
+      padding:
+      const EdgeInsets.all(16),
+
+      decoration:
+      BoxDecoration(
+        color: colorScheme
+            .surfaceContainerLow,
+
         borderRadius:
-        BorderRadius.circular(16),
+        BorderRadius.circular(18),
+
         border: Border.all(
-          color: Theme.of(context)
-              .dividerColor
-              .withOpacity(.5),
+          color:
+          colorScheme
+              .outlineVariant,
         ),
       ),
+
       child: Column(
         children: [
+          // =====================================================
+          // TITLE
+          // =====================================================
+
           Row(
             children: [
-              Icon(
-                Icons.work_outline,
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary,
+              Container(
+                width: 40,
+                height: 40,
+
+                decoration:
+                BoxDecoration(
+                  color: colorScheme
+                      .primaryContainer,
+
+                  borderRadius:
+                  BorderRadius.circular(
+                    11,
+                  ),
+                ),
+
+                child: Icon(
+                  Icons
+                      .work_outline_rounded,
+
+                  color: colorScheme
+                      .onPrimaryContainer,
+
+                  size: 20,
+                ),
               ),
+
               const SizedBox(
                 width: 10,
               ),
+
               Expanded(
-                child: Text(
-                  'Weekly Schedule',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                    fontWeight:
-                    FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+
+                  children: [
+                    Text(
+                      'Weekly Schedule',
+                      style: theme
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(
+                        fontWeight:
+                        FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(
+                      height: 2,
+                    ),
+
+                    Text(
+                      '${_workingDayCount()} of 7 days selected',
+
+                      style: theme
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(
+                        color: colorScheme
+                            .onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
 
           const SizedBox(
-            height: 12,
+            height: 14,
           ),
 
-          const Divider(
+          // =====================================================
+          // DIVIDER
+          // =====================================================
+
+          Divider(
             height: 1,
+            color:
+            colorScheme
+                .outlineVariant,
           ),
 
           const SizedBox(
             height: 8,
           ),
+
+          // =====================================================
+          // QUICK ACTIONS
+          // =====================================================
+
+          _buildQuickActions(),
+
+          const SizedBox(
+            height: 6,
+          ),
+
+          // =====================================================
+          // DAYS
+          // =====================================================
 
           ...days.map(
                 (day) => _buildDayItem(day),
@@ -546,123 +934,393 @@ class _WorkingDaysSettingsPageState
   }
 
   // =============================================================
+  // QUICK ACTIONS
+  // =============================================================
+
+  Widget _buildQuickActions() {
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
+    return LayoutBuilder(
+      builder: (
+          context,
+          constraints,
+          ) {
+        final bool isSmall =
+            constraints.maxWidth < 360;
+
+        if (isSmall) {
+          return Column(
+            crossAxisAlignment:
+            CrossAxisAlignment
+                .stretch,
+            children: [
+              TextButton.icon(
+                onPressed:
+                _selectMondayToFriday,
+
+                icon: Icon(
+                  Icons
+                      .business_center_outlined,
+                  size: 18,
+                  color:
+                  colorScheme.primary,
+                ),
+
+                label: Text(
+                  'Mon - Fri',
+                  style: TextStyle(
+                    color:
+                    colorScheme.primary,
+                    fontWeight:
+                    FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              Row(
+                mainAxisAlignment:
+                MainAxisAlignment
+                    .end,
+                children: [
+                  TextButton(
+                    onPressed:
+                    _selectAllDays,
+                    child: Text(
+                      'All',
+                      style:
+                      TextStyle(
+                        color:
+                        colorScheme
+                            .primary,
+                        fontWeight:
+                        FontWeight
+                            .w600,
+                      ),
+                    ),
+                  ),
+
+                  TextButton(
+                    onPressed:
+                    _clearAllDays,
+                    child: Text(
+                      'Clear',
+                      style:
+                      TextStyle(
+                        color: colorScheme
+                            .onSurfaceVariant,
+                        fontWeight:
+                        FontWeight
+                            .w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            // ===================================================
+            // MON - FRI
+            // ===================================================
+
+            Expanded(
+              child:
+              Align(
+                alignment:
+                Alignment.centerLeft,
+
+                child:
+                TextButton.icon(
+                  onPressed:
+                  _selectMondayToFriday,
+
+                  icon: Icon(
+                    Icons
+                        .business_center_outlined,
+                    size: 18,
+                    color:
+                    colorScheme
+                        .primary,
+                  ),
+
+                  label: Text(
+                    'Mon - Fri',
+                    style:
+                    TextStyle(
+                      color:
+                      colorScheme
+                          .primary,
+                      fontWeight:
+                      FontWeight
+                          .w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // ===================================================
+            // ALL
+            // ===================================================
+
+            TextButton(
+              onPressed:
+              _selectAllDays,
+
+              child: Text(
+                'All',
+                style: TextStyle(
+                  color:
+                  colorScheme
+                      .primary,
+                  fontWeight:
+                  FontWeight.w600,
+                ),
+              ),
+            ),
+
+            // ===================================================
+            // CLEAR
+            // ===================================================
+
+            TextButton(
+              onPressed:
+              _clearAllDays,
+
+              child: Text(
+                'Clear',
+                style: TextStyle(
+                  color: colorScheme
+                      .onSurfaceVariant,
+                  fontWeight:
+                  FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // =============================================================
   // DAY ITEM
   // =============================================================
 
   Widget _buildDayItem(
       _WorkingDay day,
       ) {
-    final primary =
-        Theme.of(context).colorScheme.primary;
+    final theme =
+    Theme.of(context);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        vertical: 4,
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 10,
-      ),
-      decoration: BoxDecoration(
-        color: day.isWorkingDay
-            ? primary.withOpacity(.06)
-            : Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withOpacity(.35),
+    final colorScheme =
+        theme.colorScheme;
+
+    final bool selected =
+        day.isWorkingDay;
+
+    return Material(
+      color:
+      Colors.transparent,
+
+      borderRadius:
+      BorderRadius.circular(14),
+
+      child: InkWell(
         borderRadius:
-        BorderRadius.circular(12),
-        border: Border.all(
-          color: day.isWorkingDay
-              ? primary.withOpacity(.20)
-              : Theme.of(context)
-              .dividerColor
-              .withOpacity(.35),
+        BorderRadius.circular(
+          14,
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: day.isWorkingDay
-                  ? primary.withOpacity(.10)
-                  : Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest,
-              borderRadius:
-              BorderRadius.circular(11),
+
+        onTap: () {
+          setState(() {
+            day.isWorkingDay =
+            !day.isWorkingDay;
+          });
+        },
+
+        child: Container(
+          width: double.infinity,
+
+          margin:
+          const EdgeInsets.symmetric(
+            vertical: 4,
+          ),
+
+          padding:
+          const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
+
+          decoration:
+          BoxDecoration(
+            color: selected
+                ? colorScheme
+                .primaryContainer
+                .withOpacity(.45)
+                : colorScheme
+                .surfaceContainerHighest
+                .withOpacity(.35),
+
+            borderRadius:
+            BorderRadius.circular(
+              14,
             ),
-            child: Text(
-              day.shortName,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight:
-                FontWeight.w700,
-                color: day.isWorkingDay
-                    ? primary
-                    : Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withOpacity(.60),
-              ),
+
+            border: Border.all(
+              color: selected
+                  ? colorScheme
+                  .primary
+                  .withOpacity(.22)
+                  : colorScheme
+                  .outlineVariant
+                  .withOpacity(.70),
             ),
           ),
 
-          const SizedBox(
-            width: 12,
-          ),
+          child: Row(
+            children: [
+              // =================================================
+              // DAY ICON
+              // =================================================
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
-              children: [
-                Text(
-                  day.name,
-                  style: Theme.of(context)
+              Container(
+                width: 42,
+                height: 42,
+
+                alignment:
+                Alignment.center,
+
+                decoration:
+                BoxDecoration(
+                  color: selected
+                      ? colorScheme
+                      .primaryContainer
+                      : colorScheme
+                      .surfaceContainerHighest,
+
+                  borderRadius:
+                  BorderRadius.circular(
+                    11,
+                  ),
+                ),
+
+                child: Text(
+                  day.shortName,
+
+                  style: theme
                       .textTheme
-                      .bodyLarge
+                      .labelMedium
                       ?.copyWith(
                     fontWeight:
-                    FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(
-                  height: 2,
-                ),
-                Text(
-                  day.isWorkingDay
-                      ? 'Working day'
-                      : 'Day off',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                    color: day.isWorkingDay
-                        ? primary
-                        : Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(.55),
-                  ),
-                ),
-              ],
-            ),
-          ),
+                    FontWeight.w700,
 
-          Switch.adaptive(
-            value: day.isWorkingDay,
-            activeColor: primary,
-            onChanged: (value) {
-              setState(() {
-                day.isWorkingDay = value;
-              });
-            },
+                    color: selected
+                        ? colorScheme
+                        .onPrimaryContainer
+                        : colorScheme
+                        .onSurfaceVariant,
+                  ),
+                ),
+              ),
+
+              const SizedBox(
+                width: 12,
+              ),
+
+              // =================================================
+              // DAY NAME
+              // =================================================
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+
+                  children: [
+                    Text(
+                      day.name,
+
+                      maxLines: 1,
+
+                      overflow:
+                      TextOverflow
+                          .ellipsis,
+
+                      style: theme
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(
+                        fontWeight:
+                        FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(
+                      height: 2,
+                    ),
+
+                    Text(
+                      selected
+                          ? 'Working day'
+                          : 'Day off',
+
+                      maxLines: 1,
+
+                      overflow:
+                      TextOverflow
+                          .ellipsis,
+
+                      style: theme
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(
+                        color: selected
+                            ? colorScheme
+                            .primary
+                            : colorScheme
+                            .onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(
+                width: 8,
+              ),
+
+              // =================================================
+              // SWITCH
+              // =================================================
+
+              Switch.adaptive(
+                value:
+                day.isWorkingDay,
+
+                activeColor:
+                colorScheme.primary,
+
+                onChanged:
+                    (value) {
+                  setState(() {
+                    day.isWorkingDay =
+                        value;
+                  });
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -672,38 +1330,72 @@ class _WorkingDaysSettingsPageState
   // =============================================================
 
   Widget _buildError() {
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(
+
+      margin:
+      const EdgeInsets.only(
         bottom: 14,
       ),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(.07),
+
+      padding:
+      const EdgeInsets.all(14),
+
+      decoration:
+      BoxDecoration(
+        color: colorScheme
+            .errorContainer
+            .withOpacity(.65),
+
         borderRadius:
-        BorderRadius.circular(12),
+        BorderRadius.circular(14),
+
         border: Border.all(
-          color: Colors.red.withOpacity(.20),
+          color: colorScheme
+              .error
+              .withOpacity(.22),
         ),
       ),
+
       child: Row(
         crossAxisAlignment:
-        CrossAxisAlignment.start,
+        CrossAxisAlignment
+            .start,
+
         children: [
-          const Icon(
-            Icons.error_outline,
-            color: Colors.red,
-            size: 20,
+          Icon(
+            Icons
+                .error_outline_rounded,
+
+            color: colorScheme
+                .onErrorContainer,
+
+            size: 21,
           ),
+
           const SizedBox(
             width: 9,
           ),
+
           Expanded(
             child: Text(
-              errorMessage!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 12,
+              errorMessage ?? '',
+
+              style: theme
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(
+                color: colorScheme
+                    .onErrorContainer,
+                height: 1.4,
+                fontWeight:
+                FontWeight.w500,
               ),
             ),
           ),
@@ -717,40 +1409,65 @@ class _WorkingDaysSettingsPageState
   // =============================================================
 
   Widget _buildInformationCard() {
-    final primary =
-        Theme.of(context).colorScheme.primary;
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
+
+      padding:
+      const EdgeInsets.all(14),
+
+      decoration:
+      BoxDecoration(
+        color: colorScheme
             .surfaceContainerHighest
-            .withOpacity(.40),
+            .withOpacity(.50),
+
         borderRadius:
         BorderRadius.circular(14),
+
+        border: Border.all(
+          color: colorScheme
+              .outlineVariant
+              .withOpacity(.60),
+        ),
       ),
+
       child: Row(
         crossAxisAlignment:
-        CrossAxisAlignment.start,
+        CrossAxisAlignment
+            .start,
+
         children: [
           Icon(
-            Icons.info_outline,
-            color: primary,
+            Icons
+                .info_outline_rounded,
+
+            color:
+            colorScheme.primary,
+
             size: 20,
           ),
+
           const SizedBox(
             width: 9,
           ),
+
           Expanded(
             child: Text(
               'These working days belong only to the logged-in company. No company selection is required.',
-              style: Theme.of(context)
+
+              style: theme
                   .textTheme
                   .bodySmall
                   ?.copyWith(
                 height: 1.4,
+                color: colorScheme
+                    .onSurfaceVariant,
               ),
             ),
           ),
@@ -758,10 +1475,223 @@ class _WorkingDaysSettingsPageState
       ),
     );
   }
+
+  // =============================================================
+  // BOTTOM SAVE BUTTON
+  //
+  // IMPORTANT:
+  // এটি আর Scaffold.bottomNavigationBar নয়।
+  //
+  // Scaffold body-এর Column-এর নিচে থাকবে।
+  // ফলে SnackBar layout conflict হবে না।
+  // =============================================================
+
+  Widget _buildBottomSaveButton() {
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+
+      padding:
+      const EdgeInsets.fromLTRB(
+        14,
+        8,
+        14,
+        12,
+      ),
+
+      decoration:
+      BoxDecoration(
+        color:
+        colorScheme.surface,
+
+        border: Border(
+          top: BorderSide(
+            color:
+            colorScheme
+                .outlineVariant,
+          ),
+        ),
+      ),
+
+      child: LayoutBuilder(
+        builder: (
+            context,
+            constraints,
+            ) {
+          final double width =
+              constraints.maxWidth;
+
+          final bool isWide =
+              width >= 700;
+
+          final double horizontalPadding =
+          isWide ? 10 : 0;
+
+          return Center(
+            child: ConstrainedBox(
+              constraints:
+              const BoxConstraints(
+                maxWidth: 760,
+              ),
+
+              child: Padding(
+                padding:
+                EdgeInsets.symmetric(
+                  horizontal:
+                  horizontalPadding,
+                ),
+
+                child: SizedBox(
+                  width: double.infinity,
+
+                  height: 50,
+
+                  child:
+                  FilledButton.icon(
+                    onPressed:
+                    isSaving
+                        ? null
+                        : _saveWorkingDays,
+
+                    icon: isSaving
+                        ? SizedBox(
+                      width: 18,
+                      height: 18,
+
+                      child:
+                      CircularProgressIndicator(
+                        strokeWidth: 2,
+
+                        color: colorScheme
+                            .onPrimary,
+                      ),
+                    )
+                        : const Icon(
+                      Icons
+                          .save_outlined,
+                      size: 20,
+                    ),
+
+                    label: Text(
+                      isSaving
+                          ? 'Saving...'
+                          : 'Save Working Days',
+
+                      style: theme
+                          .textTheme
+                          .labelLarge
+                          ?.copyWith(
+                        color: colorScheme
+                            .onPrimary,
+
+                        fontWeight:
+                        FontWeight.w600,
+                      ),
+                    ),
+
+                    style:
+                    FilledButton.styleFrom(
+                      minimumSize:
+                      const Size(
+                        double.infinity,
+                        50,
+                      ),
+
+                      backgroundColor:
+                      colorScheme
+                          .primary,
+
+                      foregroundColor:
+                      colorScheme
+                          .onPrimary,
+
+                      disabledBackgroundColor:
+                      colorScheme
+                          .surfaceContainerHighest,
+
+                      disabledForegroundColor:
+                      colorScheme
+                          .onSurfaceVariant,
+
+                      elevation: 0,
+
+                      shape:
+                      RoundedRectangleBorder(
+                        borderRadius:
+                        BorderRadius
+                            .circular(
+                          14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // =============================================================
+  // WORKING DAY COUNT
+  // =============================================================
+
+  int _workingDayCount() {
+    return days
+        .where(
+          (day) =>
+      day.isWorkingDay,
+    )
+        .length;
+  }
+
+  // =============================================================
+  // MONDAY - FRIDAY
+  // =============================================================
+
+  void _selectMondayToFriday() {
+    setState(() {
+      for (final day in days) {
+        day.isWorkingDay =
+            day.dayNumber <= 5;
+      }
+    });
+  }
+
+  // =============================================================
+  // ALL DAYS
+  // =============================================================
+
+  void _selectAllDays() {
+    setState(() {
+      for (final day in days) {
+        day.isWorkingDay = true;
+      }
+    });
+  }
+
+  // =============================================================
+  // CLEAR ALL
+  // =============================================================
+
+  void _clearAllDays() {
+    setState(() {
+      for (final day in days) {
+        day.isWorkingDay = false;
+      }
+    });
+  }
 }
 
 // ===============================================================
-// MODEL
+// WORKING DAY MODEL
 // ===============================================================
 
 class _WorkingDay {
@@ -773,7 +1703,10 @@ class _WorkingDay {
   });
 
   final int dayNumber;
+
   final String name;
+
   final String shortName;
+
   bool isWorkingDay;
 }

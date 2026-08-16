@@ -2,7 +2,10 @@
 // Flutter HRMS Pro
 // Developer Dashboard Sidebar
 //
-// Version : 2.4.0
+// Version : 2.5.0
+//
+// Responsive + Theme Aware
+// Mobile / Tablet / Desktop
 // ===============================================================
 
 import 'package:flutter/material.dart';
@@ -19,6 +22,42 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
     super.key,
   });
 
+  // =============================================================
+  // RESPONSIVE DRAWER WIDTH
+  // =============================================================
+
+  double _drawerWidth(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+
+    // -----------------------------------------------------------
+    // Mobile
+    // -----------------------------------------------------------
+
+    if (width < 600) {
+      return width * 0.86 > 360
+          ? 360
+          : width * 0.86;
+    }
+
+    // -----------------------------------------------------------
+    // Tablet
+    // -----------------------------------------------------------
+
+    if (width < 1000) {
+      return 380;
+    }
+
+    // -----------------------------------------------------------
+    // Desktop
+    // -----------------------------------------------------------
+
+    return 400;
+  }
+
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(
       BuildContext context,
@@ -27,27 +66,40 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
     final CurrentUser? user =
     ref.watch(currentUserProvider);
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     // =========================================================
     // USER LOADING
     // =========================================================
 
     if (user == null) {
-      return const Drawer(
+      return Drawer(
+        width: _drawerWidth(context),
         child: Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: colorScheme.primary,
+          ),
         ),
       );
     }
 
     return Drawer(
+      width: _drawerWidth(context),
+      backgroundColor: colorScheme.surface,
+
       child: SafeArea(
         child: Column(
           children: [
+
             // =================================================
             // LOGIN INFORMATION
             // =================================================
 
-            _buildUserHeader(user),
+            _buildUserHeader(
+              context,
+              user,
+            ),
 
             // =================================================
             // MENU
@@ -55,10 +107,22 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
 
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
+                padding: const EdgeInsets.only(
+                  top: 8,
+                  bottom: 8,
                 ),
                 children: [
+
+                  // =============================================
+                  // SECTION TITLE
+                  // =============================================
+
+                  _buildSectionTitle(
+                    context,
+                    icon: Icons.business_center_outlined,
+                    title: 'Company Management',
+                  ),
+
                   // =============================================
                   // COMPANY MANAGEMENT
                   // =============================================
@@ -67,7 +131,8 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
                     context,
                     icon: Icons.business_outlined,
                     title: 'Company Management',
-                    subtitle: 'Company Setup & Maintenance',
+                    subtitle:
+                    'Company Setup & Maintenance',
                     onTap: () {
                       Navigator.pop(context);
 
@@ -83,14 +148,47 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
 
                   _buildMenuItem(
                     context,
-                    icon: Icons.manage_accounts_outlined,
+                    icon:
+                    Icons.manage_accounts_outlined,
                     title: 'Company Accounts',
-                    subtitle: 'Login & Account Management',
+                    subtitle:
+                    'Login & Account Management',
                     onTap: () {
                       Navigator.pop(context);
 
                       context.go(
                         RoutePaths.companyAccounts,
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // =============================================
+                  // SECTION TITLE
+                  // =============================================
+
+                  _buildSectionTitle(
+                    context,
+                    icon: Icons.settings_outlined,
+                    title: 'Application',
+                  ),
+
+                  // =============================================
+                  // THEME & APPEARANCE
+                  // =============================================
+
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.palette_outlined,
+                    title: 'Theme & Appearance',
+                    subtitle:
+                    'Customize app theme and appearance',
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      context.push(
+                        RoutePaths.themeSettings,
                       );
                     },
                   ),
@@ -102,63 +200,14 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
             // LOGOUT
             // ===================================================
 
-            const Divider(
+            Divider(
               height: 1,
+              color: colorScheme.outlineVariant,
             ),
 
-            ListTile(
-              contentPadding:
-              const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 4,
-              ),
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(.08),
-                  borderRadius:
-                  BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                  size: 21,
-                ),
-              ),
-              title: const Text(
-                'Logout',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text(
-                'Sign out from your account',
-                style: TextStyle(
-                  fontSize: 11,
-                ),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-
-                await ref
-                    .read(authRepositoryProvider)
-                    .logout();
-
-                ref
-                    .read(
-                  currentUserProvider.notifier,
-                )
-                    .logout();
-
-                if (context.mounted) {
-                  context.go(
-                    RoutePaths.login,
-                  );
-                }
-              },
+            _buildLogoutItem(
+              context,
+              ref,
             ),
           ],
         ),
@@ -171,8 +220,12 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
   // =============================================================
 
   Widget _buildUserHeader(
+      BuildContext context,
       CurrentUser user,
       ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     // -----------------------------------------------------------
     // Developer display name
     //
@@ -191,90 +244,144 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
         ? displayName[0].toUpperCase()
         : '?';
 
+    final String loginIdentifier =
+    user.email.trim().isNotEmpty
+        ? user.email.trim()
+        : user.loginUser.trim();
+
     return Container(
       width: double.infinity,
+
       padding: const EdgeInsets.fromLTRB(
-        17,
+        18,
         20,
-        17,
-        17,
+        18,
+        18,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF673AB7),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
+
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(22),
+          bottomRight: Radius.circular(22),
         ),
+
+        boxShadow: [
+          BoxShadow(
+            color:
+            colorScheme.shadow.withValues(
+              alpha: 0.10,
+            ),
+            blurRadius: 14,
+            offset: const Offset(
+              0,
+              5,
+            ),
+          ),
+        ],
       ),
+
       child: Column(
         crossAxisAlignment:
         CrossAxisAlignment.start,
+
         children: [
+
           // =====================================================
           // PROFILE
           // =====================================================
 
           Row(
+            crossAxisAlignment:
+            CrossAxisAlignment.center,
+
             children: [
+
+              // -------------------------------------------------
+              // AVATAR
+              // -------------------------------------------------
+
               Container(
                 width: 56,
                 height: 56,
+
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color:
+                  colorScheme.onPrimary,
                   borderRadius:
-                  BorderRadius.circular(15),
+                  BorderRadius.circular(16),
                 ),
+
                 child: Center(
                   child: Text(
                     initial,
-                    style: const TextStyle(
-                      color: Color(0xFF673AB7),
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+
+                    style:
+                    theme.textTheme.headlineSmall
+                        ?.copyWith(
+                      color:
+                      colorScheme.primary,
+                      fontWeight:
+                      FontWeight.w800,
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(
-                width: 12,
-              ),
+              const SizedBox(width: 12),
+
+              // -------------------------------------------------
+              // NAME
+              // -------------------------------------------------
 
               Expanded(
                 child: Column(
                   crossAxisAlignment:
                   CrossAxisAlignment.start,
+
                   children: [
+
                     Text(
                       displayName.isEmpty
                           ? 'Developer'
                           : displayName,
+
                       maxLines: 1,
+
                       overflow:
                       TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
+
+                      style:
+                      theme.textTheme.titleMedium
+                          ?.copyWith(
+                        color:
+                        colorScheme.onPrimary,
                         fontWeight:
-                        FontWeight.bold,
+                        FontWeight.w800,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 3,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
-                      user.email.isEmpty
-                          ? user.loginUser
-                          : user.email,
+                      loginIdentifier.isEmpty
+                          ? 'Developer Account'
+                          : loginIdentifier,
+
                       maxLines: 1,
+
                       overflow:
                       TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white
-                            .withOpacity(.85),
-                        fontSize: 12,
+
+                      style:
+                      theme.textTheme.bodySmall
+                          ?.copyWith(
+                        color: colorScheme
+                            .onPrimary
+                            .withValues(
+                          alpha: 0.80,
+                        ),
                       ),
                     ),
                   ],
@@ -283,9 +390,7 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(
-            height: 18,
-          ),
+          const SizedBox(height: 18),
 
           // =====================================================
           // LOGIN INFORMATION TITLE
@@ -293,37 +398,39 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
 
           Row(
             children: [
-              const Icon(
+
+              Icon(
                 Icons.verified_user_outlined,
-                color: Colors.white,
+                color:
+                colorScheme.onPrimary,
                 size: 17,
               ),
 
-              const SizedBox(
-                width: 7,
-              ),
+              const SizedBox(width: 7),
 
-              const Text(
+              Text(
                 'Login Information',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
+
+                style:
+                theme.textTheme.labelLarge
+                    ?.copyWith(
+                  color:
+                  colorScheme.onPrimary,
                   fontWeight:
-                  FontWeight.bold,
+                  FontWeight.w800,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(
-            height: 11,
-          ),
+          const SizedBox(height: 11),
 
           // =====================================================
           // LOGIN NAME
           // =====================================================
 
           _infoRow(
+            context,
             icon: Icons.person_outline,
             label: 'Login Name',
             value: user.loginName,
@@ -334,6 +441,7 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
           // =====================================================
 
           _infoRow(
+            context,
             icon:
             Icons.account_circle_outlined,
             label: 'Login User',
@@ -345,6 +453,7 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
           // =====================================================
 
           _infoRow(
+            context,
             icon:
             Icons.admin_panel_settings_outlined,
             label: 'Role',
@@ -354,23 +463,16 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
           // =====================================================
           // DEVELOPER
           // =====================================================
-          //
-          // Developer login-এর সাথে employee/company/
-          // department সম্পর্কিত তথ্য দেখানো হবে না।
-          //
-          // শুধু Developer-এর নিজের নাম দেখানো হবে।
-          //
 
           if (displayName.isNotEmpty)
             _infoRow(
+              context,
               icon: Icons.code_outlined,
               label: 'Developer',
               value: displayName,
             ),
 
-          const SizedBox(
-            height: 9,
-          ),
+          const SizedBox(height: 8),
 
           // =====================================================
           // PERMISSIONS
@@ -378,42 +480,68 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
 
           Container(
             width: double.infinity,
+
             padding:
             const EdgeInsets.symmetric(
               horizontal: 10,
               vertical: 8,
             ),
+
             decoration: BoxDecoration(
               color:
-              Colors.white.withOpacity(.12),
+              colorScheme.onPrimary
+                  .withValues(
+                alpha: 0.12,
+              ),
+
               borderRadius:
               BorderRadius.circular(10),
+
+              border: Border.all(
+                color:
+                colorScheme.onPrimary
+                    .withValues(
+                  alpha: 0.10,
+                ),
+              ),
             ),
+
             child: Row(
               children: [
-                const Icon(
+
+                Icon(
                   Icons.security_outlined,
-                  color: Colors.white,
+                  color:
+                  colorScheme.onPrimary,
                   size: 16,
                 ),
 
-                const SizedBox(
-                  width: 7,
-                ),
+                const SizedBox(width: 7),
 
                 Expanded(
                   child: Text(
                     '${user.permissions.length} permissions available',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
+
+                    maxLines: 1,
+
+                    overflow:
+                    TextOverflow.ellipsis,
+
+                    style:
+                    theme.textTheme.bodySmall
+                        ?.copyWith(
+                      color:
+                      colorScheme.onPrimary,
+                      fontWeight:
+                      FontWeight.w600,
                     ),
                   ),
                 ),
 
-                const Icon(
+                Icon(
                   Icons.check_circle_outline,
-                  color: Colors.white,
+                  color:
+                  colorScheme.onPrimary,
                   size: 15,
                 ),
               ],
@@ -428,66 +556,153 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
   // INFO ROW
   // =============================================================
 
-  Widget _infoRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _infoRow(
+      BuildContext context, {
+        required IconData icon,
+        required String label,
+        required String value,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
-      padding:
-      const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(
+        bottom: 6,
+      ),
+
       child: Row(
         crossAxisAlignment:
         CrossAxisAlignment.start,
+
         children: [
+
           Icon(
             icon,
             color:
-            Colors.white.withOpacity(.85),
+            colorScheme.onPrimary
+                .withValues(
+              alpha: 0.85,
+            ),
             size: 15,
           ),
 
-          const SizedBox(
-            width: 7,
-          ),
+          const SizedBox(width: 7),
 
           SizedBox(
             width: 82,
+
             child: Text(
               label,
-              style: TextStyle(
-                color:
-                Colors.white.withOpacity(.72),
+
+              maxLines: 1,
+
+              overflow:
+              TextOverflow.ellipsis,
+
+              style:
+              theme.textTheme.bodySmall
+                  ?.copyWith(
+                color: colorScheme.onPrimary
+                    .withValues(
+                  alpha: 0.70,
+                ),
                 fontSize: 10.5,
               ),
             ),
           ),
 
-          const Text(
+          Text(
             ':',
-            style: TextStyle(
-              color: Colors.white70,
+
+            style:
+            theme.textTheme.bodySmall
+                ?.copyWith(
+              color: colorScheme.onPrimary
+                  .withValues(
+                alpha: 0.70,
+              ),
               fontSize: 11,
             ),
           ),
 
-          const SizedBox(
-            width: 5,
-          ),
+          const SizedBox(width: 5),
 
           Expanded(
             child: Text(
               value.trim().isEmpty
                   ? '-'
-                  : value,
+                  : value.trim(),
+
               maxLines: 1,
+
               overflow:
               TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
+
+              style:
+              theme.textTheme.bodySmall
+                  ?.copyWith(
+                color:
+                colorScheme.onPrimary,
                 fontSize: 10.5,
                 fontWeight:
                 FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // SECTION TITLE
+  // =============================================================
+
+  Widget _buildSectionTitle(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        10,
+        16,
+        6,
+      ),
+
+      child: Row(
+        children: [
+
+          Icon(
+            icon,
+            size: 16,
+            color:
+            colorScheme.onSurfaceVariant,
+          ),
+
+          const SizedBox(width: 7),
+
+          Expanded(
+            child: Text(
+              title,
+
+              maxLines: 1,
+
+              overflow:
+              TextOverflow.ellipsis,
+
+              style:
+              theme.textTheme.labelMedium
+                  ?.copyWith(
+                color:
+                colorScheme.onSurfaceVariant,
+                fontWeight:
+                FontWeight.w800,
+                letterSpacing: 0.2,
               ),
             ),
           ),
@@ -507,46 +722,288 @@ class DeveloperDashboardSidebar extends ConsumerWidget {
         required String subtitle,
         required VoidCallback onTap,
       }) {
-    return ListTile(
-      contentPadding:
-      const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 2,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 1,
       ),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xFF673AB7)
-              .withOpacity(.08),
+
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+
+        color: Colors.transparent,
+
+        child: InkWell(
           borderRadius:
-          BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: const Color(0xFF673AB7),
-          size: 21,
+          BorderRadius.circular(14),
+
+          onTap: onTap,
+
+          child: Padding(
+            padding:
+            const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+
+            child: Row(
+              children: [
+
+                // ===============================================
+                // ICON
+                // ===============================================
+
+                Container(
+                  width: 42,
+                  height: 42,
+
+                  decoration: BoxDecoration(
+                    color: colorScheme
+                        .primaryContainer,
+
+                    borderRadius:
+                    BorderRadius.circular(
+                      12,
+                    ),
+                  ),
+
+                  child: Icon(
+                    icon,
+                    color: colorScheme
+                        .onPrimaryContainer,
+                    size: 21,
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // ===============================================
+                // TITLE + SUBTITLE
+                // ===============================================
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                    children: [
+
+                      Text(
+                        title,
+
+                        maxLines: 1,
+
+                        overflow:
+                        TextOverflow.ellipsis,
+
+                        style:
+                        theme.textTheme
+                            .titleSmall
+                            ?.copyWith(
+                          fontWeight:
+                          FontWeight.w700,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        subtitle,
+
+                        maxLines: 1,
+
+                        overflow:
+                        TextOverflow.ellipsis,
+
+                        style:
+                        theme.textTheme
+                            .bodySmall
+                            ?.copyWith(
+                          color: colorScheme
+                              .onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // ===============================================
+                // ARROW
+                // ===============================================
+
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 21,
+                  color:
+                  colorScheme
+                      .onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight:
-          FontWeight.w600,
+    );
+  }
+
+  // =============================================================
+  // LOGOUT ITEM
+  // =============================================================
+
+  Widget _buildLogoutItem(
+      BuildContext context,
+      WidgetRef ref,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        8,
+        7,
+        8,
+        8,
+      ),
+
+      child: InkWell(
+        borderRadius:
+        BorderRadius.circular(14),
+
+        onTap: () async {
+          Navigator.pop(context);
+
+          // -----------------------------------------------------
+          // LOGOUT AUTH
+          // -----------------------------------------------------
+
+          await ref
+              .read(authRepositoryProvider)
+              .logout();
+
+          // -----------------------------------------------------
+          // CLEAR CURRENT USER
+          // -----------------------------------------------------
+
+          ref
+              .read(
+            currentUserProvider.notifier,
+          )
+              .logout();
+
+          // -----------------------------------------------------
+          // NAVIGATE LOGIN
+          // -----------------------------------------------------
+
+          if (context.mounted) {
+            context.go(
+              RoutePaths.login,
+            );
+          }
+        },
+
+        child: Padding(
+          padding:
+          const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 8,
+          ),
+
+          child: Row(
+            children: [
+
+              // ===============================================
+              // LOGOUT ICON
+              // ===============================================
+
+              Container(
+                width: 42,
+                height: 42,
+
+                decoration: BoxDecoration(
+                  color: colorScheme
+                      .errorContainer,
+
+                  borderRadius:
+                  BorderRadius.circular(
+                    12,
+                  ),
+                ),
+
+                child: Icon(
+                  Icons.logout_rounded,
+                  color:
+                  colorScheme
+                      .onErrorContainer,
+                  size: 21,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // ===============================================
+              // TEXT
+              // ===============================================
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
+                  children: [
+
+                    Text(
+                      'Logout',
+
+                      style:
+                      theme.textTheme
+                          .titleSmall
+                          ?.copyWith(
+                        color:
+                        colorScheme.error,
+                        fontWeight:
+                        FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    Text(
+                      'Sign out from your account',
+
+                      maxLines: 1,
+
+                      overflow:
+                      TextOverflow.ellipsis,
+
+                      style:
+                      theme.textTheme.bodySmall
+                          ?.copyWith(
+                        color: colorScheme
+                            .onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 21,
+                color:
+                colorScheme.error,
+              ),
+            ],
+          ),
         ),
       ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          fontSize: 11,
-        ),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right,
-        size: 20,
-      ),
-      onTap: onTap,
     );
   }
 }

@@ -8,8 +8,6 @@ import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/app_section_title.dart';
 
-import '../../../company/presentation/providers/company_provider.dart';
-
 import '../providers/shift_provider.dart';
 import '../widgets/shift_card.dart';
 
@@ -23,7 +21,11 @@ class ShiftListPage extends ConsumerStatefulWidget {
 
 class _ShiftListPageState
     extends ConsumerState<ShiftListPage> {
-  final _searchController =
+  // =============================================================
+  // SEARCH CONTROLLER
+  // =============================================================
+
+  final TextEditingController _searchController =
   TextEditingController();
 
   // =============================================================
@@ -35,10 +37,6 @@ class _ShiftListPageState
     super.initState();
 
     Future.microtask(() async {
-      await ref
-          .read(companyProvider.notifier)
-          .loadCompanies();
-
       await ref
           .read(shiftProvider.notifier)
           .loadShifts();
@@ -56,6 +54,138 @@ class _ShiftListPageState
   }
 
   // =============================================================
+  // REFRESH
+  // =============================================================
+
+  Future<void> _refresh() async {
+    await ref
+        .read(shiftProvider.notifier)
+        .loadShifts();
+  }
+
+  // =============================================================
+  // DELETE CONFIRMATION
+  // =============================================================
+
+  Future<void> _confirmDelete(
+      BuildContext context,
+      dynamic shift,
+      ) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            'Delete Shift',
+          ),
+          content: Text(
+            'Are you sure you want to delete '
+                '"${shift.name}"?',
+          ),
+          actions: [
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor:
+                colorScheme.error,
+                foregroundColor:
+                colorScheme.onError,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text(
+                'Delete',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) {
+      return;
+    }
+
+    await ref
+        .read(shiftProvider.notifier)
+        .deleteShift(shift.id);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    _showSuccessSnackBar(
+      context,
+      '${shift.name} deleted successfully.',
+    );
+  }
+
+  // =============================================================
+  // SUCCESS SNACKBAR
+  // =============================================================
+
+  void _showSuccessSnackBar(
+      BuildContext context,
+      String message,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior:
+          SnackBarBehavior.floating,
+          backgroundColor:
+          colorScheme.inverseSurface,
+          elevation: 0,
+          duration:
+          const Duration(seconds: 3),
+          content: Row(
+            children: [
+              Icon(
+                Icons
+                    .check_circle_outline_rounded,
+                size: 20,
+                color: colorScheme
+                    .onInverseSurface,
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                child: Text(
+                  message,
+                  style: theme
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(
+                    color: colorScheme
+                        .onInverseSurface,
+                    fontWeight:
+                    FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
+
+  // =============================================================
   // BUILD
   // =============================================================
 
@@ -64,19 +194,59 @@ class _ShiftListPageState
     final shiftState =
     ref.watch(shiftProvider);
 
-    final companyState =
-    ref.watch(companyProvider);
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
 
     return Scaffold(
+      backgroundColor:
+      colorScheme.surface,
+
+      // =========================================================
+      // APP BAR
+      // =========================================================
+
       appBar: AppBar(
-        title: const Text(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor:
+        colorScheme.surface,
+        foregroundColor:
+        colorScheme.onSurface,
+
+        title: Text(
           'Shifts',
+          style: theme
+              .textTheme
+              .titleLarge
+              ?.copyWith(
+            fontWeight:
+            FontWeight.w600,
+          ),
+        ),
+
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+          ),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(
+                RoutePaths.companyDashboard,
+              );
+            }
+          },
         ),
       ),
 
-      // ===========================================================
+      // =========================================================
       // ADD SHIFT
-      // ===========================================================
+      // =========================================================
 
       floatingActionButton:
       FloatingActionButton.extended(
@@ -85,256 +255,316 @@ class _ShiftListPageState
             RoutePaths.shiftCreate,
           );
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Add'),
-      ),
-
-      // ===========================================================
-      // BODY
-      // ===========================================================
-
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await ref
-              .read(companyProvider.notifier)
-              .loadCompanies();
-
-          await ref
-              .read(shiftProvider.notifier)
-              .loadShifts();
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // ===================================================
-              // SEARCH
-              // ===================================================
-
-              AppSearchField(
-                controller:
-                _searchController,
-                onChanged: (value) {
-                  ref
-                      .read(
-                    shiftProvider
-                        .notifier,
-                  )
-                      .search(value);
-                },
-              ),
-
-              const SizedBox(
-                height: 20,
-              ),
-
-              // ===================================================
-              // SECTION TITLE
-              // ===================================================
-
-              AppSectionTitle(
-                title:
-                'Shift List '
-                    '(${shiftState.filteredShifts.length})',
-              ),
-
-              const SizedBox(
-                height: 10,
-              ),
-
-              // ===================================================
-              // LIST
-              // ===================================================
-
-              Expanded(
-                child: Builder(
-                  builder: (_) {
-                    // =============================================
-                    // LOADING
-                    // =============================================
-
-                    if (shiftState.isLoading) {
-                      return const AppLoading();
-                    }
-
-                    // =============================================
-                    // EMPTY
-                    // =============================================
-
-                    if (shiftState
-                        .filteredShifts
-                        .isEmpty) {
-                      return const AppEmpty(
-                        title:
-                        'No Shift Found',
-                      );
-                    }
-
-                    // =============================================
-                    // SHIFT LIST
-                    // =============================================
-
-                    return ListView.separated(
-                      itemCount:
-                      shiftState
-                          .filteredShifts
-                          .length,
-
-                      separatorBuilder:
-                          (_, __) =>
-                      const SizedBox(
-                        height: 12,
-                      ),
-
-                      itemBuilder:
-                          (_, index) {
-                        final shift =
-                        shiftState
-                            .filteredShifts[
-                        index];
-
-                        // =========================================
-                        // COMPANY
-                        // =========================================
-
-                        final company =
-                            companyState
-                                .companies
-                                .where(
-                                  (e) =>
-                              e.id ==
-                                  shift.companyId,
-                            )
-                                .firstOrNull;
-
-                        // =========================================
-                        // SHIFT CARD
-                        // =========================================
-
-                        return ShiftCard(
-                          shift: shift,
-
-                          companyName:
-                          company?.name,
-
-                          // =======================================
-                          // VIEW
-                          // =======================================
-
-                          onView: () {
-                            context.push(
-                              RoutePaths.shiftView,
-                              extra: shift,
-                            );
-                          },
-
-                          // =======================================
-                          // EDIT
-                          // =======================================
-
-                          onEdit: () {
-                            context.push(
-                              RoutePaths.shiftEdit,
-                              extra: shift,
-                            );
-                          },
-
-                          // =======================================
-                          // DELETE
-                          // =======================================
-
-                          onDelete: () async {
-                            final confirm =
-                            await showDialog<bool>(
-                              context: context,
-                              builder: (_) =>
-                                  AlertDialog(
-                                    title: const Text(
-                                      'Delete Shift',
-                                    ),
-                                    content: Text(
-                                      'Are you sure you want to delete '
-                                          '"${shift.name}"?',
-                                    ),
-                                    actions: [
-                                      OutlinedButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                              context,
-                                              false,
-                                            ),
-                                        child:
-                                        const Text(
-                                          'Cancel',
-                                        ),
-                                      ),
-                                      FilledButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                              context,
-                                              true,
-                                            ),
-                                        child:
-                                        const Text(
-                                          'Delete',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                            );
-
-                            if (confirm != true) {
-                              return;
-                            }
-
-                            await ref
-                                .read(
-                              shiftProvider
-                                  .notifier,
-                            )
-                                .deleteShift(
-                              shift.id,
-                            );
-
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(
-                                context,
-                              ).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '${shift.name} '
-                                        'deleted successfully.',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-
-                          // =======================================
-                          // TOGGLE STATUS
-                          // =======================================
-
-                          onToggleStatus:
-                              () async {
-                            await ref
-                                .read(
-                              shiftProvider
-                                  .notifier,
-                            )
-                                .toggleShiftStatus(
-                              shift,
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        icon: const Icon(
+          Icons.add_rounded,
+        ),
+        label: const Text(
+          'Add',
         ),
       ),
+
+      // =========================================================
+      // BODY
+      // =========================================================
+
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (
+              BuildContext context,
+              BoxConstraints constraints,
+              ) {
+            final double width =
+                constraints.maxWidth;
+
+            // ===================================================
+            // RESPONSIVE BREAKPOINTS
+            // ===================================================
+
+            final bool isDesktop =
+                width >= 1000;
+
+            final bool isTablet =
+                width >= 600;
+
+            final double horizontalPadding =
+            isDesktop
+                ? 32
+                : isTablet
+                ? 24
+                : 14;
+
+            final double maxContentWidth =
+            isDesktop
+                ? 1100
+                : 760;
+
+            return RefreshIndicator(
+              onRefresh: _refresh,
+
+              child: SingleChildScrollView(
+                physics:
+                const AlwaysScrollableScrollPhysics(),
+
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  16,
+                  horizontalPadding,
+                  100,
+                ),
+
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints:
+                    BoxConstraints(
+                      maxWidth:
+                      maxContentWidth,
+                    ),
+
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+
+                      children: [
+                        // =======================================
+                        // SEARCH
+                        // =======================================
+
+                        AppSearchField(
+                          controller:
+                          _searchController,
+                          onChanged:
+                              (value) {
+                            ref
+                                .read(
+                              shiftProvider
+                                  .notifier,
+                            )
+                                .search(
+                              value,
+                            );
+                          },
+                        ),
+
+                        const SizedBox(
+                          height: 18,
+                        ),
+
+                        // =======================================
+                        // SECTION TITLE
+                        // =======================================
+
+                        AppSectionTitle(
+                          title:
+                          'Shift List '
+                              '(${shiftState.filteredShifts.length})',
+                        ),
+
+                        const SizedBox(
+                          height: 12,
+                        ),
+
+                        // =======================================
+                        // CONTENT
+                        // =======================================
+
+                        if (shiftState
+                            .isLoading)
+                          const Padding(
+                            padding:
+                            EdgeInsets.only(
+                              top: 80,
+                            ),
+                            child:
+                            AppLoading(),
+                          )
+                        else if (shiftState
+                            .filteredShifts
+                            .isEmpty)
+                          _buildEmptyState(
+                            context,
+                          )
+                        else
+                          _buildShiftList(
+                            context,
+                            shiftState,
+                            isDesktop:
+                            isDesktop,
+                          ),
+
+                        const SizedBox(
+                          height: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // EMPTY STATE
+  // =============================================================
+
+  Widget _buildEmptyState(
+      BuildContext context,
+      ) {
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding:
+        const EdgeInsets.only(
+          top: 80,
+        ),
+        child: const AppEmpty(
+          title: 'No Shift Found',
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // SHIFT LIST
+  // =============================================================
+
+  Widget _buildShiftList(
+      BuildContext context,
+      dynamic shiftState, {
+        required bool isDesktop,
+      }) {
+    final shifts =
+        shiftState.filteredShifts;
+
+    // ===========================================================
+    // DESKTOP GRID
+    // ===========================================================
+
+    if (isDesktop) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics:
+        const NeverScrollableScrollPhysics(),
+        itemCount: shifts.length,
+
+        gridDelegate:
+        const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
+          childAspectRatio: 1.65,
+        ),
+
+        itemBuilder:
+            (context, index) {
+          return _buildShiftCard(
+            context,
+            shifts[index],
+          );
+        },
+      );
+    }
+
+    // ===========================================================
+    // TABLET / MOBILE
+    // ===========================================================
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics:
+      const NeverScrollableScrollPhysics(),
+
+      itemCount: shifts.length,
+
+      separatorBuilder:
+          (context, index) {
+        return const SizedBox(
+          height: 12,
+        );
+      },
+
+      itemBuilder:
+          (context, index) {
+        return _buildShiftCard(
+          context,
+          shifts[index],
+        );
+      },
+    );
+  }
+
+  // =============================================================
+  // SHIFT CARD
+  // =============================================================
+
+  Widget _buildShiftCard(
+      BuildContext context,
+      dynamic shift,
+      ) {
+    return ShiftCard(
+      shift: shift,
+
+      // =========================================================
+      // COMPANY NAME
+      // =========================================================
+      //
+      // Company list/query এখানে নেই।
+      //
+      // Company scope login/current user থেকেই
+      // provider/repository handle করবে।
+      //
+      // =========================================================
+
+      // =========================================================
+      // VIEW
+      // =========================================================
+
+      onView: () {
+        context.push(
+          RoutePaths.shiftView,
+          extra: shift,
+        );
+      },
+
+      // =========================================================
+      // EDIT
+      // =========================================================
+
+      onEdit: () {
+        context.push(
+          RoutePaths.shiftEdit,
+          extra: shift,
+        );
+      },
+
+      // =========================================================
+      // DELETE
+      // =========================================================
+
+      onDelete: () async {
+        await _confirmDelete(
+          context,
+          shift,
+        );
+      },
+
+      // =========================================================
+      // TOGGLE STATUS
+      // =========================================================
+
+      onToggleStatus: () async {
+        await ref
+            .read(
+          shiftProvider.notifier,
+        )
+            .toggleShiftStatus(
+          shift,
+        );
+      },
     );
   }
 }

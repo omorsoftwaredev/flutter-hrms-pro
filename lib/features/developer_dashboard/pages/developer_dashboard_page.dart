@@ -170,9 +170,11 @@ class DeveloperDashboardPage extends ConsumerWidget {
           ),
         ],
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           // =====================================================
           // PROFILE
           // =====================================================
@@ -182,8 +184,8 @@ class DeveloperDashboardPage extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 31,
-                backgroundColor: colorScheme.onPrimary
-                    .withValues(alpha: 0.95),
+                backgroundColor:
+                colorScheme.onPrimary.withValues(alpha: 0.95),
                 child: Text(
                   initial,
                   style: theme.textTheme.headlineSmall?.copyWith(
@@ -202,8 +204,8 @@ class DeveloperDashboardPage extends ConsumerWidget {
                     Text(
                       'Logged-in Account',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onPrimary
-                            .withValues(alpha: 0.75),
+                        color:
+                        colorScheme.onPrimary.withValues(alpha: 0.75),
                       ),
                     ),
 
@@ -497,6 +499,7 @@ class DeveloperDashboardPage extends ConsumerWidget {
 
               if (subtitle != null) ...[
                 const SizedBox(height: 3),
+
                 Text(
                   subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -537,8 +540,10 @@ class DeveloperDashboardPage extends ConsumerWidget {
           color: colorScheme.outlineVariant,
         ),
       ),
+
       child: Padding(
         padding: const EdgeInsets.all(20),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -555,6 +560,7 @@ class DeveloperDashboardPage extends ConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
+
               children: permissions.map(
                     (permission) {
                   return Container(
@@ -562,10 +568,12 @@ class DeveloperDashboardPage extends ConsumerWidget {
                       horizontal: 12,
                       vertical: 8,
                     ),
+
                     decoration: BoxDecoration(
                       color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(30),
                     ),
+
                     child: Text(
                       _permissionTitle(permission),
                       style: theme.textTheme.labelMedium?.copyWith(
@@ -600,26 +608,32 @@ class DeveloperDashboardPage extends ConsumerWidget {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 0,
+
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
         side: BorderSide(
           color: colorScheme.outlineVariant,
         ),
       ),
+
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: onTap,
+
         child: Padding(
           padding: const EdgeInsets.all(15),
+
           child: Row(
             children: [
               Container(
                 width: 48,
                 height: 48,
+
                 decoration: BoxDecoration(
                   color: colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(14),
                 ),
+
                 child: Icon(
                   icon,
                   color: colorScheme.onPrimaryContainer,
@@ -637,6 +651,7 @@ class DeveloperDashboardPage extends ConsumerWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -648,6 +663,7 @@ class DeveloperDashboardPage extends ConsumerWidget {
                       subtitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -734,6 +750,7 @@ class DeveloperDashboardPage extends ConsumerWidget {
               constraints: BoxConstraints(
                 maxWidth: maxWidth,
               ),
+
               child: ListView(
                 padding: EdgeInsets.fromLTRB(
                   horizontalPadding,
@@ -741,7 +758,9 @@ class DeveloperDashboardPage extends ConsumerWidget {
                   horizontalPadding,
                   32,
                 ),
+
                 children: [
+
                   // =================================================
                   // WELCOME HEADER
                   // =================================================
@@ -750,6 +769,7 @@ class DeveloperDashboardPage extends ConsumerWidget {
                     'Welcome, ${user.fullName.isNotEmpty ? user.fullName : user.loginName}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -839,8 +859,8 @@ class DeveloperDashboardPage extends ConsumerWidget {
                             Expanded(
                               child: _buildStatCard(
                                 context,
-                                icon: Icons
-                                    .manage_accounts_outlined,
+                                icon:
+                                Icons.manage_accounts_outlined,
                                 title:
                                 'Company Accounts',
                                 value: '0',
@@ -869,8 +889,8 @@ class DeveloperDashboardPage extends ConsumerWidget {
 
                           _buildStatCard(
                             context,
-                            icon: Icons
-                                .manage_accounts_outlined,
+                            icon:
+                            Icons.manage_accounts_outlined,
                             title:
                             'Company Accounts',
                             value: '0',
@@ -913,16 +933,28 @@ class DeveloperDashboardPage extends ConsumerWidget {
                       final isDesktop =
                           availableWidth >= 850;
 
+                      // =================================================
+                      // DESKTOP
+                      // =================================================
+
                       if (isDesktop) {
                         return GridView.count(
                           crossAxisCount: 2,
                           crossAxisSpacing: 14,
                           mainAxisSpacing: 14,
                           shrinkWrap: true,
+
                           physics:
                           const NeverScrollableScrollPhysics(),
+
                           childAspectRatio: 3.4,
+
                           children: [
+
+                            // -------------------------------------------------
+                            // CREATE COMPANY
+                            // -------------------------------------------------
+
                             _buildMenu(
                               context,
                               icon:
@@ -937,6 +969,10 @@ class DeveloperDashboardPage extends ConsumerWidget {
                                 );
                               },
                             ),
+
+                            // -------------------------------------------------
+                            // COMPANY LIST
+                            // -------------------------------------------------
 
                             _buildMenu(
                               context,
@@ -953,6 +989,10 @@ class DeveloperDashboardPage extends ConsumerWidget {
                               },
                             ),
 
+                            // -------------------------------------------------
+                            // COMPANY ACCOUNTS
+                            // -------------------------------------------------
+
                             _buildMenu(
                               context,
                               icon:
@@ -967,12 +1007,40 @@ class DeveloperDashboardPage extends ConsumerWidget {
                                 );
                               },
                             ),
+
+                            // -------------------------------------------------
+                            // THEME & APPEARANCE
+                            // -------------------------------------------------
+
+                            _buildMenu(
+                              context,
+                              icon:
+                              Icons.palette_outlined,
+                              title:
+                              'Theme & Appearance',
+                              subtitle:
+                              'Customize app theme and appearance',
+                              onTap: () {
+                                context.push(
+                                  RoutePaths.themeSettings,
+                                );
+                              },
+                            ),
                           ],
                         );
                       }
 
+                      // =================================================
+                      // MOBILE / TABLET
+                      // =================================================
+
                       return Column(
                         children: [
+
+                          // -------------------------------------------------
+                          // CREATE COMPANY
+                          // -------------------------------------------------
+
                           _buildMenu(
                             context,
                             icon:
@@ -989,6 +1057,10 @@ class DeveloperDashboardPage extends ConsumerWidget {
                           ),
 
                           const SizedBox(height: 12),
+
+                          // -------------------------------------------------
+                          // COMPANY LIST
+                          // -------------------------------------------------
 
                           _buildMenu(
                             context,
@@ -1007,6 +1079,10 @@ class DeveloperDashboardPage extends ConsumerWidget {
 
                           const SizedBox(height: 12),
 
+                          // -------------------------------------------------
+                          // COMPANY ACCOUNTS
+                          // -------------------------------------------------
+
                           _buildMenu(
                             context,
                             icon:
@@ -1018,6 +1094,27 @@ class DeveloperDashboardPage extends ConsumerWidget {
                             onTap: () {
                               context.push(
                                 RoutePaths.companyAccounts,
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // -------------------------------------------------
+                          // THEME & APPEARANCE
+                          // -------------------------------------------------
+
+                          _buildMenu(
+                            context,
+                            icon:
+                            Icons.palette_outlined,
+                            title:
+                            'Theme & Appearance',
+                            subtitle:
+                            'Customize app theme and appearance',
+                            onTap: () {
+                              context.push(
+                                RoutePaths.themeSettings,
                               );
                             },
                           ),

@@ -7,16 +7,15 @@ class DesignationCard extends StatelessWidget {
   const DesignationCard({
     super.key,
     required this.designation,
-    this.companyName,
     this.departmentName,
     this.onEdit,
     this.onDelete,
-    this.onToggleStatus, this.onView,
+    this.onToggleStatus,
+    this.onView,
   });
 
   final DesignationEntity designation;
 
-  final String? companyName;
   final String? departmentName;
 
   final VoidCallback? onView;
@@ -26,16 +25,29 @@ class DesignationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final bool isActive = designation.isActive;
+
     return AppCard(
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // =========================================================
+          // HEADER
+          // =========================================================
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
+                backgroundColor: isActive
+                    ? colorScheme.primaryContainer
+                    : colorScheme.surfaceContainerHighest,
                 child: Icon(
                   Icons.badge_outlined,
+                  color: isActive
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurfaceVariant,
                 ),
               ),
 
@@ -43,22 +55,27 @@ class DesignationCard extends StatelessWidget {
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       designation.name,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-
                   ],
                 ),
               ),
 
+              const SizedBox(width: 8),
 
+              // =====================================================
+              // MENU
+              // =====================================================
               PopupMenuButton<String>(
+                tooltip: 'More options',
                 onSelected: (value) {
                   switch (value) {
                     case 'view':
@@ -81,23 +98,64 @@ class DesignationCard extends StatelessWidget {
                 itemBuilder: (_) => [
                   const PopupMenuItem(
                     value: 'view',
-                    child: Text('View'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
-                  PopupMenuItem(
-                    value: 'status',
-                    child: Text(
-                      designation.isActive
-                          ? 'Deactivate'
-                          : 'Activate',
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility_outlined),
+                        SizedBox(width: 10),
+                        Text('View'),
+                      ],
                     ),
                   ),
+
                   const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined),
+                        SizedBox(width: 10),
+                        Text('Edit'),
+                      ],
+                    ),
+                  ),
+
+                  PopupMenuItem(
+                    value: 'status',
+                    child: Row(
+                      children: [
+                        Icon(
+                          isActive
+                              ? Icons.block
+                              : Icons.check_circle_outline,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          isActive
+                              ? 'Deactivate'
+                              : 'Activate',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const PopupMenuDivider(),
+
+                  PopupMenuItem(
                     value: 'delete',
-                    child: Text('Delete'),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline,
+                          color: colorScheme.error,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Delete',
+                          style: TextStyle(
+                            color: colorScheme.error,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -106,18 +164,24 @@ class DesignationCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
+          // =========================================================
+          // GRADE
+          // =========================================================
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.business,
+              Icon(
+                Icons.sort,
                 size: 18,
+                color: colorScheme.onSurfaceVariant,
               ),
 
               const SizedBox(width: 8),
 
               Expanded(
                 child: Text(
-                  companyName ?? '-',
+                  'Grade : ${designation.grade}',
+                  style: theme.textTheme.bodyMedium,
                 ),
               ),
             ],
@@ -125,59 +189,66 @@ class DesignationCard extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-
+          // =========================================================
+          // BASE SALARY
+          // =========================================================
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.sort,
-                size: 18,
-              ),
-
-              const SizedBox(width: 8),
-
-              Text(
-                'Grade : ${designation.grade}',
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              const Icon(
+              Icon(
                 Icons.payments_outlined,
                 size: 18,
+                color: colorScheme.onSurfaceVariant,
               ),
 
               const SizedBox(width: 8),
 
-              Text(
-                designation.baseSalary == 0
-                    ? '-'
-                    : designation.baseSalary
-                    .toStringAsFixed(2),
+              Expanded(
+                child: Text(
+                  designation.baseSalary == 0
+                      ? '-'
+                      : designation.baseSalary.toStringAsFixed(2),
+                  style: theme.textTheme.bodyMedium,
+                ),
               ),
             ],
           ),
 
-          if (designation.description
-              .isNotEmpty) ...[
+          // =========================================================
+          // DESCRIPTION
+          // =========================================================
+          if (designation.description.isNotEmpty) ...[
             const SizedBox(height: 12),
 
             Text(
               designation.description,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
 
           const SizedBox(height: 16),
 
+          // =========================================================
+          // STATUS
+          // =========================================================
           Align(
-            alignment:
-            Alignment.centerRight,
+            alignment: Alignment.centerRight,
             child: Chip(
+              avatar: Icon(
+                isActive
+                    ? Icons.check_circle
+                    : Icons.cancel,
+                size: 18,
+                color: isActive
+                    ? colorScheme.primary
+                    : colorScheme.error,
+              ),
               label: Text(
-                designation.isActive
+                isActive
                     ? 'Active'
                     : 'Inactive',
               ),
