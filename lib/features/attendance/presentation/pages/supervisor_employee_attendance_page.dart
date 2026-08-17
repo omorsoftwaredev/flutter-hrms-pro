@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/auth/current_user.dart';
 import '../../../../core/auth/current_user_provider.dart';
-import '../providers/supervisor_attendance_provider.dart' hide SupervisorAttendanceState;
+import '../providers/supervisor_attendance_provider.dart'
+    hide SupervisorAttendanceState;
 import '../providers/supervisor_attendance_state.dart';
 
 class SupervisorEmployeeAttendancePage
@@ -14,15 +15,24 @@ class SupervisorEmployeeAttendancePage
   });
 
   @override
-  ConsumerState<
-      SupervisorEmployeeAttendancePage>
+  ConsumerState<SupervisorEmployeeAttendancePage>
   createState() =>
       _SupervisorEmployeeAttendancePageState();
 }
 
 class _SupervisorEmployeeAttendancePageState
-    extends ConsumerState<
-        SupervisorEmployeeAttendancePage> {
+    extends ConsumerState<SupervisorEmployeeAttendancePage> {
+  // ===========================================================
+  // THEME
+  // ===========================================================
+
+  static const Color primaryColor = Color(0xFF2196F3);
+  static const Color backgroundColor = Color(0xFFF7F9FC);
+  static const Color cardColor = Colors.white;
+  static const Color textColor = Color(0xFF172033);
+  static const Color secondaryTextColor = Color(0xFF737B8C);
+  static const Color borderColor = Color(0xFFE2E7EF);
+
   // ===========================================================
   // MODE
   // ===========================================================
@@ -61,8 +71,7 @@ class _SupervisorEmployeeAttendancePageState
       now.day,
     );
 
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _initialize();
     });
   }
@@ -79,15 +88,9 @@ class _SupervisorEmployeeAttendancePageState
       return;
     }
 
-    /*
-     * তোমার CurrentUser-এ employeeId field থাকলে
-     * এখানে user.employeeId ব্যবহার করবে।
-     */
-
     await ref
         .read(
-      supervisorAttendanceProvider
-          .notifier,
+      supervisorAttendanceProvider.notifier,
     )
         .initialize(
       user.employeeId,
@@ -111,8 +114,7 @@ class _SupervisorEmployeeAttendancePageState
 
     await ref
         .read(
-      supervisorAttendanceProvider
-          .notifier,
+      supervisorAttendanceProvider.notifier,
     )
         .selectDepartment(value);
   }
@@ -131,8 +133,7 @@ class _SupervisorEmployeeAttendancePageState
 
     ref
         .read(
-      supervisorAttendanceProvider
-          .notifier,
+      supervisorAttendanceProvider.notifier,
     )
         .clearAttendance();
   }
@@ -142,12 +143,24 @@ class _SupervisorEmployeeAttendancePageState
   // ===========================================================
 
   Future<void> _selectFromDate() async {
-    final selected =
-    await showDatePicker(
+    final selected = await showDatePicker(
       context: context,
       initialDate: fromDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: primaryColor,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: textColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (selected == null) {
@@ -168,12 +181,24 @@ class _SupervisorEmployeeAttendancePageState
   // ===========================================================
 
   Future<void> _selectToDate() async {
-    final selected =
-    await showDatePicker(
+    final selected = await showDatePicker(
       context: context,
       initialDate: toDate,
       firstDate: fromDate,
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: primaryColor,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: textColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (selected == null) {
@@ -191,13 +216,11 @@ class _SupervisorEmployeeAttendancePageState
 
   Future<void> _showDetails() async {
     final notifier = ref.read(
-      supervisorAttendanceProvider
-          .notifier,
+      supervisorAttendanceProvider.notifier,
     );
 
     if (mode ==
-        SupervisorAttendanceMode
-            .allEmployees) {
+        SupervisorAttendanceMode.allEmployees) {
       await notifier.loadTodayAttendance();
       return;
     }
@@ -222,11 +245,17 @@ class _SupervisorEmployeeAttendancePageState
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
   }
 
   // ===========================================================
@@ -240,32 +269,39 @@ class _SupervisorEmployeeAttendancePageState
     );
 
     return Scaffold(
-      backgroundColor:
-      const Color(0xFFFFF9FF),
+      backgroundColor: backgroundColor,
 
       // =======================================================
       // APP BAR
       // =======================================================
 
       appBar: AppBar(
-        backgroundColor:
-        const Color(0xFFFFF9FF),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 1,
+
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black87,
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: textColor,
           ),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
+
+        titleSpacing: 0,
+
         title: const Text(
           'Employee Attendance',
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+            color: textColor,
+            fontSize: 19,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
       ),
@@ -276,73 +312,247 @@ class _SupervisorEmployeeAttendancePageState
 
       body: state.isLoading
           ? const Center(
-        child:
-        CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: primaryColor,
+        ),
       )
           : state.error != null
           ? _buildError(
         state.error!,
       )
-          : ListView(
-        padding:
-        const EdgeInsets.all(12),
-        children: [
-          // =========================================
-          // DEPARTMENT
-          // =========================================
+          : SafeArea(
+        child: LayoutBuilder(
+          builder: (
+              context,
+              constraints,
+              ) {
+            final bool isDesktop =
+                constraints.maxWidth >= 900;
 
-          _buildDepartmentSelector(
-            state,
+            return Center(
+              child: ConstrainedBox(
+                constraints:
+                BoxConstraints(
+                  maxWidth: isDesktop
+                      ? 850
+                      : double.infinity,
+                ),
+                child: ListView(
+                  padding:
+                  EdgeInsets.symmetric(
+                    horizontal:
+                    isDesktop
+                        ? 24
+                        : 14,
+                    vertical: 16,
+                  ),
+                  children: [
+                    _buildPageHeader(
+                      state,
+                    ),
+
+                    const SizedBox(
+                      height: 18,
+                    ),
+
+                    _buildSectionLabel(
+                      'Department',
+                    ),
+
+                    const SizedBox(
+                      height: 7,
+                    ),
+
+                    _buildDepartmentSelector(
+                      state,
+                    ),
+
+                    const SizedBox(
+                      height: 18,
+                    ),
+
+                    _buildSectionLabel(
+                      'Attendance Type',
+                    ),
+
+                    const SizedBox(
+                      height: 7,
+                    ),
+
+                    _buildModeSelector(),
+
+                    if (mode ==
+                        SupervisorAttendanceMode
+                            .selectedEmployee) ...[
+                      const SizedBox(
+                        height: 18,
+                      ),
+
+                      _buildSectionLabel(
+                        'Employee',
+                      ),
+
+                      const SizedBox(
+                        height: 7,
+                      ),
+
+                      _buildEmployeeSelector(
+                        state,
+                      ),
+
+                      const SizedBox(
+                        height: 14,
+                      ),
+
+                      _buildSectionLabel(
+                        'Date Range',
+                      ),
+
+                      const SizedBox(
+                        height: 7,
+                      ),
+
+                      _buildDateFilter(),
+                    ],
+
+                    const SizedBox(
+                      height: 18,
+                    ),
+
+                    _buildShowButton(),
+
+                    const SizedBox(
+                      height: 24,
+                    ),
+
+                    _buildResult(state),
+
+                    const SizedBox(
+                      height: 20,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================
+  // PAGE HEADER
+  // ===========================================================
+
+  Widget _buildPageHeader(
+      SupervisorAttendanceState state,
+      ) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF2196F3),
+            Color(0xFF1976D2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withValues(
+              alpha: 0.18,
+            ),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(
+                alpha: 0.18,
+              ),
+              borderRadius:
+              BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.fact_check_outlined,
+              color: Colors.white,
+              size: 26,
+            ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(width: 14),
 
-          // =========================================
-          // MODE
-          // =========================================
-
-          _buildModeSelector(),
-
-          const SizedBox(height: 12),
-
-          // =========================================
-          // SELECTED EMPLOYEE
-          // =========================================
-
-          if (mode ==
-              SupervisorAttendanceMode
-                  .selectedEmployee)
-            _buildEmployeeSelector(
-              state,
+          const Expanded(
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Attendance Overview',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'View employee attendance records',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
+          ),
 
-          // =========================================
-          // DATE
-          // =========================================
-
-          if (mode ==
-              SupervisorAttendanceMode
-                  .selectedEmployee) ...[
-            const SizedBox(height: 10),
-            _buildDateFilter(),
-          ],
-
-          const SizedBox(height: 14),
-
-          // =========================================
-          // SHOW
-          // =========================================
-
-          _buildShowButton(),
-
-          const SizedBox(height: 18),
-
-          // =========================================
-          // RESULT
-          // =========================================
-
-          _buildResult(state),
+          if (state.departmentId != null)
+            Container(
+              padding:
+              const EdgeInsets.symmetric(
+                horizontal: 9,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(
+                  alpha: 0.16,
+                ),
+                borderRadius:
+                BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.verified_outlined,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  // ===========================================================
+  // SECTION LABEL
+  // ===========================================================
+
+  Widget _buildSectionLabel(
+      String title,
+      ) {
+    return Text(
+      title,
+      style: const TextStyle(
+        color: textColor,
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -354,36 +564,29 @@ class _SupervisorEmployeeAttendancePageState
   Widget _buildDepartmentSelector(
       SupervisorAttendanceState state,
       ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-        BorderRadius.circular(10),
-        border: Border.all(
-          color:
-          const Color(0xFF2196F3),
-        ),
-      ),
+    return _buildControlContainer(
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isExpanded: true,
           value: state.departmentId,
+
           hint: const Text(
             'Select Department',
+            style: TextStyle(
+              color: secondaryTextColor,
+              fontSize: 14,
+            ),
           ),
+
           icon: const Icon(
-            Icons.keyboard_arrow_down,
+            Icons.keyboard_arrow_down_rounded,
+            color: secondaryTextColor,
           ),
-          items: state.departments
-              .map(
+
+          items: state.departments.map(
                 (department) {
               final id =
-              department['id']
-                  ?.toString();
+              department['id']?.toString();
 
               final name =
                   department['name']
@@ -394,20 +597,74 @@ class _SupervisorEmployeeAttendancePageState
                 return null;
               }
 
-              return DropdownMenuItem<
-                  String>(
+              return DropdownMenuItem<String>(
                 value: id,
-                child: Text(name),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.apartment_outlined,
+                      size: 19,
+                      color: primaryColor,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        name,
+                        overflow:
+                        TextOverflow.ellipsis,
+                        style:
+                        const TextStyle(
+                          color: textColor,
+                          fontSize: 14,
+                          fontWeight:
+                          FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           )
               .whereType<
               DropdownMenuItem<String>>()
               .toList(),
-          onChanged:
-          _selectDepartment,
+
+          onChanged: _selectDepartment,
         ),
       ),
+    );
+  }
+
+  // ===========================================================
+  // COMMON CONTROL CONTAINER
+  // ===========================================================
+
+  Widget _buildControlContainer({
+    required Widget child,
+  }) {
+    return Container(
+      height: 58,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+      ),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: borderColor,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: 0.025,
+            ),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 
@@ -416,87 +673,106 @@ class _SupervisorEmployeeAttendancePageState
   // ===========================================================
 
   Widget _buildModeSelector() {
-    return Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Attendance Type',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight:
-            FontWeight.w600,
+    return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: borderColor,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _modeOption(
+              title: 'All Employees',
+              icon: Icons.groups_outlined,
+              value:
+              SupervisorAttendanceMode
+                  .allEmployees,
+            ),
           ),
-        ),
 
-        const SizedBox(height: 5),
+          const SizedBox(width: 5),
 
-        Row(
-          children: [
-            Expanded(
-              child: _radio(
-                title:
-                'All Employees',
-                value:
-                SupervisorAttendanceMode
-                    .allEmployees,
-              ),
+          Expanded(
+            child: _modeOption(
+              title: 'Selected Employee',
+              icon: Icons.person_outline_rounded,
+              value:
+              SupervisorAttendanceMode
+                  .selectedEmployee,
             ),
-
-            Expanded(
-              child: _radio(
-                title:
-                'Selected Employee',
-                value:
-                SupervisorAttendanceMode
-                    .selectedEmployee,
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
   // ===========================================================
-  // RADIO
+  // MODE OPTION
   // ===========================================================
 
-  Widget _radio({
+  Widget _modeOption({
     required String title,
-    required SupervisorAttendanceMode
-    value,
+    required IconData icon,
+    required SupervisorAttendanceMode value,
   }) {
-    return InkWell(
-      onTap: () {
-        _changeMode(value);
-      },
-      child: Row(
-        children: [
-          Radio<
-              SupervisorAttendanceMode>(
-            value: value,
-            groupValue: mode,
-            activeColor:
-            const Color(0xFF2196F3),
-            onChanged: (value) {
-              if (value == null) {
-                return;
-              }
+    final selected = mode == value;
 
-              _changeMode(value);
-            },
+    return Material(
+      color: selected
+          ? primaryColor
+          : Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {
+          _changeMode(value);
+        },
+        child: AnimatedContainer(
+          duration:
+          const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 11,
           ),
-          Expanded(
-            child: Text(
-              title,
-              style:
-              const TextStyle(
-                fontSize: 13,
+          child: Row(
+            mainAxisAlignment:
+            MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: selected
+                    ? Colors.white
+                    : secondaryTextColor,
               ),
-            ),
+
+              const SizedBox(width: 7),
+
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: selected
+                        ? Colors.white
+                        : textColor,
+                    fontSize: 12,
+                    fontWeight: selected
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -508,48 +784,38 @@ class _SupervisorEmployeeAttendancePageState
   Widget _buildEmployeeSelector(
       SupervisorAttendanceState state,
       ) {
-    return Container(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-        BorderRadius.circular(10),
-        border: Border.all(
-          color:
-          const Color(0xFF2196F3),
-        ),
-      ),
+    return _buildControlContainer(
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isExpanded: true,
           value: selectedEmployeeId,
+
           hint: const Text(
             'Select Employee',
+            style: TextStyle(
+              color: secondaryTextColor,
+              fontSize: 14,
+            ),
           ),
+
           icon: const Icon(
-            Icons.keyboard_arrow_down,
+            Icons.keyboard_arrow_down_rounded,
+            color: secondaryTextColor,
           ),
-          items: state.employees
-              .map(
+
+          items: state.employees.map(
                 (employee) {
               final id =
-              employee['id']
-                  ?.toString();
+              employee['id']?.toString();
 
               final name =
                   employee['full_name']
-                      ?.toString()
-                      ??
+                      ?.toString() ??
                       '${employee['first_name'] ?? ''} ${employee['last_name'] ?? ''}'
                           .trim();
 
               final code =
-                  employee[
-                  'employee_code']
+                  employee['employee_code']
                       ?.toString() ??
                       '';
 
@@ -557,15 +823,33 @@ class _SupervisorEmployeeAttendancePageState
                 return null;
               }
 
-              return DropdownMenuItem<
-                  String>(
+              return DropdownMenuItem<String>(
                 value: id,
-                child: Text(
-                  code.isEmpty
-                      ? name
-                      : '$name ($code)',
-                  overflow:
-                  TextOverflow.ellipsis,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.person_outline,
+                      size: 19,
+                      color: primaryColor,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        code.isEmpty
+                            ? name
+                            : '$name ($code)',
+                        overflow:
+                        TextOverflow.ellipsis,
+                        style:
+                        const TextStyle(
+                          color: textColor,
+                          fontSize: 14,
+                          fontWeight:
+                          FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -573,10 +857,10 @@ class _SupervisorEmployeeAttendancePageState
               .whereType<
               DropdownMenuItem<String>>()
               .toList(),
+
           onChanged: (value) {
             setState(() {
-              selectedEmployeeId =
-                  value;
+              selectedEmployeeId = value;
             });
           },
         ),
@@ -589,26 +873,38 @@ class _SupervisorEmployeeAttendancePageState
   // ===========================================================
 
   Widget _buildDateFilter() {
-    return Row(
-      children: [
-        Expanded(
-          child: _dateButton(
-            title: 'From Date',
-            date: fromDate,
-            onTap:
-            _selectFromDate,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _dateButton(
-            title: 'To Date',
-            date: toDate,
-            onTap:
-            _selectToDate,
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (
+          context,
+          constraints,
+          ) {
+        final bool compact =
+            constraints.maxWidth < 430;
+
+        return Row(
+          children: [
+            Expanded(
+              child: _dateButton(
+                title: 'From Date',
+                date: fromDate,
+                onTap: _selectFromDate,
+                compact: compact,
+              ),
+            ),
+
+            const SizedBox(width: 9),
+
+            Expanded(
+              child: _dateButton(
+                title: 'To Date',
+                date: toDate,
+                onTap: _selectToDate,
+                compact: compact,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -620,75 +916,98 @@ class _SupervisorEmployeeAttendancePageState
     required String title,
     required DateTime date,
     required VoidCallback onTap,
+    required bool compact,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius:
-      BorderRadius.circular(8),
-      child: Container(
-        height: 58,
-        padding:
-        const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 7,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius:
-          BorderRadius.circular(8),
-          border: Border.all(
-            color:
-            const Color(0xFF2196F3),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: compact ? 62 : 68,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 11,
+            vertical: 8,
           ),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.calendar_month_outlined,
-              size: 19,
-              color:
-              Color(0xFF2196F3),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+            BorderRadius.circular(12),
+            border: Border.all(
+              color: borderColor,
             ),
-            const SizedBox(width: 7),
-            Expanded(
-              child: Column(
-                mainAxisAlignment:
-                MainAxisAlignment.center,
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style:
-                    const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                    ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(
+                    alpha: 0.10,
                   ),
-                  const SizedBox(
-                    height: 2,
-                  ),
-                  Text(
-                    DateFormat(
-                      'dd-MMM-yy',
-                    ).format(date),
-                    style:
-                    const TextStyle(
-                      fontSize: 14,
-                      fontWeight:
-                      FontWeight.w600,
-                    ),
-                  ),
-                ],
+                  borderRadius:
+                  BorderRadius.circular(9),
+                ),
+                child: const Icon(
+                  Icons.calendar_month_outlined,
+                  size: 18,
+                  color: primaryColor,
+                ),
               ),
-            ),
-            const Icon(
-              Icons
-                  .keyboard_arrow_down,
-              size: 18,
-              color: Colors.grey,
-            ),
-          ],
+
+              const SizedBox(width: 8),
+
+              Expanded(
+                child: Column(
+                  mainAxisAlignment:
+                  MainAxisAlignment.center,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color:
+                        secondaryTextColor,
+                        fontWeight:
+                        FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 3),
+
+                    Text(
+                      DateFormat(
+                        'dd-MMM-yy',
+                      ).format(date),
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style:
+                      const TextStyle(
+                        color: textColor,
+                        fontSize: 13,
+                        fontWeight:
+                        FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Icon(
+                Icons
+                    .keyboard_arrow_down_rounded,
+                size: 18,
+                color: secondaryTextColor,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -700,43 +1019,47 @@ class _SupervisorEmployeeAttendancePageState
 
   Widget _buildShowButton() {
     return SizedBox(
+      height: 50,
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed:
-        _showDetails,
+        onPressed: _showDetails,
+
         icon: const Icon(
-          Icons.search,
+          Icons.search_rounded,
+          size: 20,
         ),
-        style:
-        ElevatedButton.styleFrom(
-          backgroundColor:
-          const Color(0xFF2196F3),
-          foregroundColor:
-          Colors.white,
-          padding:
-          const EdgeInsets.symmetric(
-            vertical: 12,
+
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+
+          shadowColor:
+          primaryColor.withValues(
+            alpha: 0.25,
           ),
+
           shape:
           RoundedRectangleBorder(
             borderRadius:
-            BorderRadius.circular(8),
+            BorderRadius.circular(12),
           ),
         ),
+
         label: const Text(
           'Show Details',
           style: TextStyle(
             fontSize: 14,
-            fontWeight:
-            FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
     );
   }
-// ===========================================================
-// RESULT
-// ===========================================================
+
+  // ===========================================================
+  // RESULT
+  // ===========================================================
 
   Widget _buildResult(
       SupervisorAttendanceState state,
@@ -746,10 +1069,30 @@ class _SupervisorEmployeeAttendancePageState
     // ---------------------------------------------------------
 
     if (state.isLoadingAttendance) {
-      return const Padding(
-        padding: EdgeInsets.all(30),
-        child: Center(
-          child: CircularProgressIndicator(),
+      return Container(
+        padding: const EdgeInsets.all(32),
+        decoration: _resultBoxDecoration(),
+        child: const Column(
+          children: [
+            SizedBox(
+              width: 28,
+              height: 28,
+              child:
+              CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: primaryColor,
+              ),
+            ),
+            SizedBox(height: 14),
+            Text(
+              'Loading attendance...',
+              style: TextStyle(
+                color: secondaryTextColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -760,17 +1103,25 @@ class _SupervisorEmployeeAttendancePageState
 
     if (state.error != null &&
         state.error!.trim().isNotEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(30),
-        child: Center(
-          child: Text(
-            state.error!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: _resultBoxDecoration(),
+        child: Column(
+          children: [
+            _stateIcon(
+              icon: Icons.error_outline_rounded,
               color: Colors.red,
-              fontSize: 14,
             ),
-          ),
+            const SizedBox(height: 12),
+            Text(
+              state.error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 13,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -780,15 +1131,25 @@ class _SupervisorEmployeeAttendancePageState
     // ---------------------------------------------------------
 
     if (state.attendance.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(30),
-        child: Center(
-          child: Text(
-            'No attendance found.',
-            style: TextStyle(
-              color: Colors.grey,
+      return Container(
+        padding: const EdgeInsets.all(28),
+        decoration: _resultBoxDecoration(),
+        child: Column(
+          children: [
+            _stateIcon(
+              icon: Icons.event_busy_outlined,
+              color: secondaryTextColor,
             ),
-          ),
+            const SizedBox(height: 12),
+            const Text(
+              'No attendance found.',
+              style: TextStyle(
+                color: secondaryTextColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -798,15 +1159,96 @@ class _SupervisorEmployeeAttendancePageState
     // ---------------------------------------------------------
 
     return Column(
-      children: state.attendance
-          .map<Widget>(
-            (attendance) {
-          return _buildAttendanceItem(
-            attendance,
-          );
-        },
-      )
-          .toList(),
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Attendance Records',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+
+            Container(
+              padding:
+              const EdgeInsets.symmetric(
+                horizontal: 9,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(
+                  alpha: 0.10,
+                ),
+                borderRadius:
+                BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${state.attendance.length}',
+                style: const TextStyle(
+                  color: primaryColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        ...state.attendance.map<Widget>(
+              (attendance) {
+            return _buildAttendanceItem(
+              attendance,
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================
+  // RESULT BOX
+  // ===========================================================
+
+  BoxDecoration _resultBoxDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: borderColor,
+      ),
+    );
+  }
+
+  // ===========================================================
+  // STATE ICON
+  // ===========================================================
+
+  Widget _stateIcon({
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: color.withValues(
+          alpha: 0.08,
+        ),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        icon,
+        color: color,
+        size: 26,
+      ),
     );
   }
 
@@ -846,26 +1288,29 @@ class _SupervisorEmployeeAttendancePageState
             ?.toString() ??
             '-';
 
+    final statusColor =
+    _statusColor(status);
+
     return Container(
       width: double.infinity,
-      margin:
-      const EdgeInsets.only(
+      margin: const EdgeInsets.only(
         bottom: 10,
       ),
-      padding:
-      const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color:
-        const Color(0xFFFFF9FF),
+        color: Colors.white,
         borderRadius:
-        BorderRadius.circular(16),
+        BorderRadius.circular(15),
+        border: Border.all(
+          color: borderColor,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black
-                .withOpacity(.07),
-            blurRadius: 5,
-            offset:
-            const Offset(0, 2),
+            color: Colors.black.withValues(
+              alpha: 0.035,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -873,60 +1318,205 @@ class _SupervisorEmployeeAttendancePageState
         crossAxisAlignment:
         CrossAxisAlignment.start,
         children: [
+          // ---------------------------------------------------
+          // TOP
+          // ---------------------------------------------------
+
           Row(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  employeeName,
-                  style:
-                  const TextStyle(
-                    fontSize: 16,
-                    fontWeight:
-                    FontWeight.w600,
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(
+                    alpha: 0.09,
                   ),
+                  borderRadius:
+                  BorderRadius.circular(11),
+                ),
+                child: const Icon(
+                  Icons.person_outline_rounded,
+                  color: primaryColor,
+                  size: 21,
                 ),
               ),
-              Text(
-                date,
-                style:
-                const TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey,
+
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      employeeName,
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style:
+                      const TextStyle(
+                        color: textColor,
+                        fontSize: 15,
+                        fontWeight:
+                        FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 3),
+
+                    Text(
+                      date,
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style:
+                      const TextStyle(
+                        color:
+                        secondaryTextColor,
+                        fontSize: 11,
+                        fontWeight:
+                        FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Container(
+                padding:
+                const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius:
+                  BorderRadius.circular(20),
+                ),
+                child: Text(
+                  status,
+                  maxLines: 1,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight:
+                    FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
 
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight:
-              FontWeight.w600,
-              color:
-              _statusColor(status),
-            ),
+          const Divider(
+            height: 1,
+            color: borderColor,
           ),
 
-          const SizedBox(height: 7),
+          const SizedBox(height: 12),
 
-          Text(
-            'In  : $checkIn',
-            style:
-            const TextStyle(
-              fontSize: 13,
-            ),
+          // ---------------------------------------------------
+          // TIME
+          // ---------------------------------------------------
+
+          Row(
+            children: [
+              Expanded(
+                child: _timeInfo(
+                  icon:
+                  Icons.login_rounded,
+                  label: 'Check In',
+                  value: checkIn,
+                  color: Colors.green,
+                ),
+              ),
+
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: _timeInfo(
+                  icon:
+                  Icons.logout_rounded,
+                  label: 'Check Out',
+                  value: checkOut,
+                  color: Colors.deepOrange,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================
+  // TIME INFO
+  // ===========================================================
+
+  Widget _timeInfo({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius:
+        BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 17,
+            color: color,
           ),
 
-          const SizedBox(height: 4),
+          const SizedBox(width: 8),
 
-          Text(
-            'Out : $checkOut',
-            style:
-            const TextStyle(
-              fontSize: 13,
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color:
+                    secondaryTextColor,
+                    fontSize: 10,
+                    fontWeight:
+                    FontWeight.w500,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style:
+                  const TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                    fontWeight:
+                    FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -941,8 +1531,7 @@ class _SupervisorEmployeeAttendancePageState
   Color _statusColor(
       String status,
       ) {
-    switch (
-    status.toUpperCase()) {
+    switch (status.toUpperCase()) {
       case 'PRESENT':
       case 'ON TIME':
         return Colors.green;
@@ -957,7 +1546,7 @@ class _SupervisorEmployeeAttendancePageState
         return Colors.deepOrange;
 
       default:
-        return Colors.grey;
+        return secondaryTextColor;
     }
   }
 
@@ -970,14 +1559,55 @@ class _SupervisorEmployeeAttendancePageState
       ) {
     return Center(
       child: Padding(
-        padding:
-        const EdgeInsets.all(20),
-        child: Text(
-          error,
-          textAlign:
-          TextAlign.center,
-          style: const TextStyle(
-            color: Colors.red,
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          constraints:
+          const BoxConstraints(
+            maxWidth: 500,
+          ),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+            BorderRadius.circular(16),
+            border: Border.all(
+              color: borderColor,
+            ),
+          ),
+          child: Column(
+            mainAxisSize:
+            MainAxisSize.min,
+            children: [
+              _stateIcon(
+                icon:
+                Icons.error_outline_rounded,
+                color: Colors.red,
+              ),
+
+              const SizedBox(height: 14),
+
+              const Text(
+                'Something went wrong',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 7),
+
+              Text(
+                error,
+                textAlign:
+                TextAlign.center,
+                style: const TextStyle(
+                  color:
+                  secondaryTextColor,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
         ),
       ),

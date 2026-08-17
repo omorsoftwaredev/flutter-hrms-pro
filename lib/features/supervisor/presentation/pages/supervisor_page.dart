@@ -2,6 +2,8 @@
 /// Flutter HRMS Pro
 /// Supervisor Management Page
 ///
+/// Version : 6.0.0
+///
 /// Responsibilities:
 /// - Use current logged-in user's company
 /// - Load departments
@@ -14,7 +16,9 @@
 /// - Delete supervisor
 ///
 /// Design:
-/// - Similar to DesignationListPage
+/// - Theme aware
+/// - Light / Dark mode supported
+/// - Responsive mobile / tablet / desktop
 /// - No company dropdown
 /// - No success/error alert dialog
 /// - Uses SnackBar for feedback
@@ -44,6 +48,14 @@ class SupervisorPage extends ConsumerStatefulWidget {
 
 class _SupervisorPageState extends ConsumerState<SupervisorPage> {
   // ===============================================================
+  // BREAKPOINTS
+  // ===============================================================
+
+  static const double _mobileBreakpoint = 600;
+  static const double _tabletBreakpoint = 1000;
+  static const double _desktopMaxWidth = 1400;
+
+  // ===============================================================
   // INIT
   // ===============================================================
 
@@ -57,6 +69,44 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
   }
 
   // ===============================================================
+  // RESPONSIVE
+  // ===============================================================
+
+  bool _isMobile(BuildContext context) {
+    return MediaQuery.sizeOf(context).width < _mobileBreakpoint;
+  }
+
+  bool _isTablet(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+
+    return width >= _mobileBreakpoint && width < _tabletBreakpoint;
+  }
+
+  bool _isDesktop(BuildContext context) {
+    return MediaQuery.sizeOf(context).width >= _tabletBreakpoint;
+  }
+
+  double _pageHorizontalPadding(BuildContext context) {
+    if (_isMobile(context)) {
+      return 12;
+    }
+
+    if (_isTablet(context)) {
+      return 20;
+    }
+
+    return 24;
+  }
+
+  double _pageVerticalPadding(BuildContext context) {
+    if (_isMobile(context)) {
+      return 12;
+    }
+
+    return 20;
+  }
+
+  // ===============================================================
   // INITIALIZE
   // ===============================================================
 
@@ -66,8 +116,11 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     final user = ref.read(currentUserProvider);
 
     debugPrint('========================================');
+
     debugPrint('SUPERVISOR PAGE INITIALIZE');
+
     debugPrint('CURRENT USER = $user');
+
     debugPrint('========================================');
 
     final companyId = _getCompanyIdFromUser(user);
@@ -81,15 +134,6 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     }
 
     try {
-      // -----------------------------------------------------------
-      // SELECT CURRENT COMPANY
-      //
-      // Provider-এর ভিতর থেকে:
-      // - departments load
-      // - supervisors load
-      // করবে।
-      // -----------------------------------------------------------
-
       await notifier.selectCompany(companyId);
 
       if (!mounted) {
@@ -111,8 +155,10 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
       debugPrint('SUPERVISOR PAGE INITIALIZE COMPLETE');
 
       debugPrint('========================================');
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('SUPERVISOR INITIALIZE ERROR = $e');
+
+      debugPrint('STACK TRACE = $stackTrace');
     }
   }
 
@@ -135,7 +181,9 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
       if (value != null && value.toString().trim().isNotEmpty) {
         return value.toString().trim();
       }
-    } catch (_) {}
+    } catch (_) {
+      // Property not available.
+    }
 
     // -------------------------------------------------------------
     // company_id
@@ -147,10 +195,12 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
       if (value != null && value.toString().trim().isNotEmpty) {
         return value.toString().trim();
       }
-    } catch (_) {}
+    } catch (_) {
+      // Property not available.
+    }
 
     // -------------------------------------------------------------
-    // Map
+    // MAP
     // -------------------------------------------------------------
 
     if (user is Map) {
@@ -200,9 +250,13 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     }
 
     debugPrint('========================================');
+
     debugPrint('SUPERVISOR DEPARTMENT CHANGED');
+
     debugPrint('COMPANY ID = $companyId');
+
     debugPrint('DEPARTMENT ID = $departmentId');
+
     debugPrint('========================================');
 
     final notifier = ref.read(supervisorProvider.notifier);
@@ -257,13 +311,13 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
       return;
     }
 
-    // -------------------------------------------------------------
-    // OPEN FORM
-    // -------------------------------------------------------------
-
     if (!mounted) {
       return;
     }
+
+    // -------------------------------------------------------------
+    // RESPONSIVE DIALOG
+    // -------------------------------------------------------------
 
     await showDialog(
       context: context,
@@ -273,21 +327,42 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
           builder: (context, ref, child) {
             final currentState = ref.watch(supervisorProvider);
 
+            final screenWidth = MediaQuery.sizeOf(context).width;
+
+            final screenHeight = MediaQuery.sizeOf(context).height;
+
+            final isMobile = screenWidth < _mobileBreakpoint;
+
+            final double dialogWidth = isMobile
+                ? screenWidth - 24.0
+                : screenWidth < _tabletBreakpoint
+                ? screenWidth - 48.0
+                : 620.0;
+
+            final maxDialogHeight = screenHeight - 40;
+
             return Dialog(
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 24,
+              insetPadding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 12 : 24,
+                vertical: isMobile ? 12 : 20,
               ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: SupervisorPageForm(
-                    state: currentState,
-                    onDepartmentChanged: _onDepartmentChanged,
-                    onSubmit: (Map<String, dynamic> data) async {
-                      await _createSupervisor(data, dialogContext);
-                    },
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(isMobile ? 16 : 20),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox(
+                width: dialogWidth,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: maxDialogHeight),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(isMobile ? 16 : 24),
+                    child: SupervisorPageForm(
+                      state: currentState,
+                      onDepartmentChanged: _onDepartmentChanged,
+                      onSubmit: (Map<String, dynamic> data) async {
+                        await _createSupervisor(data, dialogContext);
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -319,8 +394,11 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     final createData = <String, dynamic>{...data, 'company_id': companyId};
 
     debugPrint('========================================');
+
     debugPrint('SUPERVISOR CREATE');
+
     debugPrint('CREATE DATA = $createData');
+
     debugPrint('========================================');
 
     final success = await notifier.createSupervisor(createData);
@@ -423,6 +501,8 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+
         return AlertDialog(
           title: Text('$action Supervisor?'),
           content: Text(
@@ -441,6 +521,11 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
               },
+              style: FilledButton.styleFrom(
+                backgroundColor: action == 'Deactivate'
+                    ? theme.colorScheme.error
+                    : theme.colorScheme.primary,
+              ),
               child: Text(action),
             ),
           ],
@@ -526,6 +611,8 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+
         return AlertDialog(
           title: const Text('Delete Supervisor'),
           content: Text(
@@ -543,6 +630,9 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
               },
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.error,
+              ),
               child: const Text('Delete'),
             ),
           ],
@@ -591,10 +681,34 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
       return;
     }
 
+    final theme = Theme.of(context);
+
+    final colorScheme = theme.colorScheme;
+
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                isError ? Icons.error_outline : Icons.check_circle_outline,
+                color: colorScheme.onInverseSurface,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: Text(message)),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: isError
+              ? colorScheme.error
+              : colorScheme.inverseSurface,
+          margin: EdgeInsets.all(_isMobile(context) ? 12 : 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       );
   }
 
@@ -606,20 +720,32 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(supervisorProvider);
 
+    final theme = Theme.of(context);
+
+    final colorScheme = theme.colorScheme;
+
+    final isMobile = _isMobile(context);
+
+    final horizontalPadding = _pageHorizontalPadding(context);
+
+    final verticalPadding = _pageVerticalPadding(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FC),
+      backgroundColor: colorScheme.surfaceContainerLowest,
 
       // ===========================================================
       // APP BAR
       // ===========================================================
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
+        scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
 
         leading: IconButton(
           tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -627,51 +753,60 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
 
         title: const Text(
           'Supervisor Management',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
         ),
 
         actions: [
           IconButton(
             tooltip: 'Refresh',
             onPressed: state.isLoading ? null : _refresh,
-            icon: const Icon(Icons.refresh, color: Colors.black87),
+            icon: const Icon(Icons.refresh_rounded),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isMobile ? 4 : 12),
         ],
 
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: Colors.black12),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: colorScheme.outlineVariant,
+          ),
         ),
       ),
 
       // ===========================================================
-      // ADD
+      // ADD SUPERVISOR
       // ===========================================================
       floatingActionButton: FloatingActionButton.extended(
         onPressed: state.isSaving ? null : _openCreateForm,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Supervisor'),
+        tooltip: 'Add Supervisor',
+        icon: const Icon(Icons.add_rounded),
+        label: Text(isMobile ? 'Add' : 'Add Supervisor'),
       ),
 
       // ===========================================================
       // BODY
       // ===========================================================
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _buildCompanyInfo(state),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _desktopMaxWidth),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
+              ),
+              child: Column(
+                children: [
+                  _buildCompanyInfo(state),
 
-              const SizedBox(height: 16),
+                  SizedBox(height: isMobile ? 12 : 18),
 
-              Expanded(child: _buildContent(state)),
-            ],
+                  Expanded(child: _buildContent(state)),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -683,47 +818,70 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
   // ===============================================================
 
   Widget _buildCompanyInfo(SupervisorState state) {
+    final theme = Theme.of(context);
+
+    final colorScheme = theme.colorScheme;
+
     final companyId = state.selectedCompanyId;
 
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.black12),
+    final isAvailable = companyId != null && companyId.isNotEmpty;
+
+    final isMobile = _isMobile(context);
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 16),
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(isMobile ? 12 : 16),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: isMobile ? 42 : 48,
+              height: isMobile ? 42 : 48,
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(.08),
-                borderRadius: BorderRadius.circular(10),
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.business_outlined, color: Colors.blue),
+              child: Icon(
+                Icons.business_outlined,
+                color: colorScheme.onPrimaryContainer,
+                size: isMobile ? 21 : 24,
+              ),
             ),
 
-            const SizedBox(width: 12),
+            SizedBox(width: isMobile ? 10 : 14),
 
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Current Company',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                  const SizedBox(height: 3),
                   Text(
-                    companyId == null || companyId.isEmpty
-                        ? 'Company not available'
-                        : 'Company selected',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                    'Current Company',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
+                  const SizedBox(height: 3),
+
+                  Text(
+                    isAvailable ? 'Company selected' : 'Company not available',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -731,10 +889,19 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
             ),
 
             if (state.isLoading)
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  color: colorScheme.primary,
+                ),
+              )
+            else if (isAvailable)
+              Icon(
+                Icons.check_circle_rounded,
+                color: colorScheme.primary,
+                size: 22,
               ),
           ],
         ),
@@ -747,6 +914,10 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
   // ===============================================================
 
   Widget _buildContent(SupervisorState state) {
+    final theme = Theme.of(context);
+
+    final colorScheme = theme.colorScheme;
+
     // -------------------------------------------------------------
     // COMPANY NOT AVAILABLE
     // -------------------------------------------------------------
@@ -754,25 +925,14 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     if (state.selectedCompanyId == null || state.selectedCompanyId!.isEmpty) {
       return RefreshIndicator(
         onRefresh: _initialize,
+        color: colorScheme.primary,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 120),
-            Icon(Icons.business_outlined, size: 65, color: Colors.black38),
-            SizedBox(height: 14),
-            Center(
-              child: Text(
-                'Company not available',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ),
-            SizedBox(height: 6),
-            Center(
-              child: Text(
-                'Current user company could not be loaded.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54),
-              ),
+          children: [
+            _buildEmptyState(
+              icon: Icons.business_outlined,
+              title: 'Company not available',
+              message: 'Current user company could not be loaded.',
             ),
           ],
         ),
@@ -784,7 +944,21 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     // -------------------------------------------------------------
 
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: colorScheme.primary),
+            const SizedBox(height: 14),
+            Text(
+              'Loading supervisors...',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     // -------------------------------------------------------------
@@ -794,29 +968,11 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     if (state.hasError) {
       return RefreshIndicator(
         onRefresh: _refresh,
+        color: colorScheme.primary,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            const SizedBox(height: 120),
-            const Icon(Icons.error_outline, size: 55, color: Colors.red),
-            const SizedBox(height: 12),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  state.errorMessage ?? 'Something went wrong.',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _refresh,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ),
+            _buildErrorState(state.errorMessage ?? 'Something went wrong.'),
           ],
         ),
       );
@@ -829,28 +985,14 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     if (state.supervisors.isEmpty) {
       return RefreshIndicator(
         onRefresh: _refresh,
+        color: colorScheme.primary,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 120),
-            Icon(
-              Icons.supervisor_account_outlined,
-              size: 70,
-              color: Colors.black26,
-            ),
-            SizedBox(height: 16),
-            Center(
-              child: Text(
-                'No supervisors found',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ),
-            SizedBox(height: 6),
-            Center(
-              child: Text(
-                'Add a supervisor to this company.',
-                style: TextStyle(color: Colors.black54),
-              ),
+          children: [
+            _buildEmptyState(
+              icon: Icons.supervisor_account_outlined,
+              title: 'No supervisors found',
+              message: 'Add a supervisor to this company.',
             ),
           ],
         ),
@@ -858,15 +1000,140 @@ class _SupervisorPageState extends ConsumerState<SupervisorPage> {
     }
 
     // -------------------------------------------------------------
-    // SUPERVISOR LIST / TABLE
+    // SUPERVISOR TABLE
     // -------------------------------------------------------------
 
     return RefreshIndicator(
       onRefresh: _refresh,
+      color: colorScheme.primary,
       child: SupervisorTable(
         supervisors: state.supervisors,
         onToggleStatus: _toggleSupervisor,
         onDelete: _deleteSupervisor,
+      ),
+    );
+  }
+
+  // ===============================================================
+  // EMPTY STATE
+  // ===============================================================
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String message,
+  }) {
+    final theme = Theme.of(context);
+
+    final colorScheme = theme.colorScheme;
+
+    final isMobile = _isMobile(context);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 40,
+        vertical: isMobile ? 80 : 120,
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: isMobile ? 72 : 84,
+            height: isMobile ? 72 : 84,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: isMobile ? 36 : 42,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: 7),
+
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===============================================================
+  // ERROR STATE
+  // ===============================================================
+
+  Widget _buildErrorState(String message) {
+    final theme = Theme.of(context);
+
+    final colorScheme = theme.colorScheme;
+
+    final isMobile = _isMobile(context);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 40,
+        vertical: isMobile ? 70 : 110,
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: isMobile ? 68 : 78,
+            height: isMobile ? 68 : 78,
+            decoration: BoxDecoration(
+              color: colorScheme.errorContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.error_outline_rounded,
+              size: isMobile ? 34 : 40,
+              color: colorScheme.onErrorContainer,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          Text(
+            'Something went wrong',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          FilledButton.icon(
+            onPressed: _refresh,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Retry'),
+          ),
+        ],
       ),
     );
   }

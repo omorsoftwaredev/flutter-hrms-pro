@@ -5,7 +5,7 @@
 /// File:
 /// supervisor_department_status_page.dart
 ///
-/// Version : 2.0.0
+/// Version : 3.0.0
 ///
 /// Purpose:
 /// - Company is NOT selected manually
@@ -16,6 +16,17 @@
 /// - Show supervisor name
 /// - Show assigned department names
 /// - Refresh status
+///
+/// UI:
+/// - Theme aware
+/// - Light / Dark mode compatible
+/// - Mobile responsive
+/// - Tablet responsive
+/// - Desktop responsive
+/// - Adaptive summary cards
+/// - Adaptive page spacing
+/// - Adaptive tabs
+/// - Adaptive supervisor cards
 ///
 /// Company source:
 /// currentUserProvider -> CurrentUser.companyId
@@ -43,6 +54,14 @@ class _SupervisorDepartmentStatusPageState
     extends ConsumerState<SupervisorDepartmentStatusPage>
     with SingleTickerProviderStateMixin {
   // =============================================================
+  // RESPONSIVE BREAKPOINTS
+  // =============================================================
+
+  static const double _mobileBreakpoint = 600.0;
+  static const double _tabletBreakpoint = 900.0;
+  static const double _desktopBreakpoint = 1200.0;
+
+  // =============================================================
   // LOADING STATUS DATA
   // =============================================================
 
@@ -56,11 +75,6 @@ class _SupervisorDepartmentStatusPageState
 
   // =============================================================
   // CURRENT COMPANY ID
-  //
-  // Company ID NEVER comes from a dropdown.
-  //
-  // It always comes from:
-  // currentUserProvider -> user.companyId
   // =============================================================
 
   String? get _companyId {
@@ -80,25 +94,18 @@ class _SupervisorDepartmentStatusPageState
   }
 
   // =============================================================
-  // SUPERVISOR STATUS DATA
-  //
-  // Example:
-  //
-  // {
-  //   supervisorId: "...",
-  //   supervisorName: "Rahim",
-  //   departmentIds: [...],
-  //   departmentNames: [...]
-  // }
+  // STATUS DATA
   // =============================================================
 
-  List<Map<String, dynamic>> _supervisorStatus = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> _supervisorStatus =
+  <Map<String, dynamic>>[];
 
   // =============================================================
   // NOT ASSIGNED DEPARTMENTS
   // =============================================================
 
-  List<Map<String, dynamic>> _notAssignedDepartments = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> _notAssignedDepartments =
+  <Map<String, dynamic>>[];
 
   // =============================================================
   // TAB CONTROLLER
@@ -114,7 +121,10 @@ class _SupervisorDepartmentStatusPageState
   void initState() {
     super.initState();
 
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+    );
 
     Future.microtask(_initialize);
   }
@@ -126,14 +136,11 @@ class _SupervisorDepartmentStatusPageState
   @override
   void dispose() {
     _tabController.dispose();
-
     super.dispose();
   }
 
   // =============================================================
   // INITIALIZE
-  //
-  // Logged-in user's company ID is used automatically.
   // =============================================================
 
   Future<void> _initialize() async {
@@ -143,17 +150,9 @@ class _SupervisorDepartmentStatusPageState
 
     final companyId = _companyId;
 
-    // -----------------------------------------------------------
-    // USER NOT READY
-    // -----------------------------------------------------------
-
     if (companyId == null || companyId.isEmpty) {
       return;
     }
-
-    // -----------------------------------------------------------
-    // PREVENT DUPLICATE INITIALIZATION
-    // -----------------------------------------------------------
 
     if (_isInitialized) {
       return;
@@ -161,19 +160,13 @@ class _SupervisorDepartmentStatusPageState
 
     _isInitialized = true;
 
-    // -----------------------------------------------------------
-    // LOAD COMPANY-SCOPED DATA
-    // -----------------------------------------------------------
-
-    await ref.read(supervisorProvider.notifier).selectCompany(companyId);
+    await ref
+        .read(supervisorProvider.notifier)
+        .selectCompany(companyId);
 
     if (!mounted) {
       return;
     }
-
-    // -----------------------------------------------------------
-    // LOAD STATUS
-    // -----------------------------------------------------------
 
     await _loadStatus();
   }
@@ -184,7 +177,6 @@ class _SupervisorDepartmentStatusPageState
 
   void _clearStatusData() {
     _supervisorStatus = <Map<String, dynamic>>[];
-
     _notAssignedDepartments = <Map<String, dynamic>>[];
   }
 
@@ -194,10 +186,6 @@ class _SupervisorDepartmentStatusPageState
 
   Future<void> _loadStatus() async {
     final companyId = _companyId;
-
-    // -----------------------------------------------------------
-    // COMPANY VALIDATION
-    // -----------------------------------------------------------
 
     if (companyId == null || companyId.isEmpty) {
       if (mounted) {
@@ -221,13 +209,11 @@ class _SupervisorDepartmentStatusPageState
 
     try {
       // =========================================================
-      // CREATE DEPARTMENT MAP
-      //
-      // departmentId -> department object
+      // DEPARTMENT MAP
       // =========================================================
 
       final Map<String, Map<String, dynamic>> departmentMap =
-          <String, Map<String, dynamic>>{};
+      <String, Map<String, dynamic>>{};
 
       for (final department in state.departments) {
         final id = department['id']?.toString().trim();
@@ -244,13 +230,7 @@ class _SupervisorDepartmentStatusPageState
       // =========================================================
 
       final List<Map<String, dynamic>> supervisorStatus =
-          <Map<String, dynamic>>[];
-
-      // =========================================================
-      // ALL ASSIGNED DEPARTMENT IDS
-      //
-      // Used later to find departments without supervisor.
-      // =========================================================
+      <Map<String, dynamic>>[];
 
       final Set<String> assignedDepartmentIds = <String>{};
 
@@ -265,61 +245,36 @@ class _SupervisorDepartmentStatusPageState
           continue;
         }
 
-        // -------------------------------------------------------
-        // SUPERVISOR NAME
-        // -------------------------------------------------------
-
         final supervisorName = _supervisorName(supervisor);
-
-        // -------------------------------------------------------
-        // LOAD ASSIGNMENTS
-        //
-        // Company ID automatically comes from logged-in user.
-        // -------------------------------------------------------
 
         final assignments = await ref
             .read(supervisorProvider.notifier)
             .loadSupervisorDepartmentAssignments(
-              companyId: companyId,
-              supervisorId: supervisorId,
-            );
-
-        // -------------------------------------------------------
-        // ASSIGNED DEPARTMENT IDS
-        // -------------------------------------------------------
+          companyId: companyId,
+          supervisorId: supervisorId,
+        );
 
         final List<String> departmentIds = <String>[];
-
         final List<String> departmentNames = <String>[];
 
         for (final assignment in assignments) {
-          final departmentId = assignment['department_id']?.toString().trim();
+          final departmentId =
+          assignment['department_id']?.toString().trim();
 
           if (departmentId == null || departmentId.isEmpty) {
             continue;
           }
 
-          // -----------------------------------------------------
-          // UNIQUE DEPARTMENT ID
-          // -----------------------------------------------------
-
           if (!departmentIds.contains(departmentId)) {
             departmentIds.add(departmentId);
           }
 
-          // -----------------------------------------------------
-          // GLOBAL ASSIGNED DEPARTMENT SET
-          // -----------------------------------------------------
-
           assignedDepartmentIds.add(departmentId);
-
-          // -----------------------------------------------------
-          // FIND DEPARTMENT NAME
-          // -----------------------------------------------------
 
           final department = departmentMap[departmentId];
 
-          final departmentName = department?['name']?.toString().trim();
+          final departmentName =
+          department?['name']?.toString().trim();
 
           if (departmentName != null &&
               departmentName.isNotEmpty &&
@@ -328,23 +283,22 @@ class _SupervisorDepartmentStatusPageState
           }
         }
 
-        // -------------------------------------------------------
-        // ADD SUPERVISOR STATUS
-        // -------------------------------------------------------
-
-        supervisorStatus.add(<String, dynamic>{
-          'supervisor_id': supervisorId,
-          'supervisor_name': supervisorName,
-          'department_ids': departmentIds,
-          'department_names': departmentNames,
-        });
+        supervisorStatus.add(
+          <String, dynamic>{
+            'supervisor_id': supervisorId,
+            'supervisor_name': supervisorName,
+            'department_ids': departmentIds,
+            'department_names': departmentNames,
+          },
+        );
       }
 
       // =========================================================
       // FIND NOT ASSIGNED DEPARTMENTS
       // =========================================================
 
-      final List<Map<String, dynamic>> notAssigned = <Map<String, dynamic>>[];
+      final List<Map<String, dynamic>> notAssigned =
+      <Map<String, dynamic>>[];
 
       for (final department in state.departments) {
         final departmentId = department['id']?.toString().trim();
@@ -352,10 +306,6 @@ class _SupervisorDepartmentStatusPageState
         if (departmentId == null || departmentId.isEmpty) {
           continue;
         }
-
-        // -------------------------------------------------------
-        // NOT ASSIGNED
-        // -------------------------------------------------------
 
         if (!assignedDepartmentIds.contains(departmentId)) {
           notAssigned.add(department);
@@ -372,9 +322,7 @@ class _SupervisorDepartmentStatusPageState
 
       setState(() {
         _supervisorStatus = supervisorStatus;
-
         _notAssignedDepartments = notAssigned;
-
         _isLoadingStatus = false;
       });
     } catch (e) {
@@ -386,7 +334,9 @@ class _SupervisorDepartmentStatusPageState
         _isLoadingStatus = false;
       });
 
-      _showMessage('Unable to load supervisor department status.');
+      _showMessage(
+        'Unable to load supervisor department status.',
+      );
     }
   }
 
@@ -394,36 +344,33 @@ class _SupervisorDepartmentStatusPageState
   // SUPERVISOR NAME
   // =============================================================
 
-  String _supervisorName(Map<String, dynamic> supervisor) {
-    final employee = _nestedMap(supervisor, 'employees');
+  String _supervisorName(
+      Map<String, dynamic> supervisor,
+      ) {
+    final employee = _nestedMap(
+      supervisor,
+      'employees',
+    );
 
     if (employee == null) {
       return 'Unknown Supervisor';
     }
 
-    // -----------------------------------------------------------
-    // FULL NAME
-    // -----------------------------------------------------------
-
-    final fullName = employee['full_name']?.toString().trim();
+    final fullName =
+    employee['full_name']?.toString().trim();
 
     if (fullName != null && fullName.isNotEmpty) {
       return fullName;
     }
 
-    // -----------------------------------------------------------
-    // FIRST NAME
-    // -----------------------------------------------------------
+    final firstName =
+        employee['first_name']?.toString().trim() ?? '';
 
-    final firstName = employee['first_name']?.toString().trim() ?? '';
+    final lastName =
+        employee['last_name']?.toString().trim() ?? '';
 
-    // -----------------------------------------------------------
-    // LAST NAME
-    // -----------------------------------------------------------
-
-    final lastName = employee['last_name']?.toString().trim() ?? '';
-
-    final name = '$firstName $lastName'.trim();
+    final name =
+    '$firstName $lastName'.trim();
 
     if (name.isEmpty) {
       return 'Unknown Supervisor';
@@ -436,7 +383,10 @@ class _SupervisorDepartmentStatusPageState
   // NESTED MAP
   // =============================================================
 
-  Map<String, dynamic>? _nestedMap(Map<String, dynamic> data, String key) {
+  Map<String, dynamic>? _nestedMap(
+      Map<String, dynamic> data,
+      String key,
+      ) {
     final value = data[key];
 
     if (value is Map) {
@@ -448,16 +398,15 @@ class _SupervisorDepartmentStatusPageState
 
   // =============================================================
   // REFRESH
-  //
-  // Same logged-in user's company is used.
-  // No company selection.
   // =============================================================
 
   Future<void> _refresh() async {
     final companyId = _companyId;
 
     if (companyId == null || companyId.isEmpty) {
-      _showMessage('Company information was not found for the logged-in user.');
+      _showMessage(
+        'Company information was not found for the logged-in user.',
+      );
 
       return;
     }
@@ -466,35 +415,25 @@ class _SupervisorDepartmentStatusPageState
       return;
     }
 
-    // -----------------------------------------------------------
-    // CLEAR OLD STATUS
-    // -----------------------------------------------------------
-
     if (mounted) {
       setState(() {
         _clearStatusData();
       });
     }
 
-    // -----------------------------------------------------------
-    // RELOAD COMPANY-SCOPED DATA
-    // -----------------------------------------------------------
-
-    await ref.read(supervisorProvider.notifier).selectCompany(companyId);
+    await ref
+        .read(supervisorProvider.notifier)
+        .selectCompany(companyId);
 
     if (!mounted) {
       return;
     }
 
-    // -----------------------------------------------------------
-    // RELOAD STATUS
-    // -----------------------------------------------------------
-
     await _loadStatus();
   }
 
   // =============================================================
-  // SHOW MESSAGE
+  // MESSAGE
   // =============================================================
 
   void _showMessage(String message) {
@@ -502,10 +441,14 @@ class _SupervisorDepartmentStatusPageState
       return;
     }
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context)
+        .hideCurrentSnackBar();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -516,51 +459,89 @@ class _SupervisorDepartmentStatusPageState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(supervisorProvider);
-
     final user = ref.watch(currentUserProvider);
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FC),
+      backgroundColor: theme.scaffoldBackgroundColor,
 
       // =========================================================
       // APP BAR
       // =========================================================
+
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
 
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Supervisor Department Status',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            Text(
-              'Department assignment status',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.black54,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
+        titleSpacing: 16,
+
+        title: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile =
+                MediaQuery.sizeOf(context).width <
+                    _mobileBreakpoint;
+
+            return Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Supervisor Department Status',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  'Department assignment status',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: isMobile ? 10 : 11,
+                    color:
+                    colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
 
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            onPressed: _isLoadingStatus || user == null ? null : _refresh,
-            icon: const Icon(Icons.refresh),
+            onPressed:
+            _isLoadingStatus || user == null
+                ? null
+                : _refresh,
+            icon: const Icon(Icons.refresh_rounded),
           ),
+
+          const SizedBox(width: 4),
         ],
       ),
 
       // =========================================================
       // BODY
       // =========================================================
-      body: SafeArea(child: _buildBody(state, user)),
+
+      body: SafeArea(
+        child: _buildBody(
+          state,
+          user,
+        ),
+      ),
     );
   }
 
@@ -568,72 +549,128 @@ class _SupervisorDepartmentStatusPageState
   // BODY
   // =============================================================
 
-  Widget _buildBody(SupervisorState state, dynamic user) {
-    // -----------------------------------------------------------
-    // CURRENT USER LOADING
-    // -----------------------------------------------------------
+  Widget _buildBody(
+      SupervisorState state,
+      dynamic user,
+      ) {
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
+    final isTablet =
+        screenWidth >= _mobileBreakpoint &&
+            screenWidth < _tabletBreakpoint;
+
+    final horizontalPadding = isMobile
+        ? 12.0
+        : isTablet
+        ? 20.0
+        : 28.0;
 
     if (user == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
-    // -----------------------------------------------------------
-    // COMPANY ID VALIDATION
-    // -----------------------------------------------------------
-
-    final companyId = user.companyId?.toString().trim() ?? '';
+    final companyId =
+        user.companyId?.toString().trim() ?? '';
 
     if (companyId.isEmpty) {
       return _buildNoCompanyState();
     }
 
-    // -----------------------------------------------------------
-    // INITIAL DATA LOADING
-    // -----------------------------------------------------------
-
-    if ((state.isLoading || _isLoadingStatus) &&
+    if ((state.isLoading ||
+        _isLoadingStatus) &&
         state.departments.isEmpty &&
         state.supervisors.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
-    // -----------------------------------------------------------
-    // CONTENT
-    // -----------------------------------------------------------
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics:
+          const AlwaysScrollableScrollPhysics(),
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 950),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // =================================================
-              // PAGE HEADER
-              // =================================================
-              const Text(
-                'Department Assignment Status',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            isMobile ? 14.0 : 20.0,
+            horizontalPadding,
+            isMobile ? 24.0 : 32.0,
+          ),
+
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: _desktopBreakpoint,
               ),
 
-              const SizedBox(height: 5),
+              child: Column(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
 
-              const Text(
-                'View supervisor and department assignments for your company.',
-                style: TextStyle(color: Colors.black54, fontSize: 12),
+                children: [
+                  _buildPageHeader(),
+
+                  SizedBox(
+                    height: isMobile
+                        ? 14.0
+                        : 20.0,
+                  ),
+
+                  _buildStatusSection(
+                    state,
+                  ),
+                ],
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-              const SizedBox(height: 18),
+  // =============================================================
+  // PAGE HEADER
+  // =============================================================
 
-              // =================================================
-              // STATUS
-              // =================================================
-              _buildStatusSection(state),
-            ],
+  Widget _buildPageHeader() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
+    return Column(
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Department Assignment Status',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontSize: isMobile ? 19.0 : 22.0,
+            fontWeight: FontWeight.w800,
           ),
         ),
-      ),
+
+        const SizedBox(height: 5),
+
+        Text(
+          'View supervisor and department assignments for your company.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontSize: isMobile ? 11.0 : 12.0,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 
@@ -642,38 +679,69 @@ class _SupervisorDepartmentStatusPageState
   // =============================================================
 
   Widget _buildNoCompanyState() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.business_outlined, size: 52, color: Colors.orange),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 430.0,
+          ),
+          child: _card(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64.0,
+                  height: 64.0,
+                  decoration: BoxDecoration(
+                    color: colorScheme.errorContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.business_outlined,
+                    size: 32.0,
+                    color:
+                    colorScheme.onErrorContainer,
+                  ),
+                ),
 
-            const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-            const Text(
-              'Company information not found.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                Text(
+                  'Company information not found',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 7),
+
+                Text(
+                  'The logged-in user is not associated with a company.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color:
+                    colorScheme.onSurfaceVariant,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                FilledButton.icon(
+                  onPressed: _initialize,
+                  icon: const Icon(
+                    Icons.refresh_rounded,
+                  ),
+                  label: const Text('Retry'),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 6),
-
-            const Text(
-              'The logged-in user is not associated with a company.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11, color: Colors.black54),
-            ),
-
-            const SizedBox(height: 16),
-
-            ElevatedButton.icon(
-              onPressed: _initialize,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -683,111 +751,79 @@ class _SupervisorDepartmentStatusPageState
   // STATUS SECTION
   // =============================================================
 
-  Widget _buildStatusSection(SupervisorState state) {
+  Widget _buildStatusSection(
+      SupervisorState state,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
     return _card(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(
+        isMobile ? 12.0 : 18.0,
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
         children: [
           // =====================================================
           // HEADER
           // =====================================================
-          Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2196F3).withValues(alpha: .08),
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: const Icon(
-                  Icons.analytics_outlined,
-                  color: Color(0xFF2196F3),
-                ),
-              ),
 
-              const SizedBox(width: 11),
+          _buildSectionHeader(),
 
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Department Assignment Status',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-
-                    SizedBox(height: 3),
-
-                    Text(
-                      'Check supervisor and department assignments.',
-                      style: TextStyle(fontSize: 11, color: Colors.black54),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          SizedBox(
+            height: isMobile
+                ? 14.0
+                : 18.0,
           ),
-
-          const SizedBox(height: 16),
 
           // =====================================================
           // SUMMARY
           // =====================================================
+
           _buildSummary(state),
 
-          const SizedBox(height: 16),
+          SizedBox(
+            height: isMobile
+                ? 14.0
+                : 18.0,
+          ),
 
           // =====================================================
           // TABS
           // =====================================================
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F3F7),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: TabBar(
-              controller: _tabController,
 
-              labelColor: const Color(0xFF2196F3),
+          _buildTabs(),
 
-              unselectedLabelColor: Colors.black54,
-
-              indicator: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(9),
-              ),
-
-              indicatorSize: TabBarIndicatorSize.tab,
-
-              dividerColor: Colors.transparent,
-
-              tabs: [
-                Tab(text: 'Not Assigned (${_notAssignedDepartments.length})'),
-
-                Tab(
-                  text: 'Supervisor Departments (${_supervisorStatus.length})',
-                ),
-              ],
-            ),
+          SizedBox(
+            height: isMobile
+                ? 14.0
+                : 18.0,
           ),
-
-          const SizedBox(height: 16),
 
           // =====================================================
           // TAB CONTENT
           // =====================================================
+
           AnimatedBuilder(
             animation: _tabController,
             builder: (context, child) {
               if (_isLoadingStatus) {
-                return const Padding(
-                  padding: EdgeInsets.all(35),
-                  child: Center(child: CircularProgressIndicator()),
+                return Padding(
+                  padding: EdgeInsets.all(
+                    isMobile ? 28.0 : 40.0,
+                  ),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 );
               }
 
@@ -804,37 +840,303 @@ class _SupervisorDepartmentStatusPageState
   }
 
   // =============================================================
+  // SECTION HEADER
+  // =============================================================
+
+  Widget _buildSectionHeader() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
+    return Row(
+      crossAxisAlignment:
+      CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: isMobile ? 40.0 : 44.0,
+          height: isMobile ? 40.0 : 44.0,
+          decoration: BoxDecoration(
+            color:
+            colorScheme.primaryContainer,
+            borderRadius:
+            BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.analytics_outlined,
+            color:
+            colorScheme.onPrimaryContainer,
+            size: isMobile ? 21.0 : 23.0,
+          ),
+        ),
+
+        const SizedBox(width: 11),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Department Assignment Status',
+                maxLines: 1,
+                overflow:
+                TextOverflow.ellipsis,
+                style:
+                theme.textTheme.titleMedium?.copyWith(
+                  fontSize:
+                  isMobile ? 14.0 : 16.0,
+                  fontWeight:
+                  FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 3),
+
+              Text(
+                'Check supervisor and department assignments.',
+                maxLines: 2,
+                overflow:
+                TextOverflow.ellipsis,
+                style:
+                theme.textTheme.bodySmall?.copyWith(
+                  fontSize:
+                  isMobile ? 10.0 : 11.0,
+                  color: colorScheme
+                      .onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // =============================================================
+  // TABS
+  // =============================================================
+
+  Widget _buildTabs() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
+    return Container(
+      height: isMobile ? 44.0 : 48.0,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TabBar(
+        controller: _tabController,
+
+        labelColor: colorScheme.primary,
+
+        unselectedLabelColor:
+        colorScheme.onSurfaceVariant,
+
+        labelStyle: TextStyle(
+          fontSize: isMobile ? 10.5 : 12.0,
+          fontWeight: FontWeight.w700,
+        ),
+
+        unselectedLabelStyle: TextStyle(
+          fontSize: isMobile ? 10.5 : 12.0,
+          fontWeight: FontWeight.w500,
+        ),
+
+        indicator: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow
+                  .withValues(alpha: .08),
+              blurRadius: 5.0,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+
+        indicatorSize:
+        TabBarIndicatorSize.tab,
+
+        dividerColor:
+        Colors.transparent,
+
+        splashBorderRadius:
+        BorderRadius.circular(9),
+
+        tabs: [
+          Tab(
+            text:
+            'Not Assigned (${_notAssignedDepartments.length})',
+          ),
+
+          Tab(
+            text:
+            'Supervisors (${_supervisorStatus.length})',
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
   // SUMMARY
   // =============================================================
 
-  Widget _buildSummary(SupervisorState state) {
+  Widget _buildSummary(
+      SupervisorState state,
+      ) {
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
+    final isTablet =
+        screenWidth >= _mobileBreakpoint &&
+            screenWidth < _tabletBreakpoint;
+
+    if (isMobile) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _summaryCard(
+                  icon:
+                  Icons.apartment_outlined,
+                  title: 'Departments',
+                  value:
+                  state.departments.length
+                      .toString(),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Expanded(
+                child: _summaryCard(
+                  icon: Icons
+                      .supervisor_account_outlined,
+                  title: 'Supervisors',
+                  value:
+                  state.supervisors.length
+                      .toString(),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          _summaryCard(
+            icon:
+            Icons.warning_amber_outlined,
+            title: 'Not Assigned',
+            value:
+            _notAssignedDepartments.length
+                .toString(),
+            fullWidth: true,
+          ),
+        ],
+      );
+    }
+
+    if (isTablet) {
+      return Row(
+        children: [
+          Expanded(
+            child: _summaryCard(
+              icon:
+              Icons.apartment_outlined,
+              title: 'Departments',
+              value:
+              state.departments.length
+                  .toString(),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: _summaryCard(
+              icon: Icons
+                  .supervisor_account_outlined,
+              title: 'Supervisors',
+              value:
+              state.supervisors.length
+                  .toString(),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: _summaryCard(
+              icon:
+              Icons.warning_amber_outlined,
+              title: 'Not Assigned',
+              value:
+              _notAssignedDepartments
+                  .length
+                  .toString(),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         Expanded(
           child: _summaryCard(
-            icon: Icons.apartment_outlined,
+            icon:
+            Icons.apartment_outlined,
             title: 'Departments',
-            value: state.departments.length.toString(),
+            value:
+            state.departments.length
+                .toString(),
           ),
         ),
 
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
 
         Expanded(
           child: _summaryCard(
-            icon: Icons.supervisor_account_outlined,
+            icon: Icons
+                .supervisor_account_outlined,
             title: 'Supervisors',
-            value: state.supervisors.length.toString(),
+            value:
+            state.supervisors.length
+                .toString(),
           ),
         ),
 
-        const SizedBox(width: 10),
+        const SizedBox(width: 12),
 
         Expanded(
           child: _summaryCard(
-            icon: Icons.warning_amber_outlined,
+            icon:
+            Icons.warning_amber_outlined,
             title: 'Not Assigned',
-            value: _notAssignedDepartments.length.toString(),
+            value:
+            _notAssignedDepartments
+                .length
+                .toString(),
           ),
         ),
       ],
@@ -849,33 +1151,99 @@ class _SupervisorDepartmentStatusPageState
     required IconData icon,
     required String title,
     required String value,
+    bool fullWidth = false,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFC),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
+      width: fullWidth
+          ? double.infinity
+          : null,
+
+      padding: EdgeInsets.all(
+        isMobile ? 11.0 : 14.0,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(12),
+        border: Border.all(
+          color:
+          colorScheme.outlineVariant,
+        ),
+      ),
+
+      child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF2196F3)),
-
-          const SizedBox(height: 8),
-
-          Text(
-            value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          Container(
+            width: isMobile
+                ? 34.0
+                : 38.0,
+            height: isMobile
+                ? 34.0
+                : 38.0,
+            decoration: BoxDecoration(
+              color:
+              colorScheme.primaryContainer,
+              borderRadius:
+              BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: isMobile
+                  ? 18.0
+                  : 20.0,
+              color:
+              colorScheme.onPrimaryContainer,
+            ),
           ),
 
-          const SizedBox(height: 2),
+          const SizedBox(width: 10),
 
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 10, color: Colors.black54),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style:
+                  theme.textTheme.titleLarge?.copyWith(
+                    fontSize:
+                    isMobile ? 18.0 : 21.0,
+                    fontWeight:
+                    FontWeight.w800,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style:
+                  theme.textTheme.bodySmall?.copyWith(
+                    fontSize:
+                    isMobile ? 9.5 : 10.5,
+                    color: colorScheme
+                        .onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -884,111 +1252,174 @@ class _SupervisorDepartmentStatusPageState
 
   // =============================================================
   // TAB 1
-  //
-  // NOT ASSIGNED SUPERVISOR DEPARTMENT
+  // NOT ASSIGNED DEPARTMENTS
   // =============================================================
 
   Widget _buildNotAssignedTab() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_notAssignedDepartments.isEmpty) {
       return _buildEmptyState(
-        icon: Icons.check_circle_outline,
-        title: 'All departments are assigned',
-        subtitle: 'Every department has at least one supervisor.',
-        iconColor: Colors.green,
+        icon:
+        Icons.check_circle_outline,
+        title:
+        'All departments are assigned',
+        subtitle:
+        'Every department has at least one supervisor.',
+        iconColor:
+        colorScheme.tertiary,
       );
     }
 
     return Column(
-      children: _notAssignedDepartments.map((department) {
-        final name = department['name']?.toString().trim();
+      children:
+      _notAssignedDepartments.map(
+            (department) {
+          final name =
+          department['name']
+              ?.toString()
+              .trim();
 
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: .05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.orange.withValues(alpha: .20)),
+          return _buildNotAssignedCard(
+            name: name == null ||
+                name.isEmpty
+                ? 'Unnamed Department'
+                : name,
+          );
+        },
+      ).toList(),
+    );
+  }
+
+  // =============================================================
+  // NOT ASSIGNED CARD
+  // =============================================================
+
+  Widget _buildNotAssignedCard({
+    required String name,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      margin:
+      const EdgeInsets.only(bottom: 8),
+      padding:
+      const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color:
+        colorScheme.errorContainer
+            .withValues(alpha: .45),
+        borderRadius:
+        BorderRadius.circular(12),
+        border: Border.all(
+          color:
+          colorScheme.error
+              .withValues(alpha: .20),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38.0,
+            height: 38.0,
+            decoration: BoxDecoration(
+              color:
+              colorScheme.errorContainer,
+              borderRadius:
+              BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.apartment_outlined,
+              color:
+              colorScheme.onErrorContainer,
+              size: 20.0,
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: .10),
-                  borderRadius: BorderRadius.circular(10),
+
+          const SizedBox(width: 11),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 2,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style:
+                  theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 12.5,
+                    fontWeight:
+                    FontWeight.w700,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.apartment_outlined,
-                  color: Colors.orange,
-                  size: 20,
+
+                const SizedBox(height: 3),
+
+                Text(
+                  'No supervisor assigned',
+                  style:
+                  theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 10,
+                    color:
+                    colorScheme.error,
+                    fontWeight:
+                    FontWeight.w600,
+                  ),
                 ),
-              ),
-
-              const SizedBox(width: 11),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name == null || name.isEmpty
-                          ? 'Unnamed Department'
-                          : name,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-
-                    const SizedBox(height: 3),
-
-                    const Text(
-                      'No supervisor assigned',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.orange,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Icon(
-                Icons.warning_amber_outlined,
-                color: Colors.orange,
-                size: 20,
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      }).toList(),
+
+          const SizedBox(width: 8),
+
+          Icon(
+            Icons.warning_amber_outlined,
+            color:
+            colorScheme.error,
+            size: 20,
+          ),
+        ],
+      ),
     );
   }
 
   // =============================================================
   // TAB 2
-  //
   // SUPERVISOR DEPARTMENTS
   // =============================================================
 
   Widget _buildSupervisorDepartmentsTab() {
     if (_supervisorStatus.isEmpty) {
+      final colorScheme =
+          Theme.of(context).colorScheme;
+
       return _buildEmptyState(
-        icon: Icons.supervisor_account_outlined,
-        title: 'No supervisors found',
-        subtitle: 'There are no supervisors for this company.',
-        iconColor: Colors.grey,
+        icon:
+        Icons.supervisor_account_outlined,
+        title:
+        'No supervisors found',
+        subtitle:
+        'There are no supervisors for this company.',
+        iconColor:
+        colorScheme.onSurfaceVariant,
       );
     }
 
     return Column(
-      children: _supervisorStatus.map((item) {
-        return _buildSupervisorCard(item);
-      }).toList(),
+      children:
+      _supervisorStatus.map(
+            (item) {
+          return _buildSupervisorCard(
+            item,
+          );
+        },
+      ).toList(),
     );
   }
 
@@ -996,43 +1427,68 @@ class _SupervisorDepartmentStatusPageState
   // SUPERVISOR CARD
   // =============================================================
 
-  Widget _buildSupervisorCard(Map<String, dynamic> item) {
+  Widget _buildSupervisorCard(
+      Map<String, dynamic> item,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final supervisorName =
-        item['supervisor_name']?.toString().trim() ?? 'Unknown Supervisor';
+        item['supervisor_name']
+            ?.toString()
+            .trim() ??
+            'Unknown Supervisor';
 
     final departmentNames =
         (item['department_names'] as List?)
-            ?.map((e) => e.toString())
+            ?.map(
+              (e) => e.toString(),
+        )
             .toList() ??
-        <String>[];
+            <String>[];
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin:
+      const EdgeInsets.only(bottom: 10),
+      padding:
+      const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: Colors.black12),
+        color: colorScheme.surface,
+        borderRadius:
+        BorderRadius.circular(13),
+        border: Border.all(
+          color:
+          colorScheme.outlineVariant,
+        ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
         children: [
           // =====================================================
           // SUPERVISOR HEADER
           // =====================================================
+
           Row(
+            crossAxisAlignment:
+            CrossAxisAlignment.center,
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 44.0,
+                height: 44.0,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2196F3).withValues(alpha: .09),
-                  borderRadius: BorderRadius.circular(11),
+                  color:
+                  colorScheme.primaryContainer,
+                  borderRadius:
+                  BorderRadius.circular(11),
                 ),
-                child: const Icon(
-                  Icons.supervisor_account_outlined,
-                  color: Color(0xFF2196F3),
+                child: Icon(
+                  Icons
+                      .supervisor_account_outlined,
+                  color:
+                  colorScheme.onPrimaryContainer,
+                  size: 23.0,
                 ),
               ),
 
@@ -1040,15 +1496,19 @@ class _SupervisorDepartmentStatusPageState
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
                   children: [
                     Text(
                       supervisorName,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style:
+                      theme.textTheme.titleSmall?.copyWith(
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight:
+                        FontWeight.w700,
                       ),
                     ),
 
@@ -1056,9 +1516,14 @@ class _SupervisorDepartmentStatusPageState
 
                     Text(
                       '${departmentNames.length} department(s) assigned',
-                      style: const TextStyle(
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style:
+                      theme.textTheme.bodySmall?.copyWith(
                         fontSize: 10,
-                        color: Colors.black54,
+                        color: colorScheme
+                            .onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -1069,78 +1534,147 @@ class _SupervisorDepartmentStatusPageState
 
           const SizedBox(height: 12),
 
-          const Divider(height: 1),
+          Divider(
+            height: 1,
+            color:
+            colorScheme.outlineVariant,
+          ),
 
           const SizedBox(height: 12),
 
           // =====================================================
           // DEPARTMENTS
           // =====================================================
+
           if (departmentNames.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.black12),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.info_outline, size: 18, color: Colors.black45),
-
-                  SizedBox(width: 8),
-
-                  Expanded(
-                    child: Text(
-                      'No department assigned.',
-                      style: TextStyle(fontSize: 11, color: Colors.black54),
-                    ),
-                  ),
-                ],
-              ),
-            )
+            _buildNoDepartmentAssigned()
           else
             Wrap(
               spacing: 7,
               runSpacing: 7,
-              children: departmentNames.map((name) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.green.withValues(alpha: .20),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.apartment_outlined,
-                        size: 14,
-                        color: Colors.green,
-                      ),
-
-                      const SizedBox(width: 5),
-
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+              children:
+              departmentNames.map(
+                    (name) {
+                  return _buildDepartmentChip(
+                    name,
+                  );
+                },
+              ).toList(),
             ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // NO DEPARTMENT ASSIGNED
+  // =============================================================
+
+  Widget _buildNoDepartmentAssigned() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding:
+      const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color:
+        colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(10),
+        border: Border.all(
+          color:
+          colorScheme.outlineVariant,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 18,
+            color:
+            colorScheme.onSurfaceVariant,
+          ),
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: Text(
+              'No department assigned.',
+              style:
+              theme.textTheme.bodySmall?.copyWith(
+                fontSize: 11,
+                color:
+                colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // DEPARTMENT CHIP
+  // =============================================================
+
+  Widget _buildDepartmentChip(
+      String name,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      constraints:
+      const BoxConstraints(
+        maxWidth: 280.0,
+      ),
+      padding:
+      const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color:
+        colorScheme.secondaryContainer,
+        borderRadius:
+        BorderRadius.circular(20),
+        border: Border.all(
+          color:
+          colorScheme.secondary
+              .withValues(alpha: .18),
+        ),
+      ),
+      child: Row(
+        mainAxisSize:
+        MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.apartment_outlined,
+            size: 14,
+            color:
+            colorScheme.onSecondaryContainer,
+          ),
+
+          const SizedBox(width: 5),
+
+          Flexible(
+            child: Text(
+              name,
+              maxLines: 2,
+              overflow:
+              TextOverflow.ellipsis,
+              style:
+              theme.textTheme.labelMedium?.copyWith(
+                fontSize: 10.5,
+                fontWeight:
+                FontWeight.w600,
+                color: colorScheme
+                    .onSecondaryContainer,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1156,24 +1690,58 @@ class _SupervisorDepartmentStatusPageState
     required String subtitle,
     required Color iconColor,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenWidth =
+        MediaQuery.sizeOf(context).width;
+
+    final isMobile =
+        screenWidth < _mobileBreakpoint;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(
+        isMobile ? 24.0 : 30.0,
+      ),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
+        color:
+        colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(12),
+        border: Border.all(
+          color:
+          colorScheme.outlineVariant,
+        ),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 42, color: iconColor),
+          Container(
+            width: 58.0,
+            height: 58.0,
+            decoration: BoxDecoration(
+              color: iconColor
+                  .withValues(alpha: .10),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 30.0,
+              color: iconColor,
+            ),
+          ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            style:
+            theme.textTheme.titleSmall?.copyWith(
+              fontSize: 14,
+              fontWeight:
+              FontWeight.w700,
+            ),
           ),
 
           const SizedBox(height: 5),
@@ -1181,7 +1749,12 @@ class _SupervisorDepartmentStatusPageState
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: Colors.black54),
+            style:
+            theme.textTheme.bodySmall?.copyWith(
+              fontSize: 11,
+              color:
+              colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -1192,19 +1765,37 @@ class _SupervisorDepartmentStatusPageState
   // CARD
   // =============================================================
 
-  Widget _card({required Widget child, EdgeInsetsGeometry? padding}) {
+  Widget _card({
+    required Widget child,
+    EdgeInsetsGeometry? padding,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(14),
+      padding:
+      padding ?? const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black12),
+        color: colorScheme.surface,
+        borderRadius:
+        BorderRadius.circular(14),
+        border: Border.all(
+          color:
+          colorScheme.outlineVariant,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .03),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color:
+            colorScheme.shadow.withValues(
+              alpha: theme.brightness ==
+                  Brightness.dark
+                  ? .10
+                  : .04,
+            ),
+            blurRadius: 10.0,
+            offset:
+            const Offset(0, 3),
           ),
         ],
       ),
@@ -1216,30 +1807,68 @@ class _SupervisorDepartmentStatusPageState
   // ERROR
   // =============================================================
 
-  Widget _buildError(SupervisorState state) {
+  Widget _buildError(
+      SupervisorState state,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 52, color: Colors.red),
+        padding:
+        const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints:
+          const BoxConstraints(
+            maxWidth: 430.0,
+          ),
+          child: _card(
+            padding:
+            const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize:
+              MainAxisSize.min,
+              children: [
+                Container(
+                  width: 60.0,
+                  height: 60.0,
+                  decoration: BoxDecoration(
+                    color:
+                    colorScheme.errorContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.error_outline,
+                    size: 32.0,
+                    color: colorScheme
+                        .onErrorContainer,
+                  ),
+                ),
 
-            const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
-            Text(
-              state.errorMessage ?? 'Something went wrong.',
-              textAlign: TextAlign.center,
+                Text(
+                  state.errorMessage ??
+                      'Something went wrong.',
+                  textAlign:
+                  TextAlign.center,
+                  style:
+                  theme.textTheme.bodyMedium,
+                ),
+
+                const SizedBox(height: 18),
+
+                FilledButton.icon(
+                  onPressed: _refresh,
+                  icon: const Icon(
+                    Icons.refresh_rounded,
+                  ),
+                  label:
+                  const Text('Retry'),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 16),
-
-            ElevatedButton.icon(
-              onPressed: _refresh,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-            ),
-          ],
+          ),
         ),
       ),
     );

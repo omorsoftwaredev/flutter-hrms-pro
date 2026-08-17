@@ -9,87 +9,117 @@ import '../../../../core/router/route_paths.dart';
 import '../../../../core/widgets/app_card.dart';
 
 class EmployeeAccountMenu extends StatelessWidget {
-  const EmployeeAccountMenu({
-    super.key,
-  });
+  const EmployeeAccountMenu({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
+    final isSmallScreen = screenWidth < 400;
+    final isWideScreen = screenWidth >= 700;
+
     return AppCard(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
 
-        onTap: () {
-          context.push(
-            RoutePaths.employeesAccounts,
-          );
-        },
+          onTap: () {
+            context.push(RoutePaths.employeesAccounts);
+          },
 
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: [
-              //=================================================
-              // Icon
-              //=================================================
+          child: Padding(
+            padding: EdgeInsets.all(
+              isSmallScreen
+                  ? 14
+                  : isWideScreen
+                  ? 22
+                  : 18,
+            ),
 
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.indigo.shade50,
-                  borderRadius: BorderRadius.circular(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                //=================================================
+                // ICON
+                //=================================================
+                Container(
+                  width: isSmallScreen ? 48 : 56,
+                  height: isSmallScreen ? 48 : 56,
+
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(
+                      isSmallScreen ? 12 : 14,
+                    ),
+                  ),
+
+                  child: Icon(
+                    Icons.manage_accounts_rounded,
+                    color: colorScheme.onPrimaryContainer,
+                    size: isSmallScreen ? 25 : 30,
+                  ),
                 ),
-                child: Icon(
-                  Icons.manage_accounts,
-                  color: Colors.indigo.shade700,
-                  size: 30,
-                ),
-              ),
 
-              const SizedBox(width: 16),
+                SizedBox(width: isSmallScreen ? 12 : 16),
 
-              //=================================================
-              // Content
-              //=================================================
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Employee Accounts',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                        fontWeight: FontWeight.bold,
+                //=================================================
+                // CONTENT
+                //=================================================
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Employee Accounts',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 4),
+                      const SizedBox(height: 5),
 
-                    Text(
-                      'Create, update, activate, deactivate and manage employee login accounts.',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
-                    ),
-                  ],
+                      Text(
+                        'Create, update, activate, deactivate and manage employee login accounts.',
+                        maxLines: isSmallScreen ? 3 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(width: 12),
+                SizedBox(width: isSmallScreen ? 8 : 12),
 
-              //=================================================
-              // Arrow
-              //=================================================
+                //=================================================
+                // ARROW
+                //=================================================
+                Container(
+                  width: isSmallScreen ? 32 : 36,
+                  height: isSmallScreen ? 32 : 36,
 
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-              ),
-            ],
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    shape: BoxShape.circle,
+                  ),
+
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: isSmallScreen ? 14 : 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,13 +1,23 @@
 // ===============================================================
 // Flutter HRMS Pro
-// Company Dashboard Sidebar
+// Supervisor Dashboard Sidebar
 //
-// Version : 2.4.0
+// Version : 2.5.0
 //
-// Updated:
-// - Added Manage Supervisor Departments menu
-// - Existing menus preserved
-// - Existing routes preserved
+// UI Improvements:
+// - Theme aware
+// - Responsive
+// - Light / Dark mode support
+// - Desktop / Tablet / Mobile friendly
+// - Modern user information header
+// - Modern menu items
+//
+// Functionality:
+// - Theme Settings
+// - Attendance
+// - Logout
+//
+// Functionality unchanged
 // ===============================================================
 
 import 'package:flutter/material.dart';
@@ -37,14 +47,24 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
     // =========================================================
 
     if (user == null) {
-      return const Drawer(
-        child: Center(
+      return Drawer(
+        width: _drawerWidth(context),
+        child: const Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark =
+        theme.brightness == Brightness.dark;
+
     return Drawer(
+      width: _drawerWidth(context),
+      backgroundColor: colorScheme.surface,
+      elevation: 8,
+
       child: SafeArea(
         child: Column(
           children: [
@@ -52,7 +72,12 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
             // USER HEADER
             // ===================================================
 
-            _buildUserHeader(user),
+            _buildUserHeader(
+              context,
+              user,
+              colorScheme,
+              isDark,
+            ),
 
             // ===================================================
             // MENU
@@ -61,15 +86,20 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 8,
+                  vertical: 10,
+                  horizontal: 8,
                 ),
                 children: [
+                  // =============================================
+                  // THEME SETTINGS
+                  // =============================================
 
                   _buildMenuItem(
                     context,
-                    icon: Icons.settings_outlined,
+                    icon: Icons.palette_outlined,
                     title: 'Theme Settings',
-                    subtitle: 'Application Theme settings',
+                    subtitle:
+                    'Customize app theme and appearance',
                     onTap: () {
                       Navigator.pop(context);
 
@@ -79,35 +109,41 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
                     },
                   ),
 
-                  // =================================================
-                  // DEPARTMENTS
-                  // =================================================
+                  // =============================================
+                  // ATTENDANCE
+                  // =============================================
 
                   _buildMenuItem(
                     context,
-                    icon: Icons.apartment_outlined,
+                    icon: Icons.assessment_outlined,
                     title: 'Attendance',
                     subtitle: 'Attendance Report',
                     onTap: () {
                       Navigator.pop(context);
 
-                      final supervisorEmployeeId = user.employeeId;
+                      final supervisorEmployeeId =
+                          user.employeeId;
 
-                      if (supervisorEmployeeId.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                      if (supervisorEmployeeId
+                          .trim()
+                          .isEmpty) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(
                           const SnackBar(
                             content: Text(
                               'Supervisor Employee ID not available.',
                             ),
                           ),
                         );
+
                         return;
                       }
 
                       context.pushNamed(
                         'supervisorEmployeeAttendanceReport',
                         queryParameters: {
-                          'supervisorEmployeeId': supervisorEmployeeId,
+                          'supervisorEmployeeId':
+                          supervisorEmployeeId,
                         },
                       );
                     },
@@ -116,71 +152,24 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
               ),
             ),
 
-            // =====================================================
+            // ===================================================
             // LOGOUT DIVIDER
-            // =====================================================
+            // ===================================================
 
-            const Divider(
+            Divider(
               height: 1,
+              color:
+              colorScheme.outline.withOpacity(.18),
             ),
 
-            // =====================================================
+            // ===================================================
             // LOGOUT
-            // =====================================================
+            // ===================================================
 
-            ListTile(
-              contentPadding:
-              const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 4,
-              ),
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(.08),
-                  borderRadius:
-                  BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                  size: 21,
-                ),
-              ),
-              title: const Text(
-                'Logout',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text(
-                'Sign out from your account',
-                style: TextStyle(
-                  fontSize: 11,
-                ),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-
-                await ref
-                    .read(authRepositoryProvider)
-                    .logout();
-
-                ref
-                    .read(
-                  currentUserProvider.notifier,
-                )
-                    .logout();
-
-                if (context.mounted) {
-                  context.go(
-                    RoutePaths.login,
-                  );
-                }
-              },
+            _buildLogoutItem(
+              context,
+              ref,
+              colorScheme,
             ),
           ],
         ),
@@ -189,68 +178,157 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
   }
 
   // =============================================================
+  // RESPONSIVE DRAWER WIDTH
+  // =============================================================
+
+  double _drawerWidth(
+      BuildContext context,
+      ) {
+    final width =
+        MediaQuery.sizeOf(context).width;
+
+    // ---------------------------------------------------------
+    // MOBILE
+    // ---------------------------------------------------------
+
+    if (width < 600) {
+      return width * .86;
+    }
+
+    // ---------------------------------------------------------
+    // TABLET
+    // ---------------------------------------------------------
+
+    if (width < 1000) {
+      return 360;
+    }
+
+    // ---------------------------------------------------------
+    // DESKTOP
+    // ---------------------------------------------------------
+
+    return 380;
+  }
+
+  // =============================================================
   // USER HEADER
   // =============================================================
 
   Widget _buildUserHeader(
+      BuildContext context,
       CurrentUser user,
+      ColorScheme colorScheme,
+      bool isDark,
       ) {
-    final String displayName =
-    user.displayName.trim().isNotEmpty
-        ? user.displayName
-        : user.loginName;
+    final primary =
+        colorScheme.primary;
+
+    final displayName =
+    user.displayName.trim().isEmpty
+        ? 'Supervisor'
+        : user.displayName.trim();
+
+    final initial =
+    displayName.isEmpty
+        ? '?'
+        : displayName[0].toUpperCase();
 
     return Container(
       width: double.infinity,
+
       padding: const EdgeInsets.fromLTRB(
-        17,
-        20,
-        17,
-        17,
+        18,
+        22,
+        18,
+        18,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2196F3),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
+
+      decoration: BoxDecoration(
+        // -----------------------------------------------------
+        // THEME AWARE GRADIENT
+        // -----------------------------------------------------
+
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            primary,
+            Color.alphaBlend(
+              Colors.white.withOpacity(
+                isDark ? .03 : .10,
+              ),
+              primary,
+            ),
+          ],
         ),
+
+        borderRadius:
+        const BorderRadius.only(
+          bottomLeft:
+          Radius.circular(24),
+          bottomRight:
+          Radius.circular(24),
+        ),
+
+        boxShadow: [
+          BoxShadow(
+            color: primary.withOpacity(
+              isDark ? .18 : .16,
+            ),
+            blurRadius: 18,
+            offset:
+            const Offset(0, 6),
+          ),
+        ],
       ),
+
       child: Column(
         crossAxisAlignment:
         CrossAxisAlignment.start,
         children: [
-          // =====================================================
+          // ===================================================
           // PROFILE
-          // =====================================================
+          // ===================================================
 
           Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white,
+                width: 58,
+                height: 58,
+
+                decoration:
+                BoxDecoration(
+                  color:
+                  Colors.white.withOpacity(.95),
                   borderRadius:
-                  BorderRadius.circular(15),
+                  BorderRadius.circular(17),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black
+                          .withOpacity(.10),
+                      blurRadius: 10,
+                      offset:
+                      const Offset(0, 4),
+                    ),
+                  ],
                 ),
+
                 child: Center(
                   child: Text(
-                    displayName.isEmpty
-                        ? '?'
-                        : displayName[0]
-                        .toUpperCase(),
-                    style: const TextStyle(
-                      color: Color(0xFF2196F3),
-                      fontSize: 24,
+                    initial,
+                    style: TextStyle(
+                      color: primary,
+                      fontSize: 25,
                       fontWeight:
-                      FontWeight.bold,
+                      FontWeight.w800,
                     ),
                   ),
                 ),
               ),
 
               const SizedBox(
-                width: 12,
+                width: 13,
               ),
 
               Expanded(
@@ -258,31 +336,44 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
                   crossAxisAlignment:
                   CrossAxisAlignment.start,
                   children: [
+                    // -----------------------------------------
+                    // NAME
+                    // -----------------------------------------
+
                     Text(
                       displayName,
                       maxLines: 1,
                       overflow:
                       TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style:
+                      const TextStyle(
+                        color:
+                        Colors.white,
                         fontSize: 17,
                         fontWeight:
-                        FontWeight.bold,
+                        FontWeight.w800,
+                        letterSpacing: -.2,
                       ),
                     ),
 
                     const SizedBox(
-                      height: 3,
+                      height: 4,
                     ),
 
+                    // -----------------------------------------
+                    // LOGIN USER
+                    // -----------------------------------------
+
                     Text(
-                      user.loginUser,
+                      user.loginUser.isEmpty
+                          ? 'Supervisor Account'
+                          : user.loginUser,
                       maxLines: 1,
                       overflow:
                       TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.white
-                            .withOpacity(.85),
+                            .withOpacity(.82),
                         fontSize: 12,
                       ),
                     ),
@@ -293,131 +384,229 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
           ),
 
           const SizedBox(
-            height: 18,
+            height: 20,
           ),
 
-          // =====================================================
+          // ===================================================
           // LOGIN INFORMATION TITLE
-          // =====================================================
+          // ===================================================
 
           Row(
             children: [
-              const Icon(
-                Icons.verified_user_outlined,
-                color: Colors.white,
-                size: 17,
+              Container(
+                width: 28,
+                height: 28,
+
+                decoration:
+                BoxDecoration(
+                  color: Colors.white
+                      .withOpacity(.13),
+                  borderRadius:
+                  BorderRadius.circular(9),
+                ),
+
+                child:
+                const Icon(
+                  Icons
+                      .verified_user_outlined,
+                  color:
+                  Colors.white,
+                  size: 16,
+                ),
               ),
+
               const SizedBox(
-                width: 7,
+                width: 8,
               ),
+
               const Text(
                 'Login Information',
-                style: TextStyle(
-                  color: Colors.white,
+                style:
+                TextStyle(
+                  color:
+                  Colors.white,
                   fontSize: 13,
                   fontWeight:
-                  FontWeight.bold,
+                  FontWeight.w700,
                 ),
               ),
             ],
           ),
 
           const SizedBox(
-            height: 11,
+            height: 12,
           ),
 
-          // =====================================================
+          // ===================================================
           // LOGIN NAME
-          // =====================================================
+          // ===================================================
 
           _infoRow(
-            icon: Icons.person_outline,
+            icon:
+            Icons.person_outline,
             label: 'Login Name',
             value: user.loginName,
           ),
 
-          // =====================================================
+          // ===================================================
           // LOGIN USER
-          // =====================================================
+          // ===================================================
 
           _infoRow(
-            icon: Icons.account_circle_outlined,
+            icon:
+            Icons.account_circle_outlined,
             label: 'Login User',
             value: user.loginUser,
           ),
 
-          // =====================================================
+          // ===================================================
           // ROLE
-          // =====================================================
+          // ===================================================
 
           _infoRow(
-            icon:
-            Icons.admin_panel_settings_outlined,
+            icon: Icons
+                .admin_panel_settings_outlined,
             label: 'Role',
-            value: user.role.name,
+            value:
+            user.role.name,
           ),
 
-          // =====================================================
+          // ===================================================
+          // EMPLOYEE
+          // ===================================================
+
+          if (user.employeeName != null &&
+              user.employeeName!
+                  .trim()
+                  .isNotEmpty)
+            _infoRow(
+              icon:
+              Icons.badge_outlined,
+              label: 'Employee',
+              value:
+              user.employeeName!,
+            ),
+
+          // ===================================================
           // COMPANY
-          // =====================================================
+          // ===================================================
 
           if (user.companyName != null &&
               user.companyName!
                   .trim()
                   .isNotEmpty)
             _infoRow(
-              icon: Icons.business_outlined,
+              icon:
+              Icons.business_outlined,
               label: 'Company',
-              value: user.companyName!,
+              value:
+              user.companyName!,
+            )
+          else if (user.companyId
+              .isNotEmpty)
+            _infoRow(
+              icon:
+              Icons.business_outlined,
+              label: 'Company ID',
+              value:
+              user.companyId,
+            ),
+
+          // ===================================================
+          // DEPARTMENT
+          // ===================================================
+
+          if (user.departmentName != null &&
+              user.departmentName!
+                  .trim()
+                  .isNotEmpty)
+            _infoRow(
+              icon:
+              Icons.account_tree_outlined,
+              label: 'Department',
+              value:
+              user.departmentName!,
+            ),
+
+          // ===================================================
+          // DESIGNATION
+          // ===================================================
+
+          if (user.designationName != null &&
+              user.designationName!
+                  .trim()
+                  .isNotEmpty)
+            _infoRow(
+              icon:
+              Icons.work_outline,
+              label: 'Designation',
+              value:
+              user.designationName!,
             ),
 
           const SizedBox(
-            height: 9,
+            height: 10,
           ),
 
-          // =====================================================
+          // ===================================================
           // PERMISSIONS
-          // =====================================================
+          // ===================================================
 
           Container(
             width: double.infinity,
+
             padding:
             const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 8,
+              horizontal: 11,
+              vertical: 9,
             ),
-            decoration: BoxDecoration(
-              color:
-              Colors.white.withOpacity(.12),
+
+            decoration:
+            BoxDecoration(
+              color: Colors.white
+                  .withOpacity(.12),
               borderRadius:
-              BorderRadius.circular(10),
+              BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white
+                    .withOpacity(.10),
+              ),
             ),
+
             child: Row(
               children: [
                 const Icon(
-                  Icons.security_outlined,
-                  color: Colors.white,
-                  size: 16,
+                  Icons
+                      .security_outlined,
+                  color:
+                  Colors.white,
+                  size: 17,
                 ),
 
                 const SizedBox(
-                  width: 7,
+                  width: 8,
                 ),
 
                 Expanded(
                   child: Text(
                     '${user.permissions.length} permissions available',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style:
+                    const TextStyle(
+                      color:
+                      Colors.white,
                       fontSize: 11,
+                      fontWeight:
+                      FontWeight.w500,
                     ),
                   ),
                 ),
 
                 const Icon(
-                  Icons.check_circle_outline,
-                  color: Colors.white,
-                  size: 15,
+                  Icons
+                      .check_circle_outline,
+                  color:
+                  Colors.white,
+                  size: 16,
                 ),
               ],
             ),
@@ -439,7 +628,7 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
     return Padding(
       padding:
       const EdgeInsets.only(
-        bottom: 6,
+        bottom: 7,
       ),
       child: Row(
         crossAxisAlignment:
@@ -447,8 +636,8 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
         children: [
           Icon(
             icon,
-            color:
-            Colors.white.withOpacity(.85),
+            color: Colors.white
+                .withOpacity(.85),
             size: 15,
           ),
 
@@ -462,7 +651,7 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
               label,
               style: TextStyle(
                 color: Colors.white
-                    .withOpacity(.72),
+                    .withOpacity(.70),
                 fontSize: 10.5,
               ),
             ),
@@ -488,8 +677,10 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
               maxLines: 1,
               overflow:
               TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
+              style:
+              const TextStyle(
+                color:
+                Colors.white,
                 fontSize: 10.5,
                 fontWeight:
                 FontWeight.w600,
@@ -512,52 +703,289 @@ class SupervisorDashboardSidebar extends ConsumerWidget {
         required String subtitle,
         required VoidCallback onTap,
       }) {
-    return ListTile(
-      contentPadding:
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
+    return Padding(
+      padding:
       const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 2,
+        vertical: 3,
       ),
+      child: Material(
+        color:
+        Colors.transparent,
+        borderRadius:
+        BorderRadius.circular(16),
 
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xFF2196F3)
-              .withOpacity(.08),
+        child: InkWell(
           borderRadius:
-          BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color:
-          const Color(0xFF2196F3),
-          size: 21,
+          BorderRadius.circular(16),
+          onTap: onTap,
+
+          child: Padding(
+            padding:
+            const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 10,
+            ),
+
+            child: Row(
+              children: [
+                // =================================================
+                // ICON
+                // =================================================
+
+                Container(
+                  width: 44,
+                  height: 44,
+
+                  decoration:
+                  BoxDecoration(
+                    color: colorScheme
+                        .primary
+                        .withOpacity(.09),
+                    borderRadius:
+                    BorderRadius.circular(
+                      13,
+                    ),
+                  ),
+
+                  child: Icon(
+                    icon,
+                    color:
+                    colorScheme.primary,
+                    size: 22,
+                  ),
+                ),
+
+                const SizedBox(
+                  width: 13,
+                ),
+
+                // =================================================
+                // TEXT
+                // =================================================
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow:
+                        TextOverflow
+                            .ellipsis,
+                        style: TextStyle(
+                          color: colorScheme
+                              .onSurface,
+                          fontSize: 14,
+                          fontWeight:
+                          FontWeight.w700,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 3,
+                      ),
+
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow:
+                        TextOverflow
+                            .ellipsis,
+                        style: TextStyle(
+                          color: colorScheme
+                              .onSurface
+                              .withOpacity(
+                            .58,
+                          ),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(
+                  width: 8,
+                ),
+
+                // =================================================
+                // ARROW
+                // =================================================
+
+                Icon(
+                  Icons
+                      .chevron_right_rounded,
+                  size: 21,
+                  color: colorScheme
+                      .onSurface
+                      .withOpacity(.38),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
 
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight:
-          FontWeight.w600,
+  // =============================================================
+  // LOGOUT
+  // =============================================================
+
+  Widget _buildLogoutItem(
+      BuildContext context,
+      WidgetRef ref,
+      ColorScheme colorScheme,
+      ) {
+    return Padding(
+      padding:
+      const EdgeInsets.fromLTRB(
+        8,
+        8,
+        8,
+        10,
+      ),
+      child: Material(
+        color:
+        Colors.transparent,
+        borderRadius:
+        BorderRadius.circular(16),
+
+        child: InkWell(
+          borderRadius:
+          BorderRadius.circular(16),
+
+          onTap: () async {
+            Navigator.pop(context);
+
+            await ref
+                .read(
+              authRepositoryProvider,
+            )
+                .logout();
+
+            ref
+                .read(
+              currentUserProvider
+                  .notifier,
+            )
+                .logout();
+
+            if (context.mounted) {
+              context.go(
+                RoutePaths.login,
+              );
+            }
+          },
+
+          child: Padding(
+            padding:
+            const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 10,
+            ),
+
+            child: Row(
+              children: [
+                // =================================================
+                // LOGOUT ICON
+                // =================================================
+
+                Container(
+                  width: 44,
+                  height: 44,
+
+                  decoration:
+                  BoxDecoration(
+                    color: colorScheme
+                        .error
+                        .withOpacity(.09),
+                    borderRadius:
+                    BorderRadius.circular(
+                      13,
+                    ),
+                  ),
+
+                  child: Icon(
+                    Icons
+                        .logout_rounded,
+                    color:
+                    colorScheme.error,
+                    size: 21,
+                  ),
+                ),
+
+                const SizedBox(
+                  width: 13,
+                ),
+
+                // =================================================
+                // LOGOUT TEXT
+                // =================================================
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
+                    children: [
+                      Text(
+                        'Logout',
+                        style: TextStyle(
+                          color:
+                          colorScheme
+                              .error,
+                          fontSize: 14,
+                          fontWeight:
+                          FontWeight.w700,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 3,
+                      ),
+
+                      Text(
+                        'Sign out from your account',
+                        style: TextStyle(
+                          color: colorScheme
+                              .onSurface
+                              .withOpacity(
+                            .55,
+                          ),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // =================================================
+                // ARROW
+                // =================================================
+
+                Icon(
+                  Icons
+                      .chevron_right_rounded,
+                  size: 21,
+                  color: colorScheme
+                      .error
+                      .withOpacity(.45),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          fontSize: 11,
-        ),
-      ),
-
-      trailing: const Icon(
-        Icons.chevron_right,
-        size: 20,
-      ),
-
-      onTap: onTap,
     );
   }
 }

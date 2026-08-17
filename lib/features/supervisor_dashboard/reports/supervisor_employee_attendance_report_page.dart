@@ -1,3 +1,18 @@
+// ===============================================================
+// Flutter HRMS Pro
+// Supervisor Employee Attendance Report
+//
+// UI Improvements:
+// - Theme aware
+// - Light / Dark mode support
+// - Responsive design
+// - Mobile / Tablet / Desktop friendly
+// - Modern filter controls
+// - Improved spacing and typography
+//
+// Functionality: UNCHANGED
+// ===============================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -5,7 +20,6 @@ import 'package:intl/intl.dart';
 import '../../attendance/domain/entities/attendance_report_filter.dart';
 import '../../attendance/presentation/providers/attendance_report_provider.dart';
 import '../../attendance/presentation/widgets/attendance_report_item.dart';
-
 
 class SupervisorEmployeeAttendanceReportPage
     extends ConsumerStatefulWidget {
@@ -30,6 +44,10 @@ class _EmployeeAttendanceReportPageState
   AttendanceReportFilter selectedFilter =
       AttendanceReportFilter.all;
 
+  // =============================================================
+  // INIT
+  // =============================================================
+
   @override
   void initState() {
     super.initState();
@@ -53,9 +71,9 @@ class _EmployeeAttendanceReportPageState
     });
   }
 
-  // ===========================================================
+  // =============================================================
   // LOAD REPORT
-  // ===========================================================
+  // =============================================================
 
   Future<void> _loadReport() async {
     await ref
@@ -67,9 +85,9 @@ class _EmployeeAttendanceReportPageState
     );
   }
 
-  // ===========================================================
+  // =============================================================
   // FROM DATE
-  // ===========================================================
+  // =============================================================
 
   Future<void> _selectFromDate() async {
     final selected = await showDatePicker(
@@ -84,16 +102,15 @@ class _EmployeeAttendanceReportPageState
     setState(() {
       fromDate = selected;
 
-      // Prevent invalid date range.
       if (fromDate.isAfter(toDate)) {
         toDate = fromDate;
       }
     });
   }
 
-  // ===========================================================
+  // =============================================================
   // TO DATE
-  // ===========================================================
+  // =============================================================
 
   Future<void> _selectToDate() async {
     final selected = await showDatePicker(
@@ -110,39 +127,93 @@ class _EmployeeAttendanceReportPageState
     });
   }
 
+  // =============================================================
+  // RESPONSIVE WIDTH
+  // =============================================================
+
+  double _maxContentWidth(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+
+    if (width >= 1400) {
+      return 1200;
+    }
+
+    if (width >= 1000) {
+      return 1100;
+    }
+
+    return double.infinity;
+  }
+
+  // =============================================================
+  // RESPONSIVE PADDING
+  // =============================================================
+
+  EdgeInsets _pagePadding(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+
+    if (width < 600) {
+      return const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 10,
+      );
+    }
+
+    if (width < 1000) {
+      return const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 14,
+      );
+    }
+
+    return const EdgeInsets.symmetric(
+      horizontal: 26,
+      vertical: 18,
+    );
+  }
+
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(
       attendanceReportProvider,
     );
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9FF),
+      backgroundColor: colorScheme.surface,
 
       // =========================================================
       // APP BAR
       // =========================================================
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF9FF),
+        backgroundColor: colorScheme.surface,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
 
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black87,
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: colorScheme.onSurface,
           ),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
 
-        title: const Text(
+        title: Text(
           'Employee Attendance',
           style: TextStyle(
-            color: Colors.black87,
+            color: colorScheme.onSurface,
             fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -151,258 +222,294 @@ class _EmployeeAttendanceReportPageState
       // BODY
       // =========================================================
 
-      body: Column(
-        children: [
-          const SizedBox(height: 4),
-
-          // -------------------------------------------------------
-          // DATE FILTER
-          // -------------------------------------------------------
-
-          _buildDateFilter(),
-
-          const SizedBox(height: 8),
-
-          // -------------------------------------------------------
-          // STATUS FILTER
-          // -------------------------------------------------------
-
-          _buildStatusFilter(),
-
-          const SizedBox(height: 6),
-
-          // -------------------------------------------------------
-          // SHOW DETAILS
-          // -------------------------------------------------------
-
-          _buildShowDetailsButton(),
-
-          const SizedBox(height: 10),
-
-          // -------------------------------------------------------
-          // HEADER
-          // -------------------------------------------------------
-
-          _buildHeader(),
-
-          // -------------------------------------------------------
-          // DATA
-          // -------------------------------------------------------
-
-          Expanded(
-            child: state.when(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: _maxContentWidth(context),
+          ),
+          child: Column(
+            children: [
               // ===================================================
-              // LOADING
+              // FILTER AREA
               // ===================================================
 
-              loading: () {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              },
+              Padding(
+                padding: _pagePadding(context),
+                child: Column(
+                  children: [
+                    // =============================================
+                    // DATE FILTER
+                    // =============================================
+
+                    _buildDateFilter(),
+
+                    const SizedBox(height: 12),
+
+                    // =============================================
+                    // STATUS FILTER
+                    // =============================================
+
+                    _buildStatusFilter(),
+
+                    const SizedBox(height: 12),
+
+                    // =============================================
+                    // SHOW DETAILS
+                    // =============================================
+
+                    _buildShowDetailsButton(),
+                  ],
+                ),
+              ),
 
               // ===================================================
-              // ERROR
+              // HEADER
               // ===================================================
 
-              error: (error, stack) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      error.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ),
-                );
-              },
+              _buildHeader(),
 
               // ===================================================
               // DATA
               // ===================================================
 
-              data: (data) {
-                final filtered = ref
-                    .read(
-                  attendanceReportProvider
-                      .notifier,
-                )
-                    .filter(
-                  data,
-                  selectedFilter,
-                );
+              Expanded(
+                child: state.when(
+                  // =================================================
+                  // LOADING
+                  // =================================================
 
-                if (filtered.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No attendance found.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+                  loading: () {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: colorScheme.primary,
                       ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.only(
-                    top: 4,
-                    bottom: 20,
-                  ),
-                  itemCount: filtered.length,
-                  itemBuilder: (
-                      context,
-                      index,
-                      ) {
-                    return AttendanceReportItem(
-                      item: filtered[index],
                     );
                   },
-                );
-              },
-            ),
+
+                  // =================================================
+                  // ERROR
+                  // =================================================
+
+                  error: (error, stack) {
+                    return _buildError(
+                      context,
+                      error.toString(),
+                    );
+                  },
+
+                  // =================================================
+                  // DATA
+                  // =================================================
+
+                  data: (data) {
+                    final filtered = ref
+                        .read(
+                      attendanceReportProvider
+                          .notifier,
+                    )
+                        .filter(
+                      data,
+                      selectedFilter,
+                    );
+
+                    if (filtered.isEmpty) {
+                      return _buildEmpty(
+                        context,
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding:
+                      const EdgeInsets.only(
+                        top: 6,
+                        bottom: 20,
+                      ),
+                      itemCount: filtered.length,
+                      itemBuilder:
+                          (context, index) {
+                        return AttendanceReportItem(
+                          item: filtered[index],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // ===========================================================
+  // =============================================================
   // DATE FILTER
-  // ===========================================================
+  // =============================================================
 
   Widget _buildDateFilter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
-      child: Row(
-        children: [
-          // -------------------------------------------------------
-          // FROM DATE
-          // -------------------------------------------------------
-
-          Expanded(
-            child: _dateButton(
-              title: 'From Date',
-              date: fromDate,
-              onTap: _selectFromDate,
-            ),
+    return Row(
+      children: [
+        Expanded(
+          child: _dateButton(
+            title: 'From Date',
+            date: fromDate,
+            onTap: _selectFromDate,
           ),
+        ),
 
-          const SizedBox(width: 8),
+        const SizedBox(width: 10),
 
-          // -------------------------------------------------------
-          // TO DATE
-          // -------------------------------------------------------
-
-          Expanded(
-            child: _dateButton(
-              title: 'To Date',
-              date: toDate,
-              onTap: _selectToDate,
-            ),
+        Expanded(
+          child: _dateButton(
+            title: 'To Date',
+            date: toDate,
+            onTap: _selectToDate,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  // ===========================================================
+  // =============================================================
   // DATE BUTTON
-  // ===========================================================
+  // =============================================================
 
   Widget _dateButton({
     required String title,
     required DateTime date,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        height: 58,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 7,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(0xFF2196F3),
-            width: 1,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          height: 62,
+          padding:
+          const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 8,
           ),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.calendar_month_outlined,
-              size: 19,
-              color: Color(0xFF2196F3),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius:
+            BorderRadius.circular(13),
+            border: Border.all(
+              color: colorScheme.primary
+                  .withOpacity(.35),
             ),
+          ),
+          child: Row(
+            children: [
+              // =================================================
+              // ICON
+              // =================================================
 
-            const SizedBox(width: 7),
-
-            Expanded(
-              child: Column(
-                mainAxisAlignment:
-                MainAxisAlignment.center,
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-
-                  const SizedBox(height: 2),
-
-                  Text(
-                    DateFormat(
-                      'dd-MMM-yy',
-                    ).format(date),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary
+                      .withOpacity(.09),
+                  borderRadius:
+                  BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.calendar_month_outlined,
+                  size: 19,
+                  color: colorScheme.primary,
+                ),
               ),
-            ),
 
-            const Icon(
-              Icons.keyboard_arrow_down,
-              size: 18,
-              color: Colors.grey,
-            ),
-          ],
+              const SizedBox(width: 9),
+
+              // =================================================
+              // DATE
+              // =================================================
+
+              Expanded(
+                child: Column(
+                  mainAxisAlignment:
+                  MainAxisAlignment.center,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: colorScheme
+                            .onSurface
+                            .withOpacity(.55),
+                        fontSize: 10.5,
+                        fontWeight:
+                        FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 3),
+
+                    Text(
+                      DateFormat(
+                        'dd-MMM-yy',
+                      ).format(date),
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color:
+                        colorScheme.onSurface,
+                        fontSize: 14,
+                        fontWeight:
+                        FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 19,
+                color: colorScheme.onSurface
+                    .withOpacity(.40),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ===========================================================
+  // =============================================================
   // STATUS FILTER
-  // ===========================================================
+  // =============================================================
 
   Widget _buildStatusFilter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding:
+      const EdgeInsets.symmetric(
         horizontal: 8,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius:
+        BorderRadius.circular(14),
+        border: Border.all(
+          color: colorScheme.outline
+              .withOpacity(.12),
+        ),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -412,25 +519,29 @@ class _EmployeeAttendanceReportPageState
               'All',
               AttendanceReportFilter.all,
             ),
-            const SizedBox(width: 8),
+
+            const SizedBox(width: 6),
 
             _radio(
               'On Time',
               AttendanceReportFilter.onTime,
             ),
-            const SizedBox(width: 8),
+
+            const SizedBox(width: 6),
 
             _radio(
               'Late',
               AttendanceReportFilter.late,
             ),
-            const SizedBox(width: 8),
+
+            const SizedBox(width: 6),
 
             _radio(
               'Absent',
               AttendanceReportFilter.absent,
             ),
-            const SizedBox(width: 8),
+
+            const SizedBox(width: 6),
 
             _radio(
               'Leave',
@@ -442,176 +553,296 @@ class _EmployeeAttendanceReportPageState
     );
   }
 
+  // =============================================================
+  // RADIO
+  // =============================================================
+
   Widget _radio(
       String title,
       AttendanceReportFilter value,
       ) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () {
-        setState(() {
-          selectedFilter = value;
-        });
-      },
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Radio<AttendanceReportFilter>(
-            value: value,
-            groupValue: selectedFilter,
-            onChanged: (newValue) {
-              if (newValue == null) return;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-              setState(() {
-                selectedFilter = newValue;
-              });
-            },
-            materialTapTargetSize:
-            MaterialTapTargetSize.shrinkWrap,
-            visualDensity: const VisualDensity(
-              horizontal: -3,
-              vertical: -3,
-            ),
-            activeColor:
-            const Color(0xFF2196F3),
+    final selected =
+        selectedFilter == value;
+
+    return Material(
+      color: selected
+          ? colorScheme.primary
+          .withOpacity(.09)
+          : Colors.transparent,
+      borderRadius:
+      BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius:
+        BorderRadius.circular(22),
+        onTap: () {
+          setState(() {
+            selectedFilter = value;
+          });
+        },
+        child: Padding(
+          padding:
+          const EdgeInsets.symmetric(
+            horizontal: 5,
+            vertical: 2,
           ),
+          child: Row(
+            mainAxisSize:
+            MainAxisSize.min,
+            children: [
+              Radio<
+                  AttendanceReportFilter>(
+                value: value,
+                groupValue:
+                selectedFilter,
+                onChanged: (newValue) {
+                  if (newValue == null) {
+                    return;
+                  }
 
-          const SizedBox(width: 2),
+                  setState(() {
+                    selectedFilter =
+                        newValue;
+                  });
+                },
+                materialTapTargetSize:
+                MaterialTapTargetSize
+                    .shrinkWrap,
+                visualDensity:
+                const VisualDensity(
+                  horizontal: -3,
+                  vertical: -3,
+                ),
+                activeColor:
+                colorScheme.primary,
+              ),
 
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
+              const SizedBox(width: 2),
+
+              Text(
+                title,
+                style: TextStyle(
+                  color:
+                  colorScheme.onSurface,
+                  fontSize: 11,
+                  fontWeight:
+                  selected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                ),
+              ),
+
+              const SizedBox(width: 5),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // ===========================================================
-  // RADIO
-  // ===========================================================
-
-
-  // ===========================================================
-  // SHOW DETAILS
-  // ===========================================================
+  // =============================================================
+  // SHOW DETAILS BUTTON
+  // =============================================================
 
   Widget _buildShowDetailsButton() {
+    final colorScheme =
+        Theme.of(context).colorScheme;
+
     return SizedBox(
       width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
+      height: 44,
+      child: ElevatedButton.icon(
+        onPressed: _loadReport,
+
+        icon: const Icon(
+          Icons.search_rounded,
+          size: 19,
         ),
-        child: Align(
-          alignment: Alignment.center,
-          child: ElevatedButton.icon(
-            onPressed: _loadReport,
 
-            icon: const Icon(
-              Icons.search,
-              size: 18,
-            ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+          colorScheme.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
 
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-              const Color(0xFF2196F3),
-              foregroundColor: Colors.white,
+          shape:
+          RoundedRectangleBorder(
+            borderRadius:
+            BorderRadius.circular(12),
+          ),
+        ),
 
-              elevation: 0,
-
-              padding:
-              const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 10,
-              ),
-
-              minimumSize: const Size(
-                0,
-                40,
-              ),
-
-              shape:
-              RoundedRectangleBorder(
-                borderRadius:
-                BorderRadius.circular(8),
-              ),
-            ),
-
-            label: const Text(
-              'Show Details',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+        label: const Text(
+          'Show Details',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight:
+            FontWeight.w700,
           ),
         ),
       ),
     );
   }
 
-  // ===========================================================
+  // =============================================================
   // TABLE HEADER
-  // ===========================================================
+  // =============================================================
 
   Widget _buildHeader() {
+    final colorScheme =
+        Theme.of(context).colorScheme;
+
     return Container(
-      margin: const EdgeInsets.symmetric(
+      margin:
+      const EdgeInsets.symmetric(
         horizontal: 12,
       ),
-      padding: const EdgeInsets.symmetric(
-        vertical: 10,
-        horizontal: 12,
+      padding:
+      const EdgeInsets.symmetric(
+        vertical: 11,
+        horizontal: 13,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF2196F3),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(6),
-          topRight: Radius.circular(6),
+        color: colorScheme.primary,
+        borderRadius:
+        const BorderRadius.only(
+          topLeft:
+          Radius.circular(10),
+          topRight:
+          Radius.circular(10),
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          // -----------------------------------------------------
+          // ===================================================
           // DATE
-          // -----------------------------------------------------
+          // ===================================================
 
-          SizedBox(
+          const SizedBox(
             width: 105,
             child: Text(
               'Date',
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              overflow:
+              TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight:
+                FontWeight.w700,
               ),
             ),
           ),
 
-          // -----------------------------------------------------
+          // ===================================================
           // TIME + LOCATION
-          // -----------------------------------------------------
+          // ===================================================
 
-          Expanded(
+          const Expanded(
             child: Text(
               'Time - Punched Location',
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              overflow:
+              TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight:
+                FontWeight.w700,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // EMPTY
+  // =============================================================
+
+  Widget _buildEmpty(BuildContext context) {
+    final colorScheme =
+        Theme.of(context).colorScheme;
+
+    return Center(
+      child: Column(
+        mainAxisSize:
+        MainAxisSize.min,
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: colorScheme.primary
+                  .withOpacity(.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.event_busy_outlined,
+              color: colorScheme.primary
+                  .withOpacity(.65),
+              size: 28,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            'No attendance found.',
+            style: TextStyle(
+              color: colorScheme.onSurface
+                  .withOpacity(.55),
+              fontSize: 14,
+              fontWeight:
+              FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // ERROR
+  // =============================================================
+
+  Widget _buildError(
+      BuildContext context,
+      String error,
+      ) {
+    final colorScheme =
+        Theme.of(context).colorScheme;
+
+    return Center(
+      child: Padding(
+        padding:
+        const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize:
+          MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              color: colorScheme.error,
+              size: 42,
+            ),
+
+            const SizedBox(height: 10),
+
+            Text(
+              error,
+              textAlign:
+              TextAlign.center,
+              style: TextStyle(
+                color: colorScheme.error,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

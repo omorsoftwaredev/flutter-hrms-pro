@@ -23,9 +23,466 @@ class SupervisorAssignmentPage extends ConsumerStatefulWidget {
 
 class _SupervisorAssignmentPageState
     extends ConsumerState<SupervisorAssignmentPage> {
-
   String? _selectedSupervisor;
   String? _selectedDepartment;
+
+  // =============================================================
+  // RESPONSIVE CONTENT WIDTH
+  // =============================================================
+
+  double _maxContentWidth(double width) {
+    if (width >= 1400) {
+      return 1150;
+    }
+
+    if (width >= 1100) {
+      return 1000;
+    }
+
+    if (width >= 700) {
+      return 760;
+    }
+
+    return double.infinity;
+  }
+
+  // =============================================================
+  // RESPONSIVE HORIZONTAL PADDING
+  // =============================================================
+
+  double _horizontalPadding(double width) {
+    if (width >= 1200) {
+      return 28;
+    }
+
+    if (width >= 700) {
+      return 22;
+    }
+
+    return 14;
+  }
+
+  // =============================================================
+  // PAGE HEADER
+  // =============================================================
+
+  Widget _buildHeader(
+      BuildContext context,
+      double width,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: width >= 700 ? 48 : 44,
+              height: width >= 700 ? 48 : 44,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                Icons.account_tree_outlined,
+                color: colorScheme.onPrimaryContainer,
+                size: width >= 700 ? 25 : 23,
+              ),
+            ),
+
+            const SizedBox(width: 13),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Department Assignment',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -.3,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    'Assign or unassign departments to supervisors.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // =============================================================
+  // ASSIGNMENT CARD
+  // =============================================================
+
+  Widget _buildAssignmentCard(
+      BuildContext context,
+      double width,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final bool isReady =
+        _selectedSupervisor != null &&
+            _selectedDepartment != null;
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(
+          width >= 700 ? 24 : 18,
+        ),
+        child: Column(
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+          children: [
+            // =====================================================
+            // CARD HEADER
+            // =====================================================
+
+            Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius:
+                    BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.link_outlined,
+                    color:
+                    colorScheme.onPrimaryContainer,
+                    size: 22,
+                  ),
+                ),
+
+                const SizedBox(width: 11),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Assign Department',
+                        style: theme
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                          fontWeight:
+                          FontWeight.w700,
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        'Select a supervisor and department.',
+                        style: theme
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(
+                          color: colorScheme
+                              .onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 22),
+
+            // =====================================================
+            // RESPONSIVE FORM
+            // =====================================================
+
+            if (width >= 800)
+              Row(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildSupervisorDropdown(
+                      context,
+                    ),
+                  ),
+
+                  const SizedBox(width: 14),
+
+                  Expanded(
+                    child: _buildDepartmentDropdown(
+                      context,
+                    ),
+                  ),
+                ],
+              )
+            else
+              Column(
+                children: [
+                  _buildSupervisorDropdown(
+                    context,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  _buildDepartmentDropdown(
+                    context,
+                  ),
+                ],
+              ),
+
+            const SizedBox(height: 18),
+
+            // =====================================================
+            // ASSIGN BUTTON
+            // =====================================================
+
+            SizedBox(
+              width: double.infinity,
+              height: width >= 700 ? 50 : 48,
+              child: FilledButton.icon(
+                onPressed: !isReady
+                    ? null
+                    : () {
+                  // Assignment action
+                  //
+                  // এখানে তোমার existing
+                  // SupervisorNotifier method
+                  // call করবে।
+                },
+                icon: const Icon(
+                  Icons.link,
+                  size: 20,
+                ),
+                label: const Text(
+                  'Assign Department',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // SUPERVISOR DROPDOWN
+  // =============================================================
+
+  Widget _buildSupervisorDropdown(
+      BuildContext context,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DropdownButtonFormField<String>(
+      value: _selectedSupervisor,
+      decoration: InputDecoration(
+        labelText: 'Supervisor',
+        hintText: 'Select supervisor',
+        prefixIcon: Icon(
+          Icons.supervisor_account_outlined,
+          color: colorScheme.primary,
+        ),
+        border: OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: colorScheme.primary,
+            width: 1.5,
+          ),
+        ),
+        filled: true,
+        fillColor: colorScheme.surfaceContainerLowest,
+      ),
+
+      items: const [],
+
+      onChanged: (value) {
+        setState(() {
+          _selectedSupervisor = value;
+        });
+      },
+
+      hint: const Text(
+        'Select supervisor',
+      ),
+    );
+  }
+
+  // =============================================================
+  // DEPARTMENT DROPDOWN
+  // =============================================================
+
+  Widget _buildDepartmentDropdown(
+      BuildContext context,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DropdownButtonFormField<String>(
+      value: _selectedDepartment,
+      decoration: InputDecoration(
+        labelText: 'Department',
+        hintText: 'Select department',
+        prefixIcon: Icon(
+          Icons.apartment_outlined,
+          color: colorScheme.primary,
+        ),
+        border: OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius:
+          BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: colorScheme.primary,
+            width: 1.5,
+          ),
+        ),
+        filled: true,
+        fillColor: colorScheme.surfaceContainerLowest,
+      ),
+
+      items: const [],
+
+      onChanged: (value) {
+        setState(() {
+          _selectedDepartment = value;
+        });
+      },
+
+      hint: const Text(
+        'Select department',
+      ),
+    );
+  }
+
+  // =============================================================
+  // ASSIGNMENT TABLE SECTION
+  // =============================================================
+
+  Widget _buildAssignmentTable(
+      BuildContext context,
+      double width,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(
+          width >= 700 ? 20 : 14,
+        ),
+        child: Column(
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color:
+                    colorScheme.secondaryContainer,
+                    borderRadius:
+                    BorderRadius.circular(11),
+                  ),
+                  child: Icon(
+                    Icons.table_rows_outlined,
+                    color:
+                    colorScheme.onSecondaryContainer,
+                    size: 21,
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: Text(
+                    'Current Assignments',
+                    style: theme
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(
+                      fontWeight:
+                      FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Existing functionality/widget unchanged.
+            const SupervisorAssignmentTable(
+              assignments: [],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // BUILD
+  // =============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -33,189 +490,94 @@ class _SupervisorAssignmentPageState
       supervisorProvider,
     );
 
+    final size =
+    MediaQuery.sizeOf(context);
+
+    final width = size.width;
+
+    final theme =
+    Theme.of(context);
+
+    final colorScheme =
+        theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FC),
+      backgroundColor:
+      colorScheme.surfaceContainerLowest,
 
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (
+              context,
+              constraints,
+              ) {
+            final horizontalPadding =
+            _horizontalPadding(
+              constraints.maxWidth,
+            );
 
-          // ===================================================
-          // HEADER
-          // ===================================================
-
-          const Text(
-            'Department Assignment',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(
-            height: 5,
-          ),
-
-          const Text(
-            'Assign or unassign departments to supervisors.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
-          ),
-
-          const SizedBox(
-            height: 20,
-          ),
-
-          // ===================================================
-          // ASSIGNMENT ACTION CARD
-          // ===================================================
-
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-              side: const BorderSide(
-                color: Colors.black12,
+            return ListView(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                width >= 700 ? 24 : 18,
+                horizontalPadding,
+                30,
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth:
+                      _maxContentWidth(
+                        constraints.maxWidth,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
+                      children: [
+                        // =========================================
+                        // HEADER
+                        // =========================================
 
-                  const Row(
-                    children: [
-                      Icon(
-                        Icons.link_outlined,
-                        color: Color(0xFF673AB7),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                        'Assign Department',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        _buildHeader(
+                          context,
+                          constraints.maxWidth,
                         ),
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(
-                    height: 18,
-                  ),
+                        const SizedBox(
+                          height: 22,
+                        ),
 
-                  // ------------------------------------------------
-                  // SUPERVISOR
-                  // ------------------------------------------------
+                        // =========================================
+                        // ASSIGNMENT ACTION
+                        // =========================================
 
-                  DropdownButtonFormField<String>(
-                    value: _selectedSupervisor,
-                    decoration:
-                    const InputDecoration(
-                      labelText: 'Supervisor',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(
-                        Icons.supervisor_account_outlined,
-                      ),
-                    ),
+                        _buildAssignmentCard(
+                          context,
+                          constraints.maxWidth,
+                        ),
 
-                    items: const [],
+                        const SizedBox(
+                          height: 22,
+                        ),
 
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedSupervisor = value;
-                      });
-                    },
+                        // =========================================
+                        // ASSIGNMENT TABLE
+                        // =========================================
 
-                    hint: const Text(
-                      'Select supervisor',
+                        _buildAssignmentTable(
+                          context,
+                          constraints.maxWidth,
+                        ),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(
-                    height: 14,
-                  ),
-
-                  // ------------------------------------------------
-                  // DEPARTMENT
-                  // ------------------------------------------------
-
-                  DropdownButtonFormField<String>(
-                    value: _selectedDepartment,
-                    decoration:
-                    const InputDecoration(
-                      labelText: 'Department',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(
-                        Icons.apartment_outlined,
-                      ),
-                    ),
-
-                    items: const [],
-
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedDepartment = value;
-                      });
-                    },
-
-                    hint: const Text(
-                      'Select department',
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 16,
-                  ),
-
-                  // ------------------------------------------------
-                  // ASSIGN BUTTON
-                  // ------------------------------------------------
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed:
-                      _selectedSupervisor == null ||
-                          _selectedDepartment == null
-                          ? null
-                          : () {
-                        // Assignment action
-                        //
-                        // এখানে তোমার existing
-                        // SupervisorNotifier method
-                        // call করবে।
-                      },
-                      icon: const Icon(
-                        Icons.link,
-                      ),
-                      label: const Text(
-                        'Assign Department',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(
-            height: 20,
-          ),
-
-          // ===================================================
-          // ASSIGNMENT TABLE
-          // ===================================================
-
-          const SupervisorAssignmentTable(
-            assignments: [],
-          ),
-        ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

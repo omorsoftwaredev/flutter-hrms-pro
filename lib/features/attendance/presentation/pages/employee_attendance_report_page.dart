@@ -16,8 +16,7 @@ class EmployeeAttendanceReportPage
   final String employeeId;
 
   @override
-  ConsumerState<EmployeeAttendanceReportPage>
-  createState() =>
+  ConsumerState<EmployeeAttendanceReportPage> createState() =>
       _EmployeeAttendanceReportPageState();
 }
 
@@ -28,6 +27,18 @@ class _EmployeeAttendanceReportPageState
 
   AttendanceReportFilter selectedFilter =
       AttendanceReportFilter.all;
+
+  // ===========================================================
+  // THEME
+  // ===========================================================
+
+  static const Color primaryColor = Color(0xFF4F6AA5);
+  static const Color primaryDark = Color(0xFF435A93);
+  static const Color backgroundColor = Color(0xFFF8F9FC);
+  static const Color cardColor = Colors.white;
+  static const Color textColor = Color(0xFF20242D);
+  static const Color secondaryTextColor = Color(0xFF6B7280);
+  static const Color borderColor = Color(0xFFE5E7EB);
 
   @override
   void initState() {
@@ -83,7 +94,6 @@ class _EmployeeAttendanceReportPageState
     setState(() {
       fromDate = selected;
 
-      // Prevent invalid date range.
       if (fromDate.isAfter(toDate)) {
         toDate = fromDate;
       }
@@ -109,6 +119,10 @@ class _EmployeeAttendanceReportPageState
     });
   }
 
+  // ===========================================================
+  // BUILD
+  // ===========================================================
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(
@@ -116,20 +130,23 @@ class _EmployeeAttendanceReportPageState
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9FF),
+      backgroundColor: backgroundColor,
 
       // =========================================================
       // APP BAR
       // =========================================================
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF9FF),
+        backgroundColor: cardColor,
         elevation: 0,
+        scrolledUnderElevation: 1,
+        surfaceTintColor: Colors.transparent,
 
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black87,
+            Icons.arrow_back_rounded,
+            color: textColor,
           ),
           onPressed: () {
             Navigator.pop(context);
@@ -139,172 +156,273 @@ class _EmployeeAttendanceReportPageState
         title: const Text(
           'Employee Attendance',
           style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+            color: textColor,
+            fontSize: 19,
+            fontWeight: FontWeight.w700,
           ),
         ),
+
+        centerTitle: false,
       ),
 
       // =========================================================
       // BODY
       // =========================================================
 
-      body: Column(
-        children: [
-          const SizedBox(height: 4),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isWide = constraints.maxWidth >= 700;
 
-          // -------------------------------------------------------
-          // DATE FILTER
-          // -------------------------------------------------------
+          final double horizontalPadding =
+          isWide ? 24 : 14;
 
-          _buildDateFilter(),
+          final double contentMaxWidth =
+          isWide ? 1000 : double.infinity;
 
-          const SizedBox(height: 8),
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: contentMaxWidth,
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 14),
 
-          // -------------------------------------------------------
-          // STATUS FILTER
-          // -------------------------------------------------------
+                  // ------------------------------------------------
+                  // FILTER AREA
+                  // ------------------------------------------------
 
-          _buildStatusFilter(),
-
-          const SizedBox(height: 6),
-
-          // -------------------------------------------------------
-          // SHOW DETAILS
-          // -------------------------------------------------------
-
-          _buildShowDetailsButton(),
-
-          const SizedBox(height: 10),
-
-          // -------------------------------------------------------
-          // HEADER
-          // -------------------------------------------------------
-
-          _buildHeader(),
-
-          // -------------------------------------------------------
-          // DATA
-          // -------------------------------------------------------
-
-          Expanded(
-            child: state.when(
-              // ===================================================
-              // LOADING
-              // ===================================================
-
-              loading: () {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              },
-
-              // ===================================================
-              // ERROR
-              // ===================================================
-
-              error: (error, stack) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      error.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.red,
-                      ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
+                    child: _buildFilterSection(
+                      isWide: isWide,
                     ),
                   ),
-                );
-              },
 
-              // ===================================================
-              // DATA
-              // ===================================================
+                  const SizedBox(height: 14),
 
-              data: (data) {
-                final filtered = ref
-                    .read(
-                  attendanceReportProvider
-                      .notifier,
-                )
-                    .filter(
-                  data,
-                  selectedFilter,
-                );
+                  // ------------------------------------------------
+                  // HEADER
+                  // ------------------------------------------------
 
-                if (filtered.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No attendance found.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
                     ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.only(
-                    top: 4,
-                    bottom: 20,
+                    child: _buildHeader(),
                   ),
-                  itemCount: filtered.length,
-                  itemBuilder: (
-                      context,
-                      index,
-                      ) {
-                    return AttendanceReportItem(
-                      item: filtered[index],
-                    );
-                  },
-                );
-              },
+
+                  // ------------------------------------------------
+                  // DATA
+                  // ------------------------------------------------
+
+                  Expanded(
+                    child: state.when(
+                      // =================================================
+                      // LOADING
+                      // =================================================
+
+                      loading: () {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: primaryColor,
+                          ),
+                        );
+                      },
+
+                      // =================================================
+                      // ERROR
+                      // =================================================
+
+                      error: (error, stack) {
+                        return _buildErrorState(
+                          error.toString(),
+                        );
+                      },
+
+                      // =================================================
+                      // DATA
+                      // =================================================
+
+                      data: (data) {
+                        final filtered = ref
+                            .read(
+                          attendanceReportProvider
+                              .notifier,
+                        )
+                            .filter(
+                          data,
+                          selectedFilter,
+                        );
+
+                        if (filtered.isEmpty) {
+                          return _buildEmptyState();
+                        }
+
+                        return ListView.builder(
+                          physics:
+                          const AlwaysScrollableScrollPhysics(),
+
+                          padding: EdgeInsets.only(
+                            left: horizontalPadding,
+                            right: horizontalPadding,
+                            top: 8,
+                            bottom: 24,
+                          ),
+
+                          itemCount: filtered.length,
+
+                          itemBuilder: (
+                              context,
+                              index,
+                              ) {
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 10,
+                              ),
+                              child: AttendanceReportItem(
+                                item: filtered[index],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   // ===========================================================
-  // DATE FILTER
+  // FILTER SECTION
   // ===========================================================
 
-  Widget _buildDateFilter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
-      child: Row(
-        children: [
-          // -------------------------------------------------------
-          // FROM DATE
-          // -------------------------------------------------------
+  Widget _buildFilterSection({
+    required bool isWide,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
 
-          Expanded(
-            child: _dateButton(
-              title: 'From Date',
-              date: fromDate,
-              onTap: _selectFromDate,
-            ),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: borderColor,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.035),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+
+      child: Column(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
+        children: [
+          // ---------------------------------------------------------
+          // FILTER TITLE
+          // ---------------------------------------------------------
+
+          const Row(
+            children: [
+              Icon(
+                Icons.filter_alt_outlined,
+                size: 20,
+                color: primaryColor,
+              ),
+
+              SizedBox(width: 8),
+
+              Text(
+                'Attendance Filter',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
 
-          const SizedBox(width: 8),
+          const SizedBox(height: 12),
 
-          // -------------------------------------------------------
-          // TO DATE
-          // -------------------------------------------------------
+          // ---------------------------------------------------------
+          // DATE FILTER
+          // ---------------------------------------------------------
 
-          Expanded(
-            child: _dateButton(
-              title: 'To Date',
-              date: toDate,
-              onTap: _selectToDate,
+          if (isWide)
+            Row(
+              children: [
+                Expanded(
+                  child: _dateButton(
+                    title: 'From Date',
+                    date: fromDate,
+                    onTap: _selectFromDate,
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: _dateButton(
+                    title: 'To Date',
+                    date: toDate,
+                    onTap: _selectToDate,
+                  ),
+                ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: _dateButton(
+                    title: 'From Date',
+                    date: fromDate,
+                    onTap: _selectFromDate,
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Expanded(
+                  child: _dateButton(
+                    title: 'To Date',
+                    date: toDate,
+                    onTap: _selectToDate,
+                  ),
+                ),
+              ],
             ),
+
+          const SizedBox(height: 12),
+
+          // ---------------------------------------------------------
+          // STATUS FILTER
+          // ---------------------------------------------------------
+
+          _buildStatusFilter(),
+
+          const SizedBox(height: 12),
+
+          // ---------------------------------------------------------
+          // SHOW DETAILS
+          // ---------------------------------------------------------
+
+          Align(
+            alignment: Alignment.centerRight,
+            child: _buildShowDetailsButton(),
           ),
         ],
       ),
@@ -320,75 +438,99 @@ class _EmployeeAttendanceReportPageState
     required DateTime date,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        height: 58,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 7,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(0xFF2196F3),
-            width: 1,
+    return Material(
+      color: Colors.transparent,
+
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(13),
+
+        child: Container(
+          height: 58,
+
+          padding: const EdgeInsets.symmetric(
+            horizontal: 11,
+            vertical: 7,
           ),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.calendar_month_outlined,
-              size: 19,
-              color: Color(0xFF2196F3),
+
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFD),
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(
+              color: borderColor,
             ),
+          ),
 
-            const SizedBox(width: 7),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
 
-            Expanded(
-              child: Column(
-                mainAxisAlignment:
-                MainAxisAlignment.center,
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(.10),
+                  borderRadius:
+                  BorderRadius.circular(10),
+                ),
 
-                  const SizedBox(height: 2),
-
-                  Text(
-                    DateFormat(
-                      'dd-MMM-yy',
-                    ).format(date),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+                child: const Icon(
+                  Icons.calendar_month_outlined,
+                  size: 18,
+                  color: primaryColor,
+                ),
               ),
-            ),
 
-            const Icon(
-              Icons.keyboard_arrow_down,
-              size: 18,
-              color: Colors.grey,
-            ),
-          ],
+              const SizedBox(width: 9),
+
+              Expanded(
+                child: Column(
+                  mainAxisAlignment:
+                  MainAxisAlignment.center,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: secondaryTextColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    Text(
+                      DateFormat(
+                        'dd-MMM-yy',
+                      ).format(date),
+
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
+
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: textColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 19,
+                color: secondaryTextColor,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -399,91 +541,44 @@ class _EmployeeAttendanceReportPageState
   // ===========================================================
 
   Widget _buildStatusFilter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _radio(
-              'All',
-              AttendanceReportFilter.all,
-            ),
-            const SizedBox(width: 8),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics:
+      const BouncingScrollPhysics(),
 
-            _radio(
-              'On Time',
-              AttendanceReportFilter.onTime,
-            ),
-            const SizedBox(width: 8),
-
-            _radio(
-              'Late',
-              AttendanceReportFilter.late,
-            ),
-            const SizedBox(width: 8),
-
-            _radio(
-              'Absent',
-              AttendanceReportFilter.absent,
-            ),
-            const SizedBox(width: 8),
-
-            _radio(
-              'Leave',
-              AttendanceReportFilter.leave,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _radio(
-      String title,
-      AttendanceReportFilter value,
-      ) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () {
-        setState(() {
-          selectedFilter = value;
-        });
-      },
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Radio<AttendanceReportFilter>(
-            value: value,
-            groupValue: selectedFilter,
-            onChanged: (newValue) {
-              if (newValue == null) return;
-
-              setState(() {
-                selectedFilter = newValue;
-              });
-            },
-            materialTapTargetSize:
-            MaterialTapTargetSize.shrinkWrap,
-            visualDensity: const VisualDensity(
-              horizontal: -3,
-              vertical: -3,
-            ),
-            activeColor:
-            const Color(0xFF2196F3),
+          _radio(
+            'All',
+            AttendanceReportFilter.all,
           ),
 
-          const SizedBox(width: 2),
+          const SizedBox(width: 4),
 
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
+          _radio(
+            'On Time',
+            AttendanceReportFilter.onTime,
+          ),
+
+          const SizedBox(width: 4),
+
+          _radio(
+            'Late',
+            AttendanceReportFilter.late,
+          ),
+
+          const SizedBox(width: 4),
+
+          _radio(
+            'Absent',
+            AttendanceReportFilter.absent,
+          ),
+
+          const SizedBox(width: 4),
+
+          _radio(
+            'Leave',
+            AttendanceReportFilter.leave,
           ),
         ],
       ),
@@ -494,61 +589,141 @@ class _EmployeeAttendanceReportPageState
   // RADIO
   // ===========================================================
 
+  Widget _radio(
+      String title,
+      AttendanceReportFilter value,
+      ) {
+    final bool selected =
+        selectedFilter == value;
+
+    return Material(
+      color: Colors.transparent,
+
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+
+        onTap: () {
+          setState(() {
+            selectedFilter = value;
+          });
+        },
+
+        child: AnimatedContainer(
+          duration:
+          const Duration(milliseconds: 180),
+
+          padding: const EdgeInsets.symmetric(
+            horizontal: 9,
+            vertical: 5,
+          ),
+
+          decoration: BoxDecoration(
+            color: selected
+                ? primaryColor.withOpacity(.10)
+                : Colors.transparent,
+
+            borderRadius:
+            BorderRadius.circular(20),
+
+            border: Border.all(
+              color: selected
+                  ? primaryColor.withOpacity(.25)
+                  : Colors.transparent,
+            ),
+          ),
+
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Radio<AttendanceReportFilter>(
+                value: value,
+                groupValue: selectedFilter,
+
+                onChanged: (newValue) {
+                  if (newValue == null) return;
+
+                  setState(() {
+                    selectedFilter = newValue;
+                  });
+                },
+
+                materialTapTargetSize:
+                MaterialTapTargetSize.shrinkWrap,
+
+                visualDensity:
+                const VisualDensity(
+                  horizontal: -4,
+                  vertical: -4,
+                ),
+
+                activeColor:
+                primaryColor,
+              ),
+
+              const SizedBox(width: 2),
+
+              Text(
+                title,
+
+                style: TextStyle(
+                  fontSize: 11.5,
+
+                  color: selected
+                      ? primaryDark
+                      : textColor,
+
+                  fontWeight: selected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   // ===========================================================
-  // SHOW DETAILS
+  // SHOW DETAILS BUTTON
   // ===========================================================
 
   Widget _buildShowDetailsButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: Padding(
+    return FilledButton.icon(
+      onPressed: _loadReport,
+
+      icon: const Icon(
+        Icons.search_rounded,
+        size: 18,
+      ),
+
+      style: FilledButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+
+        elevation: 0,
+
         padding: const EdgeInsets.symmetric(
-          horizontal: 12,
+          horizontal: 18,
+          vertical: 11,
         ),
-        child: Align(
-          alignment: Alignment.center,
-          child: ElevatedButton.icon(
-            onPressed: _loadReport,
 
-            icon: const Icon(
-              Icons.search,
-              size: 18,
-            ),
+        minimumSize: const Size(
+          0,
+          42,
+        ),
 
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-              const Color(0xFF2196F3),
-              foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius:
+          BorderRadius.circular(11),
+        ),
+      ),
 
-              elevation: 0,
-
-              padding:
-              const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 10,
-              ),
-
-              minimumSize: const Size(
-                0,
-                40,
-              ),
-
-              shape:
-              RoundedRectangleBorder(
-                borderRadius:
-                BorderRadius.circular(8),
-              ),
-            ),
-
-            label: const Text(
-              'Show Details',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+      label: const Text(
+        'Show Details',
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -560,20 +735,22 @@ class _EmployeeAttendanceReportPageState
 
   Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
+      width: double.infinity,
+
       padding: const EdgeInsets.symmetric(
-        vertical: 10,
-        horizontal: 12,
+        vertical: 11,
+        horizontal: 14,
       ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2196F3),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(6),
-          topRight: Radius.circular(6),
+
+      decoration: const BoxDecoration(
+        color: primaryColor,
+
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
         ),
       ),
+
       child: const Row(
         children: [
           // -----------------------------------------------------
@@ -582,13 +759,17 @@ class _EmployeeAttendanceReportPageState
 
           SizedBox(
             width: 105,
+
             child: Text(
               'Date',
+
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              overflow:
+              TextOverflow.ellipsis,
+
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -601,16 +782,167 @@ class _EmployeeAttendanceReportPageState
           Expanded(
             child: Text(
               'Time - Punched Location',
+
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              overflow:
+              TextOverflow.ellipsis,
+
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ===========================================================
+  // ERROR STATE
+  // ===========================================================
+
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+
+        child: Container(
+          padding: const EdgeInsets.all(22),
+
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius:
+            BorderRadius.circular(18),
+            border: Border.all(
+              color: borderColor,
+            ),
+          ),
+
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(.08),
+                  shape: BoxShape.circle,
+                ),
+
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.redAccent,
+                  size: 28,
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              const Text(
+                'Unable to load attendance',
+                textAlign: TextAlign.center,
+
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
+
+              const SizedBox(height: 7),
+
+              Text(
+                error,
+                textAlign: TextAlign.center,
+
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: secondaryTextColor,
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              FilledButton.icon(
+                onPressed: _loadReport,
+
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  size: 18,
+                ),
+
+                label: const Text(
+                  'Retry',
+                ),
+
+                style: FilledButton.styleFrom(
+                  backgroundColor:
+                  primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================
+  // EMPTY STATE
+  // ===========================================================
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+
+          children: [
+            Container(
+              width: 68,
+              height: 68,
+
+              decoration: BoxDecoration(
+                color: primaryColor.withOpacity(.08),
+                shape: BoxShape.circle,
+              ),
+
+              child: const Icon(
+                Icons.event_busy_outlined,
+                color: primaryColor,
+                size: 32,
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            const Text(
+              'No attendance found.',
+              style: TextStyle(
+                fontSize: 15,
+                color: textColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 5),
+
+            const Text(
+              'Try changing the date or status filter.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: secondaryTextColor,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

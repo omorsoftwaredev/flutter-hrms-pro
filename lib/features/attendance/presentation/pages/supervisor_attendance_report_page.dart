@@ -2,23 +2,11 @@
 /// Flutter HRMS Pro
 /// Supervisor Attendance Report Page
 ///
-/// File:
-/// supervisor_attendance_report_page.dart
-///
-/// Version : 2.2.0
-///
-/// Purpose:
-/// - Show supervisor assigned departments
-/// - No company dropdown
-/// - Show today's attendance for all employees
-/// - Show selected employee attendance report
-/// - Date range filtering
-/// - Attendance status filtering
-///
-/// Existing Supervisor Attendance Provider /
-/// Attendance Report Provider / Attendance Report Item are used.
-///
-/// No existing CRUD page is modified.
+/// UI Update:
+/// - Responsive mobile / tablet / desktop layout
+/// - Professional light theme
+/// - Modern cards and filters
+/// - No functionality/business logic changes
 /// ===============================================================
 
 import 'package:flutter/material.dart';
@@ -46,6 +34,18 @@ class SupervisorAttendanceReportPage extends ConsumerStatefulWidget {
 
 class _SupervisorAttendanceReportPageState
     extends ConsumerState<SupervisorAttendanceReportPage> {
+  // =============================================================
+  // THEME
+  // =============================================================
+
+  static const Color primaryColor = Color(0xFF1976D2);
+  static const Color primaryLight = Color(0xFFEAF3FF);
+  static const Color backgroundColor = Color(0xFFF7F9FC);
+  static const Color cardColor = Colors.white;
+  static const Color textPrimary = Color(0xFF17202A);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color borderColor = Color(0xFFE3E8EF);
+
   // =============================================================
   // MODE
   // =============================================================
@@ -102,9 +102,7 @@ class _SupervisorAttendanceReportPageState
 
       ref
           .read(supervisorAttendanceProvider.notifier)
-          .initialize(
-        widget.supervisorEmployeeId,
-      );
+          .initialize(widget.supervisorEmployeeId);
     });
   }
 
@@ -121,55 +119,114 @@ class _SupervisorAttendanceReportPageState
     ref.watch(attendanceReportProvider);
 
     return Scaffold(
-      backgroundColor:
-      const Color(0xFFFFF9FF),
-
-      appBar: AppBar(
-        backgroundColor:
-        const Color(0xFFFFF9FF),
-        elevation: 0,
-
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black87,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-
-        title: const Text(
-          'Supervisor Attendance',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: supervisorState.isLoading
-                ? null
-                : _refresh,
-            icon: const Icon(
-              Icons.refresh,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-
+      backgroundColor: backgroundColor,
+      appBar: _buildAppBar(supervisorState),
       body: supervisorState.isLoading
           ? const Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: primaryColor,
+        ),
       )
-          : _buildBody(
+          : _buildResponsiveBody(
         supervisorState,
         employeeReportState,
       ),
+    );
+  }
+
+  // =============================================================
+  // APP BAR
+  // =============================================================
+
+  PreferredSizeWidget _buildAppBar(
+      SupervisorAttendanceState state,
+      ) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      scrolledUnderElevation: 1,
+      centerTitle: false,
+
+      leading: IconButton(
+        tooltip: 'Back',
+        icon: const Icon(
+          Icons.arrow_back_rounded,
+          color: textPrimary,
+        ),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+
+      title: const Text(
+        'Supervisor Attendance',
+        style: TextStyle(
+          color: textPrimary,
+          fontSize: 19,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.2,
+        ),
+      ),
+
+      actions: [
+        IconButton(
+          tooltip: 'Refresh',
+          onPressed: state.isLoading ? null : _refresh,
+          icon: const Icon(
+            Icons.refresh_rounded,
+            color: textPrimary,
+          ),
+        ),
+        const SizedBox(width: 6),
+      ],
+    );
+  }
+
+  // =============================================================
+  // RESPONSIVE BODY
+  // =============================================================
+
+  Widget _buildResponsiveBody(
+      SupervisorAttendanceState state,
+      AsyncValue employeeReportState,
+      ) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+
+        final horizontalPadding = width >= 1200
+            ? 32.0
+            : width >= 700
+            ? 24.0
+            : 12.0;
+
+        final maxContentWidth = width >= 1200
+            ? 1100.0
+            : width >= 700
+            ? 900.0
+            : double.infinity;
+
+        return SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: maxContentWidth,
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: 12,
+                ),
+                child: _buildBody(
+                  state,
+                  employeeReportState,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -183,81 +240,171 @@ class _SupervisorAttendanceReportPageState
       ) {
     if (state.error != null &&
         state.error!.trim().isNotEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Colors.red,
-              ),
-
-              const SizedBox(height: 12),
-
-              Text(
-                state.error!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              ElevatedButton.icon(
-                onPressed: _refresh,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-      );
+      return _buildErrorState(state.error!);
     }
 
     if (state.departments.isEmpty) {
-      return const Center(
-        child: Text(
-          'No department assigned.',
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 15,
-          ),
-        ),
+      return _buildEmptyState(
+        icon: Icons.domain_disabled_rounded,
+        message: 'No department assigned.',
       );
     }
 
     return Column(
       children: [
-        const SizedBox(height: 8),
-
-        // =======================================================
-        // DEPARTMENT ONLY
-        //
-        // NO COMPANY DROPDOWN
-        // =======================================================
-
         _buildDepartmentDropdown(state),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         _buildModeSelector(),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         Expanded(
-          child:
-          selectedMode ==
+          child: selectedMode ==
               SupervisorReportMode.allEmployees
               ? _buildTodayAttendance(state)
               : _buildSelectedEmployeeReport(
             state,
             employeeReportState,
           ),
+        ),
+      ],
+    );
+  }
+
+  // =============================================================
+  // ERROR STATE
+  // =============================================================
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: _cardDecoration(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  size: 32,
+                  color: Colors.red,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              const Text(
+                'Something went wrong',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: textSecondary,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              ElevatedButton.icon(
+                onPressed: _refresh,
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  size: 18,
+                ),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // EMPTY STATE
+  // =============================================================
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String message,
+  }) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 48,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: const TextStyle(
+              color: textSecondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // CARD DECORATION
+  // =============================================================
+
+  BoxDecoration _cardDecoration({
+    Color color = cardColor,
+    double radius = 12,
+  }) {
+    return BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: borderColor,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.035),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
         ),
       ],
     );
@@ -273,88 +420,96 @@ class _SupervisorAttendanceReportPageState
     final validDepartmentId =
     _validDepartmentValue(state);
 
-    return Padding(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
-      child: Container(
-        height: 58,
-        padding:
-        const EdgeInsets.symmetric(
-          horizontal: 12,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius:
-          BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(0xFF2196F3),
+    return _filterContainer(
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          value: validDepartmentId,
+
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: textSecondary,
           ),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true,
 
-            value: validDepartmentId,
-
-            hint: const Text(
-              'Select Department',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+          hint: const Row(
+            children: [
+              Icon(
+                Icons.domain_rounded,
+                size: 19,
+                color: primaryColor,
               ),
-            ),
-
-            items: state.departments
-                .map((department) {
-              final id =
-              department['id']
-                  ?.toString()
-                  .trim();
-
-              if (id == null || id.isEmpty) {
-                return null;
-              }
-
-              final name =
-                  department['name']
-                      ?.toString()
-                      .trim() ??
-                      '';
-
-              return DropdownMenuItem<String>(
-                value: id,
-                child: Text(
-                  name.isEmpty
-                      ? 'Unnamed Department'
-                      : name,
-                  overflow:
-                  TextOverflow.ellipsis,
-                  style:
-                  const TextStyle(
-                    fontSize: 14,
-                    fontWeight:
-                    FontWeight.w500,
-                  ),
+              SizedBox(width: 10),
+              Text(
+                'Select Department',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: textSecondary,
+                  fontWeight: FontWeight.w500,
                 ),
-              );
-            })
-                .whereType<
-                DropdownMenuItem<String>>()
-                .toList(),
-
-            onChanged: (value) async {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return;
-              }
-
-              await _changeDepartment(value);
-            },
+              ),
+            ],
           ),
+
+          items: state.departments
+              .map((department) {
+            final id = department['id']
+                ?.toString()
+                .trim();
+
+            if (id == null || id.isEmpty) {
+              return null;
+            }
+
+            final name = department['name']
+                ?.toString()
+                .trim() ??
+                '';
+
+            return DropdownMenuItem<String>(
+              value: id,
+              child: Text(
+                name.isEmpty
+                    ? 'Unnamed Department'
+                    : name,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          })
+              .whereType<DropdownMenuItem<String>>()
+              .toList(),
+
+          onChanged: (value) async {
+            if (value == null ||
+                value.trim().isEmpty) {
+              return;
+            }
+
+            await _changeDepartment(value);
+          },
         ),
       ),
+    );
+  }
+
+  // =============================================================
+  // FILTER CONTAINER
+  // =============================================================
+
+  Widget _filterContainer({
+    required Widget child,
+  }) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+      ),
+      decoration: _cardDecoration(),
+      child: child,
     );
   }
 
@@ -421,43 +576,31 @@ class _SupervisorAttendanceReportPageState
   // =============================================================
 
   Widget _buildModeSelector() {
-    return Padding(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 10,
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: _cardDecoration(
+        color: const Color(0xFFF1F4F8),
+        radius: 12,
       ),
-      child: Container(
-        padding:
-        const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 6,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius:
-          BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _buildModeOption(
-                title: 'All Employees',
-                value:
-                SupervisorReportMode
-                    .allEmployees,
-              ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildModeOption(
+              title: 'All Employees',
+              icon: Icons.groups_rounded,
+              value:
+              SupervisorReportMode.allEmployees,
             ),
-
-            Expanded(
-              child: _buildModeOption(
-                title: 'Selected Employee',
-                value:
-                SupervisorReportMode
-                    .selectedEmployee,
-              ),
+          ),
+          Expanded(
+            child: _buildModeOption(
+              title: 'Selected Employee',
+              icon: Icons.person_rounded,
+              value:
+              SupervisorReportMode.selectedEmployee,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -468,62 +611,75 @@ class _SupervisorAttendanceReportPageState
 
   Widget _buildModeOption({
     required String title,
+    required IconData icon,
     required SupervisorReportMode value,
   }) {
     final selected =
         selectedMode == value;
 
     return InkWell(
-      borderRadius:
-      BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(9),
       onTap: () async {
         await _changeMode(value);
       },
-      child: Row(
-        mainAxisSize:
-        MainAxisSize.min,
-        children: [
-          Radio<SupervisorReportMode>(
-            value: value,
-            groupValue: selectedMode,
-            onChanged:
-                (newValue) async {
-              if (newValue == null) {
-                return;
-              }
-
-              await _changeMode(
-                newValue,
-              );
-            },
-            activeColor:
-            const Color(0xFF2196F3),
-            materialTapTargetSize:
-            MaterialTapTargetSize
-                .shrinkWrap,
-            visualDensity:
-            const VisualDensity(
-              horizontal: -3,
-              vertical: -3,
+      child: AnimatedContainer(
+        duration: const Duration(
+          milliseconds: 180,
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 11,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? Colors.white
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: selected
+              ? [
+            BoxShadow(
+              color: Colors.black
+                  .withValues(alpha: 0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment:
+          MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 17,
+              color: selected
+                  ? primaryColor
+                  : textSecondary,
+            ),
 
-          const SizedBox(width: 2),
+            const SizedBox(width: 6),
 
-          Flexible(
-            child: Text(
-              title,
-              overflow:
-              TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: selected
-                    ? FontWeight.w700
-                    : FontWeight.w500,
+            Flexible(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow:
+                TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: selected
+                      ? primaryColor
+                      : textSecondary,
+                  fontWeight: selected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -572,29 +728,24 @@ class _SupervisorAttendanceReportPageState
       ) {
     if (state.departmentId == null ||
         state.departmentId!.trim().isEmpty) {
-      return const Center(
-        child: Text(
-          'Select a department first.',
-          style:
-          TextStyle(color: Colors.grey),
-        ),
+      return _buildEmptyState(
+        icon: Icons.domain_rounded,
+        message: 'Select a department first.',
       );
     }
 
     if (state.isLoadingAttendance) {
       return const Center(
-        child:
-        CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: primaryColor,
+        ),
       );
     }
 
     if (state.attendance.isEmpty) {
-      return const Center(
-        child: Text(
-          'No attendance found.',
-          style:
-          TextStyle(color: Colors.grey),
-        ),
+      return _buildEmptyState(
+        icon: Icons.event_busy_rounded,
+        message: 'No attendance found.',
       );
     }
 
@@ -604,12 +755,13 @@ class _SupervisorAttendanceReportPageState
           state.attendance.length,
         ),
 
+        const SizedBox(height: 4),
+
         Expanded(
           child: ListView.builder(
-            padding:
-            const EdgeInsets.only(
-              top: 4,
-              bottom: 20,
+            padding: const EdgeInsets.only(
+              top: 2,
+              bottom: 24,
             ),
             itemCount:
             state.attendance.length,
@@ -618,9 +770,7 @@ class _SupervisorAttendanceReportPageState
               final item =
               state.attendance[index];
 
-              return _buildTodayItem(
-                item,
-              );
+              return _buildTodayItem(item);
             },
           ),
         ),
@@ -636,47 +786,62 @@ class _SupervisorAttendanceReportPageState
       int employeeCount,
       ) {
     return Container(
-      margin:
-      const EdgeInsets.symmetric(
-        horizontal: 12,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 13,
       ),
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 10,
-      ),
-      decoration:
-      const BoxDecoration(
-        color: Color(0xFF2196F3),
-        borderRadius:
-        BorderRadius.only(
-          topLeft:
-          Radius.circular(6),
-          topRight:
-          Radius.circular(6),
-        ),
+      decoration: BoxDecoration(
+        color: primaryColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor
+                .withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
+          const Icon(
+            Icons.today_rounded,
+            color: Colors.white,
+            size: 19,
+          ),
+
+          const SizedBox(width: 9),
+
           const Expanded(
             child: Text(
               "Today's Attendance",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 14,
-                fontWeight:
-                FontWeight.w700,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
 
-          Text(
-            '$employeeCount Employees',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight:
-              FontWeight.w600,
+          Container(
+            padding:
+            const EdgeInsets.symmetric(
+              horizontal: 9,
+              vertical: 5,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white
+                  .withValues(alpha: 0.16),
+              borderRadius:
+              BorderRadius.circular(20),
+            ),
+            child: Text(
+              '$employeeCount Employees',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -761,42 +926,43 @@ class _SupervisorAttendanceReportPageState
     _statusColor(statusText);
 
     return Container(
-      margin:
-      const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 5,
+      margin: const EdgeInsets.only(
+        top: 7,
+        bottom: 2,
       ),
-      padding:
-      const EdgeInsets.all(12),
-      decoration:
-      BoxDecoration(
-        color:
-        const Color(0xFFFFF9FF),
-        borderRadius:
-        BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black
-                .withValues(
-              alpha: 0.07,
-            ),
-            blurRadius: 5,
-            offset:
-            const Offset(0, 2),
-          ),
-        ],
+      padding: const EdgeInsets.all(15),
+      decoration: _cardDecoration(
+        radius: 13,
       ),
       child: Column(
         crossAxisAlignment:
         CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
             children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: primaryLight,
+                  borderRadius:
+                  BorderRadius.circular(11),
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: primaryColor,
+                  size: 22,
+                ),
+              ),
+
+              const SizedBox(width: 11),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+                  CrossAxisAlignment.start,
                   children: [
                     Text(
                       employeeName.isEmpty
@@ -804,100 +970,104 @@ class _SupervisorAttendanceReportPageState
                           : employeeName,
                       maxLines: 1,
                       overflow:
-                      TextOverflow
-                          .ellipsis,
+                      TextOverflow.ellipsis,
                       style:
                       const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
+                        color: textPrimary,
                         fontWeight:
-                        FontWeight.w600,
+                        FontWeight.w700,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 3,
-                    ),
+                    const SizedBox(height: 3),
 
                     Text(
                       employeeCode.isEmpty
-                          ? '-'
+                          ? 'No employee code'
                           : employeeCode,
+                      maxLines: 1,
+                      overflow:
+                      TextOverflow.ellipsis,
                       style:
                       const TextStyle(
-                        fontSize: 12,
-                        color:
-                        Colors.grey,
+                        fontSize: 11,
+                        color: textSecondary,
+                        fontWeight:
+                        FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              Container(
-                padding:
-                const EdgeInsets
-                    .symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration:
-                BoxDecoration(
-                  color: statusColor
-                      .withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                  BorderRadius
-                      .circular(20),
-                ),
-                child: Text(
-                  statusText.isEmpty
-                      ? 'Unknown'
-                      : statusText,
-                  style: TextStyle(
-                    color:
-                    statusColor,
-                    fontSize: 12,
-                    fontWeight:
-                    FontWeight.w700,
-                  ),
-                ),
+              const SizedBox(width: 8),
+
+              _statusChip(
+                statusText.isEmpty
+                    ? 'Unknown'
+                    : statusText,
+                statusColor,
               ),
             ],
           ),
 
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 14),
 
-          const Divider(
+          Container(
             height: 1,
+            color: borderColor,
           ),
 
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 11),
 
           _todayTimeRow(
             label: 'In',
             time: checkInTime,
-            address:
-            checkInAddress,
+            address: checkInAddress,
             suffix: 'Entry',
           ),
 
-          const SizedBox(
-            height: 7,
-          ),
+          const SizedBox(height: 9),
 
           _todayTimeRow(
             label: 'Out',
             time: checkOutTime,
-            address:
-            checkOutAddress,
+            address: checkOutAddress,
             suffix: 'Exit',
           ),
         ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // STATUS CHIP
+  // =============================================================
+
+  Widget _statusChip(
+      String text,
+      Color color,
+      ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -926,29 +1096,56 @@ class _SupervisorAttendanceReportPageState
         ? '-'
         : address;
 
-    return RichText(
-      text: TextSpan(
-        style:
-        const TextStyle(
-          color: Colors.black87,
-          fontSize: 13,
+    return Row(
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: primaryLight,
+            borderRadius:
+            BorderRadius.circular(8),
+          ),
+          child: Icon(
+            label == 'In'
+                ? Icons.login_rounded
+                : Icons.logout_rounded,
+            size: 15,
+            color: primaryColor,
+          ),
         ),
-        children: [
-          TextSpan(
-            text:
-            '$label : $timeText - ',
-            style:
-            const TextStyle(
-              fontWeight:
-              FontWeight.w600,
+
+        const SizedBox(width: 9),
+
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(
+                color: textSecondary,
+                fontSize: 12,
+                height: 1.4,
+              ),
+              children: [
+                TextSpan(
+                  text:
+                  '$label : $timeText',
+                  style: const TextStyle(
+                    color: textPrimary,
+                    fontWeight:
+                    FontWeight.w700,
+                  ),
+                ),
+                TextSpan(
+                  text:
+                  '  •  $location  •  $suffix',
+                ),
+              ],
             ),
           ),
-          TextSpan(
-            text:
-            '$location - $suffix',
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -962,27 +1159,22 @@ class _SupervisorAttendanceReportPageState
       ) {
     if (state.departmentId == null ||
         state.departmentId!.trim().isEmpty) {
-      return const Center(
-        child: Text(
-          'Select a department first.',
-          style:
-          TextStyle(color: Colors.grey),
-        ),
+      return _buildEmptyState(
+        icon: Icons.domain_rounded,
+        message: 'Select a department first.',
       );
     }
 
     return Column(
       children: [
-        _buildEmployeeDropdown(
-          state,
-        ),
+        _buildEmployeeDropdown(state),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
 
         if (selectedEmployeeId != null) ...[
           _buildDateFilter(),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
           _buildStatusFilter(),
 
@@ -991,45 +1183,41 @@ class _SupervisorAttendanceReportPageState
           _buildShowDetailsButton(),
         ],
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
 
         if (selectedEmployeeId != null)
           _buildReportHeader(),
 
         Expanded(
-          child:
-          selectedEmployeeId == null
-              ? const Center(
-            child: Text(
-              'Select an employee.',
-              style: TextStyle(
-                color: Colors.grey,
-              ),
-            ),
+          child: selectedEmployeeId == null
+              ? _buildEmptyState(
+            icon: Icons.person_search_rounded,
+            message: 'Select an employee.',
           )
               : employeeReportState.when(
             loading: () {
               return const Center(
                 child:
-                CircularProgressIndicator(),
+                CircularProgressIndicator(
+                  color: primaryColor,
+                ),
               );
             },
-            error:
-                (error, stack) {
+            error: (error, stack) {
               return Center(
                 child: Padding(
                   padding:
-                  const EdgeInsets
-                      .all(20),
+                  const EdgeInsets.all(
+                    20,
+                  ),
                   child: Text(
                     error.toString(),
                     textAlign:
-                    TextAlign
-                        .center,
+                    TextAlign.center,
                     style:
                     const TextStyle(
-                      color:
-                      Colors.red,
+                      color: Colors.red,
+                      fontSize: 13,
                     ),
                   ),
                 ),
@@ -1048,35 +1236,26 @@ class _SupervisorAttendanceReportPageState
               );
 
               if (filtered.isEmpty) {
-                return const Center(
-                  child: Text(
-                    'No attendance found.',
-                    style:
-                    TextStyle(
-                      color:
-                      Colors.grey,
-                    ),
-                  ),
+                return _buildEmptyState(
+                  icon:
+                  Icons.event_busy_rounded,
+                  message:
+                  'No attendance found.',
                 );
               }
 
               return ListView.builder(
                 padding:
-                const EdgeInsets
-                    .only(
+                const EdgeInsets.only(
                   top: 4,
                   bottom: 20,
                 ),
                 itemCount:
                 filtered.length,
                 itemBuilder:
-                    (
-                    context,
-                    index,
-                    ) {
+                    (context, index) {
                   return AttendanceReportItem(
-                    item:
-                    filtered[index],
+                    item: filtered[index],
                   );
                 },
               );
@@ -1099,108 +1278,93 @@ class _SupervisorAttendanceReportPageState
       state.employees,
     );
 
-    return Padding(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
-      child: Container(
-        height: 58,
-        padding:
-        const EdgeInsets.symmetric(
-          horizontal: 12,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius:
-          BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(
-              0xFF2196F3,
-            ),
+    return _filterContainer(
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          value: employeeValue,
+
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: textSecondary,
           ),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            isExpanded: true,
 
-            value: employeeValue,
-
-            hint: const Text(
-              'Select Employee',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+          hint: const Row(
+            children: [
+              Icon(
+                Icons.person_search_rounded,
+                size: 19,
+                color: primaryColor,
               ),
-            ),
-
-            items: state.employees
-                .map((employee) {
-              final id =
-              employee['id']
-                  ?.toString()
-                  .trim();
-
-              if (id == null ||
-                  id.isEmpty) {
-                return null;
-              }
-
-              final name =
-              _employeeName(
-                employee,
-              );
-
-              final code =
-              employee[
-              'employee_code']
-                  ?.toString()
-                  .trim();
-
-              final title =
-              code == null ||
-                  code.isEmpty
-                  ? name
-                  : '$name ($code)';
-
-              return DropdownMenuItem<String>(
-                value: id,
-                child: Text(
-                  title.isEmpty
-                      ? 'Unknown Employee'
-                      : title,
-                  overflow:
-                  TextOverflow
-                      .ellipsis,
-                  style:
-                  const TextStyle(
-                    fontSize: 14,
-                    fontWeight:
-                    FontWeight.w500,
-                  ),
+              SizedBox(width: 10),
+              Text(
+                'Select Employee',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: textSecondary,
+                  fontWeight: FontWeight.w500,
                 ),
-              );
-            })
-                .whereType<
-                DropdownMenuItem<String>>()
-                .toList(),
-
-            onChanged: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return;
-              }
-
-              setState(() {
-                selectedEmployeeId =
-                    value;
-
-                selectedFilter =
-                    AttendanceReportFilter
-                        .all;
-              });
-            },
+              ),
+            ],
           ),
+
+          items: state.employees
+              .map((employee) {
+            final id =
+            employee['id']
+                ?.toString()
+                .trim();
+
+            if (id == null || id.isEmpty) {
+              return null;
+            }
+
+            final name =
+            _employeeName(employee);
+
+            final code =
+            employee['employee_code']
+                ?.toString()
+                .trim();
+
+            final title =
+            code == null || code.isEmpty
+                ? name
+                : '$name ($code)';
+
+            return DropdownMenuItem<String>(
+              value: id,
+              child: Text(
+                title.isEmpty
+                    ? 'Unknown Employee'
+                    : title,
+                overflow:
+                TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          })
+              .whereType<
+              DropdownMenuItem<String>>()
+              .toList(),
+
+          onChanged: (value) {
+            if (value == null ||
+                value.trim().isEmpty) {
+              return;
+            }
+
+            setState(() {
+              selectedEmployeeId = value;
+
+              selectedFilter =
+                  AttendanceReportFilter.all;
+            });
+          },
         ),
       ),
     );
@@ -1261,8 +1425,7 @@ class _SupervisorAttendanceReportPageState
             .trim() ??
             '';
 
-    return '$firstName $lastName'
-        .trim();
+    return '$firstName $lastName'.trim();
   }
 
   // =============================================================
@@ -1270,33 +1433,26 @@ class _SupervisorAttendanceReportPageState
   // =============================================================
 
   Widget _buildDateFilter() {
-    return Padding(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 12,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _dateButton(
-              title: 'From Date',
-              date: fromDate,
-              onTap:
-              _selectFromDate,
-            ),
+    return Row(
+      children: [
+        Expanded(
+          child: _dateButton(
+            title: 'From Date',
+            date: fromDate,
+            onTap: _selectFromDate,
           ),
+        ),
 
-          const SizedBox(width: 8),
+        const SizedBox(width: 10),
 
-          Expanded(
-            child: _dateButton(
-              title: 'To Date',
-              date: toDate,
-              onTap: _selectToDate,
-            ),
+        Expanded(
+          child: _dateButton(
+            title: 'To Date',
+            date: toDate,
+            onTap: _selectToDate,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1312,77 +1468,69 @@ class _SupervisorAttendanceReportPageState
     return InkWell(
       onTap: onTap,
       borderRadius:
-      BorderRadius.circular(8),
+      BorderRadius.circular(12),
       child: Container(
         height: 58,
-        padding:
-        const EdgeInsets.symmetric(
-          horizontal: 10,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
           vertical: 7,
         ),
-        decoration:
-        BoxDecoration(
-          color: Colors.white,
-          borderRadius:
-          BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(
-              0xFF2196F3,
-            ),
-          ),
-        ),
+        decoration: _cardDecoration(),
         child: Row(
           children: [
-            const Icon(
-              Icons
-                  .calendar_month_outlined,
-              size: 19,
-              color:
-              Color(0xFF2196F3),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: primaryLight,
+                borderRadius:
+                BorderRadius.circular(9),
+              ),
+              child: const Icon(
+                Icons.calendar_month_rounded,
+                size: 18,
+                color: primaryColor,
+              ),
             ),
 
-            const SizedBox(width: 7),
+            const SizedBox(width: 9),
 
             Expanded(
               child: Column(
                 mainAxisAlignment:
-                MainAxisAlignment
-                    .center,
+                MainAxisAlignment.center,
                 crossAxisAlignment:
-                CrossAxisAlignment
-                    .start,
+                CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
                     maxLines: 1,
                     overflow:
-                    TextOverflow
-                        .ellipsis,
+                    TextOverflow.ellipsis,
                     style:
                     const TextStyle(
-                      fontSize: 11,
-                      color:
-                      Colors.grey,
+                      fontSize: 10,
+                      color: textSecondary,
                       fontWeight:
-                      FontWeight.w500,
+                      FontWeight.w600,
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 2,
-                  ),
+                  const SizedBox(height: 2),
 
                   Text(
                     DateFormat(
                       'dd-MMM-yy',
                     ).format(date),
+                    maxLines: 1,
+                    overflow:
+                    TextOverflow.ellipsis,
                     style:
                     const TextStyle(
-                      fontSize: 14,
-                      color:
-                      Colors.black87,
+                      fontSize: 13,
+                      color: textPrimary,
                       fontWeight:
-                      FontWeight.w600,
+                      FontWeight.w700,
                     ),
                   ),
                 ],
@@ -1390,10 +1538,9 @@ class _SupervisorAttendanceReportPageState
             ),
 
             const Icon(
-              Icons
-                  .keyboard_arrow_down,
+              Icons.keyboard_arrow_down_rounded,
               size: 18,
-              color: Colors.grey,
+              color: textSecondary,
             ),
           ],
         ),
@@ -1412,6 +1559,19 @@ class _SupervisorAttendanceReportPageState
       initialDate: fromDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme:
+            Theme.of(context)
+                .colorScheme
+                .copyWith(
+              primary: primaryColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (selected == null ||
@@ -1422,9 +1582,7 @@ class _SupervisorAttendanceReportPageState
     setState(() {
       fromDate = selected;
 
-      if (fromDate.isAfter(
-        toDate,
-      )) {
+      if (fromDate.isAfter(toDate)) {
         toDate = fromDate;
       }
     });
@@ -1441,6 +1599,19 @@ class _SupervisorAttendanceReportPageState
       initialDate: toDate,
       firstDate: fromDate,
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme:
+            Theme.of(context)
+                .colorScheme
+                .copyWith(
+              primary: primaryColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (selected == null ||
@@ -1458,52 +1629,39 @@ class _SupervisorAttendanceReportPageState
   // =============================================================
 
   Widget _buildStatusFilter() {
-    return Padding(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 8,
-      ),
+    return SizedBox(
+      width: double.infinity,
       child: SingleChildScrollView(
-        scrollDirection:
-        Axis.horizontal,
+        scrollDirection: Axis.horizontal,
+        padding:
+        const EdgeInsets.symmetric(
+          horizontal: 2,
+        ),
         child: Row(
           children: [
             _radio(
               'All',
-              AttendanceReportFilter
-                  .all,
+              AttendanceReportFilter.all,
             ),
-
-            const SizedBox(width: 8),
-
+            const SizedBox(width: 5),
             _radio(
               'On Time',
-              AttendanceReportFilter
-                  .onTime,
+              AttendanceReportFilter.onTime,
             ),
-
-            const SizedBox(width: 8),
-
+            const SizedBox(width: 5),
             _radio(
               'Late',
-              AttendanceReportFilter
-                  .late,
+              AttendanceReportFilter.late,
             ),
-
-            const SizedBox(width: 8),
-
+            const SizedBox(width: 5),
             _radio(
               'Absent',
-              AttendanceReportFilter
-                  .absent,
+              AttendanceReportFilter.absent,
             ),
-
-            const SizedBox(width: 8),
-
+            const SizedBox(width: 5),
             _radio(
               'Leave',
-              AttendanceReportFilter
-                  .leave,
+              AttendanceReportFilter.leave,
             ),
           ],
         ),
@@ -1530,52 +1688,69 @@ class _SupervisorAttendanceReportPageState
           selectedFilter = value;
         });
       },
-      child: Row(
-        mainAxisSize:
-        MainAxisSize.min,
-        children: [
-          Radio<
-              AttendanceReportFilter>(
-            value: value,
-            groupValue:
-            selectedFilter,
-            onChanged:
-                (newValue) {
-              if (newValue == null) {
-                return;
-              }
+      child: AnimatedContainer(
+        duration:
+        const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 5,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? primaryLight
+              : Colors.transparent,
+          borderRadius:
+          BorderRadius.circular(20),
+          border: selected
+              ? Border.all(
+            color: primaryColor
+                .withValues(alpha: 0.18),
+          )
+              : null,
+        ),
+        child: Row(
+          mainAxisSize:
+          MainAxisSize.min,
+          children: [
+            Radio<AttendanceReportFilter>(
+              value: value,
+              groupValue:
+              selectedFilter,
+              onChanged: (newValue) {
+                if (newValue == null) {
+                  return;
+                }
 
-              setState(() {
-                selectedFilter =
-                    newValue;
-              });
-            },
-            activeColor:
-            const Color(
-              0xFF2196F3,
+                setState(() {
+                  selectedFilter = newValue;
+                });
+              },
+              activeColor: primaryColor,
+              materialTapTargetSize:
+              MaterialTapTargetSize.shrinkWrap,
+              visualDensity:
+              const VisualDensity(
+                horizontal: -4,
+                vertical: -4,
+              ),
             ),
-            materialTapTargetSize:
-            MaterialTapTargetSize
-                .shrinkWrap,
-            visualDensity:
-            const VisualDensity(
-              horizontal: -3,
-              vertical: -3,
-            ),
-          ),
 
-          const SizedBox(width: 2),
+            const SizedBox(width: 1),
 
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: selected
-                  ? FontWeight.w700
-                  : FontWeight.w500,
+            Text(
+              title,
+              style: TextStyle(
+                color: selected
+                    ? primaryColor
+                    : textSecondary,
+                fontSize: 11,
+                fontWeight: selected
+                    ? FontWeight.w700
+                    : FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1587,55 +1762,29 @@ class _SupervisorAttendanceReportPageState
   Widget _buildShowDetailsButton() {
     return SizedBox(
       width: double.infinity,
-      child: Padding(
-        padding:
-        const EdgeInsets.symmetric(
-          horizontal: 12,
+      height: 44,
+      child: ElevatedButton.icon(
+        onPressed:
+        _loadSelectedEmployeeReport,
+        icon: const Icon(
+          Icons.search_rounded,
+          size: 18,
         ),
-        child: Align(
-          alignment:
-          Alignment.center,
-          child:
-          ElevatedButton.icon(
-            onPressed:
-            _loadSelectedEmployeeReport,
-            icon: const Icon(
-              Icons.search,
-              size: 18,
-            ),
-            style:
-            ElevatedButton.styleFrom(
-              backgroundColor:
-              const Color(
-                0xFF2196F3,
-              ),
-              foregroundColor:
-              Colors.white,
-              elevation: 0,
-              padding:
-              const EdgeInsets
-                  .symmetric(
-                horizontal: 18,
-                vertical: 10,
-              ),
-              minimumSize:
-              const Size(0, 40),
-              shape:
-              RoundedRectangleBorder(
-                borderRadius:
-                BorderRadius.circular(
-                  8,
-                ),
-              ),
-            ),
-            label: const Text(
-              'Show Details',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight:
-                FontWeight.w600,
-              ),
-            ),
+        label: const Text(
+          'Show Details',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape:
+          RoundedRectangleBorder(
+            borderRadius:
+            BorderRadius.circular(10),
           ),
         ),
       ),
@@ -1681,25 +1830,14 @@ class _SupervisorAttendanceReportPageState
 
   Widget _buildReportHeader() {
     return Container(
-      margin:
-      const EdgeInsets.symmetric(
-        horizontal: 12,
+      padding: const EdgeInsets.symmetric(
+        vertical: 12,
+        horizontal: 14,
       ),
-      padding:
-      const EdgeInsets.symmetric(
-        vertical: 10,
-        horizontal: 12,
-      ),
-      decoration:
-      const BoxDecoration(
-        color: Color(0xFF2196F3),
+      decoration: BoxDecoration(
+        color: primaryColor,
         borderRadius:
-        BorderRadius.only(
-          topLeft:
-          Radius.circular(6),
-          topRight:
-          Radius.circular(6),
-        ),
+        BorderRadius.circular(10),
       ),
       child: const Row(
         children: [
@@ -1709,9 +1847,8 @@ class _SupervisorAttendanceReportPageState
               'Date',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 13,
-                fontWeight:
-                FontWeight.w700,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1721,9 +1858,8 @@ class _SupervisorAttendanceReportPageState
               'Time - Punched Location',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 13,
-                fontWeight:
-                FontWeight.w700,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1761,10 +1897,8 @@ class _SupervisorAttendanceReportPageState
             .trim()
             .isNotEmpty &&
         selectedMode ==
-            SupervisorReportMode
-                .allEmployees) {
-      await notifier
-          .loadTodayAttendance();
+            SupervisorReportMode.allEmployees) {
+      await notifier.loadTodayAttendance();
     }
   }
 
@@ -1788,6 +1922,10 @@ class _SupervisorAttendanceReportPageState
         content: Text(message),
         behavior:
         SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius:
+          BorderRadius.circular(10),
+        ),
       ),
     );
   }
@@ -1799,21 +1937,17 @@ class _SupervisorAttendanceReportPageState
   String _readString(
       dynamic item,
       String property, {
-        List<String> fallbackKeys =
-        const [],
+        List<String> fallbackKeys = const [],
       }) {
     if (item is Map) {
-      final value =
-      item[property];
+      final value = item[property];
 
       if (value != null) {
         return value.toString();
       }
 
-      for (final key
-      in fallbackKeys) {
-        final fallback =
-        item[key];
+      for (final key in fallbackKeys) {
+        final fallback = item[key];
 
         if (fallback != null) {
           return fallback.toString();
@@ -1845,15 +1979,12 @@ class _SupervisorAttendanceReportPageState
   String? _readStringNullable(
       dynamic item,
       String property, {
-        List<String> fallbackKeys =
-        const [],
+        List<String> fallbackKeys = const [],
       }) {
-    final value =
-    _readString(
+    final value = _readString(
       item,
       property,
-      fallbackKeys:
-      fallbackKeys,
+      fallbackKeys: fallbackKeys,
     );
 
     if (value.trim().isEmpty) {
@@ -1870,18 +2001,15 @@ class _SupervisorAttendanceReportPageState
   DateTime? _readDateTime(
       dynamic item,
       String property, {
-        List<String> fallbackKeys =
-        const [],
+        List<String> fallbackKeys = const [],
       }) {
     dynamic value;
 
     if (item is Map) {
-      value =
-      item[property];
+      value = item[property];
 
       if (value == null) {
-        for (final key
-        in fallbackKeys) {
+        for (final key in fallbackKeys) {
           value = item[key];
 
           if (value != null) {
@@ -1954,8 +2082,7 @@ class _SupervisorAttendanceReportPageState
   Color _statusColor(
       String status,
       ) {
-    switch (
-    status.trim().toLowerCase()) {
+    switch (status.trim().toLowerCase()) {
       case 'present':
       case 'on time':
         return Colors.green;

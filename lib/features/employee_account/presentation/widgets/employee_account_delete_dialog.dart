@@ -5,6 +5,10 @@ class EmployeeAccountDeleteDialog extends StatelessWidget {
     super.key,
   });
 
+  // =============================================================
+  // SHOW DIALOG
+  // =============================================================
+
   static Future<bool?> show(
       BuildContext context,
       ) {
@@ -15,57 +19,211 @@ class EmployeeAccountDeleteDialog extends StatelessWidget {
     );
   }
 
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
+    final isSmallScreen = screenWidth < 360;
+
     return AlertDialog(
-      icon: const Icon(
-        Icons.delete_forever,
-        color: Colors.red,
-        size: 42,
+      // ===========================================================
+      // RESPONSIVE WIDTH
+      // ===========================================================
+
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isSmallScreen ? 16 : 24,
+        vertical: 24,
       ),
 
-      title: const Text(
+      // ===========================================================
+      // THEME
+      // ===========================================================
+
+      backgroundColor: colorScheme.surface,
+
+      surfaceTintColor: colorScheme.surfaceTint,
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          isSmallScreen ? 16 : 20,
+        ),
+      ),
+
+      // ===========================================================
+      // ICON
+      // ===========================================================
+
+      icon: Container(
+        padding: EdgeInsets.all(
+          isSmallScreen ? 12 : 14,
+        ),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colorScheme.errorContainer,
+        ),
+        child: Icon(
+          Icons.delete_forever_rounded,
+          size: isSmallScreen ? 32 : 40,
+          color: colorScheme.onErrorContainer,
+        ),
+      ),
+
+      // ===========================================================
+      // TITLE
+      // ===========================================================
+
+      title: Text(
         'Delete Employee Account',
+        textAlign: TextAlign.center,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
       ),
 
-      content: const Text(
-        'Are you sure you want to delete this employee account?\n\n'
-            'This action cannot be undone.',
+      // ===========================================================
+      // CONTENT
+      // ===========================================================
+
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 420,
+        ),
+        child: Text(
+          'Are you sure you want to delete this employee account?\n\n'
+              'This action cannot be undone.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+            height: 1.5,
+          ),
+        ),
+      ),
+
+      // ===========================================================
+      // ACTIONS
+      // ===========================================================
+
+      actionsPadding: EdgeInsets.fromLTRB(
+        isSmallScreen ? 16 : 24,
+        8,
+        isSmallScreen ? 16 : 24,
+        isSmallScreen ? 16 : 20,
       ),
 
       actions: [
-        OutlinedButton(
-          onPressed: () {
-            Navigator.pop(
-              context,
-              false,
-            );
-          },
-          child: const Text(
-            'Cancel',
-          ),
-        ),
+        // =========================================================
+        // RESPONSIVE BUTTON LAYOUT
+        // =========================================================
 
-        FilledButton.icon(
-          style: FilledButton.styleFrom(
-            backgroundColor: Colors.red,
-          ),
+        if (isSmallScreen)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ===================================================
+              // CANCEL
+              // ===================================================
 
-          onPressed: () {
-            Navigator.pop(
-              context,
-              true,
-            );
-          },
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    false,
+                  );
+                },
+                icon: const Icon(
+                  Icons.close_rounded,
+                ),
+                label: const Text(
+                  'Cancel',
+                ),
+              ),
 
-          icon: const Icon(
-            Icons.delete,
-          ),
+              const SizedBox(
+                height: 8,
+              ),
 
-          label: const Text(
-            'Delete',
+              // ===================================================
+              // DELETE
+              // ===================================================
+
+              FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.error,
+                  foregroundColor: colorScheme.onError,
+                ),
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    true,
+                  );
+                },
+                icon: const Icon(
+                  Icons.delete_forever_rounded,
+                ),
+                label: const Text(
+                  'Delete',
+                ),
+              ),
+            ],
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // ===================================================
+              // CANCEL
+              // ===================================================
+
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    false,
+                  );
+                },
+                icon: const Icon(
+                  Icons.close_rounded,
+                ),
+                label: const Text(
+                  'Cancel',
+                ),
+              ),
+
+              const SizedBox(
+                width: 12,
+              ),
+
+              // ===================================================
+              // DELETE
+              // ===================================================
+
+              FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.error,
+                  foregroundColor: colorScheme.onError,
+                ),
+                onPressed: () {
+                  Navigator.pop(
+                    context,
+                    true,
+                  );
+                },
+                icon: const Icon(
+                  Icons.delete_forever_rounded,
+                ),
+                label: const Text(
+                  'Delete',
+                ),
+              ),
+            ],
           ),
-        ),
       ],
     );
   }

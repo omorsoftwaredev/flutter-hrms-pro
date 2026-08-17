@@ -28,8 +28,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // ===============================================================
 
   Future<void> _login() async {
-    _usernameController.text = 'waltonomor';
-    _passwordController.text = 'waltonomor';
+    // // company owner login
+    // _usernameController.text = 'waltonomor';
+    // _passwordController.text = 'waltonomor';
+    // // Employee login
+    // _usernameController.text = 'omoromor1';
+    // _passwordController.text = 'omoromor1';
+
+    // Superviosr login
+    _usernameController.text = 'mowser';
+    _passwordController.text = 'mowser';
     final username = _usernameController.text.trim();
     final passwordHash = _passwordController.text;
 

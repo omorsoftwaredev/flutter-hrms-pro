@@ -12,281 +12,229 @@ import '../providers/employee_account_provider.dart';
 import 'employee_account_form.dart';
 
 class EmployeeAccountFormPage extends ConsumerWidget {
-  const EmployeeAccountFormPage({
-    super.key,
-    this.account,
-  });
+  const EmployeeAccountFormPage({super.key, this.account});
 
   final EmployeeAccountEntity? account;
 
   bool get isEdit => account != null;
 
+  //=============================================================
+  // PAGE TITLE
+  //=============================================================
+
+  String _pageTitle() {
+    return isEdit ? 'Edit Employee Account' : 'Create Employee Account';
+  }
+
+  //=============================================================
+  // ERROR PAGE
+  //=============================================================
+
+  Widget _errorPage(BuildContext context, String message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(_pageTitle())),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Card(
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: colorScheme.error,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyLarge,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          }
+                        },
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        label: const Text('Go Back'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(
-      BuildContext context,
-      WidgetRef ref,
-      ) {
-    // ===========================================================
+  Widget build(BuildContext context, WidgetRef ref) {
+    //=============================================================
     // CURRENT LOGGED-IN USER
-    // ===========================================================
-    //
-    // Application custom authentication ব্যবহার করা হচ্ছে।
-    //
-    // CurrentUser.userId:
-    //   Developer       → developers.id
-    //   Company Owner   → company_accounts.id
-    //   Employee        → employee_accounts.id
-    //   Supervisor      → employee_accounts.id
-    //
-    // ===========================================================
+    //=============================================================
 
     final user = ref.watch(currentUserProvider);
 
-    // ===========================================================
+    //=============================================================
     // EMPLOYEE ACCOUNT STATE
-    // ===========================================================
+    //=============================================================
 
     final state = ref.watch(employeeAccountProvider);
 
-    // ===========================================================
+    //=============================================================
     // USER VALIDATION
-    // ===========================================================
+    //=============================================================
 
     if (user == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            isEdit
-                ? 'Edit Employee Account'
-                : 'Create Employee Account',
-          ),
-        ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Logged-in user information is not available.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
+      return _errorPage(
+        context,
+        'Logged-in user information is not available.',
       );
     }
 
-    // ===========================================================
+    //=============================================================
     // CURRENT APPLICATION USER ID
-    // ===========================================================
+    //=============================================================
 
     final String currentUserId = user.userId.trim();
 
-    // ===========================================================
+    //=============================================================
     // USER ID VALIDATION
-    // ===========================================================
+    //=============================================================
 
     if (currentUserId.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            isEdit
-                ? 'Edit Employee Account'
-                : 'Create Employee Account',
-          ),
-        ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Logged-in user ID is not available.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      );
+      return _errorPage(context, 'Logged-in user ID is not available.');
     }
 
-    // ===========================================================
+    //=============================================================
     // CURRENT COMPANY ID
-    // ===========================================================
+    //=============================================================
     //
-    // CREATE:
-    // CurrentUser.companyId
+    // CurrentUser.companyId is authoritative.
     //
-    // UPDATE:
-    // Existing account-এর companyId নয়,
-    // CurrentUser.companyId-ই authoritative।
+    // অন্য company-এর account edit করার সুযোগ থাকবে না।
     //
-    // এতে অন্য company-এর account edit করার সুযোগ থাকবে না।
-    //
-    // ===========================================================
+    //=============================================================
 
     final String companyId = user.companyId.trim();
 
-    // ===========================================================
+    //=============================================================
     // COMPANY ID VALIDATION
-    // ===========================================================
+    //=============================================================
 
     if (companyId.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            isEdit
-                ? 'Edit Employee Account'
-                : 'Create Employee Account',
-          ),
-        ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Company information is not available for this account.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
+      return _errorPage(
+        context,
+        'Company information is not available for this account.',
       );
     }
 
-    // ===========================================================
+    //=============================================================
     // DEBUG
-    // ===========================================================
+    //=============================================================
 
-    debugPrint(
-      '================================================',
-    );
+    debugPrint('================================================');
 
-    debugPrint(
-      'EMPLOYEE ACCOUNT FORM USER',
-    );
+    debugPrint('EMPLOYEE ACCOUNT FORM USER');
 
-    debugPrint(
-      'User ID       => $currentUserId',
-    );
+    debugPrint('User ID       => $currentUserId');
 
-    debugPrint(
-      'Login Name    => ${user.loginName}',
-    );
+    debugPrint('Login Name    => ${user.loginName}');
 
-    debugPrint(
-      'User Type     => ${user.userType.name}',
-    );
+    debugPrint('User Type     => ${user.userType.name}');
 
-    debugPrint(
-      'Company ID    => $companyId',
-    );
+    debugPrint('Company ID    => $companyId');
 
-    debugPrint(
-      'Account ID    => ${account?.id}',
-    );
+    debugPrint('Account ID    => ${account?.id}');
 
-    debugPrint(
-      'Account User  => ${account?.username}',
-    );
+    debugPrint('Account User  => ${account?.username}');
 
-    debugPrint(
-      'Is Edit       => $isEdit',
-    );
+    debugPrint('Is Edit       => $isEdit');
 
-    debugPrint(
-      '================================================',
-    );
+    debugPrint('================================================');
 
-    // ===========================================================
+    //=============================================================
     // PAGE
-    // ===========================================================
+    //=============================================================
 
     return Scaffold(
-      // =========================================================
+      //===========================================================
       // APP BAR
-      // =========================================================
+      //===========================================================
+      appBar: AppBar(title: Text(_pageTitle())),
 
-      appBar: AppBar(
-        title: Text(
-          isEdit
-              ? 'Edit Employee Account'
-              : 'Create Employee Account',
-        ),
-      ),
-
-      // =========================================================
+      //===========================================================
       // BODY
-      // =========================================================
-
+      //===========================================================
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: EmployeeAccountForm(
-            // ===================================================
-            // COMPANY
-            // ===================================================
-            //
-            // Edit হলে existing company দেখাবে।
-            // Create হলে CurrentUser company দেখাবে।
-            //
-            // Form থেকে companyId submit হলেও Page
-            // validated companyId ব্যবহার করবে।
-            //
-            // ===================================================
+        child: EmployeeAccountForm(
+          //=======================================================
+          // COMPANY
+          //=======================================================
+          initialCompanyId: account?.companyId ?? companyId,
 
-            initialCompanyId:
-            account?.companyId ?? companyId,
+          //=======================================================
+          // DEPARTMENT
+          //=======================================================
+          initialDepartmentId: account?.departmentId,
 
-            // ===================================================
-            // DEPARTMENT
-            // ===================================================
+          //=======================================================
+          // EMPLOYEE
+          //=======================================================
+          initialEmployeeId: account?.employeeId,
 
-            initialDepartmentId:
-            account?.departmentId,
+          //=======================================================
+          // USERNAME
+          //=======================================================
+          initialUsername: account?.username ?? '',
 
-            // ===================================================
-            // EMPLOYEE
-            // ===================================================
+          //=======================================================
+          // PASSWORD
+          //=======================================================
+          //
+          // Existing password কখনো load করা হবে না।
+          //
+          //=======================================================
+          initialPassword: '',
 
-            initialEmployeeId:
-            account?.employeeId,
+          //=======================================================
+          // ACCOUNT STATUS
+          //=======================================================
+          initialCanLogin: account?.canLogin ?? true,
 
-            // ===================================================
-            // USERNAME
-            // ===================================================
+          initialIsActive: account?.isActive ?? true,
 
-            initialUsername:
-            account?.username ?? '',
+          initialIsLocked: account?.isLocked ?? false,
 
-            // ===================================================
-            // PASSWORD
-            // ===================================================
-            //
-            // Existing password কখনো form-এ load করা হচ্ছে না।
-            //
-            // Edit-এর সময় নতুন password দিলে update হবে।
-            //
-            // ===================================================
+          //=======================================================
+          // LOADING
+          //=======================================================
+          isLoading: state.isSaving,
 
-            initialPassword: '',
-
-            // ===================================================
-            // ACCOUNT STATUS
-            // ===================================================
-
-            initialCanLogin:
-            account?.canLogin ?? true,
-
-            initialIsActive:
-            account?.isActive ?? true,
-
-            initialIsLocked:
-            account?.isLocked ?? false,
-
-            // ===================================================
-            // LOADING
-            // ===================================================
-
-            isLoading: state.isSaving,
-
-            // ===================================================
-            // SUBMIT
-            // ===================================================
-
-            onSubmit: (
+          //=======================================================
+          // SUBMIT
+          //=======================================================
+          onSubmit:
+              (
                 submittedCompanyId,
                 departmentId,
                 employeeId,
@@ -295,333 +243,243 @@ class EmployeeAccountFormPage extends ConsumerWidget {
                 canLogin,
                 isActive,
                 isLocked,
-                ) async {
-              // =================================================
-              // IMPORTANT
-              // =================================================
-              //
-              // Form থেকে companyId আসলেও সেটার উপর
-              // নির্ভর করা হচ্ছে না।
-              //
-              // CurrentUser.companyId validated value ব্যবহার করা
-              // হচ্ছে।
-              //
-              // =================================================
-
-              final String finalCompanyId = companyId;
-
-              // =================================================
-              // PASSWORD
-              // =================================================
-              //
-              // Create:
-              // নতুন password ব্যবহার হবে।
-              //
-              // Edit:
-              // password empty হলে existing passwordHash
-              // preserve করা হবে।
-              //
-              // =================================================
-
-              final String finalPasswordHash =
-              password.trim().isNotEmpty
-                  ? password.trim()
-                  : (account?.passwordHash ?? '');
-
-              // =================================================
-              // ENTITY
-              // =================================================
-
-              final entity = EmployeeAccountEntity(
-                // ------------------------------------------------
-                // ID
-                // ------------------------------------------------
-
-                id: account?.id ?? '',
-
-                // ------------------------------------------------
-                // COMPANY
-                // ------------------------------------------------
-
-                companyId: finalCompanyId,
-
-                // ------------------------------------------------
-                // DEPARTMENT
-                // ------------------------------------------------
-
-                departmentId: departmentId,
-
-                // ------------------------------------------------
-                // EMPLOYEE
-                // ------------------------------------------------
-
-                employeeId: employeeId,
-
-                // ------------------------------------------------
-                // DISPLAY DATA
-                // ------------------------------------------------
+              ) async {
+                //=====================================================
+                // IMPORTANT
+                //=====================================================
                 //
-                // এগুলো database insert/update-এ ব্যবহার হবে না।
+                // Form থেকে submittedCompanyId আসলেও
+                // সেটার উপর নির্ভর করা হচ্ছে না।
                 //
-                // ------------------------------------------------
-
-                employeeName:
-                account?.employeeName,
-
-                companyName:
-                account?.companyName,
-
-                departmentName:
-                account?.departmentName,
-
-                // ------------------------------------------------
-                // ACCOUNT
-                // ------------------------------------------------
-
-                username: username.trim(),
-
-                passwordHash:
-                finalPasswordHash,
-
-                canLogin: canLogin,
-
-                isActive: isActive,
-
-                isLocked: isLocked,
-
-                // ------------------------------------------------
-                // LOGIN DATA
-                // ------------------------------------------------
+                // CurrentUser.companyId ব্যবহার করা হচ্ছে।
                 //
-                // Existing values preserve করছি।
+                //=====================================================
+
+                final String finalCompanyId = companyId;
+
+                //=====================================================
+                // PASSWORD
+                //=====================================================
                 //
-                // ------------------------------------------------
-
-                failedLoginAttempts:
-                account?.failedLoginAttempts ?? 0,
-
-                lastLoginAt:
-                account?.lastLoginAt,
-
-                lastLoginIp:
-                account?.lastLoginIp,
-
-                // ------------------------------------------------
-                // PASSWORD DATA
-                // ------------------------------------------------
-
-                passwordChangedAt:
-                account?.passwordChangedAt,
-
-                passwordResetToken:
-                account?.passwordResetToken,
-
-                passwordResetExpireAt:
-                account?.passwordResetExpireAt,
-
-                forceChangePassword:
-                account?.forceChangePassword ?? true,
-
-                passwordExpireAt:
-                account?.passwordExpireAt,
-
-                accountLockedAt:
-                account?.accountLockedAt,
-
-                // ------------------------------------------------
-                // CREATED BY
-                // ------------------------------------------------
+                // Create:
+                // নতুন password ব্যবহার হবে।
                 //
-                // CREATE:
-                // Current logged-in user
+                // Edit:
+                // password empty হলে existing passwordHash preserve।
                 //
-                // UPDATE:
-                // Original createdBy preserve হবে।
-                //
-                // ------------------------------------------------
+                //=====================================================
 
-                createdBy: isEdit
-                    ? account?.createdBy
-                    : currentUserId,
+                final String finalPasswordHash = password.trim().isNotEmpty
+                    ? password.trim()
+                    : (account?.passwordHash ?? '');
 
-                // ------------------------------------------------
-                // CREATED AT
-                // ------------------------------------------------
-                //
-                // Existing record হলে original value preserve।
-                //
-                // Create হলে temporary DateTime দেওয়া হচ্ছে।
-                // Database default থাকলে repository payload-এ
-                // এটি ব্যবহার করা হবে না।
-                //
-                // ------------------------------------------------
+                //=====================================================
+                // ENTITY
+                //=====================================================
 
-                createdAt:
-                account?.createdAt ??
-                    DateTime.now(),
+                final entity = EmployeeAccountEntity(
+                  //===================================================
+                  // ID
+                  //===================================================
+                  id: account?.id ?? '',
 
-                // ------------------------------------------------
-                // UPDATED BY
-                // ------------------------------------------------
-                //
-                // সবসময় current logged-in user।
-                //
-                // ------------------------------------------------
+                  //===================================================
+                  // COMPANY
+                  //===================================================
+                  companyId: finalCompanyId,
 
-                updatedBy:
-                currentUserId,
+                  //===================================================
+                  // DEPARTMENT
+                  //===================================================
+                  departmentId: departmentId,
 
-                // ------------------------------------------------
-                // UPDATED AT
-                // ------------------------------------------------
+                  //===================================================
+                  // EMPLOYEE
+                  //===================================================
+                  employeeId: employeeId,
 
-                updatedAt:
-                DateTime.now(),
-              );
+                  //===================================================
+                  // DISPLAY DATA
+                  //===================================================
+                  employeeName: account?.employeeName,
 
-              // =================================================
-              // DEBUG ENTITY
-              // =================================================
+                  companyName: account?.companyName,
 
-              debugPrint(
-                '================ EMPLOYEE ACCOUNT SAVE ================',
-              );
+                  departmentName: account?.departmentName,
 
-              debugPrint(
-                'Mode          => '
-                    '${isEdit ? 'UPDATE' : 'CREATE'}',
-              );
+                  //===================================================
+                  // ACCOUNT
+                  //===================================================
+                  username: username.trim(),
 
-              debugPrint(
-                'Account ID    => ${entity.id}',
-              );
+                  passwordHash: finalPasswordHash,
 
-              debugPrint(
-                'Username      => ${entity.username}',
-              );
+                  canLogin: canLogin,
 
-              debugPrint(
-                'Company ID    => ${entity.companyId}',
-              );
+                  isActive: isActive,
 
-              debugPrint(
-                'Department ID => ${entity.departmentId}',
-              );
+                  isLocked: isLocked,
 
-              debugPrint(
-                'Employee ID   => ${entity.employeeId}',
-              );
+                  //===================================================
+                  // LOGIN DATA
+                  //===================================================
+                  failedLoginAttempts: account?.failedLoginAttempts ?? 0,
 
-              debugPrint(
-                'Created By    => ${entity.createdBy}',
-              );
+                  lastLoginAt: account?.lastLoginAt,
 
-              debugPrint(
-                'Updated By    => ${entity.updatedBy}',
-              );
+                  lastLoginIp: account?.lastLoginIp,
 
-              debugPrint(
-                'Can Login     => ${entity.canLogin}',
-              );
+                  //===================================================
+                  // PASSWORD DATA
+                  //===================================================
+                  passwordChangedAt: account?.passwordChangedAt,
 
-              debugPrint(
-                'Is Active     => ${entity.isActive}',
-              );
+                  passwordResetToken: account?.passwordResetToken,
 
-              debugPrint(
-                'Is Locked     => ${entity.isLocked}',
-              );
+                  passwordResetExpireAt: account?.passwordResetExpireAt,
 
-              debugPrint(
-                '==========================================================',
-              );
+                  forceChangePassword: account?.forceChangePassword ?? true,
 
-              // =================================================
-              // SAVE
-              // =================================================
+                  passwordExpireAt: account?.passwordExpireAt,
 
-              try {
-                // =================================================
-                // UPDATE
-                // =================================================
+                  accountLockedAt: account?.accountLockedAt,
 
-                if (isEdit) {
-                  await ref
-                      .read(
-                    employeeAccountProvider
-                        .notifier,
-                  )
-                      .updateAccount(
-                    entity,
-                  );
-                }
+                  //===================================================
+                  // CREATED BY
+                  //===================================================
+                  createdBy: isEdit ? account?.createdBy : currentUserId,
 
-                // =================================================
-                // CREATE
-                // =================================================
+                  //===================================================
+                  // CREATED AT
+                  //===================================================
+                  createdAt: account?.createdAt ?? DateTime.now(),
 
-                else {
-                  await ref
-                      .read(
-                    employeeAccountProvider
-                        .notifier,
-                  )
-                      .createAccount(
-                    entity,
-                  );
-                }
+                  //===================================================
+                  // UPDATED BY
+                  //===================================================
+                  updatedBy: currentUserId,
 
-                // =================================================
-                // SUCCESS
-                // =================================================
-
-                if (!context.mounted) {
-                  return;
-                }
-
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      isEdit
-                          ? 'Employee account updated successfully.'
-                          : 'Employee account created successfully.',
-                    ),
-                  ),
+                  //===================================================
+                  // UPDATED AT
+                  //===================================================
+                  updatedAt: DateTime.now(),
                 );
 
-                // =================================================
-                // BACK
-                // =================================================
-
-                context.pop(true);
-              } catch (e) {
-                // =================================================
-                // ERROR
-                // =================================================
+                //=====================================================
+                // DEBUG ENTITY
+                //=====================================================
 
                 debugPrint(
-                  'Employee Account Save Error => $e',
+                  '================ EMPLOYEE ACCOUNT SAVE ================',
                 );
 
-                if (!context.mounted) {
-                  return;
-                }
+                debugPrint(
+                  'Mode          => '
+                  '${isEdit ? 'UPDATE' : 'CREATE'}',
+                );
 
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(
-                  SnackBar(
-                    backgroundColor: Colors.red,
-                    content: Text(
-                      e.toString(),
+                debugPrint('Account ID    => ${entity.id}');
+
+                debugPrint('Username      => ${entity.username}');
+
+                debugPrint('Company ID    => ${entity.companyId}');
+
+                debugPrint('Department ID => ${entity.departmentId}');
+
+                debugPrint('Employee ID   => ${entity.employeeId}');
+
+                debugPrint('Created By    => ${entity.createdBy}');
+
+                debugPrint('Updated By    => ${entity.updatedBy}');
+
+                debugPrint('Can Login     => ${entity.canLogin}');
+
+                debugPrint('Is Active     => ${entity.isActive}');
+
+                debugPrint('Is Locked     => ${entity.isLocked}');
+
+                debugPrint(
+                  '==========================================================',
+                );
+
+                //=====================================================
+                // SAVE
+                //=====================================================
+
+                try {
+                  //===================================================
+                  // UPDATE
+                  //===================================================
+
+                  if (isEdit) {
+                    await ref
+                        .read(employeeAccountProvider.notifier)
+                        .updateAccount(entity);
+                  }
+                  //===================================================
+                  // CREATE
+                  //===================================================
+                  else {
+                    await ref
+                        .read(employeeAccountProvider.notifier)
+                        .createAccount(entity);
+                  }
+
+                  //===================================================
+                  // SUCCESS
+                  //===================================================
+
+                  if (!context.mounted) {
+                    return;
+                  }
+
+                  final theme = Theme.of(context);
+
+                  final colorScheme = theme.colorScheme;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: colorScheme.inverseSurface,
+                      content: Text(
+                        isEdit
+                            ? 'Employee account updated successfully.'
+                            : 'Employee account created successfully.',
+                        style: TextStyle(color: colorScheme.onInverseSurface),
+                      ),
                     ),
-                  ),
-                );
-              }
-            },
-          ),
+                  );
+
+                  //===================================================
+                  // BACK
+                  //===================================================
+
+                  context.pop(true);
+                } catch (e) {
+                  //===================================================
+                  // ERROR
+                  //===================================================
+
+                  debugPrint('Employee Account Save Error => $e');
+
+                  if (!context.mounted) {
+                    return;
+                  }
+
+                  final theme = Theme.of(context);
+
+                  final colorScheme = theme.colorScheme;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: colorScheme.error,
+                      content: Text(
+                        e.toString(),
+                        style: TextStyle(color: colorScheme.onError),
+                      ),
+                    ),
+                  );
+                }
+              },
         ),
       ),
     );

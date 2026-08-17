@@ -27,259 +27,520 @@ class EmployeeAccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          //=======================================================
-          // Header
-          //=======================================================
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 26,
-                child: Text(
-                  account.username.isEmpty
-                      ? '?'
-                      : account.username[0].toUpperCase(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+    final isWide = MediaQuery.sizeOf(context).width >= 600;
+
+    final employeeName =
+    account.employeeName?.trim().isNotEmpty == true
+        ? account.employeeName!.trim()
+        : 'Unknown Employee';
+
+    final username =
+    account.username.trim().isEmpty
+        ? '-'
+        : account.username.trim();
+
+    final avatarText =
+    username == '-'
+        ? '?'
+        : username.substring(0, 1).toUpperCase();
+
+    return AppCard(
+      child: Padding(
+        padding: EdgeInsets.all(
+          isWide ? 20 : 16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // =====================================================
+            // HEADER
+            // =====================================================
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: isWide ? 28 : 26,
+                  backgroundColor:
+                  colorScheme.primaryContainer,
+                  foregroundColor:
+                  colorScheme.onPrimaryContainer,
+                  child: Text(
+                    avatarText,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 12),
+                SizedBox(
+                  width: isWide ? 14 : 12,
+                ),
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      account.employeeName?.isNotEmpty == true
-                          ? account.employeeName!
-                          : 'Unknown Employee',
-                      style: Theme.of(context).textTheme.titleMedium,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        employeeName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                        textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(height: 3),
+
+                      Text(
+                        username,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodySmall?.copyWith(
+                          color:
+                          colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 4),
+
+                // =================================================
+                // MENU
+                // =================================================
+
+                PopupMenuButton<String>(
+                  tooltip: 'Account actions',
+                  icon: const Icon(
+                    Icons.more_vert_rounded,
+                  ),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'view':
+                        onView?.call();
+                        break;
+
+                      case 'edit':
+                        onEdit();
+                        break;
+
+                      case 'active':
+                        onToggleActive?.call();
+                        break;
+
+                      case 'login':
+                        onToggleCanLogin?.call();
+                        break;
+
+                      case 'lock':
+                        onToggleLock?.call();
+                        break;
+
+                      case 'delete':
+                        onDelete();
+                        break;
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    // ===========================================
+                    // VIEW
+                    // ===========================================
+
+                    const PopupMenuItem<String>(
+                      value: 'view',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Icons.visibility_outlined,
+                        ),
+                        title: Text('View'),
+                      ),
                     ),
 
-                    const SizedBox(height: 2),
+                    // ===========================================
+                    // EDIT
+                    // ===========================================
 
-                    Text(
-                      account.username.isEmpty
-                          ? '-'
-                          : account.username,
-                      style: Theme.of(context).textTheme.bodySmall,
+                    const PopupMenuItem<String>(
+                      value: 'edit',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Icons.edit_outlined,
+                        ),
+                        title: Text('Edit'),
+                      ),
+                    ),
+
+                    // ===========================================
+                    // ACTIVE / DEACTIVE
+                    // ===========================================
+
+                    PopupMenuItem<String>(
+                      value: 'active',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          account.isActive
+                              ? Icons.toggle_on_rounded
+                              : Icons.toggle_off_rounded,
+                        ),
+                        title: Text(
+                          account.isActive
+                              ? 'Deactivate'
+                              : 'Activate',
+                        ),
+                      ),
+                    ),
+
+                    // ===========================================
+                    // LOGIN
+                    // ===========================================
+
+                    PopupMenuItem<String>(
+                      value: 'login',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          account.canLogin
+                              ? Icons.login_rounded
+                              : Icons.login_outlined,
+                        ),
+                        title: Text(
+                          account.canLogin
+                              ? 'Disable Login'
+                              : 'Enable Login',
+                        ),
+                      ),
+                    ),
+
+                    // ===========================================
+                    // LOCK
+                    // ===========================================
+
+                    PopupMenuItem<String>(
+                      value: 'lock',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          account.isLocked
+                              ? Icons.lock_open_rounded
+                              : Icons.lock_outline_rounded,
+                        ),
+                        title: Text(
+                          account.isLocked
+                              ? 'Unlock'
+                              : 'Lock',
+                        ),
+                      ),
+                    ),
+
+                    // ===========================================
+                    // DELETE
+                    // ===========================================
+
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Icons.delete_outline_rounded,
+                          color: colorScheme.error,
+                        ),
+                        title: Text(
+                          'Delete',
+                          style: TextStyle(
+                            color: colorScheme.error,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
+              ],
+            ),
 
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
-                    case 'view':
-                      onView?.call();
-                      break;
+            SizedBox(
+              height: isWide ? 20 : 16,
+            ),
 
-                    case 'edit':
-                      onEdit();
-                      break;
+            // =====================================================
+            // INFORMATION
+            // =====================================================
 
-                    case 'active':
-                      onToggleActive?.call();
-                      break;
+            if (isWide)
+              Row(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _infoRow(
+                          context,
+                          Icons.person_outline_rounded,
+                          account.employeeName
+                              ?.trim()
+                              .isNotEmpty ==
+                              true
+                              ? account.employeeName!
+                              : account.employeeId,
+                        ),
 
-                    case 'login':
-                      onToggleCanLogin?.call();
-                      break;
-
-                    case 'lock':
-                      onToggleLock?.call();
-                      break;
-
-                    case 'delete':
-                      onDelete();
-                      break;
-                  }
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(
-                    value: 'view',
-                    child: Text('View'),
-                  ),
-
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
-
-                  PopupMenuItem(
-                    value: 'active',
-                    child: Text(
-                      account.isActive
-                          ? 'Deactivate'
-                          : 'Activate',
+                        _infoRow(
+                          context,
+                          Icons.business_outlined,
+                          account.companyName
+                              ?.trim()
+                              .isNotEmpty ==
+                              true
+                              ? account.companyName!
+                              : account.companyId,
+                        ),
+                      ],
                     ),
                   ),
 
-                  PopupMenuItem(
-                    value: 'login',
-                    child: Text(
-                      account.canLogin
-                          ? 'Disable Login'
-                          : 'Enable Login',
+                  const SizedBox(width: 20),
+
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _infoRow(
+                          context,
+                          Icons.apartment_outlined,
+                          account.departmentName
+                              ?.trim()
+                              .isNotEmpty ==
+                              true
+                              ? account.departmentName!
+                              : account.departmentId,
+                        ),
+
+                        _infoRow(
+                          context,
+                          Icons.account_circle_outlined,
+                          username,
+                        ),
+                      ],
                     ),
                   ),
-
-                  PopupMenuItem(
-                    value: 'lock',
-                    child: Text(
-                      account.isLocked
-                          ? 'Unlock'
-                          : 'Lock',
-                    ),
+                ],
+              )
+            else
+              Column(
+                children: [
+                  _infoRow(
+                    context,
+                    Icons.person_outline_rounded,
+                    account.employeeName
+                        ?.trim()
+                        .isNotEmpty ==
+                        true
+                        ? account.employeeName!
+                        : account.employeeId,
                   ),
 
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete'),
+                  _infoRow(
+                    context,
+                    Icons.business_outlined,
+                    account.companyName
+                        ?.trim()
+                        .isNotEmpty ==
+                        true
+                        ? account.companyName!
+                        : account.companyId,
+                  ),
+
+                  _infoRow(
+                    context,
+                    Icons.apartment_outlined,
+                    account.departmentName
+                        ?.trim()
+                        .isNotEmpty ==
+                        true
+                        ? account.departmentName!
+                        : account.departmentId,
+                  ),
+
+                  _infoRow(
+                    context,
+                    Icons.account_circle_outlined,
+                    username,
                   ),
                 ],
               ),
-            ],
-          ),
 
-          const SizedBox(height: 16),
+            SizedBox(
+              height: isWide ? 12 : 8,
+            ),
 
-          //=======================================================
-          // Employee
-          //=======================================================
+            // =====================================================
+            // STATUS CHIPS
+            // =====================================================
 
-          _infoRow(
-            Icons.person_outline,
-            account.employeeName?.isNotEmpty == true
-                ? account.employeeName!
-                : account.employeeId,
-          ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // =================================================
+                // ACTIVE
+                // =================================================
 
-          //=======================================================
-          // Company
-          //=======================================================
-
-          _infoRow(
-            Icons.business_outlined,
-            account.companyName?.isNotEmpty == true
-                ? account.companyName!
-                : account.companyId,
-          ),
-
-          //=======================================================
-          // Department
-          //=======================================================
-
-          _infoRow(
-            Icons.apartment_outlined,
-            account.departmentName?.isNotEmpty == true
-                ? account.departmentName!
-                : account.departmentId,
-          ),
-
-          //=======================================================
-          // Username
-          //=======================================================
-
-          _infoRow(
-            Icons.account_circle_outlined,
-            account.username.isEmpty
-                ? '-'
-                : account.username,
-          ),
-
-          const SizedBox(height: 8),
-
-          //=======================================================
-          // Status Chips
-          //=======================================================
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              // Active
-              Chip(
-                backgroundColor: account.isActive
-                    ? Colors.green.shade100
-                    : Colors.red.shade100,
-                label: Text(
-                  account.isActive
+                _statusChip(
+                  context: context,
+                  icon: account.isActive
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.cancel_outlined,
+                  label: account.isActive
                       ? 'Active'
                       : 'Inactive',
+                  color: account.isActive
+                      ? colorScheme.primary
+                      : colorScheme.error,
                 ),
-              ),
 
-              // Login
-              Chip(
-                backgroundColor: account.canLogin
-                    ? Colors.blue.shade100
-                    : Colors.orange.shade100,
-                label: Text(
-                  account.canLogin
+                // =================================================
+                // LOGIN
+                // =================================================
+
+                _statusChip(
+                  context: context,
+                  icon: account.canLogin
+                      ? Icons.login_rounded
+                      : Icons.login_outlined,
+                  label: account.canLogin
                       ? 'Login Enabled'
                       : 'Login Disabled',
+                  color: account.canLogin
+                      ? colorScheme.secondary
+                      : colorScheme.tertiary,
                 ),
-              ),
 
-              // Lock
-              Chip(
-                backgroundColor: account.isLocked
-                    ? Colors.red.shade100
-                    : Colors.green.shade100,
-                label: Text(
-                  account.isLocked
+                // =================================================
+                // LOCK
+                // =================================================
+
+                _statusChip(
+                  context: context,
+                  icon: account.isLocked
+                      ? Icons.lock_outline_rounded
+                      : Icons.lock_open_outlined,
+                  label: account.isLocked
                       ? 'Locked'
                       : 'Unlocked',
+                  color: account.isLocked
+                      ? colorScheme.error
+                      : colorScheme.primary,
                 ),
-              ),
 
-              // Force Password Change
-              if (account.forceChangePassword)
-                Chip(
-                  backgroundColor: Colors.amber.shade100,
-                  label: const Text(
-                    'Change Password',
+                // =================================================
+                // FORCE PASSWORD CHANGE
+                // =================================================
+
+                if (account.forceChangePassword)
+                  _statusChip(
+                    context: context,
+                    icon: Icons.password_rounded,
+                    label: 'Change Password',
+                    color: colorScheme.tertiary,
                   ),
-                ),
-            ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // INFO ROW
+  // =============================================================
+
+  Widget _infoRow(
+      BuildContext context,
+      IconData icon,
+      String text,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final value =
+    text.trim().isEmpty ? '-' : text.trim();
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: 10,
+      ),
+      child: Row(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: colorScheme.onSurfaceVariant,
+          ),
+
+          const SizedBox(width: 9),
+
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _infoRow(
-      IconData icon,
-      String text,
-      ) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        bottom: 8,
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 18,
-          ),
+  // =============================================================
+  // STATUS CHIP
+  // =============================================================
 
-          const SizedBox(width: 8),
+  Widget _statusChip({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
 
-          Expanded(
-            child: Text(
-              text.isEmpty ? '-' : text,
-            ),
-          ),
-        ],
+    return Chip(
+      avatar: Icon(
+        icon,
+        size: 17,
+        color: color,
       ),
+      label: Text(
+        label,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      backgroundColor: color.withValues(
+        alpha: 0.10,
+      ),
+      side: BorderSide(
+        color: color.withValues(
+          alpha: 0.20,
+        ),
+      ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize:
+      MaterialTapTargetSize.shrinkWrap,
     );
   }
 }

@@ -2,7 +2,7 @@
 /// Flutter HRMS Pro
 /// Supervisor Department Assignment Management Page
 ///
-/// Version : 3.0.0
+/// Version : 3.1.0
 ///
 /// Purpose:
 /// - Company ID comes automatically from logged-in CurrentUser
@@ -20,6 +20,7 @@
 ///
 /// IMPORTANT:
 /// Company is NOT selected manually on this page.
+///
 /// Company ID comes from:
 ///
 /// currentUserProvider
@@ -40,9 +41,7 @@ import '../providers/supervisor_state.dart';
 
 class SupervisorDepartmentAssignmentManagementPage
     extends ConsumerStatefulWidget {
-  const SupervisorDepartmentAssignmentManagementPage({
-    super.key,
-  });
+  const SupervisorDepartmentAssignmentManagementPage({super.key});
 
   @override
   ConsumerState<SupervisorDepartmentAssignmentManagementPage> createState() =>
@@ -65,7 +64,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // =============================================================
   // LOGIN USER COMPANY NAME
   //
-  // Only displayed as information.
+  // Information only.
   // No company dropdown is used.
   // =============================================================
 
@@ -80,7 +79,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // =============================================================
   // CURRENT SELECTED DEPARTMENTS
   //
-  // This represents the desired final state.
+  // Represents the desired final state.
   // =============================================================
 
   final Set<String> _selectedDepartmentIds = <String>{};
@@ -113,9 +112,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
   void initState() {
     super.initState();
 
-    Future.microtask(
-      _initializePage,
-    );
+    Future.microtask(_initializePage);
   }
 
   // =============================================================
@@ -129,14 +126,18 @@ class _SupervisorDepartmentAssignmentManagementPageState
       return;
     }
 
+    if (_isInitializing == false) {
+      setState(() {
+        _isInitializing = true;
+      });
+    }
+
     try {
       // ---------------------------------------------------------
       // GET CURRENT LOGGED-IN USER
       // ---------------------------------------------------------
 
-      final currentUser = ref.read(
-        currentUserProvider,
-      );
+      final currentUser = ref.read(currentUserProvider);
 
       // ---------------------------------------------------------
       // USER VALIDATION
@@ -151,9 +152,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
           _isInitializing = false;
         });
 
-        _showMessage(
-          'Current user information is not available.',
-        );
+        _showMessage('Current user information is not available.');
 
         return;
       }
@@ -161,7 +160,6 @@ class _SupervisorDepartmentAssignmentManagementPageState
       // ---------------------------------------------------------
       // COMPANY ID
       //
-      // IMPORTANT:
       // No company dropdown.
       // No manual company selection.
       // ---------------------------------------------------------
@@ -177,9 +175,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
           _isInitializing = false;
         });
 
-        _showMessage(
-          'Company information is not available for this account.',
-        );
+        _showMessage('Company information is not available for this account.');
 
         return;
       }
@@ -188,26 +184,35 @@ class _SupervisorDepartmentAssignmentManagementPageState
       // COMPANY NAME
       // ---------------------------------------------------------
 
-      final companyName = currentUser.companyName
-          ?.trim();
+      final companyName = currentUser.companyName?.trim();
 
       // ---------------------------------------------------------
       // STORE COMPANY CONTEXT
       // ---------------------------------------------------------
 
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _companyId = companyId;
 
-        _companyName = companyName == null ||
-            companyName.isEmpty
+        _companyName = companyName == null || companyName.isEmpty
             ? null
             : companyName;
+
+        _selectedSupervisorId = null;
+
+        _selectedDepartmentIds.clear();
+        _originalDepartmentIds.clear();
+
+        _isLoadingAssignments = false;
       });
 
       // ---------------------------------------------------------
       // LOAD COMPANY DATA
       //
-      // Existing SupervisorNotifier already supports:
+      // Existing SupervisorNotifier method:
       //
       // selectCompany(companyId)
       //
@@ -216,21 +221,33 @@ class _SupervisorDepartmentAssignmentManagementPageState
       // - supervisors
       // ---------------------------------------------------------
 
-      await ref
-          .read(supervisorProvider.notifier)
-          .selectCompany(companyId);
+      await ref.read(supervisorProvider.notifier).selectCompany(companyId);
 
       // ---------------------------------------------------------
-      // FINISHED
+      // MOUNT CHECK
       // ---------------------------------------------------------
 
       if (!mounted) {
         return;
       }
 
+      // ---------------------------------------------------------
+      // FINISHED
+      // ---------------------------------------------------------
+
       setState(() {
         _isInitializing = false;
       });
+
+      // ---------------------------------------------------------
+      // SHOW PROVIDER ERROR IF AVAILABLE
+      // ---------------------------------------------------------
+
+      final state = ref.read(supervisorProvider);
+
+      if (state.errorMessage != null && state.errorMessage!.trim().isNotEmpty) {
+        _showMessage(state.errorMessage!);
+      }
     } catch (e) {
       if (!mounted) {
         return;
@@ -240,9 +257,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
         _isInitializing = false;
       });
 
-      _showMessage(
-        'Failed to load company information.',
-      );
+      _showMessage('Failed to load company information.');
     }
   }
 
@@ -250,15 +265,16 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // SUPERVISOR CHANGE
   // =============================================================
 
-  Future<void> _onSupervisorChanged(
-      String? supervisorId,
-      ) async {
+  Future<void> _onSupervisorChanged(String? supervisorId) async {
     // -----------------------------------------------------------
     // CLEAR SUPERVISOR
     // -----------------------------------------------------------
 
-    if (supervisorId == null ||
-        supervisorId.trim().isEmpty) {
+    if (supervisorId == null || supervisorId.trim().isEmpty) {
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _selectedSupervisorId = null;
 
@@ -273,17 +289,12 @@ class _SupervisorDepartmentAssignmentManagementPageState
 
     // -----------------------------------------------------------
     // COMPANY ID
-    //
-    // Comes from logged-in user.
     // -----------------------------------------------------------
 
     final companyId = _companyId;
 
-    if (companyId == null ||
-        companyId.trim().isEmpty) {
-      _showMessage(
-        'Company information is not available.',
-      );
+    if (companyId == null || companyId.trim().isEmpty) {
+      _showMessage('Company information is not available.');
 
       return;
     }
@@ -297,6 +308,10 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // -----------------------------------------------------------
     // UPDATE UI
     // -----------------------------------------------------------
+
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
       _selectedSupervisorId = requestedSupervisorId;
@@ -315,9 +330,9 @@ class _SupervisorDepartmentAssignmentManagementPageState
       final assignedDepartments = await ref
           .read(supervisorProvider.notifier)
           .loadSupervisorDepartmentAssignments(
-        companyId: companyId,
-        supervisorId: requestedSupervisorId,
-      );
+            companyId: companyId,
+            supervisorId: requestedSupervisorId,
+          );
 
       // ---------------------------------------------------------
       // MOUNT CHECK
@@ -328,12 +343,13 @@ class _SupervisorDepartmentAssignmentManagementPageState
       }
 
       // ---------------------------------------------------------
-      // PREVENT OLD ASYNC RESULT
-      // FROM OVERWRITING NEW SUPERVISOR
+      // IMPORTANT:
+      //
+      // Prevent an old async request from updating the current
+      // supervisor.
       // ---------------------------------------------------------
 
-      if (_selectedSupervisorId !=
-          requestedSupervisorId) {
+      if (_selectedSupervisorId != requestedSupervisorId) {
         return;
       }
 
@@ -344,15 +360,10 @@ class _SupervisorDepartmentAssignmentManagementPageState
       final ids = <String>{};
 
       for (final item in assignedDepartments) {
-        final departmentId = item['department_id']
-            ?.toString()
-            .trim();
+        final departmentId = item['department_id']?.toString().trim();
 
-        if (departmentId != null &&
-            departmentId.isNotEmpty) {
-          ids.add(
-            departmentId,
-          );
+        if (departmentId != null && departmentId.isNotEmpty) {
+          ids.add(departmentId);
         }
       }
 
@@ -376,13 +387,22 @@ class _SupervisorDepartmentAssignmentManagementPageState
         return;
       }
 
+      // ---------------------------------------------------------
+      // IMPORTANT:
+      //
+      // Do NOT allow an old request's error to modify the current
+      // supervisor's state.
+      // ---------------------------------------------------------
+
+      if (_selectedSupervisorId != requestedSupervisorId) {
+        return;
+      }
+
       setState(() {
         _isLoadingAssignments = false;
       });
 
-      _showMessage(
-        'Failed to load department assignments.',
-      );
+      _showMessage('Failed to load department assignments.');
     }
   }
 
@@ -390,24 +410,22 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // TOGGLE DEPARTMENT
   // =============================================================
 
-  void _toggleDepartment(
-      String departmentId,
-      ) {
-    if (_isLoadingAssignments) {
+  void _toggleDepartment(String departmentId) {
+    final id = departmentId.trim();
+
+    if (id.isEmpty || _isLoadingAssignments) {
+      return;
+    }
+
+    if (!mounted) {
       return;
     }
 
     setState(() {
-      if (_selectedDepartmentIds.contains(
-        departmentId,
-      )) {
-        _selectedDepartmentIds.remove(
-          departmentId,
-        );
+      if (_selectedDepartmentIds.contains(id)) {
+        _selectedDepartmentIds.remove(id);
       } else {
-        _selectedDepartmentIds.add(
-          departmentId,
-        );
+        _selectedDepartmentIds.add(id);
       }
     });
   }
@@ -416,9 +434,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // SELECT ALL
   // =============================================================
 
-  void _selectAllDepartments(
-      SupervisorState state,
-      ) {
+  void _selectAllDepartments(SupervisorState state) {
     if (_isLoadingAssignments) {
       return;
     }
@@ -426,14 +442,15 @@ class _SupervisorDepartmentAssignmentManagementPageState
     final ids = <String>{};
 
     for (final department in state.departments) {
-      final id = department['id']
-          ?.toString()
-          .trim();
+      final id = department['id']?.toString().trim();
 
-      if (id != null &&
-          id.isNotEmpty) {
+      if (id != null && id.isNotEmpty) {
         ids.add(id);
       }
+    }
+
+    if (!mounted) {
+      return;
     }
 
     setState(() {
@@ -452,6 +469,10 @@ class _SupervisorDepartmentAssignmentManagementPageState
       return;
     }
 
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _selectedDepartmentIds.clear();
     });
@@ -459,17 +480,16 @@ class _SupervisorDepartmentAssignmentManagementPageState
 
   // =============================================================
   // HAS CHANGES
+  //
+  // Compares selected state with original database state.
   // =============================================================
 
   bool _hasChanges() {
-    if (_selectedDepartmentIds.length !=
-        _originalDepartmentIds.length) {
+    if (_selectedDepartmentIds.length != _originalDepartmentIds.length) {
       return true;
     }
 
-    return !_selectedDepartmentIds.containsAll(
-      _originalDepartmentIds,
-    );
+    return !_selectedDepartmentIds.containsAll(_originalDepartmentIds);
   }
 
   // =============================================================
@@ -479,17 +499,12 @@ class _SupervisorDepartmentAssignmentManagementPageState
   Future<void> _saveAssignments() async {
     // -----------------------------------------------------------
     // COMPANY VALIDATION
-    //
-    // Company ID comes from CurrentUser.
     // -----------------------------------------------------------
 
     final companyId = _companyId;
 
-    if (companyId == null ||
-        companyId.trim().isEmpty) {
-      _showMessage(
-        'Company information is not available.',
-      );
+    if (companyId == null || companyId.trim().isEmpty) {
+      _showMessage('Company information is not available.');
 
       return;
     }
@@ -500,11 +515,8 @@ class _SupervisorDepartmentAssignmentManagementPageState
 
     final supervisorId = _selectedSupervisorId;
 
-    if (supervisorId == null ||
-        supervisorId.trim().isEmpty) {
-      _showMessage(
-        'Please select a supervisor.',
-      );
+    if (supervisorId == null || supervisorId.trim().isEmpty) {
+      _showMessage('Please select a supervisor.');
 
       return;
     }
@@ -514,10 +526,18 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // -----------------------------------------------------------
 
     if (_isLoadingAssignments) {
-      _showMessage(
-        'Please wait while assignments are loading.',
-      );
+      _showMessage('Please wait while assignments are loading.');
 
+      return;
+    }
+
+    // -----------------------------------------------------------
+    // PREVENT DUPLICATE SAVE
+    // -----------------------------------------------------------
+
+    final currentState = ref.read(supervisorProvider);
+
+    if (currentState.isSaving) {
       return;
     }
 
@@ -526,30 +546,33 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // -----------------------------------------------------------
 
     if (!_hasChanges()) {
-      _showMessage(
-        'No changes found.',
-      );
+      _showMessage('No changes found.');
 
       return;
     }
 
     // -----------------------------------------------------------
-    // SAVE
+    // CREATE FINAL LIST
     //
     // Empty list is intentionally allowed.
     //
     // If user removes every department,
-    // database will also remove all assignments.
+    // database should remove all assignments.
+    // -----------------------------------------------------------
+
+    final departmentIds = _selectedDepartmentIds.toList();
+
+    // -----------------------------------------------------------
+    // SAVE
     // -----------------------------------------------------------
 
     final success = await ref
         .read(supervisorProvider.notifier)
         .updateSupervisorDepartmentAssignments(
-      companyId: companyId,
-      supervisorId: supervisorId,
-      departmentIds:
-      _selectedDepartmentIds.toList(),
-    );
+          companyId: companyId,
+          supervisorId: supervisorId,
+          departmentIds: departmentIds,
+        );
 
     // -----------------------------------------------------------
     // MOUNT CHECK
@@ -564,37 +587,36 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // -----------------------------------------------------------
 
     if (!success) {
-      final state = ref.read(
-        supervisorProvider,
-      );
+      final state = ref.read(supervisorProvider);
+
+      final errorMessage = state.errorMessage;
 
       _showMessage(
-        state.errorMessage ??
-            'Failed to update supervisor departments.',
+        errorMessage == null || errorMessage.trim().isEmpty
+            ? 'Failed to update supervisor departments.'
+            : errorMessage,
       );
 
       return;
     }
 
     // -----------------------------------------------------------
-    // UPDATE ORIGINAL STATE
+    // IMPORTANT:
+    //
+    // Only update original state AFTER database save succeeds.
     // -----------------------------------------------------------
 
     setState(() {
       _originalDepartmentIds
         ..clear()
-        ..addAll(
-          _selectedDepartmentIds,
-        );
+        ..addAll(_selectedDepartmentIds);
     });
 
     // -----------------------------------------------------------
     // SUCCESS
     // -----------------------------------------------------------
 
-    _showMessage(
-      'Supervisor department assignments updated successfully.',
-    );
+    _showMessage('Supervisor department assignments updated successfully.');
   }
 
   // =============================================================
@@ -602,17 +624,19 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // =============================================================
 
   Map<String, dynamic>? _findSupervisor(
-      List<Map<String, dynamic>> supervisors,
-      String? supervisorId,
-      ) {
-    if (supervisorId == null ||
-        supervisorId.isEmpty) {
+    List<Map<String, dynamic>> supervisors,
+    String? supervisorId,
+  ) {
+    final id = supervisorId?.trim();
+
+    if (id == null || id.isEmpty) {
       return null;
     }
 
     for (final supervisor in supervisors) {
-      if (supervisor['id']?.toString() ==
-          supervisorId) {
+      final supervisorMapId = supervisor['id']?.toString().trim();
+
+      if (supervisorMapId == id) {
         return supervisor;
       }
     }
@@ -624,16 +648,11 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // NESTED MAP
   // =============================================================
 
-  Map<String, dynamic>? _nestedMap(
-      Map<String, dynamic> data,
-      String key,
-      ) {
+  Map<String, dynamic>? _nestedMap(Map<String, dynamic> data, String key) {
     final value = data[key];
 
     if (value is Map) {
-      return Map<String, dynamic>.from(
-        value,
-      );
+      return Map<String, dynamic>.from(value);
     }
 
     return null;
@@ -643,13 +662,8 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // SUPERVISOR NAME
   // =============================================================
 
-  String _supervisorName(
-      Map<String, dynamic> supervisor,
-      ) {
-    final employee = _nestedMap(
-      supervisor,
-      'employees',
-    );
+  String _supervisorName(Map<String, dynamic> supervisor) {
+    final employee = _nestedMap(supervisor, 'employees');
 
     if (employee == null) {
       return 'Unknown Supervisor';
@@ -659,12 +673,9 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // FULL NAME
     // -----------------------------------------------------------
 
-    final fullName = employee['full_name']
-        ?.toString()
-        .trim();
+    final fullName = employee['full_name']?.toString().trim();
 
-    if (fullName != null &&
-        fullName.isNotEmpty) {
+    if (fullName != null && fullName.isNotEmpty) {
       return fullName;
     }
 
@@ -672,19 +683,13 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // FIRST NAME
     // -----------------------------------------------------------
 
-    final firstName = employee['first_name']
-        ?.toString()
-        .trim() ??
-        '';
+    final firstName = employee['first_name']?.toString().trim() ?? '';
 
     // -----------------------------------------------------------
     // LAST NAME
     // -----------------------------------------------------------
 
-    final lastName = employee['last_name']
-        ?.toString()
-        .trim() ??
-        '';
+    final lastName = employee['last_name']?.toString().trim() ?? '';
 
     // -----------------------------------------------------------
     // COMBINE
@@ -703,24 +708,17 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // SHOW MESSAGE
   // =============================================================
 
-  void _showMessage(
-      String message,
-      ) {
+  void _showMessage(String message) {
     if (!mounted) {
       return;
     }
 
-    ScaffoldMessenger.of(context)
-        .hideCurrentSnackBar();
+    final messenger = ScaffoldMessenger.of(context);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-        ),
-        behavior:
-        SnackBarBehavior.floating,
-      ),
+    messenger.hideCurrentSnackBar();
+
+    messenger.showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -736,8 +734,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
   Future<void> _refresh() async {
     final companyId = _companyId;
 
-    if (companyId == null ||
-        companyId.trim().isEmpty) {
+    if (companyId == null || companyId.trim().isEmpty) {
       await _initializePage();
       return;
     }
@@ -745,6 +742,10 @@ class _SupervisorDepartmentAssignmentManagementPageState
     if (!mounted) {
       return;
     }
+
+    // -----------------------------------------------------------
+    // RESET CURRENT SELECTION
+    // -----------------------------------------------------------
 
     setState(() {
       _selectedSupervisorId = null;
@@ -755,12 +756,36 @@ class _SupervisorDepartmentAssignmentManagementPageState
       _isLoadingAssignments = false;
     });
 
-    await ref
-        .read(supervisorProvider.notifier)
-        .selectCompany(companyId);
+    try {
+      // ---------------------------------------------------------
+      // RELOAD COMPANY DATA
+      // ---------------------------------------------------------
 
-    if (!mounted) {
-      return;
+      await ref.read(supervisorProvider.notifier).selectCompany(companyId);
+
+      // ---------------------------------------------------------
+      // MOUNT CHECK
+      // ---------------------------------------------------------
+
+      if (!mounted) {
+        return;
+      }
+
+      // ---------------------------------------------------------
+      // SHOW PROVIDER ERROR IF AVAILABLE
+      // ---------------------------------------------------------
+
+      final state = ref.read(supervisorProvider);
+
+      if (state.errorMessage != null && state.errorMessage!.trim().isNotEmpty) {
+        _showMessage(state.errorMessage!);
+      }
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      _showMessage('Failed to refresh company data.');
     }
   }
 
@@ -769,46 +794,33 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // =============================================================
 
   @override
-  Widget build(
-      BuildContext context,
-      ) {
-    final state = ref.watch(
-      supervisorProvider,
-    );
+  Widget build(BuildContext context) {
+    final state = ref.watch(supervisorProvider);
 
     return Scaffold(
-      backgroundColor:
-      const Color(0xFFF7F8FC),
+      backgroundColor: const Color(0xFFF7F8FC),
 
       // =========================================================
       // APP BAR
       // =========================================================
-
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
 
         title: const Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Supervisor Department Assignment',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight:
-                FontWeight.w700,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
-
             Text(
               'Manage department assignments',
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.black54,
-                fontWeight:
-                FontWeight.normal,
+                fontWeight: FontWeight.normal,
               ),
             ),
           ],
@@ -817,16 +829,10 @@ class _SupervisorDepartmentAssignmentManagementPageState
         actions: [
           IconButton(
             tooltip: 'Refresh',
-
-            onPressed:
-            state.isLoading ||
-                _isInitializing
+            onPressed: state.isLoading || state.isSaving || _isInitializing
                 ? null
                 : _refresh,
-
-            icon: const Icon(
-              Icons.refresh,
-            ),
+            icon: const Icon(Icons.refresh),
           ),
         ],
       ),
@@ -834,12 +840,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
       // =========================================================
       // BODY
       // =========================================================
-
-      body: SafeArea(
-        child: _buildBody(
-          state,
-        ),
-      ),
+      body: SafeArea(child: _buildBody(state)),
     );
   }
 
@@ -847,25 +848,20 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // BODY
   // =============================================================
 
-  Widget _buildBody(
-      SupervisorState state,
-      ) {
+  Widget _buildBody(SupervisorState state) {
     // -----------------------------------------------------------
     // INITIAL PAGE LOADING
     // -----------------------------------------------------------
 
     if (_isInitializing) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     // -----------------------------------------------------------
     // COMPANY NOT AVAILABLE
     // -----------------------------------------------------------
 
-    if (_companyId == null ||
-        _companyId!.trim().isEmpty) {
+    if (_companyId == null || _companyId!.trim().isEmpty) {
       return _buildCompanyError();
     }
 
@@ -874,51 +870,32 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // -----------------------------------------------------------
 
     return SingleChildScrollView(
-      padding:
-      const EdgeInsets.all(
-        16,
-      ),
+      padding: const EdgeInsets.all(16),
 
       child: Center(
         child: ConstrainedBox(
-          constraints:
-          const BoxConstraints(
-            maxWidth: 900,
-          ),
+          constraints: const BoxConstraints(maxWidth: 900),
 
           child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
               // =================================================
               // PAGE HEADER
               // =================================================
-
               const Text(
                 'Department Assignment',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight:
-                  FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
 
-              const SizedBox(
-                height: 5,
-              ),
+              const SizedBox(height: 5),
 
               const Text(
                 'Select a supervisor and manage department assignments.',
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.black54, fontSize: 12),
               ),
 
-              const SizedBox(
-                height: 18,
-              ),
+              const SizedBox(height: 18),
 
               // =================================================
               // COMPANY CONTEXT
@@ -926,34 +903,22 @@ class _SupervisorDepartmentAssignmentManagementPageState
               // INFORMATION ONLY
               // NO DROPDOWN
               // =================================================
-
               _buildCompanyContext(),
 
-              const SizedBox(
-                height: 14,
-              ),
+              const SizedBox(height: 14),
 
               // =================================================
               // SUPERVISOR SELECTOR
               // =================================================
-
-              _buildSupervisorSelector(
-                state,
-              ),
+              _buildSupervisorSelector(state),
 
               // =================================================
               // ASSIGNMENT PANEL
               // =================================================
+              if (_selectedSupervisorId != null) ...[
+                const SizedBox(height: 14),
 
-              if (_selectedSupervisorId !=
-                  null) ...[
-                const SizedBox(
-                  height: 14,
-                ),
-
-                _buildAssignmentPanel(
-                  state,
-                ),
+                _buildAssignmentPanel(state),
               ],
             ],
           ),
@@ -970,11 +935,7 @@ class _SupervisorDepartmentAssignmentManagementPageState
 
   Widget _buildCompanyContext() {
     return _card(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 13,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
 
       child: Row(
         children: [
@@ -982,70 +943,48 @@ class _SupervisorDepartmentAssignmentManagementPageState
             width: 42,
             height: 42,
 
-            decoration:
-            BoxDecoration(
-              color: const Color(
-                0xFF2196F3,
-              ).withValues(
-                alpha: .08,
-              ),
-
-              borderRadius:
-              BorderRadius.circular(
-                11,
-              ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2196F3).withValues(alpha: .08),
+              borderRadius: BorderRadius.circular(11),
             ),
 
             child: const Icon(
               Icons.business_outlined,
-              color:
-              Color(0xFF1976D2),
+              color: Color(0xFF1976D2),
               size: 21,
             ),
           ),
 
-          const SizedBox(
-            width: 12,
-          ),
+          const SizedBox(width: 12),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
                 const Text(
                   'Company',
                   style: TextStyle(
-                    color:
-                    Colors.black54,
+                    color: Colors.black54,
                     fontSize: 11,
-                    fontWeight:
-                    FontWeight.w500,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
 
-                const SizedBox(
-                  height: 3,
-                ),
+                const SizedBox(height: 3),
 
                 Text(
-                  _companyName == null ||
-                      _companyName!
-                          .isEmpty
+                  _companyName == null || _companyName!.isEmpty
                       ? 'Current Login Company'
                       : _companyName!,
 
                   maxLines: 1,
 
-                  overflow:
-                  TextOverflow.ellipsis,
+                  overflow: TextOverflow.ellipsis,
 
-                  style:
-                  const TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
-                    fontWeight:
-                    FontWeight.w700,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1055,52 +994,28 @@ class _SupervisorDepartmentAssignmentManagementPageState
           // -----------------------------------------------------
           // LOCK / AUTO BADGE
           // -----------------------------------------------------
-
           Container(
-            padding:
-            const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 5,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
 
-            decoration:
-            BoxDecoration(
-              color:
-              Colors.green.withValues(
-                alpha: .08,
-              ),
-
-              borderRadius:
-              BorderRadius.circular(
-                20,
-              ),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: .08),
+              borderRadius: BorderRadius.circular(20),
             ),
 
             child: const Row(
-              mainAxisSize:
-              MainAxisSize.min,
+              mainAxisSize: MainAxisSize.min,
 
               children: [
-                Icon(
-                  Icons.lock_outline,
-                  size: 13,
-                  color:
-                  Colors.green,
-                ),
+                Icon(Icons.lock_outline, size: 13, color: Colors.green),
 
-                SizedBox(
-                  width: 4,
-                ),
+                SizedBox(width: 4),
 
                 Text(
                   'Auto',
-                  style:
-                  TextStyle(
-                    color:
-                    Colors.green,
+                  style: TextStyle(
+                    color: Colors.green,
                     fontSize: 10,
-                    fontWeight:
-                    FontWeight.w700,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1118,53 +1033,30 @@ class _SupervisorDepartmentAssignmentManagementPageState
   Widget _buildCompanyError() {
     return Center(
       child: Padding(
-        padding:
-        const EdgeInsets.all(
-          24,
-        ),
+        padding: const EdgeInsets.all(24),
 
         child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
 
           children: [
-            const Icon(
-              Icons.business_outlined,
-              size: 52,
-              color: Colors.red,
-            ),
+            const Icon(Icons.business_outlined, size: 52, color: Colors.red),
 
-            const SizedBox(
-              height: 12,
-            ),
+            const SizedBox(height: 12),
 
             const Text(
               'Company information is not available for the logged-in user.',
-              textAlign:
-              TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight:
-                FontWeight.w600,
-              ),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
 
-            const SizedBox(
-              height: 16,
-            ),
+            const SizedBox(height: 16),
 
             ElevatedButton.icon(
-              onPressed:
-              _initializePage,
+              onPressed: _initializePage,
 
-              icon: const Icon(
-                Icons.refresh,
-              ),
+              icon: const Icon(Icons.refresh),
 
-              label:
-              const Text(
-                'Retry',
-              ),
+              label: const Text('Retry'),
             ),
           ],
         ),
@@ -1176,71 +1068,57 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // SUPERVISOR SELECTOR
   // =============================================================
 
-  Widget _buildSupervisorSelector(
-      SupervisorState state,
-      ) {
+  Widget _buildSupervisorSelector(SupervisorState state) {
+    final items = state.supervisors
+        .map<DropdownMenuItem<String>?>((supervisor) {
+          final id = supervisor['id']?.toString().trim();
+
+          if (id == null || id.isEmpty) {
+            return null;
+          }
+
+          return DropdownMenuItem<String>(
+            value: id,
+
+            child: Text(
+              _supervisorName(supervisor),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        })
+        .whereType<DropdownMenuItem<String>>()
+        .toList();
+
+    // -----------------------------------------------------------
+    // SAFETY:
+    //
+    // If selected supervisor no longer exists in the loaded list,
+    // do not pass an invalid value to DropdownButtonFormField.
+    // -----------------------------------------------------------
+
+    final validSelectedSupervisorId =
+        items.any((item) => item.value == _selectedSupervisorId)
+        ? _selectedSupervisorId
+        : null;
+
     return _card(
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
           DropdownButtonFormField<String>(
-            initialValue:
-            _selectedSupervisorId,
+            initialValue: validSelectedSupervisorId,
 
             isExpanded: true,
 
-            decoration:
-            _inputDecoration(
-              label:
-              'Supervisor',
-              icon: Icons
-                  .supervisor_account_outlined,
+            decoration: _inputDecoration(
+              label: 'Supervisor',
+              icon: Icons.supervisor_account_outlined,
             ),
 
-            items: state.supervisors
-                .map<
-                DropdownMenuItem<
-                    String>?>(
-                  (
-                  supervisor,
-                  ) {
-                final id =
-                supervisor[
-                'id']
-                    ?.toString()
-                    .trim();
+            items: items,
 
-                if (id == null ||
-                    id.isEmpty) {
-                  return null;
-                }
-
-                return DropdownMenuItem<
-                    String>(
-                  value: id,
-
-                  child: Text(
-                    _supervisorName(
-                      supervisor,
-                    ),
-
-                    overflow:
-                    TextOverflow
-                        .ellipsis,
-                  ),
-                );
-              },
-            )
-                .whereType<
-                DropdownMenuItem<
-                    String>>()
-                .toList(),
-
-            onChanged:
-            state.isLoading ||
-                _isInitializing
+            onChanged: state.isLoading || state.isSaving || _isInitializing
                 ? null
                 : _onSupervisorChanged,
           ),
@@ -1248,58 +1126,37 @@ class _SupervisorDepartmentAssignmentManagementPageState
           // -----------------------------------------------------
           // NO SUPERVISORS
           // -----------------------------------------------------
-
-          if (state.supervisors.isEmpty &&
-              !state.isLoading)
+          if (state.supervisors.isEmpty && !state.isLoading)
             const Padding(
-              padding:
-              EdgeInsets.only(
-                top: 8,
-              ),
+              padding: EdgeInsets.only(top: 8),
 
               child: Text(
                 'No supervisors found for this company.',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.red, fontSize: 12),
               ),
             ),
 
           // -----------------------------------------------------
           // LOADING SUPERVISORS
           // -----------------------------------------------------
-
           if (state.isLoading)
             const Padding(
-              padding:
-              EdgeInsets.only(
-                top: 10,
-              ),
+              padding: EdgeInsets.only(top: 10),
 
               child: Row(
                 children: [
                   SizedBox(
                     width: 16,
                     height: 16,
-                    child:
-                    CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
 
-                  SizedBox(
-                    width: 8,
-                  ),
+                  SizedBox(width: 8),
 
                   Text(
                     'Loading supervisors...',
-                    style:
-                    TextStyle(
-                      fontSize: 12,
-                      color:
-                      Colors.black54,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
               ),
@@ -1313,44 +1170,31 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // ASSIGNMENT PANEL
   // =============================================================
 
-  Widget _buildAssignmentPanel(
-      SupervisorState state,
-      ) {
-    final supervisor =
-    _findSupervisor(
+  Widget _buildAssignmentPanel(SupervisorState state) {
+    final supervisor = _findSupervisor(
       state.supervisors,
       _selectedSupervisorId,
     );
 
-    final supervisorName =
-    supervisor == null
+    final supervisorName = supervisor == null
         ? 'Unknown Supervisor'
-        : _supervisorName(
-      supervisor,
-    );
+        : _supervisorName(supervisor);
 
     return _card(
-      padding:
-      const EdgeInsets.all(
-        16,
-      ),
+      padding: const EdgeInsets.all(16),
 
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
           // =====================================================
           // HEADER
           // =====================================================
-
           Row(
             children: [
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
                     Text(
@@ -1358,30 +1202,21 @@ class _SupervisorDepartmentAssignmentManagementPageState
 
                       maxLines: 1,
 
-                      overflow:
-                      TextOverflow
-                          .ellipsis,
+                      overflow: TextOverflow.ellipsis,
 
-                      style:
-                      const TextStyle(
+                      style: const TextStyle(
                         fontSize: 17,
-                        fontWeight:
-                        FontWeight
-                            .w700,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
                       '${_selectedDepartmentIds.length} department(s) selected',
 
-                      style:
-                      const TextStyle(
-                        color:
-                        Colors.black54,
+                      style: const TextStyle(
+                        color: Colors.black54,
                         fontSize: 12,
                       ),
                     ),
@@ -1392,137 +1227,74 @@ class _SupervisorDepartmentAssignmentManagementPageState
               // =================================================
               // SELECT MENU
               // =================================================
+              PopupMenuButton<String>(
+                enabled: !_isLoadingAssignments && !state.isSaving,
 
-              PopupMenuButton<
-                  String>(
-                enabled:
-                !_isLoadingAssignments,
+                tooltip: 'Department selection',
 
-                tooltip:
-                'Department selection',
-
-                onSelected:
-                    (value) {
-                  if (value ==
-                      'all') {
-                    _selectAllDepartments(
-                      state,
-                    );
-                  }
-
-                  if (value ==
-                      'clear') {
+                onSelected: (value) {
+                  if (value == 'all') {
+                    _selectAllDepartments(state);
+                  } else if (value == 'clear') {
                     _clearAllDepartments();
                   }
                 },
 
-                itemBuilder:
-                    (context) =>
-                const [
-                  PopupMenuItem<
-                      String>(
-                    value:
-                    'all',
-                    child:
-                    Text(
-                      'Select All',
-                    ),
+                itemBuilder: (context) => const [
+                  PopupMenuItem<String>(
+                    value: 'all',
+                    child: Text('Select All'),
                   ),
 
-                  PopupMenuItem<
-                      String>(
-                    value:
-                    'clear',
-                    child:
-                    Text(
-                      'Clear All',
-                    ),
+                  PopupMenuItem<String>(
+                    value: 'clear',
+                    child: Text('Clear All'),
                   ),
                 ],
               ),
             ],
           ),
 
-          const SizedBox(
-            height: 16,
-          ),
+          const SizedBox(height: 16),
 
           // =====================================================
           // ASSIGNMENT LOADING
           // =====================================================
-
           if (_isLoadingAssignments)
             Container(
-              width:
-              double.infinity,
+              width: double.infinity,
 
-              margin:
-              const EdgeInsets.only(
-                bottom: 12,
-              ),
+              margin: const EdgeInsets.only(bottom: 12),
 
-              padding:
-              const EdgeInsets
-                  .symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
 
-              decoration:
-              BoxDecoration(
-                color:
-                const Color(
-                  0xFF2196F3,
-                ).withValues(
-                  alpha: .06,
-                ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2196F3).withValues(alpha: .06),
 
-                borderRadius:
-                BorderRadius
-                    .circular(
-                  10,
-                ),
+                borderRadius: BorderRadius.circular(10),
 
-                border:
-                Border.all(
-                  color:
-                  const Color(
-                    0xFF2196F3,
-                  ).withValues(
-                    alpha: .15,
-                  ),
+                border: Border.all(
+                  color: const Color(0xFF2196F3).withValues(alpha: .15),
                 ),
               ),
 
-              child:
-              const Row(
+              child: const Row(
                 children: [
                   SizedBox(
                     width: 18,
                     height: 18,
 
-                    child:
-                    CircularProgressIndicator(
-                      strokeWidth:
-                      2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
 
-                  SizedBox(
-                    width: 10,
-                  ),
+                  SizedBox(width: 10),
 
                   Expanded(
-                    child:
-                    Text(
+                    child: Text(
                       'Loading assigned departments...',
-                      style:
-                      TextStyle(
-                        fontSize:
-                        12,
-                        fontWeight:
-                        FontWeight
-                            .w600,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -1533,73 +1305,34 @@ class _SupervisorDepartmentAssignmentManagementPageState
           // =====================================================
           // UNSAVED CHANGES
           // =====================================================
-
-          if (!_isLoadingAssignments &&
-              _hasChanges())
+          if (!_isLoadingAssignments && !state.isSaving && _hasChanges())
             Container(
-              width:
-              double.infinity,
+              width: double.infinity,
 
-              margin:
-              const EdgeInsets.only(
-                bottom: 12,
+              margin: const EdgeInsets.only(bottom: 12),
+
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: .08),
+
+                borderRadius: BorderRadius.circular(10),
+
+                border: Border.all(color: Colors.orange.withValues(alpha: .20)),
               ),
 
-              padding:
-              const EdgeInsets
-                  .symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-
-              decoration:
-              BoxDecoration(
-                color:
-                Colors.orange
-                    .withValues(
-                  alpha: .08,
-                ),
-
-                borderRadius:
-                BorderRadius.circular(
-                  10,
-                ),
-
-                border:
-                Border.all(
-                  color:
-                  Colors.orange
-                      .withValues(
-                    alpha: .20,
-                  ),
-                ),
-              ),
-
-              child:
-              const Row(
+              child: const Row(
                 children: [
-                  Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color:
-                    Colors.orange,
-                  ),
+                  Icon(Icons.edit_outlined, size: 18, color: Colors.orange),
 
-                  SizedBox(
-                    width: 8,
-                  ),
+                  SizedBox(width: 8),
 
                   Expanded(
-                    child:
-                    Text(
+                    child: Text(
                       'You have unsaved changes.',
-                      style:
-                      TextStyle(
-                        fontSize:
-                        12,
-                        fontWeight:
-                        FontWeight
-                            .w600,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -1610,68 +1343,41 @@ class _SupervisorDepartmentAssignmentManagementPageState
           // =====================================================
           // DEPARTMENT LIST
           // =====================================================
+          _buildDepartmentList(state),
 
-          _buildDepartmentList(
-            state,
-          ),
-
-          const SizedBox(
-            height: 16,
-          ),
+          const SizedBox(height: 16),
 
           // =====================================================
           // SAVE BUTTON
           // =====================================================
-
           SizedBox(
-            width:
-            double.infinity,
+            width: double.infinity,
 
             height: 48,
 
-            child:
-            ElevatedButton.icon(
+            child: ElevatedButton.icon(
               onPressed:
-              state.isSaving ||
-                  _isLoadingAssignments ||
-                  !_hasChanges()
+                  state.isSaving || _isLoadingAssignments || !_hasChanges()
                   ? null
                   : _saveAssignments,
 
-              icon:
-              state.isSaving
+              icon: state.isSaving
                   ? const SizedBox(
-                width: 18,
-                height: 18,
-                child:
-                CircularProgressIndicator(
-                  strokeWidth:
-                  2,
-                  color:
-                  Colors.white,
-                ),
-              )
-                  : const Icon(
-                Icons
-                    .save_outlined,
-              ),
+                      width: 18,
+                      height: 18,
 
-              label: Text(
-                state.isSaving
-                    ? 'Saving...'
-                    : 'Update Assignment',
-              ),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.save_outlined),
 
-              style:
-              ElevatedButton
-                  .styleFrom(
-                shape:
-                RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                    12,
-                  ),
+              label: Text(state.isSaving ? 'Saving...' : 'Update Assignment'),
+
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
@@ -1685,63 +1391,34 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // DEPARTMENT LIST
   // =============================================================
 
-  Widget _buildDepartmentList(
-      SupervisorState state,
-      ) {
+  Widget _buildDepartmentList(SupervisorState state) {
     // -----------------------------------------------------------
     // NO DEPARTMENTS
     // -----------------------------------------------------------
 
     if (state.departments.isEmpty) {
       return Container(
-        width:
-        double.infinity,
+        width: double.infinity,
 
-        padding:
-        const EdgeInsets.all(
-          24,
+        padding: const EdgeInsets.all(24),
+
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+
+          borderRadius: BorderRadius.circular(12),
+
+          border: Border.all(color: Colors.black12),
         ),
 
-        decoration:
-        BoxDecoration(
-          color:
-          Colors.grey.shade50,
-
-          borderRadius:
-          BorderRadius.circular(
-            12,
-          ),
-
-          border:
-          Border.all(
-            color:
-            Colors.black12,
-          ),
-        ),
-
-        child:
-        const Column(
+        child: const Column(
           children: [
-            Icon(
-              Icons
-                  .apartment_outlined,
-              size: 36,
-              color:
-              Colors.black38,
-            ),
+            Icon(Icons.apartment_outlined, size: 36, color: Colors.black38),
 
-            SizedBox(
-              height: 8,
-            ),
+            SizedBox(height: 8),
 
             Text(
               'No departments found.',
-              style:
-              TextStyle(
-                fontWeight:
-                FontWeight
-                    .w600,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -1753,278 +1430,160 @@ class _SupervisorDepartmentAssignmentManagementPageState
     // -----------------------------------------------------------
 
     return Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
 
       children: [
         // -------------------------------------------------------
         // HEADER
         // -------------------------------------------------------
-
         Row(
           children: [
             const Expanded(
               child: Text(
                 'Departments',
-                style:
-                TextStyle(
-                  fontSize: 15,
-                  fontWeight:
-                  FontWeight
-                      .w700,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ),
 
             Container(
-              padding:
-              const EdgeInsets
-                  .symmetric(
-                horizontal: 9,
-                vertical: 5,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
 
-              decoration:
-              BoxDecoration(
-                color:
-                const Color(
-                  0xFF2196F3,
-                ).withValues(
-                  alpha: .08,
-                ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2196F3).withValues(alpha: .08),
 
-                borderRadius:
-                BorderRadius.circular(
-                  20,
-                ),
+                borderRadius: BorderRadius.circular(20),
               ),
 
               child: Text(
                 '${_selectedDepartmentIds.length} selected',
 
-                style:
-                const TextStyle(
-                  color:
-                  Color(
-                    0xFF1976D2,
-                  ),
-
-                  fontSize:
-                  10,
-
-                  fontWeight:
-                  FontWeight
-                      .w700,
+                style: const TextStyle(
+                  color: Color(0xFF1976D2),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
           ],
         ),
 
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
 
         // -------------------------------------------------------
         // DEPARTMENTS
         // -------------------------------------------------------
+        ...state.departments.map((department) {
+          final departmentId = department['id']?.toString().trim();
 
-        ...state.departments.map(
-              (
-              department,
-              ) {
-            final departmentId =
-            department['id']
-                ?.toString()
-                .trim();
+          final departmentName = department['name']?.toString().trim();
 
-            final departmentName =
-            department['name']
-                ?.toString()
-                .trim();
+          // ---------------------------------------------------
+          // INVALID DEPARTMENT
+          // ---------------------------------------------------
 
-            // ---------------------------------------------------
-            // INVALID DEPARTMENT
-            // ---------------------------------------------------
+          if (departmentId == null || departmentId.isEmpty) {
+            return const SizedBox.shrink();
+          }
 
-            if (departmentId ==
-                null ||
-                departmentId
-                    .isEmpty) {
-              return const SizedBox
-                  .shrink();
-            }
+          // ---------------------------------------------------
+          // SELECTED
+          // ---------------------------------------------------
 
-            // ---------------------------------------------------
-            // SELECTED
-            // ---------------------------------------------------
+          final selected = _selectedDepartmentIds.contains(departmentId);
 
-            final selected =
-            _selectedDepartmentIds
-                .contains(
-              departmentId,
-            );
+          // ---------------------------------------------------
+          // ORIGINAL ASSIGNMENT
+          // ---------------------------------------------------
 
-            // ---------------------------------------------------
-            // ORIGINAL ASSIGNMENT
-            // ---------------------------------------------------
+          final originallyAssigned = _originalDepartmentIds.contains(
+            departmentId,
+          );
 
-            final originallyAssigned =
-            _originalDepartmentIds
-                .contains(
-              departmentId,
-            );
+          // ---------------------------------------------------
+          // DEPARTMENT ITEM
+          // ---------------------------------------------------
 
-            // ---------------------------------------------------
-            // DEPARTMENT ITEM
-            // ---------------------------------------------------
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
 
-            return Container(
-              margin:
-              const EdgeInsets
-                  .only(
-                bottom: 8,
+            decoration: BoxDecoration(
+              color: selected
+                  ? const Color(0xFF2196F3).withValues(alpha: .06)
+                  : Colors.white,
+
+              borderRadius: BorderRadius.circular(12),
+
+              border: Border.all(
+                color: selected ? const Color(0xFF2196F3) : Colors.black12,
               ),
+            ),
 
-              decoration:
-              BoxDecoration(
-                color: selected
-                    ? const Color(
-                  0xFF2196F3,
-                ).withValues(
-                  alpha: .06,
-                )
-                    : Colors.white,
+            child: CheckboxListTile(
+              value: selected,
 
-                borderRadius:
-                BorderRadius
-                    .circular(
-                  12,
-                ),
+              onChanged: _isLoadingAssignments || state.isSaving
+                  ? null
+                  : (_) {
+                      _toggleDepartment(departmentId);
+                    },
 
-                border:
-                Border.all(
-                  color: selected
-                      ? const Color(
-                    0xFF2196F3,
-                  )
-                      : Colors
-                      .black12,
-                ),
-              ),
+              controlAffinity: ListTileControlAffinity.leading,
 
-              child:
-              CheckboxListTile(
-                value:
-                selected,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
 
-                onChanged:
-                _isLoadingAssignments
-                    ? null
-                    : (_) {
-                  _toggleDepartment(
-                    departmentId,
-                  );
-                },
+              title: Row(
+                children: [
+                  // -------------------------------------------
+                  // NAME
+                  // -------------------------------------------
+                  Expanded(
+                    child: Text(
+                      departmentName == null || departmentName.isEmpty
+                          ? 'Unnamed Department'
+                          : departmentName,
 
-                controlAffinity:
-                ListTileControlAffinity
-                    .leading,
+                      maxLines: 1,
 
-                contentPadding:
-                const EdgeInsets
-                    .symmetric(
-                  horizontal: 10,
-                ),
+                      overflow: TextOverflow.ellipsis,
 
-                title:
-                Row(
-                  children: [
-                    // -------------------------------------------
-                    // NAME
-                    // -------------------------------------------
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
 
-                    Expanded(
-                      child:
-                      Text(
-                        departmentName ==
-                            null ||
-                            departmentName
-                                .isEmpty
-                            ? 'Unnamed Department'
-                            : departmentName,
+                  // -------------------------------------------
+                  // ASSIGNED BADGE
+                  // -------------------------------------------
+                  if (originallyAssigned)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3,
+                      ),
 
-                        maxLines:
-                        1,
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: .10),
 
-                        overflow:
-                        TextOverflow
-                            .ellipsis,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
 
-                        style:
-                        const TextStyle(
-                          fontSize:
-                          13,
-                          fontWeight:
-                          FontWeight
-                              .w600,
+                      child: const Text(
+                        'Assigned',
+
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-
-                    // -------------------------------------------
-                    // ASSIGNED BADGE
-                    // -------------------------------------------
-
-                    if (originallyAssigned)
-                      Container(
-                        padding:
-                        const EdgeInsets
-                            .symmetric(
-                          horizontal:
-                          7,
-                          vertical:
-                          3,
-                        ),
-
-                        decoration:
-                        BoxDecoration(
-                          color:
-                          Colors.green
-                              .withValues(
-                            alpha:
-                            .10,
-                          ),
-
-                          borderRadius:
-                          BorderRadius
-                              .circular(
-                            20,
-                          ),
-                        ),
-
-                        child:
-                        const Text(
-                          'Assigned',
-
-                          style:
-                          TextStyle(
-                            color:
-                            Colors.green,
-                            fontSize:
-                            10,
-                            fontWeight:
-                            FontWeight
-                                .w700,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        }),
       ],
     );
   }
@@ -2033,58 +1592,31 @@ class _SupervisorDepartmentAssignmentManagementPageState
   // CARD
   // =============================================================
 
-  Widget _card({
-    required Widget child,
-    EdgeInsetsGeometry? padding,
-  }) {
+  Widget _card({required Widget child, EdgeInsetsGeometry? padding}) {
     return Container(
-      width:
-      double.infinity,
+      width: double.infinity,
 
-      padding:
-      padding ??
-          const EdgeInsets.all(
-            14,
-          ),
+      padding: padding ?? const EdgeInsets.all(14),
 
-      decoration:
-      BoxDecoration(
-        color:
-        Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
 
-        borderRadius:
-        BorderRadius.circular(
-          14,
-        ),
+        borderRadius: BorderRadius.circular(14),
 
-        border:
-        Border.all(
-          color:
-          Colors.black12,
-        ),
+        border: Border.all(color: Colors.black12),
 
         boxShadow: [
           BoxShadow(
-            color:
-            Colors.black
-                .withValues(
-              alpha: .03,
-            ),
+            color: Colors.black.withValues(alpha: .03),
 
-            blurRadius:
-            8,
+            blurRadius: 8,
 
-            offset:
-            const Offset(
-              0,
-              3,
-            ),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
 
-      child:
-      child,
+      child: child,
     );
   }
 
@@ -2097,62 +1629,27 @@ class _SupervisorDepartmentAssignmentManagementPageState
     required IconData icon,
   }) {
     return InputDecoration(
-      labelText:
-      label,
+      labelText: label,
 
-      prefixIcon:
-      Icon(
-        icon,
-        size: 20,
+      prefixIcon: Icon(icon, size: 20),
+
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(11)),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(11),
+
+        borderSide: const BorderSide(color: Colors.black12),
       ),
 
-      border:
-      OutlineInputBorder(
-        borderRadius:
-        BorderRadius.circular(
-          11,
-        ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(11),
+
+        borderSide: const BorderSide(color: Color(0xFF2196F3), width: 1.4),
       ),
 
-      enabledBorder:
-      OutlineInputBorder(
-        borderRadius:
-        BorderRadius.circular(
-          11,
-        ),
+      filled: true,
 
-        borderSide:
-        const BorderSide(
-          color:
-          Colors.black12,
-        ),
-      ),
-
-      focusedBorder:
-      OutlineInputBorder(
-        borderRadius:
-        BorderRadius.circular(
-          11,
-        ),
-
-        borderSide:
-        const BorderSide(
-          color:
-          Color(
-            0xFF2196F3,
-          ),
-          width:
-          1.4,
-        ),
-      ),
-
-      filled:
-      true,
-
-      fillColor:
-      const Color(
-        0xFFFAFBFD,
-      ),
+      fillColor: const Color(0xFFFAFBFD),
     );
   }
 }

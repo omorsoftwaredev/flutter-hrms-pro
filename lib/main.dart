@@ -36,9 +36,5 @@ Future<void> main() async {
   // Run App
   // =============================================================
 
-  runApp(
-    const ProviderScope(
-      child: HrmsApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: HrmsApp()));
 }
