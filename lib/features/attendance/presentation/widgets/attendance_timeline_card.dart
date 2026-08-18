@@ -6,7 +6,6 @@ class AttendanceTimelineCard extends StatelessWidget {
   final int workMinutes;
   final int overtimeMinutes;
   final int lateMinutes;
-  final int earlyExitMinutes;
 
   const AttendanceTimelineCard({
     super.key,
@@ -15,7 +14,6 @@ class AttendanceTimelineCard extends StatelessWidget {
     required this.workMinutes,
     required this.overtimeMinutes,
     required this.lateMinutes,
-    required this.earlyExitMinutes,
   });
 
   @override
@@ -94,12 +92,12 @@ class AttendanceTimelineCard extends StatelessWidget {
 
             const Divider(height: 24),
 
-            _item(
-              context,
-              icon: Icons.exit_to_app_rounded,
-              title: "Early Exit",
-              value: "$earlyExitMinutes Minutes",
-            ),
+            // _item(
+            //   context,
+            //   icon: Icons.exit_to_app_rounded,
+            //   title: "Early Exit",
+            //   value: "$earlyExitMinutes Minutes",
+            // ),
           ],
         ),
       ),

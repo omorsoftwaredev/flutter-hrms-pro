@@ -238,7 +238,6 @@ class _AttendanceFormPageState
         attendanceNo:
         _attendanceNoController.text.trim(),
         attendanceDate: attendanceDate!,
-        shiftName: selectedShift?.name,
         checkInTime: checkInTime,
         checkOutTime: checkOutTime,
         attendanceStatus: attendanceStatus,

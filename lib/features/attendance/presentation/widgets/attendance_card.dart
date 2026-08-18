@@ -113,23 +113,6 @@ class AttendanceCard extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
 
-                  const SizedBox(width: 8),
-
-                  Expanded(
-                    child: Text(
-                      attendance.shiftName?.trim().isNotEmpty ==
-                          true
-                          ? attendance.shiftName!
-                          : '--',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style:
-                      theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
                 ],
               ),
 

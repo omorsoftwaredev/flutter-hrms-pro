@@ -172,31 +172,6 @@ class ShiftInfoCard extends StatelessWidget {
             const SizedBox(height: 6),
 
             // =====================================================
-            // Shift Name
-            // =====================================================
-
-            _item(
-              context,
-              icon: Icons.badge_outlined,
-              title: 'Shift Name',
-              value: attendance.shiftName ?? '--',
-            ),
-
-            _item(
-              context,
-              icon: Icons.login_rounded,
-              title: 'Shift Start',
-              value: _formatTime(attendance.shiftStart),
-            ),
-
-            _item(
-              context,
-              icon: Icons.logout_rounded,
-              title: 'Shift End',
-              value: _formatTime(attendance.shiftEnd),
-            ),
-
-            // =====================================================
             // Attendance Metrics
             // =====================================================
 
@@ -221,12 +196,12 @@ class ShiftInfoCard extends StatelessWidget {
               value: '${attendance.workMinutes} Minutes',
             ),
 
-            _item(
-              context,
-              icon: Icons.warning_amber_rounded,
-              title: 'Late Minutes',
-              value: '${attendance.lateMinutes} Minutes',
-            ),
+            // _item(
+            //   context,
+            //   icon: Icons.warning_amber_rounded,
+            //   title: 'Late Minutes',
+            //   value: '${attendance.lateMinutes} Minutes',
+            // ),
 
             _item(
               context,
@@ -235,12 +210,12 @@ class ShiftInfoCard extends StatelessWidget {
               value: '${attendance.overtimeMinutes} Minutes',
             ),
 
-            _item(
-              context,
-              icon: Icons.exit_to_app_rounded,
-              title: 'Early Exit',
-              value: '${attendance.earlyExitMinutes} Minutes',
-            ),
+            // _item(
+            //   context,
+            //   icon: Icons.exit_to_app_rounded,
+            //   title: 'Early Exit',
+            //   value: '${attendance.earlyExitMinutes} Minutes',
+            // ),
           ],
         ),
       ),

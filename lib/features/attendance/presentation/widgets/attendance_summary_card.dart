@@ -204,12 +204,12 @@ class AttendanceSummaryCard extends StatelessWidget {
                     ),
                   ),
 
-                  _item(
-                    context,
-                    icon: Icons.timer_outlined,
-                    title: "Late",
-                    value: "${attendance.lateMinutes}m",
-                  ),
+                  // _item(
+                  //   context,
+                  //   icon: Icons.timer_outlined,
+                  //   title: "Late",
+                  //   value: "${attendance.lateMinutes}m",
+                  // ),
 
                   _item(
                     context,
@@ -218,12 +218,12 @@ class AttendanceSummaryCard extends StatelessWidget {
                     value: "${attendance.overtimeMinutes}m",
                   ),
 
-                  _item(
-                    context,
-                    icon: Icons.logout_rounded,
-                    title: "Early Exit",
-                    value: "${attendance.earlyExitMinutes}m",
-                  ),
+                  // _item(
+                  //   context,
+                  //   icon: Icons.logout_rounded,
+                  //   title: "Early Exit",
+                  //   value: "${attendance.earlyExitMinutes}m",
+                  // ),
                 ],
               ),
             ),

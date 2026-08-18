@@ -8,29 +8,17 @@ class AttendanceModel extends AttendanceEntity {
     super.departmentId,
     super.designationId,
     super.shiftId,
-    super.holidayId,
-    super.leaveRequestId,
 
     required super.attendanceNo,
     required super.attendanceDate,
-
-    super.shiftName,
-    super.shiftStart,
-    super.shiftEnd,
 
     super.checkInTime,
     super.checkOutTime,
 
     super.workMinutes,
     super.overtimeMinutes,
-    super.lateMinutes,
-    super.earlyExitMinutes,
 
     super.attendanceStatus,
-
-    super.isLeave,
-    super.isHoliday,
-    super.isWeekend,
 
     super.checkInLatitude,
     super.checkInLongitude,
@@ -70,8 +58,6 @@ class AttendanceModel extends AttendanceEntity {
       departmentId: map['department_id']?.toString(),
       designationId: map['designation_id']?.toString(),
       shiftId: map['shift_id']?.toString(),
-      holidayId: map['holiday_id']?.toString(),
-      leaveRequestId: map['leave_request_id']?.toString(),
 
       attendanceNo:
       map['attendance_no']?.toString() ?? '',
@@ -80,15 +66,6 @@ class AttendanceModel extends AttendanceEntity {
       DateTime.parse(
         map['attendance_date'].toString(),
       ),
-
-      shiftName:
-      map['shift_name']?.toString(),
-
-      shiftStart:
-      map['shift_start']?.toString(),
-
-      shiftEnd:
-      map['shift_end']?.toString(),
 
       checkInTime:
       map['check_in_time'] != null
@@ -110,24 +87,10 @@ class AttendanceModel extends AttendanceEntity {
       overtimeMinutes:
       (map['overtime_minutes'] as num?)?.toInt() ?? 0,
 
-      lateMinutes:
-      (map['late_minutes'] as num?)?.toInt() ?? 0,
-
-      earlyExitMinutes:
-      (map['early_exit_minutes'] as num?)?.toInt() ?? 0,
 
       attendanceStatus:
       map['attendance_status']?.toString() ??
           'PRESENT',
-
-      isLeave:
-      map['is_leave'] as bool? ?? false,
-
-      isHoliday:
-      map['is_holiday'] as bool? ?? false,
-
-      isWeekend:
-      map['is_weekend'] as bool? ?? false,
 
       checkInLatitude:
       (map['check_in_latitude'] as num?)
@@ -203,30 +166,18 @@ class AttendanceModel extends AttendanceEntity {
       departmentId: entity.departmentId,
       designationId: entity.designationId,
       shiftId: entity.shiftId,
-      holidayId: entity.holidayId,
-      leaveRequestId: entity.leaveRequestId,
 
       attendanceNo: entity.attendanceNo,
       attendanceDate: entity.attendanceDate,
-
-      shiftName: entity.shiftName,
-      shiftStart: entity.shiftStart,
-      shiftEnd: entity.shiftEnd,
 
       checkInTime: entity.checkInTime,
       checkOutTime: entity.checkOutTime,
 
       workMinutes: entity.workMinutes,
       overtimeMinutes: entity.overtimeMinutes,
-      lateMinutes: entity.lateMinutes,
-      earlyExitMinutes: entity.earlyExitMinutes,
 
       attendanceStatus:
       entity.attendanceStatus,
-
-      isLeave: entity.isLeave,
-      isHoliday: entity.isHoliday,
-      isWeekend: entity.isWeekend,
 
       checkInLatitude:
       entity.checkInLatitude,
@@ -293,8 +244,6 @@ class AttendanceModel extends AttendanceEntity {
       'department_id': departmentId,
       'designation_id': designationId,
       'shift_id': shiftId,
-      'holiday_id': holidayId,
-      'leave_request_id': leaveRequestId,
 
       'attendance_no': attendanceNo,
 
@@ -304,10 +253,6 @@ class AttendanceModel extends AttendanceEntity {
           .split('T')
           .first,
 
-      'shift_name': shiftName,
-      'shift_start': shiftStart,
-      'shift_end': shiftEnd,
-
       'check_in_time':
       checkInTime?.toIso8601String(),
 
@@ -316,15 +261,9 @@ class AttendanceModel extends AttendanceEntity {
 
       'work_minutes': workMinutes,
       'overtime_minutes': overtimeMinutes,
-      'late_minutes': lateMinutes,
-      'early_exit_minutes': earlyExitMinutes,
 
       'attendance_status':
       attendanceStatus,
-
-      'is_leave': isLeave,
-      'is_holiday': isHoliday,
-      'is_weekend': isWeekend,
 
       'check_in_latitude':
       checkInLatitude,
@@ -373,8 +312,6 @@ class AttendanceModel extends AttendanceEntity {
       'department_id': departmentId,
       'designation_id': designationId,
       'shift_id': shiftId,
-      'holiday_id': holidayId,
-      'leave_request_id': leaveRequestId,
 
       'attendance_no': attendanceNo,
 
@@ -384,10 +321,6 @@ class AttendanceModel extends AttendanceEntity {
           .split('T')
           .first,
 
-      'shift_name': shiftName,
-      'shift_start': shiftStart,
-      'shift_end': shiftEnd,
-
       'check_in_time':
       checkInTime?.toIso8601String(),
 
@@ -396,15 +329,9 @@ class AttendanceModel extends AttendanceEntity {
 
       'work_minutes': workMinutes,
       'overtime_minutes': overtimeMinutes,
-      'late_minutes': lateMinutes,
-      'early_exit_minutes': earlyExitMinutes,
 
       'attendance_status':
       attendanceStatus,
-
-      'is_leave': isLeave,
-      'is_holiday': isHoliday,
-      'is_weekend': isWeekend,
 
       'check_in_latitude':
       checkInLatitude,

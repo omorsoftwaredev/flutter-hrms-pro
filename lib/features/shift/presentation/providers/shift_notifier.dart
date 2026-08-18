@@ -19,7 +19,7 @@ class ShiftNotifier
     try {
       state = state.copyWith(
         isLoading: true,
-        error: null,
+        clearError: true,
       );
 
       final shifts =
@@ -27,8 +27,12 @@ class ShiftNotifier
 
       state = state.copyWith(
         shifts: shifts,
-        filteredShifts: shifts,
+        filteredShifts: _filterShifts(
+          shifts,
+          state.search,
+        ),
         isLoading: false,
+        clearError: true,
       );
     } catch (e) {
       state = state.copyWith(
@@ -48,7 +52,7 @@ class ShiftNotifier
     try {
       state = state.copyWith(
         isSaving: true,
-        error: null,
+        clearError: true,
       );
 
       await _repository.createShift(
@@ -57,6 +61,7 @@ class ShiftNotifier
 
       state = state.copyWith(
         isSaving: false,
+        clearError: true,
       );
 
       await loadShifts();
@@ -65,6 +70,14 @@ class ShiftNotifier
         isSaving: false,
         error: e.toString(),
       );
+
+      // ---------------------------------------------------------
+      // IMPORTANT
+      // ---------------------------------------------------------
+      // FormPage যেন বুঝতে পারে save failed হয়েছে।
+      // ---------------------------------------------------------
+
+      rethrow;
     }
   }
 
@@ -78,7 +91,7 @@ class ShiftNotifier
     try {
       state = state.copyWith(
         isSaving: true,
-        error: null,
+        clearError: true,
       );
 
       await _repository.updateShift(
@@ -87,6 +100,7 @@ class ShiftNotifier
 
       state = state.copyWith(
         isSaving: false,
+        clearError: true,
       );
 
       await loadShifts();
@@ -95,6 +109,8 @@ class ShiftNotifier
         isSaving: false,
         error: e.toString(),
       );
+
+      rethrow;
     }
   }
 
@@ -108,7 +124,7 @@ class ShiftNotifier
     try {
       state = state.copyWith(
         isSaving: true,
-        error: null,
+        clearError: true,
       );
 
       await _repository.updateShiftStatus(
@@ -118,6 +134,7 @@ class ShiftNotifier
 
       state = state.copyWith(
         isSaving: false,
+        clearError: true,
       );
 
       await loadShifts();
@@ -126,6 +143,8 @@ class ShiftNotifier
         isSaving: false,
         error: e.toString(),
       );
+
+      rethrow;
     }
   }
 
@@ -139,13 +158,16 @@ class ShiftNotifier
     try {
       state = state.copyWith(
         isSaving: true,
-        error: null,
+        clearError: true,
       );
 
-      await _repository.deleteShift(id);
+      await _repository.deleteShift(
+        id,
+      );
 
       state = state.copyWith(
         isSaving: false,
+        clearError: true,
       );
 
       await loadShifts();
@@ -154,6 +176,8 @@ class ShiftNotifier
         isSaving: false,
         error: e.toString(),
       );
+
+      rethrow;
     }
   }
 
@@ -165,16 +189,25 @@ class ShiftNotifier
       String id,
       ) async {
     try {
+      state = state.copyWith(
+        clearError: true,
+      );
+
       final shift =
-      await _repository.getShiftById(id);
+      await _repository.getShiftById(
+        id,
+      );
 
       state = state.copyWith(
         selectedShift: shift,
+        clearError: true,
       );
     } catch (e) {
       state = state.copyWith(
         error: e.toString(),
       );
+
+      rethrow;
     }
   }
 
@@ -182,24 +215,17 @@ class ShiftNotifier
   // SEARCH
   // =============================================================
 
-  void search(String keyword) {
-    final query = keyword.trim().toLowerCase();
-
-    if (query.isEmpty) {
-      state = state.copyWith(
-        search: '',
-        filteredShifts: state.shifts,
-      );
-
-      return;
-    }
+  void search(
+      String keyword,
+      ) {
+    final query =
+    keyword.trim().toLowerCase();
 
     final filtered =
-    state.shifts.where((shift) {
-      return shift.name
-          .toLowerCase()
-          .contains(query);
-    }).toList();
+    _filterShifts(
+      state.shifts,
+      query,
+    );
 
     state = state.copyWith(
       search: query,
@@ -208,12 +234,54 @@ class ShiftNotifier
   }
 
   // =============================================================
+  // FILTER
+  // =============================================================
+
+  List<ShiftEntity> _filterShifts(
+      List<ShiftEntity> shifts,
+      String query,
+      ) {
+    if (query.trim().isEmpty) {
+      return List<ShiftEntity>.from(
+        shifts,
+      );
+    }
+
+    final normalized =
+    query.trim().toLowerCase();
+
+    return shifts.where(
+          (shift) {
+        return shift.name
+            .toLowerCase()
+            .contains(normalized) ||
+            shift.code
+                .toLowerCase()
+                .contains(normalized) ||
+            shift.description
+                .toLowerCase()
+                .contains(normalized);
+      },
+    ).toList();
+  }
+
+  // =============================================================
   // CLEAR SELECTION
   // =============================================================
 
   void clearSelection() {
     state = state.copyWith(
-      selectedShift: null,
+      clearSelectedShift: true,
+    );
+  }
+
+  // =============================================================
+  // CLEAR ERROR
+  // =============================================================
+
+  void clearError() {
+    state = state.copyWith(
+      clearError: true,
     );
   }
 

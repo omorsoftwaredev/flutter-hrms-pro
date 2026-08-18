@@ -132,14 +132,6 @@ class EmployeeAvatarCard extends StatelessWidget {
                   color: colorScheme.secondary,
                 ),
 
-                if (attendance.shiftName != null &&
-                    attendance.shiftName!.trim().isNotEmpty)
-                  _infoChip(
-                    context,
-                    icon: Icons.access_time_outlined,
-                    label: attendance.shiftName!,
-                    color: colorScheme.tertiary,
-                  ),
               ],
             ),
           ],

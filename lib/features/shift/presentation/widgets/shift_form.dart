@@ -3,19 +3,42 @@ import 'package:flutter/material.dart';
 class ShiftForm extends StatefulWidget {
   const ShiftForm({
     super.key,
+
+    // Basic Information
     this.initialName = '',
     this.initialDescription = '',
+
+    // Shift Time
     this.initialStartTime = '09:00:00',
     this.initialEndTime = '18:00:00',
+
+    // Time & Grace
     this.initialBreakMinutes = 60,
     this.initialGraceInMinutes = 15,
     this.initialGraceOutMinutes = 15,
     this.initialLateAfterMinutes = 15,
     this.initialHalfDayAfterMinutes = 240,
+    this.initialLateGraceMinutes = 15,
+    this.initialEarlyLeaveGraceMinutes = 15,
+
+    // Working Hours
+    this.initialMinimumWorkingHours = 8.00,
+    this.initialHalfDayThresholdHours = 4.00,
+
+    // Weekly
     this.initialWeeklyOffDay,
+
+    // Shift Options
     this.initialNightShift = false,
     this.initialFlexible = false,
+
+    // Attendance Requirements
+    this.initialCheckInRequired = true,
+    this.initialCheckOutRequired = true,
+
+    // Status
     this.initialActive = true,
+
     this.isLoading = false,
     required this.onSubmit,
   });
@@ -36,10 +59,20 @@ class ShiftForm extends StatefulWidget {
   final int initialLateAfterMinutes;
   final int initialHalfDayAfterMinutes;
 
+  final int initialLateGraceMinutes;
+  final int initialEarlyLeaveGraceMinutes;
+
+  final double initialMinimumWorkingHours;
+  final double initialHalfDayThresholdHours;
+
   final int? initialWeeklyOffDay;
 
   final bool initialNightShift;
   final bool initialFlexible;
+
+  final bool initialCheckInRequired;
+  final bool initialCheckOutRequired;
+
   final bool initialActive;
 
   final bool isLoading;
@@ -48,17 +81,14 @@ class ShiftForm extends StatefulWidget {
   // SUBMIT
   // =============================================================
   //
-  // IMPORTANT:
-  //
-  // companyId এখানে নেই।
-  //
-  // code এখানেও নেই।
-  //
   // companyId:
   //     CurrentUser.companyId
   //
   // code:
   //     Database trigger generate করবে।
+  //
+  // createdBy / updatedBy:
+  //     Backend / current user থেকে handle করা যাবে।
   //
   // =============================================================
 
@@ -72,9 +102,15 @@ class ShiftForm extends StatefulWidget {
       int graceOutMinutes,
       int lateAfterMinutes,
       int halfDayAfterMinutes,
+      int lateGraceMinutes,
+      int earlyLeaveGraceMinutes,
+      double minimumWorkingHours,
+      double halfDayThresholdHours,
       int? weeklyOffDay,
       bool isNightShift,
       bool isFlexible,
+      bool checkInRequired,
+      bool checkOutRequired,
       bool isActive,
       ) onSubmit;
 
@@ -85,13 +121,28 @@ class ShiftForm extends StatefulWidget {
 class _ShiftFormState extends State<ShiftForm> {
   final _formKey = GlobalKey<FormState>();
 
+  // =============================================================
+  // CONTROLLERS
+  // =============================================================
+
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
+
   late TextEditingController _breakController;
   late TextEditingController _graceInController;
   late TextEditingController _graceOutController;
   late TextEditingController _lateController;
   late TextEditingController _halfDayController;
+
+  late TextEditingController _lateGraceController;
+  late TextEditingController _earlyLeaveGraceController;
+
+  late TextEditingController _minimumWorkingHoursController;
+  late TextEditingController _halfDayThresholdHoursController;
+
+  // =============================================================
+  // STATE
+  // =============================================================
 
   late TimeOfDay _startTime;
   late TimeOfDay _endTime;
@@ -100,6 +151,10 @@ class _ShiftFormState extends State<ShiftForm> {
 
   late bool _isNightShift;
   late bool _isFlexible;
+
+  late bool _checkInRequired;
+  late bool _checkOutRequired;
+
   late bool _isActive;
 
   // =============================================================
@@ -138,6 +193,24 @@ class _ShiftFormState extends State<ShiftForm> {
       text: widget.initialHalfDayAfterMinutes.toString(),
     );
 
+    _lateGraceController = TextEditingController(
+      text: widget.initialLateGraceMinutes.toString(),
+    );
+
+    _earlyLeaveGraceController = TextEditingController(
+      text: widget.initialEarlyLeaveGraceMinutes.toString(),
+    );
+
+    _minimumWorkingHoursController = TextEditingController(
+      text: widget.initialMinimumWorkingHours
+          .toStringAsFixed(2),
+    );
+
+    _halfDayThresholdHoursController = TextEditingController(
+      text: widget.initialHalfDayThresholdHours
+          .toStringAsFixed(2),
+    );
+
     _startTime = _parseTime(
       widget.initialStartTime,
     );
@@ -149,8 +222,10 @@ class _ShiftFormState extends State<ShiftForm> {
     _weeklyOffDay = widget.initialWeeklyOffDay;
 
     _isNightShift = widget.initialNightShift;
-
     _isFlexible = widget.initialFlexible;
+
+    _checkInRequired = widget.initialCheckInRequired;
+    _checkOutRequired = widget.initialCheckOutRequired;
 
     _isActive = widget.initialActive;
   }
@@ -159,14 +234,18 @@ class _ShiftFormState extends State<ShiftForm> {
   // PARSE TIME
   // =============================================================
 
-  TimeOfDay _parseTime(
-      String value,
-      ) {
+  TimeOfDay _parseTime(String value) {
     final parts = value.split(':');
 
     return TimeOfDay(
-      hour: int.tryParse(parts[0]) ?? 9,
-      minute: int.tryParse(parts[1]) ?? 0,
+      hour: int.tryParse(
+        parts.isNotEmpty ? parts[0] : '',
+      ) ??
+          9,
+      minute: int.tryParse(
+        parts.length > 1 ? parts[1] : '',
+      ) ??
+          0,
     );
   }
 
@@ -174,12 +253,11 @@ class _ShiftFormState extends State<ShiftForm> {
   // FORMAT TIME
   // =============================================================
 
-  String _formatTime(
-      TimeOfDay time,
-      ) {
+  String _formatTime(TimeOfDay time) {
     final hour = time.hour.toString().padLeft(2, '0');
 
-    final minute = time.minute.toString().padLeft(2, '0');
+    final minute =
+    time.minute.toString().padLeft(2, '0');
 
     return '$hour:$minute:00';
   }
@@ -192,11 +270,18 @@ class _ShiftFormState extends State<ShiftForm> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+
     _breakController.dispose();
     _graceInController.dispose();
     _graceOutController.dispose();
     _lateController.dispose();
     _halfDayController.dispose();
+
+    _lateGraceController.dispose();
+    _earlyLeaveGraceController.dispose();
+
+    _minimumWorkingHoursController.dispose();
+    _halfDayThresholdHoursController.dispose();
 
     super.dispose();
   }
@@ -246,7 +331,8 @@ class _ShiftFormState extends State<ShiftForm> {
 
     final name = _nameController.text.trim();
 
-    final description = _descriptionController.text.trim();
+    final description =
+    _descriptionController.text.trim();
 
     final breakMinutes =
         int.tryParse(
@@ -278,6 +364,30 @@ class _ShiftFormState extends State<ShiftForm> {
         ) ??
             240;
 
+    final lateGraceMinutes =
+        int.tryParse(
+          _lateGraceController.text.trim(),
+        ) ??
+            15;
+
+    final earlyLeaveGraceMinutes =
+        int.tryParse(
+          _earlyLeaveGraceController.text.trim(),
+        ) ??
+            15;
+
+    final minimumWorkingHours =
+        double.tryParse(
+          _minimumWorkingHoursController.text.trim(),
+        ) ??
+            8.00;
+
+    final halfDayThresholdHours =
+        double.tryParse(
+          _halfDayThresholdHoursController.text.trim(),
+        ) ??
+            4.00;
+
     await widget.onSubmit(
       name,
       description,
@@ -288,9 +398,15 @@ class _ShiftFormState extends State<ShiftForm> {
       graceOutMinutes,
       lateAfterMinutes,
       halfDayAfterMinutes,
+      lateGraceMinutes,
+      earlyLeaveGraceMinutes,
+      minimumWorkingHours,
+      halfDayThresholdHours,
       _weeklyOffDay,
       _isNightShift,
       _isFlexible,
+      _checkInRequired,
+      _checkOutRequired,
       _isActive,
     );
   }
@@ -311,18 +427,22 @@ class _ShiftFormState extends State<ShiftForm> {
             context,
             constraints,
             ) {
-          final bool isWide = constraints.maxWidth >= 700;
+          final bool isWide =
+              constraints.maxWidth >= 700;
 
           return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics:
+            const BouncingScrollPhysics(),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
+                constraints:
+                const BoxConstraints(
                   maxWidth: 760,
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isWide ? 8 : 0,
+                    horizontal:
+                    isWide ? 8 : 0,
                   ),
                   child: Column(
                     crossAxisAlignment:
@@ -342,34 +462,48 @@ class _ShiftFormState extends State<ShiftForm> {
 
                       _buildSectionCard(
                         title: 'Basic Information',
-                        icon: Icons.badge_outlined,
+                        icon:
+                        Icons.badge_outlined,
                         children: [
                           _buildTextField(
-                            controller: _nameController,
+                            controller:
+                            _nameController,
                             label: 'Shift Name',
-                            hint: 'Enter shift name',
-                            icon: Icons.work_outline_rounded,
+                            hint:
+                            'Enter shift name',
+                            icon:
+                            Icons.work_outline_rounded,
                             textInputAction:
                             TextInputAction.next,
                             validator: (value) {
                               if (value == null ||
-                                  value.trim().isEmpty) {
+                                  value
+                                      .trim()
+                                      .isEmpty) {
                                 return 'Shift name is required';
+                              }
+
+                              if (value.trim().length >
+                                  100) {
+                                return 'Shift name cannot exceed 100 characters';
                               }
 
                               return null;
                             },
                           ),
 
-                          const SizedBox(height: 14),
+                          const SizedBox(
+                            height: 14,
+                          ),
 
                           _buildTextField(
                             controller:
                             _descriptionController,
                             label: 'Description',
-                            hint: 'Enter shift description',
-                            icon:
-                            Icons.description_outlined,
+                            hint:
+                            'Enter shift description',
+                            icon: Icons
+                                .description_outlined,
                             maxLines: 3,
                             textInputAction:
                             TextInputAction.newline,
@@ -385,7 +519,8 @@ class _ShiftFormState extends State<ShiftForm> {
 
                       _buildSectionCard(
                         title: 'Shift Time',
-                        icon: Icons.schedule_outlined,
+                        icon:
+                        Icons.schedule_outlined,
                         children: [
                           if (isWide)
                             Row(
@@ -393,22 +528,28 @@ class _ShiftFormState extends State<ShiftForm> {
                                 Expanded(
                                   child:
                                   _buildTimeSelector(
-                                    title: 'Start Time',
-                                    time: _startTime,
-                                    icon:
-                                    Icons.login_rounded,
+                                    title:
+                                    'Start Time',
+                                    time:
+                                    _startTime,
+                                    icon: Icons
+                                        .login_rounded,
                                     onTap:
                                     _pickStartTime,
                                   ),
                                 ),
-                                const SizedBox(width: 14),
+                                const SizedBox(
+                                  width: 14,
+                                ),
                                 Expanded(
                                   child:
                                   _buildTimeSelector(
-                                    title: 'End Time',
-                                    time: _endTime,
-                                    icon:
-                                    Icons.logout_rounded,
+                                    title:
+                                    'End Time',
+                                    time:
+                                    _endTime,
+                                    icon: Icons
+                                        .logout_rounded,
                                     onTap:
                                     _pickEndTime,
                                   ),
@@ -417,17 +558,25 @@ class _ShiftFormState extends State<ShiftForm> {
                             )
                           else ...[
                             _buildTimeSelector(
-                              title: 'Start Time',
+                              title:
+                              'Start Time',
                               time: _startTime,
-                              icon: Icons.login_rounded,
-                              onTap: _pickStartTime,
+                              icon: Icons
+                                  .login_rounded,
+                              onTap:
+                              _pickStartTime,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(
+                              height: 12,
+                            ),
                             _buildTimeSelector(
-                              title: 'End Time',
+                              title:
+                              'End Time',
                               time: _endTime,
-                              icon: Icons.logout_rounded,
-                              onTap: _pickEndTime,
+                              icon: Icons
+                                  .logout_rounded,
+                              onTap:
+                              _pickEndTime,
                             ),
                           ],
                         ],
@@ -436,41 +585,54 @@ class _ShiftFormState extends State<ShiftForm> {
                       const SizedBox(height: 16),
 
                       // =================================================
-                      // MINUTES SETTINGS
+                      // TIME & GRACE SETTINGS
                       // =================================================
 
                       _buildSectionCard(
-                        title: 'Time & Grace Settings',
-                        icon: Icons.timer_outlined,
+                        title:
+                        'Time & Grace Settings',
+                        icon:
+                        Icons.timer_outlined,
                         children: [
                           if (isWide)
                             Row(
                               crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                              CrossAxisAlignment
+                                  .start,
                               children: [
                                 Expanded(
-                                  child: _buildNumberField(
+                                  child:
+                                  _buildNumberField(
                                     controller:
                                     _breakController,
                                     label:
                                     'Break Minutes',
                                     icon: Icons
                                         .free_breakfast_outlined,
-                                    validator: _minutesValidator(
+                                    suffixText:
+                                    'min',
+                                    validator:
+                                    _minutesValidator(
                                       'Break minutes',
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 14),
+                                const SizedBox(
+                                  width: 14,
+                                ),
                                 Expanded(
-                                  child: _buildNumberField(
+                                  child:
+                                  _buildNumberField(
                                     controller:
                                     _graceInController,
                                     label:
                                     'Grace In Minutes',
                                     icon: Icons
                                         .login_outlined,
-                                    validator: _minutesValidator(
+                                    suffixText:
+                                    'min',
+                                    validator:
+                                    _minutesValidator(
                                       'Grace In Minutes',
                                     ),
                                   ),
@@ -481,55 +643,77 @@ class _ShiftFormState extends State<ShiftForm> {
                             _buildNumberField(
                               controller:
                               _breakController,
-                              label: 'Break Minutes',
+                              label:
+                              'Break Minutes',
                               icon: Icons
                                   .free_breakfast_outlined,
-                              validator: _minutesValidator(
+                              suffixText: 'min',
+                              validator:
+                              _minutesValidator(
                                 'Break minutes',
                               ),
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(
+                              height: 14,
+                            ),
                             _buildNumberField(
                               controller:
                               _graceInController,
-                              label: 'Grace In Minutes',
-                              icon: Icons.login_outlined,
-                              validator: _minutesValidator(
+                              label:
+                              'Grace In Minutes',
+                              icon: Icons
+                                  .login_outlined,
+                              suffixText: 'min',
+                              validator:
+                              _minutesValidator(
                                 'Grace In Minutes',
                               ),
                             ),
                           ],
 
-                          const SizedBox(height: 14),
+                          const SizedBox(
+                            height: 14,
+                          ),
 
                           if (isWide)
                             Row(
                               crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                              CrossAxisAlignment
+                                  .start,
                               children: [
                                 Expanded(
-                                  child: _buildNumberField(
+                                  child:
+                                  _buildNumberField(
                                     controller:
                                     _graceOutController,
                                     label:
                                     'Grace Out Minutes',
                                     icon: Icons
                                         .logout_outlined,
-                                    validator: _minutesValidator(
+                                    suffixText:
+                                    'min',
+                                    validator:
+                                    _minutesValidator(
                                       'Grace Out Minutes',
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 14),
+                                const SizedBox(
+                                  width: 14,
+                                ),
                                 Expanded(
-                                  child: _buildNumberField(
+                                  child:
+                                  _buildNumberField(
                                     controller:
                                     _lateController,
                                     label:
                                     'Late After Minutes',
                                     icon: Icons
                                         .schedule_outlined,
-                                    validator: _minutesValidator(
+                                    suffixText:
+                                    'min',
+                                    validator:
+                                    _minutesValidator(
                                       'Late After Minutes',
                                     ),
                                   ),
@@ -542,52 +726,269 @@ class _ShiftFormState extends State<ShiftForm> {
                               _graceOutController,
                               label:
                               'Grace Out Minutes',
-                              icon:
-                              Icons.logout_outlined,
-                              validator: _minutesValidator(
+                              icon: Icons
+                                  .logout_outlined,
+                              suffixText: 'min',
+                              validator:
+                              _minutesValidator(
                                 'Grace Out Minutes',
                               ),
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(
+                              height: 14,
+                            ),
                             _buildNumberField(
-                              controller: _lateController,
+                              controller:
+                              _lateController,
                               label:
                               'Late After Minutes',
-                              icon:
-                              Icons.schedule_outlined,
-                              validator: _minutesValidator(
+                              icon: Icons
+                                  .schedule_outlined,
+                              suffixText: 'min',
+                              validator:
+                              _minutesValidator(
                                 'Late After Minutes',
                               ),
                             ),
                           ],
 
-                          const SizedBox(height: 14),
+                          const SizedBox(
+                            height: 14,
+                          ),
 
                           _buildNumberField(
                             controller:
                             _halfDayController,
                             label:
                             'Half Day After Minutes',
-                            icon:
-                            Icons.timelapse_outlined,
-                            validator: _minutesValidator(
+                            icon: Icons
+                                .timelapse_outlined,
+                            suffixText: 'min',
+                            validator:
+                            _minutesValidator(
                               'Half Day After Minutes',
                             ),
                           ),
+
+                          const SizedBox(
+                            height: 14,
+                          ),
+
+                          // Late Grace
+                          if (isWide)
+                            Row(
+                              crossAxisAlignment:
+                              CrossAxisAlignment
+                                  .start,
+                              children: [
+                                Expanded(
+                                  child:
+                                  _buildNumberField(
+                                    controller:
+                                    _lateGraceController,
+                                    label:
+                                    'Late Grace',
+                                    icon: Icons
+                                        .timer_outlined,
+                                    suffixText:
+                                    'min',
+                                    validator:
+                                    _minutesValidator(
+                                      'Late Grace',
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 14,
+                                ),
+                                Expanded(
+                                  child:
+                                  _buildNumberField(
+                                    controller:
+                                    _earlyLeaveGraceController,
+                                    label:
+                                    'Early Leave Grace',
+                                    icon: Icons
+                                        .timer_off_outlined,
+                                    suffixText:
+                                    'min',
+                                    validator:
+                                    _minutesValidator(
+                                      'Early Leave Grace',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          else ...[
+                            _buildNumberField(
+                              controller:
+                              _lateGraceController,
+                              label:
+                              'Late Grace',
+                              icon: Icons
+                                  .timer_outlined,
+                              suffixText: 'min',
+                              validator:
+                              _minutesValidator(
+                                'Late Grace',
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _buildNumberField(
+                              controller:
+                              _earlyLeaveGraceController,
+                              label:
+                              'Early Leave Grace',
+                              icon: Icons
+                                  .timer_off_outlined,
+                              suffixText: 'min',
+                              validator:
+                              _minutesValidator(
+                                'Early Leave Grace',
+                              ),
+                            ),
+                          ],
                         ],
                       ),
 
                       const SizedBox(height: 16),
 
                       // =================================================
-                      // WEEKLY OFF
+                      // WORKING HOURS
                       // =================================================
 
                       _buildSectionCard(
-                        title: 'Weekly Schedule',
-                        icon: Icons.event_available_outlined,
+                        title:
+                        'Working Hour Rules',
+                        icon: Icons
+                            .access_time_filled_rounded,
                         children: [
-                          _buildWeeklyOffDropdown(),
+                          if (isWide)
+                            Row(
+                              crossAxisAlignment:
+                              CrossAxisAlignment
+                                  .start,
+                              children: [
+                                Expanded(
+                                  child:
+                                  _buildDecimalField(
+                                    controller:
+                                    _minimumWorkingHoursController,
+                                    label:
+                                    'Minimum Working Hours',
+                                    icon: Icons
+                                        .timelapse_rounded,
+                                    suffixText:
+                                    'hours',
+                                    validator:
+                                    _hoursValidator(
+                                      'Minimum Working Hours',
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 14,
+                                ),
+                                Expanded(
+                                  child:
+                                  _buildDecimalField(
+                                    controller:
+                                    _halfDayThresholdHoursController,
+                                    label:
+                                    'Half Day Threshold',
+                                    icon: Icons
+                                        .hourglass_bottom_rounded,
+                                    suffixText:
+                                    'hours',
+                                    validator:
+                                    _hoursValidator(
+                                      'Half Day Threshold',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          else ...[
+                            _buildDecimalField(
+                              controller:
+                              _minimumWorkingHoursController,
+                              label:
+                              'Minimum Working Hours',
+                              icon: Icons
+                                  .timelapse_rounded,
+                              suffixText: 'hours',
+                              validator:
+                              _hoursValidator(
+                                'Minimum Working Hours',
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _buildDecimalField(
+                              controller:
+                              _halfDayThresholdHoursController,
+                              label:
+                              'Half Day Threshold',
+                              icon: Icons
+                                  .hourglass_bottom_rounded,
+                              suffixText: 'hours',
+                              validator:
+                              _hoursValidator(
+                                'Half Day Threshold',
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // =================================================
+                      // ATTENDANCE REQUIREMENTS
+                      // =================================================
+
+                      _buildSectionCard(
+                        title:
+                        'Attendance Requirements',
+                        icon: Icons
+                            .fact_check_outlined,
+                        children: [
+                          _buildSwitchTile(
+                            title:
+                            'Check-in Required',
+                            subtitle:
+                            'Employee must check in for this shift.',
+                            value:
+                            _checkInRequired,
+                            icon: Icons
+                                .login_rounded,
+                            onChanged: (value) {
+                              setState(() {
+                                _checkInRequired =
+                                    value;
+                              });
+                            },
+                          ),
+                          _buildSwitchTile(
+                            title:
+                            'Check-out Required',
+                            subtitle:
+                            'Employee must check out for this shift.',
+                            value:
+                            _checkOutRequired,
+                            icon: Icons
+                                .logout_rounded,
+                            onChanged: (value) {
+                              setState(() {
+                                _checkOutRequired =
+                                    value;
+                              });
+                            },
+                          ),
                         ],
                       ),
 
@@ -598,47 +999,55 @@ class _ShiftFormState extends State<ShiftForm> {
                       // =================================================
 
                       _buildSectionCard(
-                        title: 'Shift Options',
-                        icon: Icons.tune_rounded,
+                        title:
+                        'Shift Options',
+                        icon:
+                        Icons.tune_rounded,
                         children: [
                           _buildSwitchTile(
-                            title: 'Night Shift',
+                            title:
+                            'Night Shift',
                             subtitle:
                             'Mark this as an overnight shift.',
-                            value: _isNightShift,
-                            icon:
-                            Icons.nights_stay_outlined,
+                            value:
+                            _isNightShift,
+                            icon: Icons
+                                .nights_stay_outlined,
                             onChanged: (value) {
                               setState(() {
-                                _isNightShift = value;
+                                _isNightShift =
+                                    value;
                               });
                             },
                           ),
-
                           _buildSwitchTile(
-                            title: 'Flexible Shift',
+                            title:
+                            'Flexible Shift',
                             subtitle:
                             'Allow flexible shift timing.',
-                            value: _isFlexible,
-                            icon:
-                            Icons.swap_horiz_rounded,
+                            value:
+                            _isFlexible,
+                            icon: Icons
+                                .swap_horiz_rounded,
                             onChanged: (value) {
                               setState(() {
-                                _isFlexible = value;
+                                _isFlexible =
+                                    value;
                               });
                             },
                           ),
-
                           _buildSwitchTile(
                             title: 'Active',
                             subtitle:
                             'Allow this shift to be used by employees.',
-                            value: _isActive,
-                            icon:
-                            Icons.check_circle_outline,
+                            value:
+                            _isActive,
+                            icon: Icons
+                                .check_circle_outline,
                             onChanged: (value) {
                               setState(() {
-                                _isActive = value;
+                                _isActive =
+                                    value;
                               });
                             },
                           ),
@@ -655,7 +1064,8 @@ class _ShiftFormState extends State<ShiftForm> {
                         width: double.infinity,
                         height: 52,
                         child: FilledButton.icon(
-                          onPressed: widget.isLoading
+                          onPressed:
+                          widget.isLoading
                               ? null
                               : _save,
                           icon: widget.isLoading
@@ -665,12 +1075,14 @@ class _ShiftFormState extends State<ShiftForm> {
                             child:
                             CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: colorScheme
+                              color:
+                              colorScheme
                                   .onPrimary,
                             ),
                           )
                               : const Icon(
-                            Icons.save_outlined,
+                            Icons
+                                .save_outlined,
                           ),
                           label: Text(
                             widget.isLoading
@@ -685,9 +1097,11 @@ class _ShiftFormState extends State<ShiftForm> {
                           FilledButton.styleFrom(
                             elevation: 0,
                             backgroundColor:
-                            colorScheme.primary,
+                            colorScheme
+                                .primary,
                             foregroundColor:
-                            colorScheme.onPrimary,
+                            colorScheme
+                                .onPrimary,
                             disabledBackgroundColor:
                             colorScheme
                                 .surfaceContainerHighest,
@@ -697,7 +1111,8 @@ class _ShiftFormState extends State<ShiftForm> {
                             shape:
                             RoundedRectangleBorder(
                               borderRadius:
-                              BorderRadius.circular(
+                              BorderRadius
+                                  .circular(
                                 14,
                               ),
                             ),
@@ -737,7 +1152,8 @@ class _ShiftFormState extends State<ShiftForm> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius:
+        BorderRadius.circular(18),
         border: Border.all(
           color: colorScheme.outlineVariant,
         ),
@@ -749,7 +1165,8 @@ class _ShiftFormState extends State<ShiftForm> {
             height: 52,
             decoration: BoxDecoration(
               color: colorScheme.primary,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius:
+              BorderRadius.circular(14),
             ),
             child: Icon(
               Icons.schedule_rounded,
@@ -764,20 +1181,25 @@ class _ShiftFormState extends State<ShiftForm> {
               CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.initialName.trim().isEmpty
+                  widget.initialName
+                      .trim()
+                      .isEmpty
                       ? 'Create Shift'
                       : 'Edit Shift',
-                  style: theme.textTheme.titleLarge
+                  style: theme
+                      .textTheme.titleLarge
                       ?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color:
-                    colorScheme.onPrimaryContainer,
+                    fontWeight:
+                    FontWeight.w600,
+                    color: colorScheme
+                        .onPrimaryContainer,
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'Configure shift timing, grace periods and other shift settings.',
-                  style: theme.textTheme.bodySmall
+                  'Configure shift timing, grace periods and attendance rules.',
+                  style: theme
+                      .textTheme.bodySmall
                       ?.copyWith(
                     color: colorScheme
                         .onPrimaryContainer
@@ -810,8 +1232,10 @@ class _ShiftFormState extends State<ShiftForm> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(18),
+        color:
+        colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(18),
         border: Border.all(
           color: colorScheme.outlineVariant,
         ),
@@ -826,10 +1250,12 @@ class _ShiftFormState extends State<ShiftForm> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color:
-                  colorScheme.secondaryContainer,
+                  color: colorScheme
+                      .secondaryContainer,
                   borderRadius:
-                  BorderRadius.circular(12),
+                  BorderRadius.circular(
+                    12,
+                  ),
                 ),
                 child: Icon(
                   icon,
@@ -842,25 +1268,24 @@ class _ShiftFormState extends State<ShiftForm> {
               Expanded(
                 child: Text(
                   title,
-                  style: theme.textTheme.titleMedium
+                  style: theme
+                      .textTheme.titleMedium
                       ?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
+                    fontWeight:
+                    FontWeight.w600,
+                    color:
+                    colorScheme.onSurface,
                   ),
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 13),
-
           Divider(
             height: 1,
             color: colorScheme.outlineVariant,
           ),
-
           const SizedBox(height: 14),
-
           ...children,
         ],
       ),
@@ -889,7 +1314,8 @@ class _ShiftFormState extends State<ShiftForm> {
       maxLines: maxLines,
       textInputAction: textInputAction,
       validator: validator,
-      style: theme.textTheme.bodyMedium?.copyWith(
+      style: theme.textTheme.bodyMedium
+          ?.copyWith(
         color: colorScheme.onSurface,
         fontWeight: FontWeight.w500,
       ),
@@ -899,13 +1325,13 @@ class _ShiftFormState extends State<ShiftForm> {
         prefixIcon: Icon(icon),
         filled: true,
         fillColor: colorScheme.surface,
-        labelStyle:
-        TextStyle(
-          color: colorScheme.onSurfaceVariant,
+        labelStyle: TextStyle(
+          color:
+          colorScheme.onSurfaceVariant,
         ),
-        hintStyle:
-        TextStyle(
-          color: colorScheme.onSurfaceVariant,
+        hintStyle: TextStyle(
+          color:
+          colorScheme.onSurfaceVariant,
         ),
         border: _inputBorder(),
         enabledBorder: _inputBorder(),
@@ -932,6 +1358,7 @@ class _ShiftFormState extends State<ShiftForm> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required String suffixText,
     required String? Function(String?) validator,
   }) {
     final theme = Theme.of(context);
@@ -940,26 +1367,90 @@ class _ShiftFormState extends State<ShiftForm> {
     return TextFormField(
       controller: controller,
       enabled: !widget.isLoading,
-      keyboardType: TextInputType.number,
-      textInputAction: TextInputAction.next,
+      keyboardType:
+      TextInputType.number,
+      textInputAction:
+      TextInputAction.next,
       validator: validator,
-      style: theme.textTheme.bodyMedium?.copyWith(
+      style: theme.textTheme.bodyMedium
+          ?.copyWith(
         color: colorScheme.onSurface,
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
-        suffixText: 'min',
+        suffixText: suffixText,
         filled: true,
         fillColor: colorScheme.surface,
-        labelStyle:
-        TextStyle(
-          color: colorScheme.onSurfaceVariant,
+        labelStyle: TextStyle(
+          color:
+          colorScheme.onSurfaceVariant,
         ),
-        suffixStyle:
-        TextStyle(
-          color: colorScheme.onSurfaceVariant,
+        suffixStyle: TextStyle(
+          color:
+          colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+        ),
+        border: _inputBorder(),
+        enabledBorder: _inputBorder(),
+        focusedBorder: _inputBorder(
+          color: colorScheme.primary,
+          width: 1.5,
+        ),
+        errorBorder: _inputBorder(
+          color: colorScheme.error,
+        ),
+        focusedErrorBorder: _inputBorder(
+          color: colorScheme.error,
+          width: 1.5,
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // DECIMAL FIELD
+  // =============================================================
+
+  Widget _buildDecimalField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required String suffixText,
+    required String? Function(String?) validator,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return TextFormField(
+      controller: controller,
+      enabled: !widget.isLoading,
+      keyboardType:
+      const TextInputType.numberWithOptions(
+        decimal: true,
+      ),
+      textInputAction:
+      TextInputAction.next,
+      validator: validator,
+      style: theme.textTheme.bodyMedium
+          ?.copyWith(
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        suffixText: suffixText,
+        filled: true,
+        fillColor: colorScheme.surface,
+        labelStyle: TextStyle(
+          color:
+          colorScheme.onSurfaceVariant,
+        ),
+        suffixStyle: TextStyle(
+          color:
+          colorScheme.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
         border: _inputBorder(),
@@ -987,12 +1478,15 @@ class _ShiftFormState extends State<ShiftForm> {
     Color? color,
     double width = 1,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme =
+        Theme.of(context).colorScheme;
 
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius:
+      BorderRadius.circular(14),
       borderSide: BorderSide(
-        color: color ?? colorScheme.outlineVariant,
+        color:
+        color ?? colorScheme.outlineVariant,
         width: width,
       ),
     );
@@ -1013,20 +1507,26 @@ class _ShiftFormState extends State<ShiftForm> {
 
     return Material(
       color: colorScheme.surface,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius:
+      BorderRadius.circular(14),
       child: InkWell(
-        onTap: widget.isLoading ? null : onTap,
-        borderRadius: BorderRadius.circular(14),
+        onTap:
+        widget.isLoading ? null : onTap,
+        borderRadius:
+        BorderRadius.circular(14),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(
+          padding:
+          const EdgeInsets.symmetric(
             horizontal: 14,
             vertical: 13,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius:
+            BorderRadius.circular(14),
             border: Border.all(
-              color: colorScheme.outlineVariant,
+              color:
+              colorScheme.outlineVariant,
             ),
           ),
           child: Row(
@@ -1034,16 +1534,19 @@ class _ShiftFormState extends State<ShiftForm> {
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(
-                  color:
-                  colorScheme.primaryContainer,
+                decoration:
+                BoxDecoration(
+                  color: colorScheme
+                      .primaryContainer,
                   borderRadius:
-                  BorderRadius.circular(11),
+                  BorderRadius.circular(
+                    11,
+                  ),
                 ),
                 child: Icon(
                   icon,
-                  color:
-                  colorScheme.onPrimaryContainer,
+                  color: colorScheme
+                      .onPrimaryContainer,
                   size: 20,
                 ),
               ),
@@ -1055,7 +1558,8 @@ class _ShiftFormState extends State<ShiftForm> {
                   children: [
                     Text(
                       title,
-                      style: theme.textTheme.bodySmall
+                      style: theme
+                          .textTheme.bodySmall
                           ?.copyWith(
                         color: colorScheme
                             .onSurfaceVariant,
@@ -1064,7 +1568,8 @@ class _ShiftFormState extends State<ShiftForm> {
                     const SizedBox(height: 3),
                     Text(
                       time.format(context),
-                      style: theme.textTheme.titleMedium
+                      style: theme
+                          .textTheme.titleMedium
                           ?.copyWith(
                         color:
                         colorScheme.onSurface,
@@ -1077,82 +1582,12 @@ class _ShiftFormState extends State<ShiftForm> {
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: colorScheme.onSurfaceVariant,
+                color:
+                colorScheme.onSurfaceVariant,
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // =============================================================
-  // WEEKLY OFF DROPDOWN
-  // =============================================================
-
-  Widget _buildWeeklyOffDropdown() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return DropdownButtonFormField<int>(
-      value: _weeklyOffDay,
-      decoration: InputDecoration(
-        labelText: 'Weekly Off Day',
-        prefixIcon:
-        const Icon(Icons.event_outlined),
-        filled: true,
-        fillColor: colorScheme.surface,
-        labelStyle:
-        TextStyle(
-          color: colorScheme.onSurfaceVariant,
-        ),
-        border: _inputBorder(),
-        enabledBorder: _inputBorder(),
-        focusedBorder: _inputBorder(
-          color: colorScheme.primary,
-          width: 1.5,
-        ),
-      ),
-      items: const [
-        DropdownMenuItem(
-          value: 0,
-          child: Text('Sunday'),
-        ),
-        DropdownMenuItem(
-          value: 1,
-          child: Text('Monday'),
-        ),
-        DropdownMenuItem(
-          value: 2,
-          child: Text('Tuesday'),
-        ),
-        DropdownMenuItem(
-          value: 3,
-          child: Text('Wednesday'),
-        ),
-        DropdownMenuItem(
-          value: 4,
-          child: Text('Thursday'),
-        ),
-        DropdownMenuItem(
-          value: 5,
-          child: Text('Friday'),
-        ),
-        DropdownMenuItem(
-          value: 6,
-          child: Text('Saturday'),
-        ),
-      ],
-      onChanged: widget.isLoading
-          ? null
-          : (value) {
-        setState(() {
-          _weeklyOffDay = value;
-        });
-      },
-      style: theme.textTheme.bodyMedium?.copyWith(
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w500,
       ),
     );
   }
@@ -1172,14 +1607,17 @@ class _ShiftFormState extends State<ShiftForm> {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      margin: const EdgeInsets.only(
+      margin:
+      const EdgeInsets.only(
         bottom: 8,
       ),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius:
+        BorderRadius.circular(14),
         border: Border.all(
-          color: colorScheme.outlineVariant,
+          color:
+          colorScheme.outlineVariant,
         ),
       ),
       child: SwitchListTile.adaptive(
@@ -1191,13 +1629,17 @@ class _ShiftFormState extends State<ShiftForm> {
         secondary: Container(
           width: 40,
           height: 40,
-          decoration: BoxDecoration(
+          decoration:
+          BoxDecoration(
             color: value
-                ? colorScheme.primaryContainer
+                ? colorScheme
+                .primaryContainer
                 : colorScheme
                 .surfaceContainerHighest,
             borderRadius:
-            BorderRadius.circular(11),
+            BorderRadius.circular(
+              11,
+            ),
           ),
           child: Icon(
             icon,
@@ -1213,34 +1655,41 @@ class _ShiftFormState extends State<ShiftForm> {
           title,
           style: theme.textTheme.bodyLarge
               ?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
+            fontWeight:
+            FontWeight.w600,
+            color:
+            colorScheme.onSurface,
           ),
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(
+          padding:
+          const EdgeInsets.only(
             top: 3,
           ),
           child: Text(
             subtitle,
-            style: theme.textTheme.bodySmall
+            style: theme
+                .textTheme.bodySmall
                 ?.copyWith(
-              color:
-              colorScheme.onSurfaceVariant,
+              color: colorScheme
+                  .onSurfaceVariant,
               height: 1.35,
             ),
           ),
         ),
         value: value,
-        onChanged:
-        widget.isLoading ? null : onChanged,
-        activeColor: colorScheme.primary,
+        onChanged: widget.isLoading
+            ? null
+            : onChanged,
+        activeColor:
+        colorScheme.primary,
         activeTrackColor:
         colorScheme.primaryContainer,
         inactiveThumbColor:
         colorScheme.onSurfaceVariant,
         inactiveTrackColor:
-        colorScheme.surfaceContainerHighest,
+        colorScheme
+            .surfaceContainerHighest,
         trackOutlineColor:
         WidgetStateProperty.resolveWith(
               (states) {
@@ -1258,7 +1707,7 @@ class _ShiftFormState extends State<ShiftForm> {
   }
 
   // =============================================================
-  // VALIDATOR
+  // MINUTES VALIDATOR
   // =============================================================
 
   String? Function(String?) _minutesValidator(
@@ -1270,9 +1719,8 @@ class _ShiftFormState extends State<ShiftForm> {
         return '$fieldName is required';
       }
 
-      final minutes = int.tryParse(
-        value.trim(),
-      );
+      final minutes =
+      int.tryParse(value.trim());
 
       if (minutes == null) {
         return 'Invalid number';
@@ -1280,6 +1728,38 @@ class _ShiftFormState extends State<ShiftForm> {
 
       if (minutes < 0) {
         return 'Minutes cannot be negative';
+      }
+
+      return null;
+    };
+  }
+
+  // =============================================================
+  // HOURS VALIDATOR
+  // =============================================================
+
+  String? Function(String?) _hoursValidator(
+      String fieldName,
+      ) {
+    return (value) {
+      if (value == null ||
+          value.trim().isEmpty) {
+        return '$fieldName is required';
+      }
+
+      final hours =
+      double.tryParse(value.trim());
+
+      if (hours == null) {
+        return 'Invalid number';
+      }
+
+      if (hours < 0) {
+        return 'Hours cannot be negative';
+      }
+
+      if (hours > 24) {
+        return 'Hours cannot exceed 24';
       }
 
       return null;

@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_loading.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/app_section_title.dart';
 
+import '../../domain/entities/shift_entity.dart';
 import '../providers/shift_provider.dart';
 import '../widgets/shift_card.dart';
 
@@ -19,8 +20,7 @@ class ShiftListPage extends ConsumerStatefulWidget {
       _ShiftListPageState();
 }
 
-class _ShiftListPageState
-    extends ConsumerState<ShiftListPage> {
+class _ShiftListPageState extends ConsumerState<ShiftListPage> {
   // =============================================================
   // SEARCH CONTROLLER
   // =============================================================
@@ -37,9 +37,7 @@ class _ShiftListPageState
     super.initState();
 
     Future.microtask(() async {
-      await ref
-          .read(shiftProvider.notifier)
-          .loadShifts();
+      await ref.read(shiftProvider.notifier).loadShifts();
     });
   }
 
@@ -58,9 +56,7 @@ class _ShiftListPageState
   // =============================================================
 
   Future<void> _refresh() async {
-    await ref
-        .read(shiftProvider.notifier)
-        .loadShifts();
+    await ref.read(shiftProvider.notifier).loadShifts();
   }
 
   // =============================================================
@@ -69,7 +65,7 @@ class _ShiftListPageState
 
   Future<void> _confirmDelete(
       BuildContext context,
-      dynamic shift,
+      ShiftEntity shift,
       ) async {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -78,35 +74,30 @@ class _ShiftListPageState
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Delete Shift',
-          ),
+          title: const Text('Delete Shift'),
+
           content: Text(
             'Are you sure you want to delete '
                 '"${shift.name}"?',
           ),
+
           actions: [
             OutlinedButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(
-                'Cancel',
-              ),
+              child: const Text('Cancel'),
             ),
+
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor:
-                colorScheme.error,
-                foregroundColor:
-                colorScheme.onError,
+                backgroundColor: colorScheme.error,
+                foregroundColor: colorScheme.onError,
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(
-                'Delete',
-              ),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -117,18 +108,29 @@ class _ShiftListPageState
       return;
     }
 
-    await ref
-        .read(shiftProvider.notifier)
-        .deleteShift(shift.id);
+    try {
+      await ref
+          .read(shiftProvider.notifier)
+          .deleteShift(shift.id);
 
-    if (!context.mounted) {
-      return;
+      if (!context.mounted) {
+        return;
+      }
+
+      _showSuccessSnackBar(
+        context,
+        '${shift.name} deleted successfully.',
+      );
+    } catch (e) {
+      if (!context.mounted) {
+        return;
+      }
+
+      _showErrorSnackBar(
+        context,
+        'Failed to delete ${shift.name}.',
+      );
     }
-
-    _showSuccessSnackBar(
-      context,
-      '${shift.name} deleted successfully.',
-    );
   }
 
   // =============================================================
@@ -146,36 +148,66 @@ class _ShiftListPageState
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          behavior:
-          SnackBarBehavior.floating,
-          backgroundColor:
-          colorScheme.inverseSurface,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: colorScheme.inverseSurface,
           elevation: 0,
-          duration:
-          const Duration(seconds: 3),
+          duration: const Duration(seconds: 3),
           content: Row(
             children: [
               Icon(
-                Icons
-                    .check_circle_outline_rounded,
+                Icons.check_circle_outline_rounded,
                 size: 20,
-                color: colorScheme
-                    .onInverseSurface,
+                color: colorScheme.onInverseSurface,
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   message,
-                  style: theme
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                    color: colorScheme
-                        .onInverseSurface,
-                    fontWeight:
-                    FontWeight.w500,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onInverseSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
+
+  // =============================================================
+  // ERROR SNACKBAR
+  // =============================================================
+
+  void _showErrorSnackBar(
+      BuildContext context,
+      String message,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: colorScheme.errorContainer,
+          elevation: 0,
+          duration: const Duration(seconds: 4),
+          content: Row(
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                size: 20,
+                color: colorScheme.onErrorContainer,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onErrorContainer,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -191,18 +223,13 @@ class _ShiftListPageState
 
   @override
   Widget build(BuildContext context) {
-    final shiftState =
-    ref.watch(shiftProvider);
+    final shiftState = ref.watch(shiftProvider);
 
-    final theme =
-    Theme.of(context);
-
-    final colorScheme =
-        theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor:
-      colorScheme.surface,
+      backgroundColor: colorScheme.surface,
 
       // =========================================================
       // APP BAR
@@ -211,19 +238,13 @@ class _ShiftListPageState
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor:
-        colorScheme.surface,
-        foregroundColor:
-        colorScheme.onSurface,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
 
         title: Text(
           'Shifts',
-          style: theme
-              .textTheme
-              .titleLarge
-              ?.copyWith(
-            fontWeight:
-            FontWeight.w600,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
           ),
         ),
 
@@ -248,8 +269,7 @@ class _ShiftListPageState
       // ADD SHIFT
       // =========================================================
 
-      floatingActionButton:
-      FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           context.push(
             RoutePaths.shiftCreate,
@@ -258,9 +278,7 @@ class _ShiftListPageState
         icon: const Icon(
           Icons.add_rounded,
         ),
-        label: const Text(
-          'Add',
-        ),
+        label: const Text('Add'),
       ),
 
       // =========================================================
@@ -273,28 +291,22 @@ class _ShiftListPageState
               BuildContext context,
               BoxConstraints constraints,
               ) {
-            final double width =
-                constraints.maxWidth;
+            final double width = constraints.maxWidth;
 
             // ===================================================
             // RESPONSIVE BREAKPOINTS
             // ===================================================
 
-            final bool isDesktop =
-                width >= 1000;
+            final bool isDesktop = width >= 1000;
+            final bool isTablet = width >= 600;
 
-            final bool isTablet =
-                width >= 600;
-
-            final double horizontalPadding =
-            isDesktop
+            final double horizontalPadding = isDesktop
                 ? 32
                 : isTablet
                 ? 24
                 : 14;
 
-            final double maxContentWidth =
-            isDesktop
+            final double maxContentWidth = isDesktop
                 ? 1100
                 : 760;
 
@@ -314,16 +326,13 @@ class _ShiftListPageState
 
                 child: Center(
                   child: ConstrainedBox(
-                    constraints:
-                    BoxConstraints(
-                      maxWidth:
-                      maxContentWidth,
+                    constraints: BoxConstraints(
+                      maxWidth: maxContentWidth,
                     ),
 
                     child: Column(
                       crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                      CrossAxisAlignment.start,
 
                       children: [
                         // =======================================
@@ -331,24 +340,17 @@ class _ShiftListPageState
                         // =======================================
 
                         AppSearchField(
-                          controller:
-                          _searchController,
-                          onChanged:
-                              (value) {
+                          controller: _searchController,
+                          onChanged: (value) {
                             ref
                                 .read(
-                              shiftProvider
-                                  .notifier,
+                              shiftProvider.notifier,
                             )
-                                .search(
-                              value,
-                            );
+                                .search(value);
                           },
                         ),
 
-                        const SizedBox(
-                          height: 18,
-                        ),
+                        const SizedBox(height: 18),
 
                         // =======================================
                         // SECTION TITLE
@@ -360,41 +362,29 @@ class _ShiftListPageState
                               '(${shiftState.filteredShifts.length})',
                         ),
 
-                        const SizedBox(
-                          height: 12,
-                        ),
+                        const SizedBox(height: 12),
 
                         // =======================================
                         // CONTENT
                         // =======================================
 
-                        if (shiftState
-                            .isLoading)
+                        if (shiftState.isLoading)
                           const Padding(
-                            padding:
-                            EdgeInsets.only(
+                            padding: EdgeInsets.only(
                               top: 80,
                             ),
-                            child:
-                            AppLoading(),
+                            child: AppLoading(),
                           )
-                        else if (shiftState
-                            .filteredShifts
-                            .isEmpty)
-                          _buildEmptyState(
-                            context,
-                          )
+                        else if (shiftState.filteredShifts.isEmpty)
+                          _buildEmptyState(context)
                         else
                           _buildShiftList(
                             context,
-                            shiftState,
-                            isDesktop:
-                            isDesktop,
+                            shiftState.filteredShifts,
+                            isDesktop: isDesktop,
                           ),
 
-                        const SizedBox(
-                          height: 20,
-                        ),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -414,14 +404,13 @@ class _ShiftListPageState
   Widget _buildEmptyState(
       BuildContext context,
       ) {
-    return SizedBox(
+    return const SizedBox(
       width: double.infinity,
       child: Padding(
-        padding:
-        const EdgeInsets.only(
+        padding: EdgeInsets.only(
           top: 80,
         ),
-        child: const AppEmpty(
+        child: AppEmpty(
           title: 'No Shift Found',
         ),
       ),
@@ -434,12 +423,9 @@ class _ShiftListPageState
 
   Widget _buildShiftList(
       BuildContext context,
-      dynamic shiftState, {
+      List<ShiftEntity> shifts, {
         required bool isDesktop,
       }) {
-    final shifts =
-        shiftState.filteredShifts;
-
     // ===========================================================
     // DESKTOP GRID
     // ===========================================================
@@ -447,8 +433,10 @@ class _ShiftListPageState
     if (isDesktop) {
       return GridView.builder(
         shrinkWrap: true,
+
         physics:
         const NeverScrollableScrollPhysics(),
+
         itemCount: shifts.length,
 
         gridDelegate:
@@ -456,11 +444,11 @@ class _ShiftListPageState
           crossAxisCount: 2,
           crossAxisSpacing: 14,
           mainAxisSpacing: 14,
+
           childAspectRatio: 1.65,
         ),
 
-        itemBuilder:
-            (context, index) {
+        itemBuilder: (context, index) {
           return _buildShiftCard(
             context,
             shifts[index],
@@ -475,20 +463,19 @@ class _ShiftListPageState
 
     return ListView.separated(
       shrinkWrap: true,
+
       physics:
       const NeverScrollableScrollPhysics(),
 
       itemCount: shifts.length,
 
-      separatorBuilder:
-          (context, index) {
+      separatorBuilder: (context, index) {
         return const SizedBox(
           height: 12,
         );
       },
 
-      itemBuilder:
-          (context, index) {
+      itemBuilder: (context, index) {
         return _buildShiftCard(
           context,
           shifts[index],
@@ -503,21 +490,10 @@ class _ShiftListPageState
 
   Widget _buildShiftCard(
       BuildContext context,
-      dynamic shift,
+      ShiftEntity shift,
       ) {
     return ShiftCard(
       shift: shift,
-
-      // =========================================================
-      // COMPANY NAME
-      // =========================================================
-      //
-      // Company list/query এখানে নেই।
-      //
-      // Company scope login/current user থেকেই
-      // provider/repository handle করবে।
-      //
-      // =========================================================
 
       // =========================================================
       // VIEW
@@ -557,13 +533,20 @@ class _ShiftListPageState
       // =========================================================
 
       onToggleStatus: () async {
-        await ref
-            .read(
-          shiftProvider.notifier,
-        )
-            .toggleShiftStatus(
-          shift,
-        );
+        try {
+          await ref
+              .read(shiftProvider.notifier)
+              .toggleShiftStatus(shift);
+        } catch (e) {
+          if (!context.mounted) {
+            return;
+          }
+
+          _showErrorSnackBar(
+            context,
+            'Failed to update shift status.',
+          );
+        }
       },
     );
   }

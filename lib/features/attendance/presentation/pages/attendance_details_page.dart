@@ -203,26 +203,24 @@ class AttendanceDetailsPage extends StatelessWidget {
                             attendance: attendance,
                           ),
 
-                          const SizedBox(height: 16),
-
-                          // =================================================
-                          // TIMELINE
-                          // =================================================
-
-                          AttendanceTimelineCard(
-                            checkInTime:
-                            attendance.checkInTime,
-                            checkOutTime:
-                            attendance.checkOutTime,
-                            workMinutes:
-                            attendance.workMinutes,
-                            overtimeMinutes:
-                            attendance.overtimeMinutes,
-                            lateMinutes:
-                            attendance.lateMinutes,
-                            earlyExitMinutes:
-                            attendance.earlyExitMinutes,
-                          ),
+                          // const SizedBox(height: 16),
+                          //
+                          // // =================================================
+                          // // TIMELINE
+                          // // =================================================
+                          //
+                          // AttendanceTimelineCard(
+                          //   checkInTime:
+                          //   attendance.checkInTime,
+                          //   checkOutTime:
+                          //   attendance.checkOutTime,
+                          //   workMinutes:
+                          //   attendance.workMinutes,
+                          //   overtimeMinutes:
+                          //   attendance.overtimeMinutes,
+                          //   lateMinutes:
+                          //   attendance.lateMinutes,
+                          // ),
 
                           const SizedBox(height: 20),
 

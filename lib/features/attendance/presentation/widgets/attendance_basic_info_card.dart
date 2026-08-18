@@ -131,18 +131,6 @@ class AttendanceBasicInfoCard extends StatelessWidget {
             _divider(context),
 
             // =====================================================
-            // SHIFT
-            // =====================================================
-
-            _row(
-              context,
-              'Shift',
-              attendance.shiftName ?? '--',
-            ),
-
-            _divider(context),
-
-            // =====================================================
             // CHECK IN
             // =====================================================
 

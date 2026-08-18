@@ -144,11 +144,6 @@ class EmployeeInfoCard extends StatelessWidget {
               value: attendance.designationId ?? '--',
             ),
 
-            _item(
-              context,
-              title: 'Shift',
-              value: attendance.shiftName ?? '--',
-            ),
 
             _item(
               context,

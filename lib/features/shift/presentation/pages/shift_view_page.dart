@@ -22,28 +22,29 @@ class ShiftViewPage extends StatelessWidget {
     switch (day) {
       case 0:
         return 'Sunday';
-
       case 1:
         return 'Monday';
-
       case 2:
         return 'Tuesday';
-
       case 3:
         return 'Wednesday';
-
       case 4:
         return 'Thursday';
-
       case 5:
         return 'Friday';
-
       case 6:
         return 'Saturday';
-
       default:
         return '-';
     }
+  }
+
+  // =============================================================
+  // BOOLEAN
+  // =============================================================
+
+  String _yesNo(bool value) {
+    return value ? 'Yes' : 'No';
   }
 
   // =============================================================
@@ -110,9 +111,9 @@ class ShiftViewPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
 
-      // =========================================================
+      // ===========================================================
       // APP BAR
-      // =========================================================
+      // ===========================================================
 
       appBar: AppBar(
         elevation: 0,
@@ -127,9 +128,9 @@ class ShiftViewPage extends StatelessWidget {
         ),
       ),
 
-      // =========================================================
+      // ===========================================================
       // BODY
-      // =========================================================
+      // ===========================================================
 
       body: SafeArea(
         child: LayoutBuilder(
@@ -153,23 +154,21 @@ class ShiftViewPage extends StatelessWidget {
 
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-
               padding: EdgeInsets.fromLTRB(
                 horizontalPadding,
                 16,
                 horizontalPadding,
                 32,
               ),
-
               children: [
                 Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       maxWidth: maxContentWidth,
                     ),
-
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
                       children: [
                         // =========================================
                         // HEADER
@@ -195,18 +194,42 @@ class ShiftViewPage extends StatelessWidget {
                                     Icons.schedule_rounded,
                                     size: isDesktop ? 46 : 40,
                                     color:
-                                    colorScheme.onPrimaryContainer,
+                                    colorScheme
+                                        .onPrimaryContainer,
                                   ),
                                 ),
 
                                 const SizedBox(height: 16),
 
                                 Text(
-                                  shift.name,
+                                  shift.name.isEmpty
+                                      ? '-'
+                                      : shift.name,
                                   textAlign: TextAlign.center,
-                                  style: theme.textTheme.headlineSmall
+                                  style: theme
+                                      .textTheme
+                                      .headlineSmall
                                       ?.copyWith(
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight:
+                                    FontWeight.w700,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  shift.code.isEmpty
+                                      ? '-'
+                                      : shift.code,
+                                  textAlign: TextAlign.center,
+                                  style: theme
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                    color: colorScheme
+                                        .onSurfaceVariant,
+                                    fontWeight:
+                                    FontWeight.w600,
                                   ),
                                 ),
 
@@ -223,7 +246,7 @@ class ShiftViewPage extends StatelessWidget {
                         const SizedBox(height: 16),
 
                         // =========================================
-                        // DESKTOP / TABLET
+                        // RESPONSIVE CONTENT
                         // =========================================
 
                         if (isDesktop || isTablet)
@@ -232,152 +255,7 @@ class ShiftViewPage extends StatelessWidget {
                             isDesktop: isDesktop,
                           )
                         else ...[
-                          // =======================================
-                          // BASIC INFORMATION
-                          // =======================================
-
-                          _buildDetailSection(
-                            context: context,
-                            title: 'Basic Information',
-                            icon: Icons.info_outline_rounded,
-                            children: [
-                              AppDetailTile(
-                                title: 'Company ID',
-                                value: shift.companyId,
-                              ),
-                              AppDetailTile(
-                                title: 'Shift Name',
-                                value: shift.name,
-                              ),
-                              AppDetailTile(
-                                title: 'Description',
-                                value: shift.description.isEmpty
-                                    ? '-'
-                                    : shift.description,
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // =======================================
-                          // SHIFT TIMING
-                          // =======================================
-
-                          _buildDetailSection(
-                            context: context,
-                            title: 'Shift Timing',
-                            icon: Icons.access_time_rounded,
-                            children: [
-                              AppDetailTile(
-                                title: 'Start Time',
-                                value: shift.startTime,
-                              ),
-                              AppDetailTile(
-                                title: 'End Time',
-                                value: shift.endTime,
-                              ),
-                              AppDetailTile(
-                                title: 'Break Time',
-                                value:
-                                '${shift.breakMinutes} Minutes',
-                              ),
-                              AppDetailTile(
-                                title: 'Weekly Off',
-                                value:
-                                _weekDay(shift.weeklyOffDay),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // =======================================
-                          // ATTENDANCE RULES
-                          // =======================================
-
-                          _buildDetailSection(
-                            context: context,
-                            title: 'Attendance Rules',
-                            icon: Icons.fact_check_outlined,
-                            children: [
-                              AppDetailTile(
-                                title: 'Grace In',
-                                value:
-                                '${shift.graceInMinutes} Minutes',
-                              ),
-                              AppDetailTile(
-                                title: 'Grace Out',
-                                value:
-                                '${shift.graceOutMinutes} Minutes',
-                              ),
-                              AppDetailTile(
-                                title: 'Late After',
-                                value:
-                                '${shift.lateAfterMinutes} Minutes',
-                              ),
-                              AppDetailTile(
-                                title: 'Half Day After',
-                                value:
-                                '${shift.halfDayAfterMinutes} Minutes',
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // =======================================
-                          // SHIFT TYPE
-                          // =======================================
-
-                          _buildDetailSection(
-                            context: context,
-                            title: 'Shift Type',
-                            icon: Icons.settings_outlined,
-                            children: [
-                              AppDetailTile(
-                                title: 'Night Shift',
-                                value:
-                                shift.isNightShift ? 'Yes' : 'No',
-                              ),
-                              AppDetailTile(
-                                title: 'Flexible Shift',
-                                value:
-                                shift.isFlexible ? 'Yes' : 'No',
-                              ),
-                              AppDetailTile(
-                                title: 'Status',
-                                value:
-                                shift.isActive
-                                    ? 'Active'
-                                    : 'Inactive',
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // =======================================
-                          // AUDIT INFORMATION
-                          // =======================================
-
-                          _buildDetailSection(
-                            context: context,
-                            title: 'Audit Information',
-                            icon: Icons.history_rounded,
-                            children: [
-                              AppDetailTile(
-                                title: 'Created At',
-                                value:
-                                shift.createdAt.toString(),
-                              ),
-                              AppDetailTile(
-                                title: 'Updated At',
-                                value:
-                                shift.updatedAt?.toString() ?? '-',
-                              ),
-                            ],
-                          ),
+                          _buildMobileSections(context),
                         ],
                       ],
                     ),
@@ -392,16 +270,75 @@ class ShiftViewPage extends StatelessWidget {
   }
 
   // =============================================================
-  // RESPONSIVE SECTIONS
+  // MOBILE SECTIONS
   // =============================================================
 
-  Widget _buildResponsiveSections(
-      BuildContext context, {
-        required bool isDesktop,
-      }) {
-    final double spacing = 16;
+  Widget _buildMobileSections(BuildContext context) {
+    return Column(
+      children: [
+        // =========================================================
+        // BASIC INFORMATION
+        // =========================================================
 
-    final basicInformation = _buildDetailSection(
+        _buildBasicInformation(context),
+
+        const SizedBox(height: 16),
+
+        // =========================================================
+        // SHIFT TIMING
+        // =========================================================
+
+        _buildShiftTiming(context),
+
+        const SizedBox(height: 16),
+
+        // =========================================================
+        // ATTENDANCE RULES
+        // =========================================================
+
+        _buildAttendanceRules(context),
+
+        const SizedBox(height: 16),
+
+        // =========================================================
+        // WORKING HOURS
+        // =========================================================
+
+        _buildWorkingHours(context),
+
+        const SizedBox(height: 16),
+
+        // =========================================================
+        // SHIFT OPTIONS
+        // =========================================================
+
+        _buildShiftOptions(context),
+
+        const SizedBox(height: 16),
+
+        // =========================================================
+        // CHECK IN / CHECK OUT
+        // =========================================================
+
+        _buildAttendanceRequirements(context),
+
+        const SizedBox(height: 16),
+
+        // =========================================================
+        // AUDIT INFORMATION
+        // =========================================================
+
+        _buildAuditInformation(context),
+      ],
+    );
+  }
+
+  // =============================================================
+  // BASIC INFORMATION
+  // =============================================================
+
+  Widget _buildBasicInformation(BuildContext context) {
+    return _buildDetailSection(
       context: context,
       title: 'Basic Information',
       icon: Icons.info_outline_rounded,
@@ -410,10 +347,17 @@ class ShiftViewPage extends StatelessWidget {
           title: 'Company ID',
           value: shift.companyId,
         ),
+
+        AppDetailTile(
+          title: 'Shift Code',
+          value: shift.code.isEmpty ? '-' : shift.code,
+        ),
+
         AppDetailTile(
           title: 'Shift Name',
-          value: shift.name,
+          value: shift.name.isEmpty ? '-' : shift.name,
         ),
+
         AppDetailTile(
           title: 'Description',
           value: shift.description.isEmpty
@@ -422,8 +366,14 @@ class ShiftViewPage extends StatelessWidget {
         ),
       ],
     );
+  }
 
-    final shiftTiming = _buildDetailSection(
+  // =============================================================
+  // SHIFT TIMING
+  // =============================================================
+
+  Widget _buildShiftTiming(BuildContext context) {
+    return _buildDetailSection(
       context: context,
       title: 'Shift Timing',
       icon: Icons.access_time_rounded,
@@ -432,22 +382,26 @@ class ShiftViewPage extends StatelessWidget {
           title: 'Start Time',
           value: shift.startTime,
         ),
+
         AppDetailTile(
           title: 'End Time',
           value: shift.endTime,
         ),
+
         AppDetailTile(
           title: 'Break Time',
           value: '${shift.breakMinutes} Minutes',
         ),
-        AppDetailTile(
-          title: 'Weekly Off',
-          value: _weekDay(shift.weeklyOffDay),
-        ),
       ],
     );
+  }
 
-    final attendanceRules = _buildDetailSection(
+  // =============================================================
+  // ATTENDANCE RULES
+  // =============================================================
+
+  Widget _buildAttendanceRules(BuildContext context) {
+    return _buildDetailSection(
       context: context,
       title: 'Attendance Rules',
       icon: Icons.fact_check_outlined,
@@ -456,42 +410,122 @@ class ShiftViewPage extends StatelessWidget {
           title: 'Grace In',
           value: '${shift.graceInMinutes} Minutes',
         ),
+
         AppDetailTile(
           title: 'Grace Out',
           value: '${shift.graceOutMinutes} Minutes',
         ),
+
         AppDetailTile(
           title: 'Late After',
           value: '${shift.lateAfterMinutes} Minutes',
         ),
+
+        AppDetailTile(
+          title: 'Late Grace',
+          value: '${shift.lateGraceMinutes} Minutes',
+        ),
+
+        AppDetailTile(
+          title: 'Early Leave Grace',
+          value:
+          '${shift.earlyLeaveGraceMinutes} Minutes',
+        ),
+
         AppDetailTile(
           title: 'Half Day After',
-          value: '${shift.halfDayAfterMinutes} Minutes',
+          value:
+          '${shift.halfDayAfterMinutes} Minutes',
         ),
       ],
     );
+  }
 
-    final shiftType = _buildDetailSection(
+  // =============================================================
+  // WORKING HOURS
+  // =============================================================
+
+  Widget _buildWorkingHours(BuildContext context) {
+    return _buildDetailSection(
       context: context,
-      title: 'Shift Type',
+      title: 'Working Hours',
+      icon: Icons.hourglass_bottom_rounded,
+      children: [
+        AppDetailTile(
+          title: 'Minimum Working Hours',
+          value:
+          '${shift.minimumWorkingHours.toStringAsFixed(2)} Hours',
+        ),
+
+        AppDetailTile(
+          title: 'Half Day Threshold',
+          value:
+          '${shift.halfDayThresholdHours.toStringAsFixed(2)} Hours',
+        ),
+      ],
+    );
+  }
+
+  // =============================================================
+  // SHIFT OPTIONS
+  // =============================================================
+
+  Widget _buildShiftOptions(BuildContext context) {
+    return _buildDetailSection(
+      context: context,
+      title: 'Shift Options',
       icon: Icons.settings_outlined,
       children: [
         AppDetailTile(
           title: 'Night Shift',
-          value: shift.isNightShift ? 'Yes' : 'No',
+          value: _yesNo(shift.isNightShift),
         ),
+
         AppDetailTile(
           title: 'Flexible Shift',
-          value: shift.isFlexible ? 'Yes' : 'No',
+          value: _yesNo(shift.isFlexible),
         ),
+
         AppDetailTile(
           title: 'Status',
-          value: shift.isActive ? 'Active' : 'Inactive',
+          value: shift.isActive
+              ? 'Active'
+              : 'Inactive',
         ),
       ],
     );
+  }
 
-    final auditInformation = _buildDetailSection(
+  // =============================================================
+  // ATTENDANCE REQUIREMENTS
+  // =============================================================
+
+  Widget _buildAttendanceRequirements(
+      BuildContext context) {
+    return _buildDetailSection(
+      context: context,
+      title: 'Attendance Requirements',
+      icon: Icons.fact_check_rounded,
+      children: [
+        AppDetailTile(
+          title: 'Check In Required',
+          value: _yesNo(shift.checkInRequired),
+        ),
+
+        AppDetailTile(
+          title: 'Check Out Required',
+          value: _yesNo(shift.checkOutRequired),
+        ),
+      ],
+    );
+  }
+
+  // =============================================================
+  // AUDIT INFORMATION
+  // =============================================================
+
+  Widget _buildAuditInformation(BuildContext context) {
+    return _buildDetailSection(
       context: context,
       title: 'Audit Information',
       icon: Icons.history_rounded,
@@ -500,12 +534,61 @@ class ShiftViewPage extends StatelessWidget {
           title: 'Created At',
           value: shift.createdAt.toString(),
         ),
+
         AppDetailTile(
           title: 'Updated At',
           value: shift.updatedAt?.toString() ?? '-',
         ),
+
+        AppDetailTile(
+          title: 'Created By',
+          value:
+          shift.createdBy?.isEmpty ?? true
+              ? '-'
+              : shift.createdBy!,
+        ),
+
+        AppDetailTile(
+          title: 'Updated By',
+          value:
+          shift.updatedBy?.isEmpty ?? true
+              ? '-'
+              : shift.updatedBy!,
+        ),
       ],
     );
+  }
+
+  // =============================================================
+  // RESPONSIVE SECTIONS
+  // =============================================================
+
+  Widget _buildResponsiveSections(
+      BuildContext context, {
+        required bool isDesktop,
+      }) {
+    const double spacing = 16;
+
+    final basicInformation =
+    _buildBasicInformation(context);
+
+    final shiftTiming =
+    _buildShiftTiming(context);
+
+    final attendanceRules =
+    _buildAttendanceRules(context);
+
+    final workingHours =
+    _buildWorkingHours(context);
+
+    final shiftOptions =
+    _buildShiftOptions(context);
+
+    final attendanceRequirements =
+    _buildAttendanceRequirements(context);
+
+    final auditInformation =
+    _buildAuditInformation(context);
 
     // ===========================================================
     // DESKTOP
@@ -515,34 +598,52 @@ class ShiftViewPage extends StatelessWidget {
       return Column(
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: basicInformation,
               ),
-              SizedBox(width: spacing),
+              const SizedBox(width: spacing),
               Expanded(
                 child: shiftTiming,
               ),
             ],
           ),
 
-          SizedBox(height: spacing),
+          const SizedBox(height: spacing),
 
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: attendanceRules,
               ),
-              SizedBox(width: spacing),
+              const SizedBox(width: spacing),
               Expanded(
-                child: shiftType,
+                child: workingHours,
               ),
             ],
           ),
 
-          SizedBox(height: spacing),
+          const SizedBox(height: spacing),
+
+          Row(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: shiftOptions,
+              ),
+              const SizedBox(width: spacing),
+              Expanded(
+                child: attendanceRequirements,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: spacing),
 
           auditInformation,
         ],
@@ -557,19 +658,27 @@ class ShiftViewPage extends StatelessWidget {
       children: [
         basicInformation,
 
-        SizedBox(height: spacing),
+        const SizedBox(height: spacing),
 
         shiftTiming,
 
-        SizedBox(height: spacing),
+        const SizedBox(height: spacing),
 
         attendanceRules,
 
-        SizedBox(height: spacing),
+        const SizedBox(height: spacing),
 
-        shiftType,
+        workingHours,
 
-        SizedBox(height: spacing),
+        const SizedBox(height: spacing),
+
+        shiftOptions,
+
+        const SizedBox(height: spacing),
+
+        attendanceRequirements,
+
+        const SizedBox(height: spacing),
 
         auditInformation,
       ],

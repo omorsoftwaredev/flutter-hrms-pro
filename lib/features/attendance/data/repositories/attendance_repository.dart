@@ -114,23 +114,17 @@ class AttendanceRepository {
         if (attendance != null) {
           AttendanceReportStatus status;
 
-          if (attendance.isLeave) {
-            status =
-                AttendanceReportStatus.leave;
-          } else if (attendance.isHoliday) {
-            status =
-                AttendanceReportStatus.holiday;
-          } else if (
-          attendance.lateMinutes > 0 ||
-              attendance.attendanceStatus
-                  .toUpperCase() ==
-                  'LATE') {
-            status =
-                AttendanceReportStatus.late;
-          } else {
+          // if (
+          // attendance.lateMinutes > 0 ||
+          //     attendance.attendanceStatus
+          //         .toUpperCase() ==
+          //         'LATE') {
+          //   status =
+          //       AttendanceReportStatus.late;
+          // } else {
             status =
                 AttendanceReportStatus.present;
-          }
+          // }
 
           result.add(
             AttendanceReportModel(
@@ -144,19 +138,8 @@ class AttendanceRepository {
               attendance.checkInAddress,
               checkOutAddress:
               attendance.checkOutAddress,
-              lateMinutes:
-              attendance.lateMinutes,
-              earlyExitMinutes:
-              attendance.earlyExitMinutes,
               workMinutes:
               attendance.workMinutes,
-              isWeekend:
-              attendance.isWeekend ||
-                  isWeekend,
-              isHoliday:
-              attendance.isHoliday,
-              isLeave:
-              attendance.isLeave,
             ),
           );
         } else {

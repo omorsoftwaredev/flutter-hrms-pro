@@ -6,31 +6,19 @@ class AttendanceEntity {
   final String? departmentId;
   final String? designationId;
   final String? shiftId;
-  final String? holidayId;
-  final String? leaveRequestId;
 
   final String attendanceNo;
 
   final DateTime attendanceDate;
 
-  final String? shiftName;
-
-  final String? shiftStart;
-  final String? shiftEnd;
 
   final DateTime? checkInTime;
   final DateTime? checkOutTime;
 
   final int workMinutes;
   final int overtimeMinutes;
-  final int lateMinutes;
-  final int earlyExitMinutes;
 
   final String attendanceStatus;
-
-  final bool isLeave;
-  final bool isHoliday;
-  final bool isWeekend;
 
   final double? checkInLatitude;
   final double? checkInLongitude;
@@ -62,23 +50,13 @@ class AttendanceEntity {
     this.departmentId,
     this.designationId,
     this.shiftId,
-    this.holidayId,
-    this.leaveRequestId,
     required this.attendanceNo,
     required this.attendanceDate,
-    this.shiftName,
-    this.shiftStart,
-    this.shiftEnd,
     this.checkInTime,
     this.checkOutTime,
     this.workMinutes = 0,
     this.overtimeMinutes = 0,
-    this.lateMinutes = 0,
-    this.earlyExitMinutes = 0,
     this.attendanceStatus = 'PRESENT',
-    this.isLeave = false,
-    this.isHoliday = false,
-    this.isWeekend = false,
     this.checkInLatitude,
     this.checkInLongitude,
     this.checkOutLatitude,
@@ -103,8 +81,6 @@ class AttendanceEntity {
     String? departmentId,
     String? designationId,
     String? shiftId,
-    String? holidayId,
-    String? leaveRequestId,
     String? attendanceNo,
     DateTime? attendanceDate,
     String? shiftName,
@@ -114,12 +90,7 @@ class AttendanceEntity {
     DateTime? checkOutTime,
     int? workMinutes,
     int? overtimeMinutes,
-    int? lateMinutes,
-    int? earlyExitMinutes,
     String? attendanceStatus,
-    bool? isLeave,
-    bool? isHoliday,
-    bool? isWeekend,
     double? checkInLatitude,
     double? checkInLongitude,
     double? checkOutLatitude,
@@ -143,23 +114,13 @@ class AttendanceEntity {
       departmentId: departmentId ?? this.departmentId,
       designationId: designationId ?? this.designationId,
       shiftId: shiftId ?? this.shiftId,
-      holidayId: holidayId ?? this.holidayId,
-      leaveRequestId: leaveRequestId ?? this.leaveRequestId,
       attendanceNo: attendanceNo ?? this.attendanceNo,
       attendanceDate: attendanceDate ?? this.attendanceDate,
-      shiftName: shiftName ?? this.shiftName,
-      shiftStart: shiftStart ?? this.shiftStart,
-      shiftEnd: shiftEnd ?? this.shiftEnd,
       checkInTime: checkInTime ?? this.checkInTime,
       checkOutTime: checkOutTime ?? this.checkOutTime,
       workMinutes: workMinutes ?? this.workMinutes,
       overtimeMinutes: overtimeMinutes ?? this.overtimeMinutes,
-      lateMinutes: lateMinutes ?? this.lateMinutes,
-      earlyExitMinutes: earlyExitMinutes ?? this.earlyExitMinutes,
       attendanceStatus: attendanceStatus ?? this.attendanceStatus,
-      isLeave: isLeave ?? this.isLeave,
-      isHoliday: isHoliday ?? this.isHoliday,
-      isWeekend: isWeekend ?? this.isWeekend,
       checkInLatitude: checkInLatitude ?? this.checkInLatitude,
       checkInLongitude: checkInLongitude ?? this.checkInLongitude,
       checkOutLatitude: checkOutLatitude ?? this.checkOutLatitude,

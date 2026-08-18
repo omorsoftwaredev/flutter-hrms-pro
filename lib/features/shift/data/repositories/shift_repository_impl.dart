@@ -215,8 +215,6 @@ class ShiftRepositoryImpl implements ShiftRepository {
 
         'is_flexible': shift.isFlexible,
 
-        'weekly_off_day': shift.weeklyOffDay,
-
         'is_active': shift.isActive,
 
         'created_by': userId,
@@ -307,8 +305,6 @@ class ShiftRepositoryImpl implements ShiftRepository {
         'is_night_shift': shift.isNightShift,
 
         'is_flexible': shift.isFlexible,
-
-        'weekly_off_day': shift.weeklyOffDay,
 
         'is_active': shift.isActive,
 

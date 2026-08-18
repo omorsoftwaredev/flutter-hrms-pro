@@ -17,6 +17,10 @@ class ShiftFormPage extends ConsumerWidget {
 
   bool get isEdit => shift != null;
 
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(
       BuildContext context,
@@ -42,14 +46,19 @@ class ShiftFormPage extends ConsumerWidget {
 
         leading: IconButton(
           tooltip: 'Back',
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            }
-          },
           icon: const Icon(
             Icons.arrow_back_rounded,
           ),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+
+            context.go(
+              RoutePaths.shifts,
+            );
+          },
         ),
 
         title: Text(
@@ -128,101 +137,103 @@ class ShiftFormPage extends ConsumerWidget {
                   ),
 
                   child: ShiftForm(
+
                     // =================================================
-                    // INITIAL NAME
+                    // INITIAL BASIC INFORMATION
                     // =================================================
 
                     initialName:
                     shift?.name ?? '',
 
-                    // =================================================
-                    // INITIAL DESCRIPTION
-                    // =================================================
-
                     initialDescription:
                     shift?.description ?? '',
 
                     // =================================================
-                    // INITIAL START TIME
+                    // INITIAL SHIFT TIME
                     // =================================================
 
                     initialStartTime:
                     shift?.startTime ??
                         '09:00:00',
 
-                    // =================================================
-                    // INITIAL END TIME
-                    // =================================================
-
                     initialEndTime:
                     shift?.endTime ??
                         '18:00:00',
 
                     // =================================================
-                    // INITIAL BREAK
+                    // INITIAL TIME & GRACE
                     // =================================================
 
                     initialBreakMinutes:
                     shift?.breakMinutes ??
                         60,
 
-                    // =================================================
-                    // INITIAL GRACE IN
-                    // =================================================
-
                     initialGraceInMinutes:
                     shift?.graceInMinutes ??
                         15,
-
-                    // =================================================
-                    // INITIAL GRACE OUT
-                    // =================================================
 
                     initialGraceOutMinutes:
                     shift?.graceOutMinutes ??
                         15,
 
-                    // =================================================
-                    // INITIAL LATE AFTER
-                    // =================================================
-
                     initialLateAfterMinutes:
                     shift?.lateAfterMinutes ??
                         15,
-
-                    // =================================================
-                    // INITIAL HALF DAY
-                    // =================================================
 
                     initialHalfDayAfterMinutes:
                     shift?.halfDayAfterMinutes ??
                         240,
 
                     // =================================================
-                    // INITIAL WEEKLY OFF
+                    // INITIAL ADDITIONAL GRACE
                     // =================================================
 
-                    initialWeeklyOffDay:
-                    shift?.weeklyOffDay,
+                    initialLateGraceMinutes:
+                    shift?.lateGraceMinutes ??
+                        15,
+
+                    initialEarlyLeaveGraceMinutes:
+                    shift?.earlyLeaveGraceMinutes ??
+                        15,
 
                     // =================================================
-                    // INITIAL NIGHT SHIFT
+                    // INITIAL WORKING HOURS
+                    // =================================================
+
+                    initialMinimumWorkingHours:
+                    shift?.minimumWorkingHours ??
+                        8.00,
+
+                    initialHalfDayThresholdHours:
+                    shift?.halfDayThresholdHours ??
+                        4.00,
+
+                    // =================================================
+                    // INITIAL SHIFT OPTIONS
                     // =================================================
 
                     initialNightShift:
                     shift?.isNightShift ??
                         false,
 
-                    // =================================================
-                    // INITIAL FLEXIBLE
-                    // =================================================
-
                     initialFlexible:
                     shift?.isFlexible ??
                         false,
 
                     // =================================================
-                    // INITIAL ACTIVE
+                    // INITIAL ATTENDANCE REQUIREMENTS
+                    // =================================================
+
+                    initialCheckInRequired:
+                    shift?.checkInRequired ??
+                        true,
+
+                    initialCheckOutRequired:
+                    shift?.checkOutRequired ??
+                        true,
+
+                    // =================================================
+                    // INITIAL STATUS
                     // =================================================
 
                     initialActive:
@@ -246,147 +257,184 @@ class ShiftFormPage extends ConsumerWidget {
                         startTime,
                         endTime,
                         breakMinutes,
-                        graceIn,
-                        graceOut,
-                        lateAfter,
-                        halfDayAfter,
-                        weeklyOff,
-                        nightShift,
-                        flexible,
-                        active,
+                        graceInMinutes,
+                        graceOutMinutes,
+                        lateAfterMinutes,
+                        halfDayAfterMinutes,
+                        lateGraceMinutes,
+                        earlyLeaveGraceMinutes,
+                        minimumWorkingHours,
+                        halfDayThresholdHours,
+                        weeklyOffDay,
+                        isNightShift,
+                        isFlexible,
+                        checkInRequired,
+                        checkOutRequired,
+                        isActive,
                         ) async {
                       // =================================================
-                      // ENTITY
+                      // BUILD SHIFT ENTITY
                       // =================================================
 
                       final entity = ShiftEntity(
-                        id: shift?.id ?? '',
 
-                        // ------------------------------------------------
+                        // -------------------------------------------------
+                        // ID
+                        // -------------------------------------------------
+
+                        id:
+                        shift?.id ?? '',
+
+                        // -------------------------------------------------
                         // COMPANY ID
-                        // ------------------------------------------------
-                        //
-                        // CREATE:
-                        // Provider / Repository
-                        // CurrentUser.companyId ব্যবহার করবে।
+                        // -------------------------------------------------
                         //
                         // EDIT:
-                        // Existing companyId preserve করছি।
+                        // Existing companyId preserve হবে.
                         //
-                        // ------------------------------------------------
+                        // CREATE:
+                        // Repository / backend current user's
+                        // companyId handle করবে.
+                        //
+                        // -------------------------------------------------
 
                         companyId:
                         shift?.companyId ?? '',
 
-                        // ------------------------------------------------
+                        // -------------------------------------------------
+                        // CODE
+                        // -------------------------------------------------
+                        //
+                        // Existing shift হলে code preserve হবে.
+                        //
+                        // New shift হলে empty থাকবে.
+                        // Backend / database trigger code generate করতে
+                        // পারবে.
+                        //
+                        // -------------------------------------------------
+
+                        code:
+                        shift?.code ?? '',
+
+                        // -------------------------------------------------
                         // NAME
-                        // ------------------------------------------------
+                        // -------------------------------------------------
 
-                        name: name.trim(),
+                        name:
+                        name.trim(),
 
-                        // ------------------------------------------------
+                        // -------------------------------------------------
                         // DESCRIPTION
-                        // ------------------------------------------------
+                        // -------------------------------------------------
 
                         description:
                         description.trim(),
 
-                        // ------------------------------------------------
-                        // START TIME
-                        // ------------------------------------------------
+                        // -------------------------------------------------
+                        // SHIFT TIME
+                        // -------------------------------------------------
 
                         startTime:
                         startTime,
 
-                        // ------------------------------------------------
-                        // END TIME
-                        // ------------------------------------------------
-
                         endTime:
                         endTime,
 
-                        // ------------------------------------------------
+                        // -------------------------------------------------
                         // BREAK
-                        // ------------------------------------------------
+                        // -------------------------------------------------
 
                         breakMinutes:
                         breakMinutes,
 
-                        // ------------------------------------------------
-                        // GRACE IN
-                        // ------------------------------------------------
+                        // -------------------------------------------------
+                        // ATTENDANCE RULES
+                        // -------------------------------------------------
 
                         graceInMinutes:
-                        graceIn,
-
-                        // ------------------------------------------------
-                        // GRACE OUT
-                        // ------------------------------------------------
+                        graceInMinutes,
 
                         graceOutMinutes:
-                        graceOut,
-
-                        // ------------------------------------------------
-                        // LATE AFTER
-                        // ------------------------------------------------
+                        graceOutMinutes,
 
                         lateAfterMinutes:
-                        lateAfter,
-
-                        // ------------------------------------------------
-                        // HALF DAY AFTER
-                        // ------------------------------------------------
+                        lateAfterMinutes,
 
                         halfDayAfterMinutes:
-                        halfDayAfter,
+                        halfDayAfterMinutes,
 
-                        // ------------------------------------------------
-                        // WEEKLY OFF
-                        // ------------------------------------------------
+                        // -------------------------------------------------
+                        // ADDITIONAL GRACE RULES
+                        // -------------------------------------------------
 
-                        weeklyOffDay:
-                        weeklyOff,
+                        lateGraceMinutes:
+                        lateGraceMinutes,
 
-                        // ------------------------------------------------
-                        // NIGHT SHIFT
-                        // ------------------------------------------------
+                        earlyLeaveGraceMinutes:
+                        earlyLeaveGraceMinutes,
+
+                        // -------------------------------------------------
+                        // WORKING HOUR RULES
+                        // -------------------------------------------------
+
+                        minimumWorkingHours:
+                        minimumWorkingHours,
+
+                        halfDayThresholdHours:
+                        halfDayThresholdHours,
+
+                        // -------------------------------------------------
+                        // SHIFT TYPE
+                        // -------------------------------------------------
 
                         isNightShift:
-                        nightShift,
-
-                        // ------------------------------------------------
-                        // FLEXIBLE
-                        // ------------------------------------------------
+                        isNightShift,
 
                         isFlexible:
-                        flexible,
+                        isFlexible,
 
-                        // ------------------------------------------------
-                        // ACTIVE
-                        // ------------------------------------------------
+                        // -------------------------------------------------
+                        // ATTENDANCE REQUIREMENT
+                        // -------------------------------------------------
+
+                        checkInRequired:
+                        checkInRequired,
+
+                        checkOutRequired:
+                        checkOutRequired,
+
+                        // -------------------------------------------------
+                        // STATUS
+                        // -------------------------------------------------
 
                         isActive:
-                        active,
+                        isActive,
 
-                        // ------------------------------------------------
-                        // CREATED AT
-                        // ------------------------------------------------
+                        // -------------------------------------------------
+                        // AUDIT
+                        // -------------------------------------------------
 
                         createdAt:
                         shift?.createdAt ??
                             DateTime.now(),
 
-                        // ------------------------------------------------
-                        // UPDATED AT
-                        // ------------------------------------------------
-
                         updatedAt:
                         shift?.updatedAt,
+
+                        // -------------------------------------------------
+                        // USER AUDIT
+                        // -------------------------------------------------
+
+                        createdBy:
+                        shift?.createdBy,
+
+                        updatedBy:
+                        shift?.updatedBy,
                       );
 
                       try {
                         // =================================================
-                        // UPDATE
+                        // SAVE
                         // =================================================
 
                         if (isEdit) {
@@ -398,13 +446,7 @@ class ShiftFormPage extends ConsumerWidget {
                               .updateShift(
                             entity,
                           );
-                        }
-
-                        // =================================================
-                        // CREATE
-                        // =================================================
-
-                        else {
+                        } else {
                           await ref
                               .read(
                             shiftProvider
@@ -424,7 +466,35 @@ class ShiftFormPage extends ConsumerWidget {
                         }
 
                         // =================================================
-                        // RELOAD SHIFT LIST
+                        // CHECK PROVIDER ERROR
+                        // =================================================
+                        //
+                        // তোমার notifier বর্তমানে exception catch করে
+                        // state.error-এ রাখে এবং throw করে না।
+                        //
+                        // তাই এখানে save-এর পরে provider state check করছি।
+                        //
+                        // =================================================
+
+                        final currentState =
+                        ref.read(
+                          shiftProvider,
+                        );
+
+                        if (currentState.error !=
+                            null &&
+                            currentState.error!
+                                .trim()
+                                .isNotEmpty) {
+                          throw Exception(
+                            _cleanError(
+                              currentState.error!,
+                            ),
+                          );
+                        }
+
+                        // =================================================
+                        // RELOAD LIST
                         // =================================================
 
                         await ref
@@ -459,19 +529,30 @@ class ShiftFormPage extends ConsumerWidget {
                             SnackBar(
                               behavior:
                               SnackBarBehavior.floating,
+
                               backgroundColor:
-                              colorScheme.inverseSurface,
+                              colorScheme
+                                  .inverseSurface,
+
+                              duration:
+                              const Duration(
+                                seconds: 3,
+                              ),
+
                               content: Row(
                                 children: [
                                   Icon(
                                     Icons
                                         .check_circle_outline_rounded,
+                                    size: 20,
                                     color: colorScheme
                                         .onInverseSurface,
                                   ),
+
                                   const SizedBox(
                                     width: 10,
                                   ),
+
                                   Expanded(
                                     child: Text(
                                       message,
@@ -519,14 +600,44 @@ class ShiftFormPage extends ConsumerWidget {
                             SnackBar(
                               behavior:
                               SnackBarBehavior.floating,
+
                               backgroundColor:
                               colorScheme.error,
-                              content: Text(
-                                e.toString(),
-                                style: TextStyle(
-                                  color:
-                                  colorScheme.onError,
-                                ),
+
+                              duration:
+                              const Duration(
+                                seconds: 4,
+                              ),
+
+                              content: Row(
+                                children: [
+                                  Icon(
+                                    Icons
+                                        .error_outline_rounded,
+                                    size: 20,
+                                    color:
+                                    colorScheme
+                                        .onError,
+                                  ),
+
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage(e),
+                                      style: theme
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                        color:
+                                        colorScheme
+                                            .onError,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -540,5 +651,52 @@ class ShiftFormPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  // =============================================================
+  // CLEAN PROVIDER ERROR
+  // =============================================================
+
+  String _cleanError(String error) {
+    final message = error.trim();
+
+    if (message.isEmpty) {
+      return 'Something went wrong.';
+    }
+
+    if (message.startsWith('Exception:')) {
+      return message
+          .replaceFirst(
+        'Exception:',
+        '',
+      )
+          .trim();
+    }
+
+    return message;
+  }
+
+  // =============================================================
+  // ERROR MESSAGE
+  // =============================================================
+
+  String _errorMessage(Object error) {
+    final message =
+    error.toString().trim();
+
+    if (message.isEmpty) {
+      return 'Something went wrong. Please try again.';
+    }
+
+    if (message.startsWith('Exception:')) {
+      return message
+          .replaceFirst(
+        'Exception:',
+        '',
+      )
+          .trim();
+    }
+
+    return message;
   }
 }

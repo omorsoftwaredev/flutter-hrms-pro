@@ -203,15 +203,15 @@ class AttendanceAnalyticsCard extends StatelessWidget {
 
                 const SizedBox(width: 12),
 
-                _item(
-                  context: context,
-                  icon: Icons.alarm_outlined,
-                  title: 'Late',
-                  value: _minutes(
-                    attendance.lateMinutes,
-                  ),
-                  color: Colors.orange,
-                ),
+                // _item(
+                //   context: context,
+                //   icon: Icons.alarm_outlined,
+                //   title: 'Late',
+                //   value: _minutes(
+                //     attendance.lateMinutes,
+                //   ),
+                //   color: Colors.orange,
+                // ),
               ],
             ),
 
@@ -235,15 +235,15 @@ class AttendanceAnalyticsCard extends StatelessWidget {
 
                 const SizedBox(width: 12),
 
-                _item(
-                  context: context,
-                  icon: Icons.logout_outlined,
-                  title: 'Early Exit',
-                  value: _minutes(
-                    attendance.earlyExitMinutes,
-                  ),
-                  color: colorScheme.error,
-                ),
+                // _item(
+                //   context: context,
+                //   icon: Icons.logout_outlined,
+                //   title: 'Early Exit',
+                //   value: _minutes(
+                //     attendance.earlyExitMinutes,
+                //   ),
+                //   color: colorScheme.error,
+                // ),
               ],
             ),
           ],
