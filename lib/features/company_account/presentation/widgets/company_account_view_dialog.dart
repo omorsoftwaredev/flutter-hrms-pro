@@ -4,7 +4,7 @@
 //
 // Responsive + Theme Aware
 //
-// Version : 2.0.0
+// Version : 3.0.0
 // ===============================================================
 
 import 'package:flutter/material.dart';
@@ -21,29 +21,62 @@ Future<void> showCompanyAccountDialog(
   return showDialog<void>(
     context: context,
     builder: (dialogContext) {
-      final screenWidth =
-          MediaQuery.sizeOf(dialogContext).width;
+      // =========================================================
+      // RESPONSIVE
+      // =========================================================
 
-      final screenHeight =
-          MediaQuery.sizeOf(dialogContext).height;
+      final width = MediaQuery.sizeOf(dialogContext).width;
+      final height = MediaQuery.sizeOf(dialogContext).height;
 
-      final dialogWidth =
-      screenWidth >= 900
-          ? 650.0
-          : screenWidth * 0.92;
+      final bool isDesktop = width >= 900;
+      final bool isTablet = width >= 600 && width < 900;
+
+      final double dialogWidth = isDesktop
+          ? 650
+          : isTablet
+          ? 560
+          : width * 0.92;
+
+      final double dialogMaxHeight = isDesktop
+          ? height * 0.86
+          : height * 0.88;
+
+      final double contentPadding = isDesktop
+          ? 22
+          : isTablet
+          ? 20
+          : 16;
+
+      final double headerHorizontalPadding = isDesktop
+          ? 22
+          : isTablet
+          ? 20
+          : 16;
+
+      final double titleSize = isDesktop
+          ? 20
+          : 19;
+
+      final double headerIconBox = isDesktop
+          ? 48
+          : 46;
+
+      final double headerIconSize = isDesktop
+          ? 25
+          : 23;
 
       return Dialog(
-        insetPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: isDesktop ? 24 : 16,
           vertical: 24,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: dialogWidth,
-            maxHeight: screenHeight * 0.88,
+            maxHeight: dialogMaxHeight,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -53,32 +86,38 @@ Future<void> showCompanyAccountDialog(
               // =================================================
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  22,
-                  20,
-                  14,
+                padding: EdgeInsets.fromLTRB(
+                  headerHorizontalPadding,
+                  18,
+                  12,
                   16,
                 ),
                 child: Row(
                   children: [
+                    // -------------------------------------------------
+                    // HEADER ICON
+                    // -------------------------------------------------
+
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: headerIconBox,
+                      height: headerIconBox,
                       decoration: BoxDecoration(
-                        color:
-                        colorScheme.primaryContainer,
-                        borderRadius:
-                        BorderRadius.circular(15),
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(13),
                       ),
+                      alignment: Alignment.center,
                       child: Icon(
                         Icons.manage_accounts_outlined,
-                        color: colorScheme
-                            .onPrimaryContainer,
-                        size: 25,
+                        color: colorScheme.onPrimaryContainer,
+                        size: headerIconSize,
                       ),
                     ),
 
                     const SizedBox(width: 12),
+
+                    // -------------------------------------------------
+                    // TITLE
+                    // -------------------------------------------------
 
                     Expanded(
                       child: Column(
@@ -88,14 +127,10 @@ Future<void> showCompanyAccountDialog(
                           Text(
                             'Company Account',
                             maxLines: 1,
-                            overflow:
-                            TextOverflow.ellipsis,
-                            style: theme
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                              fontWeight:
-                              FontWeight.w800,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontSize: titleSize,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
 
@@ -104,29 +139,33 @@ Future<void> showCompanyAccountDialog(
                           Text(
                             account.username.trim().isEmpty
                                 ? 'Account Information'
-                                : account.username,
+                                : account.username.trim(),
                             maxLines: 1,
-                            overflow:
-                            TextOverflow.ellipsis,
-                            style: theme
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                              color: colorScheme
-                                  .onSurfaceVariant,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
 
+                    const SizedBox(width: 8),
+
+                    // -------------------------------------------------
+                    // CLOSE
+                    // -------------------------------------------------
+
                     IconButton(
                       tooltip: 'Close',
                       onPressed: () {
-                        Navigator.pop(
-                          dialogContext,
-                        );
+                        Navigator.pop(dialogContext);
                       },
+                      style: IconButton.styleFrom(
+                        foregroundColor:
+                        colorScheme.onSurfaceVariant,
+                      ),
                       icon: const Icon(
                         Icons.close_rounded,
                       ),
@@ -137,8 +176,7 @@ Future<void> showCompanyAccountDialog(
 
               Divider(
                 height: 1,
-                color:
-                colorScheme.outlineVariant,
+                color: colorScheme.outlineVariant,
               ),
 
               // =================================================
@@ -147,11 +185,11 @@ Future<void> showCompanyAccountDialog(
 
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(22),
+                  padding: EdgeInsets.all(contentPadding),
                   child: Column(
                     children: [
                       // -------------------------------------------
-                      // ACCOUNT SUMMARY
+                      // SUMMARY
                       // -------------------------------------------
 
                       _buildSummaryCard(
@@ -159,7 +197,7 @@ Future<void> showCompanyAccountDialog(
                         account,
                       ),
 
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 16),
 
                       // -------------------------------------------
                       // COMPANY
@@ -167,11 +205,9 @@ Future<void> showCompanyAccountDialog(
 
                       _buildInfo(
                         context,
-                        icon:
-                        Icons.business_outlined,
+                        icon: Icons.business_outlined,
                         title: 'Company',
-                        value:
-                        account.companyName,
+                        value: account.companyName,
                       ),
 
                       // -------------------------------------------
@@ -180,11 +216,9 @@ Future<void> showCompanyAccountDialog(
 
                       _buildInfo(
                         context,
-                        icon:
-                        Icons.fingerprint_rounded,
+                        icon: Icons.fingerprint_rounded,
                         title: 'Company ID',
-                        value:
-                        account.companyId,
+                        value: account.companyId,
                       ),
 
                       // -------------------------------------------
@@ -193,11 +227,9 @@ Future<void> showCompanyAccountDialog(
 
                       _buildInfo(
                         context,
-                        icon:
-                        Icons.person_outline_rounded,
+                        icon: Icons.person_outline_rounded,
                         title: 'Username',
-                        value:
-                        account.username,
+                        value: account.username,
                       ),
 
                       // -------------------------------------------
@@ -206,12 +238,9 @@ Future<void> showCompanyAccountDialog(
 
                       _buildInfo(
                         context,
-                        icon:
-                        Icons.lock_outline_rounded,
-                        title:
-                        'Password Status',
-                        value: account
-                            .mustChangePassword
+                        icon: Icons.lock_outline_rounded,
+                        title: 'Password Status',
+                        value: account.mustChangePassword
                             ? 'Password change required'
                             : 'Password is OK',
                       ),
@@ -222,12 +251,9 @@ Future<void> showCompanyAccountDialog(
 
                       _buildInfo(
                         context,
-                        icon:
-                        Icons.login_outlined,
+                        icon: Icons.login_outlined,
                         title: 'Last Login',
-                        value:
-                        account.lastLoginAt
-                            ?.toString(),
+                        value: account.lastLoginAt?.toString(),
                       ),
 
                       // -------------------------------------------
@@ -236,12 +262,9 @@ Future<void> showCompanyAccountDialog(
 
                       _buildInfo(
                         context,
-                        icon:
-                        Icons.calendar_today_outlined,
+                        icon: Icons.calendar_today_outlined,
                         title: 'Created At',
-                        value:
-                        account.createdAt
-                            .toString(),
+                        value: account.createdAt.toString(),
                       ),
 
                       // -------------------------------------------
@@ -250,12 +273,9 @@ Future<void> showCompanyAccountDialog(
 
                       _buildInfo(
                         context,
-                        icon:
-                        Icons.update_outlined,
+                        icon: Icons.update_outlined,
                         title: 'Updated At',
-                        value:
-                        account.updatedAt
-                            ?.toString(),
+                        value: account.updatedAt?.toString(),
                       ),
 
                       // -------------------------------------------
@@ -277,30 +297,43 @@ Future<void> showCompanyAccountDialog(
 
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(
-                  22,
-                  14,
-                  22,
-                  18,
+                padding: EdgeInsets.fromLTRB(
+                  contentPadding,
+                  12,
+                  contentPadding,
+                  16,
                 ),
                 decoration: BoxDecoration(
-                  color:
-                  colorScheme.surfaceContainerLow,
-                  borderRadius:
-                  const BorderRadius.only(
-                    bottomLeft:
-                    Radius.circular(24),
-                    bottomRight:
-                    Radius.circular(24),
+                  color: colorScheme.surfaceContainerLow,
+                  border: Border(
+                    top: BorderSide(
+                      color: colorScheme.outlineVariant,
+                    ),
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
                   ),
                 ),
-                child: FilledButton(
-                  onPressed: () {
-                    Navigator.pop(
-                      dialogContext,
-                    );
-                  },
-                  child: const Text('Close'),
+                child: SizedBox(
+                  height: isDesktop ? 50 : 48,
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                    },
+                    style: FilledButton.styleFrom(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                    child: Text(
+                      'Close',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -322,90 +355,100 @@ Widget _buildSummaryCard(
   final theme = Theme.of(context);
   final colorScheme = theme.colorScheme;
 
-  final username =
-  account.username.trim().isEmpty
+  final username = account.username.trim().isEmpty
       ? '?'
       : account.username
       .trim()
       .substring(0, 1)
       .toUpperCase();
 
+  final userName = account.username.trim().isEmpty
+      ? 'Unknown User'
+      : account.username.trim();
+
+  final companyName =
+  account.companyName?.trim().isNotEmpty == true
+      ? account.companyName!.trim()
+      : 'Company Account';
+
   return Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(18),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          colorScheme.primaryContainer
-              .withValues(alpha: 0.75),
-          colorScheme.surfaceContainerLow,
-        ],
+      color: colorScheme.primaryContainer.withValues(
+        alpha: 0.45,
       ),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(17),
       border: Border.all(
         color: colorScheme.outlineVariant,
       ),
     ),
     child: Row(
       children: [
+        // ---------------------------------------------------------
+        // AVATAR
+        // ---------------------------------------------------------
+
         Container(
-          width: 58,
-          height: 58,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             color: colorScheme.primary,
-            borderRadius:
-            BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(15),
           ),
           alignment: Alignment.center,
           child: Text(
             username,
-            style:
-            theme.textTheme.headlineSmall?.copyWith(
+            style: theme.textTheme.headlineSmall?.copyWith(
               color: colorScheme.onPrimary,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
 
-        const SizedBox(width: 14),
+        const SizedBox(width: 13),
+
+        // ---------------------------------------------------------
+        // USER INFORMATION
+        // ---------------------------------------------------------
 
         Expanded(
           child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                account.username.trim().isEmpty
-                    ? 'Unknown User'
-                    : account.username,
+                userName,
                 maxLines: 1,
-                overflow:
-                TextOverflow.ellipsis,
-                style:
-                theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
 
-              const SizedBox(height: 5),
+              const SizedBox(height: 4),
 
-              Text(
-                account.companyName
-                    ?.trim()
-                    .isNotEmpty ==
-                    true
-                    ? account.companyName!
-                    : 'Company Account',
-                maxLines: 2,
-                overflow:
-                TextOverflow.ellipsis,
-                style:
-                theme.textTheme.bodySmall?.copyWith(
-                  color:
-                  colorScheme.onSurfaceVariant,
-                ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.business_outlined,
+                    size: 15,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+
+                  const SizedBox(width: 5),
+
+                  Expanded(
+                    child: Text(
+                      companyName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -436,49 +479,50 @@ Widget _buildInfo(
   return Container(
     width: double.infinity,
     margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(13),
     decoration: BoxDecoration(
-      color:
-      colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(15),
+      color: colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(14),
       border: Border.all(
         color: colorScheme.outlineVariant,
       ),
     ),
     child: Row(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ---------------------------------------------------------
+        // ICON
+        // ---------------------------------------------------------
+
         Container(
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color:
-            colorScheme.primaryContainer,
-            borderRadius:
-            BorderRadius.circular(11),
+            color: colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(11),
           ),
+          alignment: Alignment.center,
           child: Icon(
             icon,
             size: 19,
-            color:
-            colorScheme.onPrimaryContainer,
+            color: colorScheme.onPrimaryContainer,
           ),
         ),
 
-        const SizedBox(width: 12),
+        const SizedBox(width: 11),
+
+        // ---------------------------------------------------------
+        // INFORMATION
+        // ---------------------------------------------------------
 
         Expanded(
           child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style:
-                theme.textTheme.labelMedium?.copyWith(
-                  color:
-                  colorScheme.onSurfaceVariant,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -488,11 +532,10 @@ Widget _buildInfo(
               Text(
                 displayValue,
                 maxLines: 3,
-                overflow:
-                TextOverflow.ellipsis,
-                style:
-                theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -524,43 +567,67 @@ Widget _buildStatus(
 
   return Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(15),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 13,
+    ),
     decoration: BoxDecoration(
       color: backgroundColor,
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(
+        color: foregroundColor.withValues(
+          alpha: 0.10,
+        ),
+      ),
     ),
     child: Row(
       children: [
-        Icon(
-          isActive
-              ? Icons.check_circle_outline_rounded
-              : Icons.cancel_outlined,
-          color: foregroundColor,
-          size: 21,
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: foregroundColor.withValues(
+              alpha: 0.10,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            isActive
+                ? Icons.check_circle_outline_rounded
+                : Icons.cancel_outlined,
+            color: foregroundColor,
+            size: 19,
+          ),
         ),
 
         const SizedBox(width: 10),
 
-        Text(
-          'Account Status',
-          style:
-          theme.textTheme.labelMedium?.copyWith(
-            color:
-            foregroundColor.withValues(
-              alpha: 0.75,
-            ),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Account Status',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: foregroundColor.withValues(
+                    alpha: 0.75,
+                  ),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
 
-        const Spacer(),
+              const SizedBox(height: 2),
 
-        Text(
-          isActive ? 'Active' : 'Inactive',
-          style:
-          theme.textTheme.bodyMedium?.copyWith(
-            color: foregroundColor,
-            fontWeight: FontWeight.w800,
+              Text(
+                isActive ? 'Active' : 'Inactive',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: foregroundColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
         ),
       ],

@@ -280,12 +280,6 @@ class EmployeeRepositoryImpl
         // BASIC INFORMATION
         // =======================================================
 
-        'first_name':
-        employee.firstName.trim(),
-
-        'last_name':
-        employee.lastName?.trim(),
-
         'full_name':
         employee.fullName.trim(),
 
@@ -522,12 +516,6 @@ class EmployeeRepositoryImpl
         // =======================================================
         // BASIC INFORMATION
         // =======================================================
-
-        'first_name':
-        employee.firstName.trim(),
-
-        'last_name':
-        employee.lastName?.trim(),
 
         'full_name':
         employee.fullName.trim(),

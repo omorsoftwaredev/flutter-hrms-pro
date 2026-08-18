@@ -260,79 +260,7 @@ class RoleViewPage extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(
-                        height: 16,
-                      ),
 
-                      // =========================================
-                      // STATUS INFORMATION
-                      // =========================================
-
-                      AppCard(
-                        child: Row(
-                          children: [
-                            Icon(
-                              role.isActive
-                                  ? Icons
-                                  .check_circle_outline_rounded
-                                  : Icons
-                                  .cancel_outlined,
-                              color: role.isActive
-                                  ? colorScheme
-                                  .primary
-                                  : colorScheme
-                                  .error,
-                            ),
-
-                            const SizedBox(
-                              width: 12,
-                            ),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
-                                children: [
-                                  Text(
-                                    'Status',
-                                    style: theme
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                      color:
-                                      colorScheme
-                                          .onSurfaceVariant,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                    height: 2,
-                                  ),
-
-                                  Text(
-                                    role.isActive
-                                        ? 'Active'
-                                        : 'Inactive',
-                                    style: theme
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                      fontWeight:
-                                      FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            AppStatusChip(
-                              isActive:
-                              role.isActive,
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),

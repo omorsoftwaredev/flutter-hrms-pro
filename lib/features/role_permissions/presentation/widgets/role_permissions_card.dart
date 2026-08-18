@@ -26,38 +26,53 @@ class RolePermissionsCard extends StatelessWidget {
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     // =============================================================
     // ACTIVE STATUS
     // =============================================================
-    //
-    // কোনো একটি permission allowed থাকলে Active.
-    //
-    // =============================================================
 
     final isActive =
         permission.canView ||
-        permission.canCreate ||
-        permission.canUpdate ||
-        permission.canDelete ||
-        permission.canExport ||
-        permission.canApprove;
+            permission.canCreate ||
+            permission.canUpdate ||
+            permission.canDelete ||
+            permission.canExport ||
+            permission.canApprove;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        final bool isCompact = width < 420;
+        final bool isSmall = width < 360;
+        final bool isCompact = width < 480;
+        final bool isWide = width >= 700;
 
-        final double cardHorizontalPadding = isCompact ? 14 : 16;
+        final double horizontalPadding = isSmall
+            ? 12
+            : isCompact
+            ? 14
+            : isWide
+            ? 20
+            : 16;
 
-        final double avatarRadius = isCompact ? 22 : 24;
+        final double verticalPadding = isSmall
+            ? 14
+            : isWide
+            ? 18
+            : 16;
+
+        final double avatarRadius = isSmall
+            ? 21
+            : isCompact
+            ? 23
+            : 25;
 
         return AppCard(
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: cardHorizontalPadding,
-              vertical: 4,
+              horizontal: horizontalPadding,
+              vertical: verticalPadding,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,22 +80,47 @@ class RolePermissionsCard extends StatelessWidget {
                 // =================================================
                 // HEADER
                 // =================================================
+
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: avatarRadius,
-                      child: Icon(
-                        Icons.security_outlined,
-                        size: isCompact ? 21 : 23,
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colorScheme.primary.withValues(
+                          alpha: 0.10,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: avatarRadius,
+                        backgroundColor:
+                        colorScheme.primaryContainer,
+                        foregroundColor:
+                        colorScheme.onPrimaryContainer,
+                        child: Icon(
+                          Icons.security_outlined,
+                          size: isSmall
+                              ? 20
+                              : isCompact
+                              ? 22
+                              : 24,
+                        ),
                       ),
                     ),
 
-                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: isSmall ? 10 : 12,
+                    ),
+
+                    // =================================================
+                    // MODULE + ROLE
+                    // =================================================
 
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
                         children: [
                           Text(
                             permission.moduleName.isEmpty
@@ -88,32 +128,65 @@ class RolePermissionsCard extends StatelessWidget {
                                 : permission.moduleName,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.1,
                             ),
                           ),
 
                           const SizedBox(height: 4),
 
-                          Text(
-                            data.roleName.isEmpty ? '-' : data.roleName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.badge_outlined,
+                                size: 14,
+                                color:
+                                colorScheme.onSurfaceVariant,
+                              ),
+
+                              const SizedBox(width: 5),
+
+                              Expanded(
+                                child: Text(
+                                  data.roleName.isEmpty
+                                      ? '-'
+                                      : data.roleName,
+                                  maxLines: 1,
+                                  overflow:
+                                  TextOverflow.ellipsis,
+                                  style:
+                                  textTheme.bodySmall?.copyWith(
+                                    color:
+                                    colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
 
-                    // =============================================
+                    const SizedBox(width: 4),
+
+                    // =================================================
                     // MENU
-                    // =============================================
+                    // =================================================
+
                     PopupMenuButton<String>(
                       tooltip: 'More options',
 
-                      icon: const Icon(Icons.more_vert_rounded),
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                        BorderRadius.circular(14),
+                      ),
 
                       onSelected: (value) {
                         switch (value) {
@@ -136,7 +209,9 @@ class RolePermissionsCard extends StatelessWidget {
                           value: 'view',
                           child: Row(
                             children: [
-                              Icon(Icons.visibility_outlined),
+                              Icon(
+                                Icons.visibility_outlined,
+                              ),
                               SizedBox(width: 10),
                               Text('View'),
                             ],
@@ -147,7 +222,9 @@ class RolePermissionsCard extends StatelessWidget {
                           value: 'edit',
                           child: Row(
                             children: [
-                              Icon(Icons.edit_outlined),
+                              Icon(
+                                Icons.edit_outlined,
+                              ),
                               SizedBox(width: 10),
                               Text('Edit'),
                             ],
@@ -159,13 +236,15 @@ class RolePermissionsCard extends StatelessWidget {
                           child: Row(
                             children: [
                               Icon(
-                                Icons.delete_outline,
+                                Icons.delete_outline_rounded,
                                 color: colorScheme.error,
                               ),
                               const SizedBox(width: 10),
                               Text(
                                 'Delete',
-                                style: TextStyle(color: colorScheme.error),
+                                style: TextStyle(
+                                  color: colorScheme.error,
+                                ),
                               ),
                             ],
                           ),
@@ -175,39 +254,142 @@ class RolePermissionsCard extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(
+                  height: isSmall ? 14 : 18,
+                ),
 
                 // =================================================
-                // ROLE
+                // DIVIDER
                 // =================================================
+
+                Divider(
+                  height: 1,
+                  color: colorScheme.outlineVariant
+                      .withValues(alpha: 0.55),
+                ),
+
+                SizedBox(
+                  height: isSmall ? 14 : 16,
+                ),
+
+                // =================================================
+                // ROLE INFORMATION
+                // =================================================
+
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isSmall ? 10 : 12,
+                    vertical: isSmall ? 9 : 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.40),
+                    borderRadius:
+                    BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colorScheme.outlineVariant
+                          .withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color:
+                          colorScheme.primaryContainer,
+                          borderRadius:
+                          BorderRadius.circular(9),
+                        ),
+                        child: Icon(
+                          Icons.badge_outlined,
+                          size: 18,
+                          color:
+                          colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Role',
+                              style:
+                              textTheme.labelSmall?.copyWith(
+                                color: colorScheme
+                                    .onSurfaceVariant,
+                                fontWeight:
+                                FontWeight.w600,
+                              ),
+                            ),
+
+                            const SizedBox(height: 2),
+
+                            Text(
+                              data.roleName.isEmpty
+                                  ? '-'
+                                  : data.roleName,
+                              maxLines: 2,
+                              overflow:
+                              TextOverflow.ellipsis,
+                              style:
+                              textTheme.bodyMedium?.copyWith(
+                                fontWeight:
+                                FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(
+                  height: isSmall ? 14 : 18,
+                ),
+
+                // =================================================
+                // PERMISSIONS TITLE
+                // =================================================
+
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.badge_outlined,
+                      Icons.security_outlined,
                       size: 18,
-                      color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.primary,
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 7),
 
-                    Expanded(
-                      child: Text(
-                        data.roleName.isEmpty ? '-' : data.roleName,
-                        style: theme.textTheme.bodyMedium,
+                    Text(
+                      'Permissions',
+                      style:
+                      textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 // =================================================
                 // PERMISSIONS
                 // =================================================
+
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 7,
+                  runSpacing: 7,
                   children: [
                     _permissionChip(
                       context,
@@ -247,14 +429,33 @@ class RolePermissionsCard extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(
+                  height: isSmall ? 14 : 18,
+                ),
 
                 // =================================================
                 // STATUS
                 // =================================================
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _buildStatusChip(context, isActive),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Permission Status',
+                        style:
+                        textTheme.labelMedium?.copyWith(
+                          color:
+                          colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+
+                    _buildStatusChip(
+                      context,
+                      isActive,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -269,28 +470,62 @@ class RolePermissionsCard extends StatelessWidget {
   // =============================================================
 
   Widget _permissionChip(
-    BuildContext context, {
-    required String title,
-    required bool value,
-  }) {
+      BuildContext context, {
+        required String title,
+        required bool value,
+      }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final Color iconColor = value ? colorScheme.primary : colorScheme.error;
+    final Color color = value
+        ? colorScheme.primary
+        : colorScheme.error;
 
-    return Chip(
-      avatar: Icon(
-        value ? Icons.check_circle_outline : Icons.cancel_outlined,
-        size: 16,
-        color: iconColor,
+    final Color backgroundColor = value
+        ? colorScheme.primaryContainer
+        .withValues(alpha: 0.55)
+        : colorScheme.errorContainer
+        .withValues(alpha: 0.45);
+
+    final Color foregroundColor = value
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.onErrorContainer;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
       ),
-      label: Text(
-        title,
-        style: theme.textTheme.labelMedium?.copyWith(
-          fontWeight: FontWeight.w500,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.20),
         ),
       ),
-      side: BorderSide(color: colorScheme.outlineVariant),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            value
+                ? Icons.check_circle_outline_rounded
+                : Icons.cancel_outlined,
+            size: 16,
+            color: color,
+          ),
+
+          const SizedBox(width: 6),
+
+          Text(
+            title,
+            style:
+            theme.textTheme.labelMedium?.copyWith(
+              color: foregroundColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -298,7 +533,10 @@ class RolePermissionsCard extends StatelessWidget {
   // STATUS CHIP
   // =============================================================
 
-  Widget _buildStatusChip(BuildContext context, bool isActive) {
+  Widget _buildStatusChip(
+      BuildContext context,
+      bool isActive,
+      ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -315,17 +553,20 @@ class RolePermissionsCard extends StatelessWidget {
         : colorScheme.onErrorContainer;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 11,
+        vertical: 7,
+      ),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: statusColor.withValues(alpha: 0.18),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // =======================================================
-          // ACTIVE / INACTIVE ICON
-          // =======================================================
           Icon(
             isActive
                 ? Icons.check_circle_outline_rounded
@@ -338,9 +579,10 @@ class RolePermissionsCard extends StatelessWidget {
 
           Text(
             isActive ? 'Active' : 'Inactive',
-            style: theme.textTheme.labelMedium?.copyWith(
+            style:
+            theme.textTheme.labelMedium?.copyWith(
               color: foregroundColor,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

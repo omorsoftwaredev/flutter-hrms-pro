@@ -21,42 +21,42 @@
 import 'package:flutter/material.dart';
 
 class SupervisorForm extends StatefulWidget {
-// =============================================================
-// DEPARTMENTS
-// =============================================================
+  // =============================================================
+  // DEPARTMENTS
+  // =============================================================
 
   final List<Map<String, dynamic>> departments;
 
-// =============================================================
-// EMPLOYEES
-// =============================================================
+  // =============================================================
+  // EMPLOYEES
+  // =============================================================
 
   final List<Map<String, dynamic>> employees;
 
-// =============================================================
-// SAVING
-// =============================================================
+  // =============================================================
+  // SAVING
+  // =============================================================
 
   final bool isSaving;
 
-// =============================================================
-// DEPARTMENT CHANGED
-// =============================================================
+  // =============================================================
+  // DEPARTMENT CHANGED
+  // =============================================================
 
   final Future<void> Function(String? departmentId)?
   onDepartmentChanged;
 
-// =============================================================
-// SUBMIT
-// =============================================================
+  // =============================================================
+  // SUBMIT
+  // =============================================================
 
   final Future<void> Function(
       Map<String, dynamic> data,
       )? onSubmit;
 
-// =============================================================
-// CONSTRUCTOR
-// =============================================================
+  // =============================================================
+  // CONSTRUCTOR
+  // =============================================================
 
   const SupervisorForm({
     super.key,
@@ -77,34 +77,34 @@ class SupervisorForm extends StatefulWidget {
 // ===============================================================
 
 class _SupervisorFormState extends State<SupervisorForm> {
-// =============================================================
-// FORM KEY
-// =============================================================
+  // =============================================================
+  // FORM KEY
+  // =============================================================
 
   final GlobalKey<FormState> _formKey =
   GlobalKey<FormState>();
 
-// =============================================================
-// SELECTED DEPARTMENT
-// =============================================================
+  // =============================================================
+  // SELECTED DEPARTMENT
+  // =============================================================
 
   String? _departmentId;
 
-// =============================================================
-// SELECTED EMPLOYEE
-// =============================================================
+  // =============================================================
+  // SELECTED EMPLOYEE
+  // =============================================================
 
   String? _employeeId;
 
-// =============================================================
-// SUBMITTING
-// =============================================================
+  // =============================================================
+  // SUBMITTING
+  // =============================================================
 
   bool _submitting = false;
 
-// =============================================================
-// BUILD
-// =============================================================
+  // =============================================================
+  // BUILD
+  // =============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -115,18 +115,15 @@ class _SupervisorFormState extends State<SupervisorForm> {
         widget.isSaving || _submitting;
 
     return LayoutBuilder(
-      builder: (context,
-          constraints,) {
+      builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        final bool isMobile =
-            width < 600;
+        final bool isMobile = width < 600;
 
         final bool isTablet =
             width >= 600 && width < 1000;
 
-        final double horizontalPadding =
-        isMobile
+        final double horizontalPadding = isMobile
             ? 0
             : isTablet
             ? 8
@@ -134,29 +131,22 @@ class _SupervisorFormState extends State<SupervisorForm> {
 
         return Form(
           key: _formKey,
-
           child: Center(
             child: ConstrainedBox(
-              constraints:
-              const BoxConstraints(
+              constraints: const BoxConstraints(
                 maxWidth: 850,
               ),
-
               child: Padding(
-                padding:
-                EdgeInsets.symmetric(
-                  horizontal:
-                  horizontalPadding,
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
                 ),
-
                 child: Column(
                   crossAxisAlignment:
                   CrossAxisAlignment.start,
-
                   children: [
-// =================================================
-// HEADER
-// =================================================
+                    // =================================================
+                    // HEADER
+                    // =================================================
 
                     _buildHeader(
                       context,
@@ -164,47 +154,36 @@ class _SupervisorFormState extends State<SupervisorForm> {
                     ),
 
                     SizedBox(
-                      height:
-                      isMobile ? 18 : 22,
+                      height: isMobile ? 18 : 22,
                     ),
 
-// =================================================
-// FORM CARD
-// =================================================
+                    // =================================================
+                    // FORM CARD
+                    // =================================================
 
                     Card(
                       elevation: 0,
-
                       margin: EdgeInsets.zero,
-
-                      shape:
-                      RoundedRectangleBorder(
+                      color: colorScheme.surface,
+                      clipBehavior: Clip.antiAlias,
+                      shape: RoundedRectangleBorder(
                         borderRadius:
-                        BorderRadius.circular(
-                          18,
-                        ),
-
+                        BorderRadius.circular(18),
                         side: BorderSide(
-                          color: colorScheme
-                              .outlineVariant,
+                          color: colorScheme.outlineVariant,
                         ),
                       ),
-
                       child: Padding(
-                        padding:
-                        EdgeInsets.all(
+                        padding: EdgeInsets.all(
                           isMobile ? 14 : 20,
                         ),
-
                         child: Column(
                           crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
-
+                          CrossAxisAlignment.start,
                           children: [
-// =========================================
-// DEPARTMENT
-// =========================================
+                            // =========================================
+                            // DEPARTMENT
+                            // =========================================
 
                             _buildDepartmentDropdown(
                               context,
@@ -212,15 +191,12 @@ class _SupervisorFormState extends State<SupervisorForm> {
                             ),
 
                             SizedBox(
-                              height:
-                              isMobile
-                                  ? 14
-                                  : 18,
+                              height: isMobile ? 14 : 18,
                             ),
 
-// =========================================
-// EMPLOYEE
-// =========================================
+                            // =========================================
+                            // EMPLOYEE
+                            // =========================================
 
                             _buildEmployeeDropdown(
                               context,
@@ -228,34 +204,30 @@ class _SupervisorFormState extends State<SupervisorForm> {
                             ),
 
                             SizedBox(
-                              height:
-                              isMobile
-                                  ? 18
-                                  : 24,
+                              height: isMobile ? 18 : 24,
                             ),
 
-// =========================================
-// SUMMARY
-// =========================================
+                            // =========================================
+                            // SUMMARY
+                            // =========================================
 
-                            if (_departmentId !=
-                                null &&
+                            if (_departmentId != null &&
                                 _employeeId != null)
                               _buildSummary(
                                 context,
                                 isMobile,
                               ),
 
-                            SizedBox(
-                              height:
-                              isMobile
-                                  ? 16
-                                  : 20,
-                            ),
+                            if (_departmentId != null &&
+                                _employeeId != null)
+                              SizedBox(
+                                height:
+                                isMobile ? 16 : 20,
+                              ),
 
-// =========================================
-// CREATE BUTTON
-// =========================================
+                            // =========================================
+                            // CREATE BUTTON
+                            // =========================================
 
                             _buildCreateButton(
                               context,
@@ -268,8 +240,7 @@ class _SupervisorFormState extends State<SupervisorForm> {
                     ),
 
                     SizedBox(
-                      height:
-                      isMobile ? 16 : 20,
+                      height: isMobile ? 16 : 20,
                     ),
                   ],
                 ),
@@ -281,40 +252,33 @@ class _SupervisorFormState extends State<SupervisorForm> {
     );
   }
 
-// =============================================================
-// HEADER
-// =============================================================
+  // =============================================================
+  // HEADER
+  // =============================================================
 
-  Widget _buildHeader(BuildContext context,
-      bool isMobile,) {
+  Widget _buildHeader(
+      BuildContext context,
+      bool isMobile,
+      ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Row(
       crossAxisAlignment:
       CrossAxisAlignment.start,
-
       children: [
         Container(
           width: isMobile ? 44 : 50,
           height: isMobile ? 44 : 50,
-
           decoration: BoxDecoration(
-            color: colorScheme
-                .primaryContainer,
-
+            color: colorScheme.primaryContainer,
             borderRadius:
             BorderRadius.circular(14),
           ),
-
           child: Icon(
-            Icons
-                .supervisor_account_outlined,
-
+            Icons.supervisor_account_outlined,
             size: isMobile ? 24 : 28,
-
-            color: colorScheme
-                .onPrimaryContainer,
+            color: colorScheme.onPrimaryContainer,
           ),
         ),
 
@@ -324,17 +288,13 @@ class _SupervisorFormState extends State<SupervisorForm> {
           child: Column(
             crossAxisAlignment:
             CrossAxisAlignment.start,
-
             children: [
               Text(
                 'Create Supervisor',
-
-                style: theme
-                    .textTheme
-                    .titleLarge
+                style: theme.textTheme.titleLarge
                     ?.copyWith(
-                  fontWeight:
-                  FontWeight.w700,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
                 ),
               ),
 
@@ -342,13 +302,9 @@ class _SupervisorFormState extends State<SupervisorForm> {
 
               Text(
                 'Select department and employee.',
-
-                style: theme
-                    .textTheme
-                    .bodySmall
+                style: theme.textTheme.bodySmall
                     ?.copyWith(
-                  color: colorScheme
-                      .onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -358,126 +314,98 @@ class _SupervisorFormState extends State<SupervisorForm> {
     );
   }
 
-// =============================================================
-// DEPARTMENT DROPDOWN
-// =============================================================
+  // =============================================================
+  // DEPARTMENT DROPDOWN
+  // =============================================================
 
-  Widget _buildDepartmentDropdown(BuildContext context,
-      bool isBusy,) {
+  Widget _buildDepartmentDropdown(
+      BuildContext context,
+      bool isBusy,
+      ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return DropdownButtonFormField<String>(
       value: _departmentId,
-
       isExpanded: true,
-
       decoration: InputDecoration(
         labelText: 'Department',
         hintText: widget.departments.isEmpty
             ? 'No departments available'
             : 'Select department',
-
         prefixIcon: const Icon(
           Icons.apartment_outlined,
         ),
-
         border: OutlineInputBorder(
           borderRadius:
           BorderRadius.circular(12),
         ),
-
-        enabledBorder:
-        OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius:
           BorderRadius.circular(12),
-
           borderSide: BorderSide(
-            color: colorScheme
-                .outlineVariant,
+            color: colorScheme.outlineVariant,
           ),
         ),
-
-        focusedBorder:
-        OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius:
           BorderRadius.circular(12),
-
           borderSide: BorderSide(
             color: colorScheme.primary,
             width: 1.5,
           ),
         ),
-
         filled: true,
-
         fillColor:
         colorScheme.surfaceContainerLow,
       ),
-
       items: widget.departments
           .map(
             (department) {
           final id =
-          department['id']
-              ?.toString();
+          department['id']?.toString();
 
           final name =
               department['name']
                   ?.toString() ??
-                  department[
-                  'department_name']
+                  department['department_name']
                       ?.toString() ??
                   '-';
 
-          if (id == null ||
-              id.isEmpty) {
+          if (id == null || id.isEmpty) {
             return null;
           }
 
-          return DropdownMenuItem<
-              String>(
+          return DropdownMenuItem<String>(
             value: id,
-
             child: Text(
-              name.isEmpty
-                  ? '-'
-                  : name,
-
+              name.isEmpty ? '-' : name,
               maxLines: 1,
-
               overflow:
               TextOverflow.ellipsis,
-
-              style: theme
-                  .textTheme
-                  .bodyMedium,
+              style:
+              theme.textTheme.bodyMedium,
             ),
           );
         },
       )
-          .whereType<
-          DropdownMenuItem<String>>()
+          .whereType<DropdownMenuItem<String>>()
           .toList(),
-
       onChanged:
       isBusy ||
-          widget.departments
-              .isEmpty
+          widget.departments.isEmpty
           ? null
           : (value) async {
-        if (value ==
-            null ||
+        if (value == null ||
             value.isEmpty) {
           return;
         }
 
         setState(() {
-          _departmentId =
-              value;
+          _departmentId = value;
 
-// Department change হলে
-// আগের employee clear হবে।
+          // Department change হলে
+          // আগের employee clear হবে।
           _employeeId = null;
         });
 
@@ -497,14 +425,11 @@ class _SupervisorFormState extends State<SupervisorForm> {
           '================================================',
         );
 
-        await widget
-            .onDepartmentChanged
+        await widget.onDepartmentChanged
             ?.call(value);
       },
-
       validator: (value) {
-        if (value == null ||
-            value.isEmpty) {
+        if (value == null || value.isEmpty) {
           return 'Please select department';
         }
 
@@ -513,12 +438,14 @@ class _SupervisorFormState extends State<SupervisorForm> {
     );
   }
 
-// =============================================================
-// EMPLOYEE DROPDOWN
-// =============================================================
+  // =============================================================
+  // EMPLOYEE DROPDOWN
+  // =============================================================
 
-  Widget _buildEmployeeDropdown(BuildContext context,
-      bool isBusy,) {
+  Widget _buildEmployeeDropdown(
+      BuildContext context,
+      bool isBusy,
+      ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -528,131 +455,97 @@ class _SupervisorFormState extends State<SupervisorForm> {
 
     return DropdownButtonFormField<String>(
       value: _employeeId,
-
       isExpanded: true,
-
       decoration: InputDecoration(
         labelText: 'Employee',
-
-        hintText:
-        !departmentSelected
+        hintText: !departmentSelected
             ? 'Select department first'
             : widget.employees.isEmpty
             ? 'No employees available'
             : 'Select employee',
-
         prefixIcon: const Icon(
           Icons.person_outline,
         ),
-
         border: OutlineInputBorder(
           borderRadius:
           BorderRadius.circular(12),
         ),
-
-        enabledBorder:
-        OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius:
           BorderRadius.circular(12),
-
           borderSide: BorderSide(
-            color: colorScheme
-                .outlineVariant,
+            color: colorScheme.outlineVariant,
           ),
         ),
-
-        focusedBorder:
-        OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius:
           BorderRadius.circular(12),
-
           borderSide: BorderSide(
             color: colorScheme.primary,
             width: 1.5,
           ),
         ),
-
         filled: true,
-
         fillColor:
         colorScheme.surfaceContainerLow,
       ),
-
       items: widget.employees
           .map(
             (employee) {
           final id =
-          employee['id']
-              ?.toString();
+          employee['id']?.toString();
 
           final fullName =
-              employee[
-              'full_name']
+              employee['full_name']
                   ?.toString() ??
-                  employee[
-                  'employee_name']
+                  employee['employee_name']
                       ?.toString() ??
                   '${employee['first_name'] ?? ''} '
                       '${employee['last_name'] ?? ''}'
                       .trim();
 
           final employeeCode =
-              employee[
-              'employee_code']
+              employee['employee_code']
                   ?.toString() ??
                   '';
 
           final label =
           employeeCode.isEmpty
               ? fullName
-              : '$fullName '
-              '($employeeCode)';
+              : '$fullName ($employeeCode)';
 
-          if (id == null ||
-              id.isEmpty) {
+          if (id == null || id.isEmpty) {
             return null;
           }
 
-          return DropdownMenuItem<
-              String>(
+          return DropdownMenuItem<String>(
             value: id,
-
             child: Text(
-              label.isEmpty
-                  ? '-'
-                  : label,
-
+              label.isEmpty ? '-' : label,
               maxLines: 1,
-
               overflow:
               TextOverflow.ellipsis,
-
-              style: theme
-                  .textTheme
-                  .bodyMedium,
+              style:
+              theme.textTheme.bodyMedium,
             ),
           );
         },
       )
-          .whereType<
-          DropdownMenuItem<String>>()
+          .whereType<DropdownMenuItem<String>>()
           .toList(),
-
       onChanged:
       isBusy ||
           !departmentSelected ||
           widget.employees.isEmpty
           ? null
           : (value) {
-        if (value ==
-            null ||
+        if (value == null ||
             value.isEmpty) {
           return;
         }
 
         setState(() {
-          _employeeId =
-              value;
+          _employeeId = value;
         });
 
         debugPrint(
@@ -671,14 +564,12 @@ class _SupervisorFormState extends State<SupervisorForm> {
           '================================================',
         );
       },
-
       validator: (value) {
         if (!departmentSelected) {
           return 'Select department first';
         }
 
-        if (value == null ||
-            value.isEmpty) {
+        if (value == null || value.isEmpty) {
           return 'Please select employee';
         }
 
@@ -687,12 +578,14 @@ class _SupervisorFormState extends State<SupervisorForm> {
     );
   }
 
-// =============================================================
-// SUMMARY
-// =============================================================
+  // =============================================================
+  // SUMMARY
+  // =============================================================
 
-  Widget _buildSummary(BuildContext context,
-      bool isMobile,) {
+  Widget _buildSummary(
+      BuildContext context,
+      bool isMobile,
+      ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -701,30 +594,20 @@ class _SupervisorFormState extends State<SupervisorForm> {
 
     return Container(
       width: double.infinity,
-
       padding: EdgeInsets.all(
         isMobile ? 12 : 14,
       ),
-
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.10,
-        ),
-
+        color: color.withValues(alpha: 0.10),
         borderRadius:
         BorderRadius.circular(12),
-
         border: Border.all(
-          color: color.withValues(
-            alpha: 0.25,
-          ),
+          color: color.withValues(alpha: 0.25),
         ),
       ),
-
       child: Row(
         crossAxisAlignment:
         CrossAxisAlignment.start,
-
         children: [
           Icon(
             Icons.check_circle_outline,
@@ -738,14 +621,10 @@ class _SupervisorFormState extends State<SupervisorForm> {
             child: Text(
               'All information selected. '
                   'You can create the supervisor now.',
-
-              style: theme
-                  .textTheme
-                  .bodySmall
+              style: theme.textTheme.bodySmall
                   ?.copyWith(
                 color: color,
-                fontWeight:
-                FontWeight.w600,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -754,56 +633,46 @@ class _SupervisorFormState extends State<SupervisorForm> {
     );
   }
 
-// =============================================================
-// CREATE BUTTON
-// =============================================================
+  // =============================================================
+  // CREATE BUTTON
+  // =============================================================
 
-  Widget _buildCreateButton(BuildContext context,
+  Widget _buildCreateButton(
+      BuildContext context,
       bool isBusy,
-      bool isMobile,) {
+      bool isMobile,
+      ) {
     final theme = Theme.of(context);
 
     return SizedBox(
       width: double.infinity,
-
       height: isMobile ? 50 : 52,
-
       child: FilledButton.icon(
         onPressed:
         isBusy ? null : _submit,
-
         icon: isBusy
             ? const SizedBox(
           width: 19,
           height: 19,
-
           child:
           CircularProgressIndicator(
             strokeWidth: 2,
           ),
         )
             : const Icon(
-          Icons
-              .supervisor_account_outlined,
+          Icons.supervisor_account_outlined,
         ),
-
         label: Text(
           isBusy
               ? 'Creating...'
               : 'Create Supervisor',
-
-          style: theme
-              .textTheme
-              .labelLarge
+          style: theme.textTheme.labelLarge
               ?.copyWith(
-            fontWeight:
-            FontWeight.w600,
+            fontWeight: FontWeight.w600,
           ),
         ),
-
         style: FilledButton.styleFrom(
-          shape:
-          RoundedRectangleBorder(
+          shape: RoundedRectangleBorder(
             borderRadius:
             BorderRadius.circular(12),
           ),
@@ -812,9 +681,9 @@ class _SupervisorFormState extends State<SupervisorForm> {
     );
   }
 
-// =============================================================
-// SUBMIT
-// =============================================================
+  // =============================================================
+  // SUBMIT
+  // =============================================================
 
   Future<void> _submit() async {
     debugPrint(
@@ -837,13 +706,12 @@ class _SupervisorFormState extends State<SupervisorForm> {
       '================================================',
     );
 
-// ===========================================================
-// VALIDATE FORM
-// ===========================================================
+    // ===========================================================
+    // VALIDATE FORM
+    // ===========================================================
 
     final valid =
-        _formKey.currentState
-            ?.validate() ??
+        _formKey.currentState?.validate() ??
             false;
 
     if (!valid) {
@@ -854,9 +722,9 @@ class _SupervisorFormState extends State<SupervisorForm> {
       return;
     }
 
-// ===========================================================
-// SAFETY CHECK
-// ===========================================================
+    // ===========================================================
+    // SAFETY CHECK
+    // ===========================================================
 
     if (_departmentId == null ||
         _departmentId!.isEmpty ||
@@ -868,9 +736,8 @@ class _SupervisorFormState extends State<SupervisorForm> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
           const SnackBar(
             content: Text(
               'Please select department and employee.',
@@ -882,34 +749,29 @@ class _SupervisorFormState extends State<SupervisorForm> {
       return;
     }
 
-// ===========================================================
-// START SUBMITTING
-// ===========================================================
+    // ===========================================================
+    // START SUBMITTING
+    // ===========================================================
 
     setState(() {
       _submitting = true;
     });
 
-// ===========================================================
-// DATA
-//
-// IMPORTANT:
-//
-// company_id এখানে Form থেকে নেওয়া হচ্ছে না।
-//
-// Current logged-in user's company_id
-// Parent/Notifier/Repository layer থেকে
-// database operation-এর সময় নেওয়া হবে।
-// ===========================================================
+    // ===========================================================
+    // DATA
+    //
+    // IMPORTANT:
+    //
+    // company_id এখানে Form থেকে নেওয়া হচ্ছে না।
+    //
+    // Current logged-in user's company_id
+    // Parent/Notifier/Repository layer থেকে
+    // database operation-এর সময় নেওয়া হবে।
+    // ===========================================================
 
-    final data =
-    <String, dynamic>{
-      'department_id':
-      _departmentId,
-
-      'employee_id':
-      _employeeId,
-
+    final data = <String, dynamic>{
+      'department_id': _departmentId,
+      'employee_id': _employeeId,
       'status': true,
     };
 
@@ -917,58 +779,48 @@ class _SupervisorFormState extends State<SupervisorForm> {
       'SUPERVISOR CREATE DATA = $data',
     );
 
-// ===========================================================
-// SUBMIT
-// ===========================================================
+    // ===========================================================
+    // SUBMIT
+    // ===========================================================
 
     try {
-      await widget.onSubmit
-          ?.call(data);
+      await widget.onSubmit?.call(data);
 
       debugPrint(
         'SUPERVISOR FORM SUBMIT CALLBACK COMPLETED',
       );
-    }
-    catch
-    (
-    e
-    ,
-    stackTrace
-    ) {
-    debugPrint(
-    'SUPERVISOR CREATE ERROR = $e',
-    );
+    } catch (e, stackTrace) {
+      debugPrint(
+        'SUPERVISOR CREATE ERROR = $e',
+      );
 
-    debugPrint(
-    'STACK TRACE = $stackTrace',
-    );
+      debugPrint(
+        'STACK TRACE = $stackTrace',
+      );
 
-    if (mounted) {
-    ScaffoldMessenger.of(
-    context,
-    ).showSnackBar(
-    SnackBar(
-    backgroundColor:
-    Theme.of(context)
-        .colorScheme
-        .error,
-
-    content: Text(
-    'Create Supervisor failed: $e',
-    ),
-    ),
-    );
-    }
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          SnackBar(
+            backgroundColor: Theme.of(context)
+                .colorScheme
+                .error,
+            content: Text(
+              'Create Supervisor failed: $e',
+            ),
+          ),
+        );
+      }
     } finally {
-// =========================================================
-// STOP SUBMITTING
-// =========================================================
+      // =========================================================
+      // STOP SUBMITTING
+      // =========================================================
 
-    if (mounted) {
-    setState(() {
-    _submitting = false;
-    });
-    }
+      if (mounted) {
+        setState(() {
+          _submitting = false;
+        });
+      }
     }
   }
 }

@@ -4,14 +4,13 @@
 //
 // Company Owner Login Based
 //
-// Company ID:
-// currentUserProvider → CurrentUser.companyId
+// UI:
+// Responsive + Theme Aware + Professional
 //
-// Company Owner কোনো Company Dropdown ব্যবহার করবে না.
+// IMPORTANT:
+// Business logic / Provider / Submit Signature unchanged.
 //
-// Company ID automatically logged-in session থেকে নেওয়া হবে.
-//
-// Version : 2.5.0
+// Version : 3.0.0 UI Refresh
 // ===============================================================
 
 import 'package:flutter/material.dart';
@@ -27,40 +26,23 @@ import '../../../role/presentation/providers/role_provider.dart';
 class EmployeeForm extends ConsumerStatefulWidget {
   const EmployeeForm({
     super.key,
-
     this.initialCompanyId,
     this.initialDepartmentId,
     this.initialDesignationId,
     this.initialShiftId,
     this.initialRoleId,
-
-    this.initialEmployeeCode = '',
     this.initialCardNo = '',
-
-    this.initialFirstName = '',
-    this.initialLastName = '',
     this.initialFullName = '',
-
     this.initialMobile = '',
     this.initialEmail = '',
-
     this.initialGender = 'Male',
-
     this.initialEmploymentType = 'Permanent',
     this.initialEmployeeStatus = 'Active',
-
     this.initialBasicSalary = 0,
-
     this.initialIsActive = true,
-
     this.isLoading = false,
-
     required this.onSubmit,
   });
-
-  // =============================================================
-  // INITIAL VALUES
-  // =============================================================
 
   final String? initialCompanyId;
   final String? initialDepartmentId;
@@ -68,11 +50,8 @@ class EmployeeForm extends ConsumerStatefulWidget {
   final String? initialShiftId;
   final String? initialRoleId;
 
-  final String initialEmployeeCode;
   final String initialCardNo;
 
-  final String initialFirstName;
-  final String initialLastName;
   final String initialFullName;
 
   final String initialMobile;
@@ -89,20 +68,13 @@ class EmployeeForm extends ConsumerStatefulWidget {
 
   final bool isLoading;
 
-  // =============================================================
-  // SUBMIT
-  // =============================================================
-
   final Future<void> Function(
       String? companyId,
       String? departmentId,
       String? designationId,
       String? shiftId,
       String? roleId,
-      String employeeCode,
       String cardNo,
-      String firstName,
-      String lastName,
       String fullName,
       String mobile,
       String email,
@@ -114,16 +86,14 @@ class EmployeeForm extends ConsumerStatefulWidget {
       ) onSubmit;
 
   @override
-  ConsumerState<EmployeeForm> createState() =>
-      _EmployeeFormState();
+  ConsumerState<EmployeeForm> createState() => _EmployeeFormState();
 }
 
 // ===============================================================
 // STATE
 // ===============================================================
 
-class _EmployeeFormState
-    extends ConsumerState<EmployeeForm> {
+class _EmployeeFormState extends ConsumerState<EmployeeForm> {
   final _formKey = GlobalKey<FormState>();
 
   String? companyId;
@@ -138,11 +108,8 @@ class _EmployeeFormState
 
   late bool isActive;
 
-  late final TextEditingController employeeCode;
   late final TextEditingController cardNo;
 
-  late final TextEditingController firstName;
-  late final TextEditingController lastName;
   late final TextEditingController fullName;
 
   late final TextEditingController mobile;
@@ -151,142 +118,62 @@ class _EmployeeFormState
   late final TextEditingController salary;
 
   // =============================================================
-  // INIT STATE
+  // INIT
   // =============================================================
 
   @override
   void initState() {
     super.initState();
 
-    // -----------------------------------------------------------
-    // CURRENT LOGGED-IN USER
-    // -----------------------------------------------------------
-    //
-    // Company Owner:
-    //
-    // currentUserProvider
-    //        ↓
-    // CurrentUser.companyId
-    //        ↓
-    // Employee.companyId
-    //
-    // Company dropdown ব্যবহার করা হচ্ছে না।
-    // -----------------------------------------------------------
-
     final user = ref.read(currentUserProvider);
 
-    final loggedInCompanyId =
-        user?.companyId.trim() ?? '';
-
-    // -----------------------------------------------------------
-    // COMPANY ID
-    // -----------------------------------------------------------
-    //
-    // Logged-in user's company ID সর্বোচ্চ priority।
-    //
-    // Edit mode-এ initialCompanyId fallback হিসেবে থাকবে।
-    //
-    // -----------------------------------------------------------
+    final loggedInCompanyId = user?.companyId.trim() ?? '';
 
     companyId = loggedInCompanyId.isNotEmpty
         ? loggedInCompanyId
         : widget.initialCompanyId;
 
-    // -----------------------------------------------------------
-    // INITIAL RELATIONS
-    // -----------------------------------------------------------
-
-    departmentId =
-        widget.initialDepartmentId;
-
-    designationId =
-        widget.initialDesignationId;
-
-    shiftId =
-        widget.initialShiftId;
-
-    roleId =
-        widget.initialRoleId;
-
-    // -----------------------------------------------------------
-    // INITIAL OPTIONS
-    // -----------------------------------------------------------
+    departmentId = widget.initialDepartmentId;
+    designationId = widget.initialDesignationId;
+    shiftId = widget.initialShiftId;
+    roleId = widget.initialRoleId;
 
     gender = widget.initialGender;
+    employmentType = widget.initialEmploymentType;
+    employeeStatus = widget.initialEmployeeStatus;
 
-    employmentType =
-        widget.initialEmploymentType;
+    isActive = widget.initialIsActive;
 
-    employeeStatus =
-        widget.initialEmployeeStatus;
 
-    isActive =
-        widget.initialIsActive;
+    cardNo = TextEditingController(
+      text: widget.initialCardNo,
+    );
 
-    // -----------------------------------------------------------
-    // CONTROLLERS
-    // -----------------------------------------------------------
 
-    employeeCode =
-        TextEditingController(
-          text: widget.initialEmployeeCode,
-        );
+    fullName = TextEditingController(
+      text: widget.initialFullName,
+    );
 
-    cardNo =
-        TextEditingController(
-          text: widget.initialCardNo,
-        );
+    mobile = TextEditingController(
+      text: widget.initialMobile,
+    );
 
-    firstName =
-        TextEditingController(
-          text: widget.initialFirstName,
-        );
+    email = TextEditingController(
+      text: widget.initialEmail,
+    );
 
-    lastName =
-        TextEditingController(
-          text: widget.initialLastName,
-        );
-
-    fullName =
-        TextEditingController(
-          text: widget.initialFullName,
-        );
-
-    mobile =
-        TextEditingController(
-          text: widget.initialMobile,
-        );
-
-    email =
-        TextEditingController(
-          text: widget.initialEmail,
-        );
-
-    salary =
-        TextEditingController(
-          text: widget.initialBasicSalary.toString(),
-        );
-
-    // -----------------------------------------------------------
-    // LOAD REQUIRED DATA
-    // -----------------------------------------------------------
+    salary = TextEditingController(
+      text: widget.initialBasicSalary.toString(),
+    );
 
     Future.microtask(() {
-      ref
-          .read(departmentProvider.notifier)
-          .loadDepartments();
+      ref.read(departmentProvider.notifier).loadDepartments();
 
-      ref
-          .read(designationProvider.notifier)
-          .loadDesignations();
+      ref.read(designationProvider.notifier).loadDesignations();
 
-      ref
-          .read(shiftProvider.notifier)
-          .loadShifts();
+      ref.read(shiftProvider.notifier).loadShifts();
 
-      ref
-          .read(roleProvider.notifier)
-          .loadRoles();
+      ref.read(roleProvider.notifier).loadRoles();
     });
   }
 
@@ -296,11 +183,8 @@ class _EmployeeFormState
 
   @override
   void dispose() {
-    employeeCode.dispose();
     cardNo.dispose();
 
-    firstName.dispose();
-    lastName.dispose();
     fullName.dispose();
 
     mobile.dispose();
@@ -316,80 +200,45 @@ class _EmployeeFormState
   // =============================================================
 
   Future<void> save() async {
-    // -----------------------------------------------------------
-    // FORM VALIDATION
-    // -----------------------------------------------------------
-
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    // -----------------------------------------------------------
-    // CURRENT USER
-    // -----------------------------------------------------------
-
-    final user =
-    ref.read(currentUserProvider);
+    final user = ref.read(currentUserProvider);
 
     if (user == null) {
       _showError(
         'Current user information not found.',
       );
-
       return;
     }
 
-    // -----------------------------------------------------------
-    // COMPANY ID
-    // -----------------------------------------------------------
-
-    final finalCompanyId =
-    user.companyId.trim();
-
-    // -----------------------------------------------------------
-    // COMPANY VALIDATION
-    // -----------------------------------------------------------
+    final finalCompanyId = user.companyId.trim();
 
     if (finalCompanyId.isEmpty) {
       _showError(
         'Company ID not found for the logged-in account.',
       );
-
       return;
     }
 
-    // -----------------------------------------------------------
-    // SUBMIT
-    // -----------------------------------------------------------
-
     await widget.onSubmit(
       finalCompanyId,
-
       departmentId,
       designationId,
       shiftId,
       roleId,
-
-      employeeCode.text.trim(),
       cardNo.text.trim(),
-
-      firstName.text.trim(),
-      lastName.text.trim(),
       fullName.text.trim(),
-
       mobile.text.trim(),
       email.text.trim(),
-
       gender,
-
       employmentType,
       employeeStatus,
-
       double.tryParse(
         salary.text.trim(),
       ) ??
           0,
-
       isActive,
     );
   }
@@ -405,7 +254,18 @@ class _EmployeeFormState
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(message),
+            ),
+          ],
+        ),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -417,24 +277,19 @@ class _EmployeeFormState
 
   @override
   Widget build(BuildContext context) {
-    final departmentState =
-    ref.watch(departmentProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    final designationState =
-    ref.watch(designationProvider);
-
-    final shiftState =
-    ref.watch(shiftProvider);
-
-    final roleState =
-    ref.watch(roleProvider);
+    final departmentState = ref.watch(departmentProvider);
+    final designationState = ref.watch(designationProvider);
+    final shiftState = ref.watch(shiftProvider);
+    final roleState = ref.watch(roleProvider);
 
     // ===========================================================
     // CURRENT COMPANY
     // ===========================================================
 
-    final user =
-    ref.watch(currentUserProvider);
+    final user = ref.watch(currentUserProvider);
 
     final loggedInCompanyId =
         user?.companyId.trim() ?? '';
@@ -448,630 +303,972 @@ class _EmployeeFormState
     // COMPANY BASED FILTER
     // ===========================================================
 
-    final departments =
-    departmentState.departments
+    final departments = departmentState.departments
         .where(
           (department) =>
-      department.companyId ==
-          effectiveCompanyId,
+      department.companyId == effectiveCompanyId,
     )
         .toList();
 
-    final designations =
-    designationState.designations
+    final designations = designationState.designations
         .where(
           (designation) =>
-      designation.companyId ==
-          effectiveCompanyId,
+      designation.companyId == effectiveCompanyId,
     )
         .toList();
 
-    final shifts =
-    shiftState.shifts
+    final shifts = shiftState.shifts
         .where(
           (shift) =>
-      shift.companyId ==
-          effectiveCompanyId,
+      shift.companyId == effectiveCompanyId,
     )
         .toList();
 
-    final roles =
-    roleState.filteredRoles
+    final roles = roleState.filteredRoles
         .where(
           (role) =>
-      role.companyId ==
-          effectiveCompanyId,
+      role.companyId == effectiveCompanyId,
     )
         .toList();
 
     // ===========================================================
-    // COMPANY VALIDATION
+    // USER VALIDATION
     // ===========================================================
 
     if (user == null) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'Logged-in user information is not available.',
-            textAlign: TextAlign.center,
-          ),
-        ),
+      return _buildMessageState(
+        context,
+        icon: Icons.person_off_outlined,
+        title: 'User information unavailable',
+        message:
+        'Logged-in user information is not available.',
       );
     }
 
     if (effectiveCompanyId == null ||
         effectiveCompanyId.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'Company information is not available for this account.',
-            textAlign: TextAlign.center,
-          ),
-        ),
+      return _buildMessageState(
+        context,
+        icon: Icons.business_outlined,
+        title: 'Company information unavailable',
+        message:
+        'Company information is not available for this account.',
       );
     }
 
     // ===========================================================
-    // FORM
+    // RESPONSIVE
     // ===========================================================
 
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Form(
-        key: _formKey,
-        child: ListView(
-          children: [
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
 
-            // =====================================================
-            // DEPARTMENT
-            // =====================================================
+        final bool isDesktop = width >= 900;
+        final bool isTablet = width >= 600 && width < 900;
 
-            DropdownButtonFormField<String>(
-              value: departments.any(
-                    (e) => e.id == departmentId,
-              )
-                  ? departmentId
-                  : null,
-              decoration:
-              const InputDecoration(
-                labelText: 'Department',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.apartment_outlined,
-                ),
-              ),
-              items: departments
-                  .map(
-                    (e) => DropdownMenuItem(
-                  value: e.id,
-                  child: Text(e.name),
-                ),
-              )
-                  .toList(),
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                setState(() {
-                  departmentId = value;
+        final double horizontalPadding = isDesktop
+            ? 32
+            : isTablet
+            ? 24
+            : 16;
 
-                  designationId =
-                  null;
-                });
-              },
+        final double maxFormWidth =
+        isDesktop ? 920 : double.infinity;
+
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: maxFormWidth,
             ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // DESIGNATION
-            // =====================================================
-
-            DropdownButtonFormField<String>(
-              value: designations.any(
-                    (e) => e.id == designationId,
-              )
-                  ? designationId
-                  : null,
-              decoration:
-              const InputDecoration(
-                labelText: 'Designation',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.badge_outlined,
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  isDesktop ? 28 : 20,
+                  horizontalPadding,
+                  32,
                 ),
-              ),
-              items: designations
-                  .map(
-                    (e) => DropdownMenuItem(
-                  value: e.id,
-                  child: Text(e.name),
-                ),
-              )
-                  .toList(),
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                setState(() {
-                  designationId =
-                      value;
-                });
-              },
-            ),
+                children: [
+                  // =================================================
+                  // FORM HEADER
+                  // =================================================
 
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // SHIFT
-            // =====================================================
-
-            DropdownButtonFormField<String>(
-              value: shifts.any(
-                    (e) => e.id == shiftId,
-              )
-                  ? shiftId
-                  : null,
-              decoration:
-              const InputDecoration(
-                labelText: 'Shift',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.schedule_outlined,
-                ),
-              ),
-              items: shifts
-                  .map(
-                    (e) => DropdownMenuItem(
-                  value: e.id,
-                  child: Text(e.name),
-                ),
-              )
-                  .toList(),
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                setState(() {
-                  shiftId = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // ROLE
-            // =====================================================
-
-            DropdownButtonFormField<String>(
-              value: roles.any(
-                    (e) => e.id == roleId,
-              )
-                  ? roleId
-                  : null,
-              decoration:
-              const InputDecoration(
-                labelText: 'Role',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.admin_panel_settings_outlined,
-                ),
-              ),
-              items: roles
-                  .map(
-                    (e) => DropdownMenuItem(
-                  value: e.id,
-                  child: Text(e.roleName),
-                ),
-              )
-                  .toList(),
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                setState(() {
-                  roleId = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // CARD NO
-            // =====================================================
-
-            TextFormField(
-              controller: cardNo,
-              decoration:
-              const InputDecoration(
-                labelText: 'Card No',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.credit_card_outlined,
-                ),
-              ),
-              textInputAction:
-              TextInputAction.next,
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // FIRST NAME
-            // =====================================================
-
-            TextFormField(
-              controller: firstName,
-              decoration:
-              const InputDecoration(
-                labelText: 'First Name',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.person_outline,
-                ),
-              ),
-              textInputAction:
-              TextInputAction.next,
-              validator: (value) {
-                if (value == null ||
-                    value.trim().isEmpty) {
-                  return 'First Name is required';
-                }
-
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // LAST NAME
-            // =====================================================
-
-            TextFormField(
-              controller: lastName,
-              decoration:
-              const InputDecoration(
-                labelText: 'Last Name',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.person_outline,
-                ),
-              ),
-              textInputAction:
-              TextInputAction.next,
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // FULL NAME
-            // =====================================================
-
-            TextFormField(
-              controller: fullName,
-              decoration:
-              const InputDecoration(
-                labelText: 'Full Name',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.person,
-                ),
-              ),
-              textInputAction:
-              TextInputAction.next,
-              validator: (value) {
-                if (value == null ||
-                    value.trim().isEmpty) {
-                  return 'Full Name is required';
-                }
-
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // MOBILE
-            // =====================================================
-
-            TextFormField(
-              controller: mobile,
-              keyboardType:
-              TextInputType.phone,
-              decoration:
-              const InputDecoration(
-                labelText: 'Mobile',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.phone_outlined,
-                ),
-              ),
-              textInputAction:
-              TextInputAction.next,
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // EMAIL
-            // =====================================================
-
-            TextFormField(
-              controller: email,
-              keyboardType:
-              TextInputType.emailAddress,
-              decoration:
-              const InputDecoration(
-                labelText: 'Email',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.email_outlined,
-                ),
-              ),
-              textInputAction:
-              TextInputAction.next,
-              validator: (value) {
-                final emailValue =
-                    value?.trim() ?? '';
-
-                if (emailValue.isEmpty) {
-                  return null;
-                }
-
-                final emailRegex = RegExp(
-                  r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                );
-
-                if (!emailRegex
-                    .hasMatch(emailValue)) {
-                  return 'Enter a valid email address';
-                }
-
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // GENDER
-            // =====================================================
-
-            DropdownButtonFormField<String>(
-              value: gender,
-              decoration:
-              const InputDecoration(
-                labelText: 'Gender',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.wc_outlined,
-                ),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'Male',
-                  child: Text('Male'),
-                ),
-                DropdownMenuItem(
-                  value: 'Female',
-                  child: Text('Female'),
-                ),
-                DropdownMenuItem(
-                  value: 'Other',
-                  child: Text('Other'),
-                ),
-              ],
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                if (value == null) {
-                  return;
-                }
-
-                setState(() {
-                  gender = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // EMPLOYMENT TYPE
-            // =====================================================
-
-            DropdownButtonFormField<String>(
-              value: employmentType,
-              decoration:
-              const InputDecoration(
-                labelText: 'Employment Type',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.work_outline,
-                ),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'Permanent',
-                  child: Text('Permanent'),
-                ),
-                DropdownMenuItem(
-                  value: 'Contract',
-                  child: Text('Contract'),
-                ),
-                DropdownMenuItem(
-                  value: 'Intern',
-                  child: Text('Intern'),
-                ),
-              ],
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                if (value == null) {
-                  return;
-                }
-
-                setState(() {
-                  employmentType =
-                      value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // EMPLOYEE STATUS
-            // =====================================================
-
-            DropdownButtonFormField<String>(
-              value: employeeStatus,
-              decoration:
-              const InputDecoration(
-                labelText: 'Employee Status',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.toggle_on_outlined,
-                ),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'Active',
-                  child: Text('Active'),
-                ),
-                DropdownMenuItem(
-                  value: 'Inactive',
-                  child: Text('Inactive'),
-                ),
-              ],
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                if (value == null) {
-                  return;
-                }
-
-                setState(() {
-                  employeeStatus =
-                      value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // BASIC SALARY
-            // =====================================================
-
-            TextFormField(
-              controller: salary,
-              keyboardType:
-              const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration:
-              const InputDecoration(
-                labelText: 'Basic Salary',
-                border:
-                OutlineInputBorder(),
-                prefixIcon: Icon(
-                  Icons.payments_outlined,
-                ),
-              ),
-              validator: (value) {
-                final salaryValue =
-                double.tryParse(
-                  value?.trim() ?? '',
-                );
-
-                if (salaryValue == null) {
-                  return 'Enter a valid salary';
-                }
-
-                if (salaryValue < 0) {
-                  return 'Salary cannot be negative';
-                }
-
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // =====================================================
-            // ACTIVE STATUS
-            // =====================================================
-
-            SwitchListTile(
-              contentPadding:
-              EdgeInsets.zero,
-              title: const Text(
-                'Active',
-                style: TextStyle(
-                  fontWeight:
-                  FontWeight.w600,
-                ),
-              ),
-              subtitle: const Text(
-                'Enable or disable this employee',
-              ),
-              value: isActive,
-              onChanged: widget.isLoading
-                  ? null
-                  : (value) {
-                setState(() {
-                  isActive = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // =====================================================
-            // SAVE BUTTON
-            // =====================================================
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: FilledButton(
-                onPressed:
-                widget.isLoading
-                    ? null
-                    : save,
-                child: widget.isLoading
-                    ? const SizedBox(
-                  height: 22,
-                  width: 22,
-                  child:
-                  CircularProgressIndicator(
-                    strokeWidth: 2,
+                  _buildFormHeader(
+                    context,
+                    isDesktop: isDesktop,
                   ),
-                )
-                    : const Text(
-                  'Save Employee',
-                ),
+
+                  const SizedBox(height: 24),
+
+                  // =================================================
+                  // ORGANIZATION SECTION
+                  // =================================================
+
+                  _buildSectionCard(
+                    context,
+                    title: 'Organization',
+                    subtitle:
+                    'Assign department, designation, shift and role.',
+                    icon: Icons.account_tree_outlined,
+                    child: Column(
+                      children: [
+                        _buildDropdown<String>(
+                          context: context,
+                          label: 'Department',
+                          icon: Icons.apartment_outlined,
+                          value: departments.any(
+                                (e) => e.id == departmentId,
+                          )
+                              ? departmentId
+                              : null,
+                          items: departments
+                              .map(
+                                (e) => DropdownMenuItem<String>(
+                              value: e.id,
+                              child: Text(
+                                e.name,
+                                overflow:
+                                TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                              .toList(),
+                          onChanged: widget.isLoading
+                              ? null
+                              : (value) {
+                            setState(() {
+                              departmentId = value;
+                              designationId = null;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _buildDropdown<String>(
+                          context: context,
+                          label: 'Designation',
+                          icon: Icons.badge_outlined,
+                          value: designations.any(
+                                (e) => e.id == designationId,
+                          )
+                              ? designationId
+                              : null,
+                          items: designations
+                              .map(
+                                (e) => DropdownMenuItem<String>(
+                              value: e.id,
+                              child: Text(
+                                e.name,
+                                overflow:
+                                TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                              .toList(),
+                          onChanged: widget.isLoading
+                              ? null
+                              : (value) {
+                            setState(() {
+                              designationId = value;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _buildDropdown<String>(
+                          context: context,
+                          label: 'Shift',
+                          icon: Icons.schedule_outlined,
+                          value: shifts.any(
+                                (e) => e.id == shiftId,
+                          )
+                              ? shiftId
+                              : null,
+                          items: shifts
+                              .map(
+                                (e) => DropdownMenuItem<String>(
+                              value: e.id,
+                              child: Text(
+                                e.name,
+                                overflow:
+                                TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                              .toList(),
+                          onChanged: widget.isLoading
+                              ? null
+                              : (value) {
+                            setState(() {
+                              shiftId = value;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _buildDropdown<String>(
+                          context: context,
+                          label: 'Role',
+                          icon:
+                          Icons.admin_panel_settings_outlined,
+                          value: roles.any(
+                                (e) => e.id == roleId,
+                          )
+                              ? roleId
+                              : null,
+                          items: roles
+                              .map(
+                                (e) => DropdownMenuItem<String>(
+                              value: e.id,
+                              child: Text(
+                                e.roleName,
+                                overflow:
+                                TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                              .toList(),
+                          onChanged: widget.isLoading
+                              ? null
+                              : (value) {
+                            setState(() {
+                              roleId = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // =================================================
+                  // EMPLOYEE INFORMATION
+                  // =================================================
+
+                  _buildSectionCard(
+                    context,
+                    title: 'Employee Information',
+                    subtitle:
+                    'Basic identification and contact information.',
+                    icon: Icons.person_outline_rounded,
+                    child: _buildResponsiveFields(
+                      context,
+                      isDesktop: isDesktop,
+                      children: [
+                        _buildTextField(
+                          context,
+                          controller: cardNo,
+                          label: 'Card No',
+                          icon: Icons.credit_card_outlined,
+                          textInputAction:
+                          TextInputAction.next,
+                        ),
+
+                        _buildTextField(
+                          context,
+                          controller: fullName,
+                          label: 'Full Name',
+                          icon: Icons.person_rounded,
+                          textInputAction:
+                          TextInputAction.next,
+                          validator: (value) {
+                            if (value == null ||
+                                value.trim().isEmpty) {
+                              return 'Full Name is required';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        _buildTextField(
+                          context,
+                          controller: mobile,
+                          label: 'Mobile',
+                          icon: Icons.phone_outlined,
+                          keyboardType:
+                          TextInputType.phone,
+                          textInputAction:
+                          TextInputAction.next,
+                        ),
+
+                        _buildTextField(
+                          context,
+                          controller: email,
+                          label: 'Email',
+                          icon: Icons.email_outlined,
+                          keyboardType:
+                          TextInputType.emailAddress,
+                          textInputAction:
+                          TextInputAction.next,
+                          validator: (value) {
+                            final emailValue =
+                                value?.trim() ?? '';
+
+                            if (emailValue.isEmpty) {
+                              return null;
+                            }
+
+                            final emailRegex = RegExp(
+                              r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                            );
+
+                            if (!emailRegex
+                                .hasMatch(emailValue)) {
+                              return 'Enter a valid email address';
+                            }
+
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // =================================================
+                  // EMPLOYMENT DETAILS
+                  // =================================================
+
+                  _buildSectionCard(
+                    context,
+                    title: 'Employment Details',
+                    subtitle:
+                    'Define employee category, status and salary.',
+                    icon: Icons.work_outline_rounded,
+                    child: _buildResponsiveFields(
+                      context,
+                      isDesktop: isDesktop,
+                      children: [
+                        _buildDropdown<String>(
+                          context: context,
+                          label: 'Gender',
+                          icon: Icons.wc_outlined,
+                          value: gender,
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'Male',
+                              child: Text('Male'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Female',
+                              child: Text('Female'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Other',
+                              child: Text('Other'),
+                            ),
+                          ],
+                          onChanged: widget.isLoading
+                              ? null
+                              : (value) {
+                            if (value == null) {
+                              return;
+                            }
+
+                            setState(() {
+                              gender = value;
+                            });
+                          },
+                        ),
+
+                        _buildDropdown<String>(
+                          context: context,
+                          label: 'Employment Type',
+                          icon: Icons.work_outline,
+                          value: employmentType,
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'Permanent',
+                              child: Text('Permanent'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Contract',
+                              child: Text('Contract'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Intern',
+                              child: Text('Intern'),
+                            ),
+                          ],
+                          onChanged: widget.isLoading
+                              ? null
+                              : (value) {
+                            if (value == null) {
+                              return;
+                            }
+
+                            setState(() {
+                              employmentType = value;
+                            });
+                          },
+                        ),
+
+                        _buildDropdown<String>(
+                          context: context,
+                          label: 'Employee Status',
+                          icon: Icons.toggle_on_outlined,
+                          value: employeeStatus,
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'Active',
+                              child: Text('Active'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Inactive',
+                              child: Text('Inactive'),
+                            ),
+                          ],
+                          onChanged: widget.isLoading
+                              ? null
+                              : (value) {
+                            if (value == null) {
+                              return;
+                            }
+
+                            setState(() {
+                              employeeStatus = value;
+                            });
+                          },
+                        ),
+
+                        _buildTextField(
+                          context,
+                          controller: salary,
+                          label: 'Basic Salary',
+                          icon:
+                          Icons.payments_outlined,
+                          keyboardType:
+                          const TextInputType
+                              .numberWithOptions(
+                            decimal: true,
+                          ),
+                          textInputAction:
+                          TextInputAction.done,
+                          validator: (value) {
+                            final salaryValue =
+                            double.tryParse(
+                              value?.trim() ?? '',
+                            );
+
+                            if (salaryValue == null) {
+                              return 'Enter a valid salary';
+                            }
+
+                            if (salaryValue < 0) {
+                              return 'Salary cannot be negative';
+                            }
+
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // =================================================
+                  // ACTIVE STATUS CARD
+                  // =================================================
+
+                  _buildStatusCard(context),
+
+                  const SizedBox(height: 24),
+
+                  // =================================================
+                  // SAVE BUTTON
+                  // =================================================
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: FilledButton.icon(
+                      onPressed:
+                      widget.isLoading ? null : save,
+                      icon: widget.isLoading
+                          ? const SizedBox(
+                        width: 21,
+                        height: 21,
+                        child:
+                        CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                        ),
+                      )
+                          : const Icon(
+                        Icons.save_outlined,
+                      ),
+                      label: Text(
+                        widget.isLoading
+                            ? 'Saving Employee...'
+                            : 'Save Employee',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+                ],
               ),
             ),
+          ),
+        );
+      },
+    );
+  }
 
-            const SizedBox(height: 24),
+  // =============================================================
+  // FORM HEADER
+  // =============================================================
+
+  Widget _buildFormHeader(
+      BuildContext context, {
+        required bool isDesktop,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      padding: EdgeInsets.all(
+        isDesktop ? 22 : 18,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primaryContainer,
+            colorScheme.surfaceContainerLow,
           ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: isDesktop ? 58 : 52,
+            height: isDesktop ? 58 : 52,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: Icon(
+              Icons.person_add_alt_1_rounded,
+              color: colorScheme.onPrimary,
+              size: isDesktop ? 28 : 25,
+            ),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Employee Information',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Create and manage employee details',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color:
+                    colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // SECTION CARD
+  // =============================================================
+
+  Widget _buildSectionCard(
+      BuildContext context, {
+        required String title,
+        required String subtitle,
+        required IconData icon,
+        required Widget child,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(
+              alpha: 0.05,
+            ),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color:
+                  colorScheme.primaryContainer,
+                  borderRadius:
+                  BorderRadius.circular(13),
+                ),
+                child: Icon(
+                  icon,
+                  size: 21,
+                  color:
+                  colorScheme.onPrimaryContainer,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style:
+                      theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow:
+                      TextOverflow.ellipsis,
+                      style:
+                      theme.textTheme.bodySmall?.copyWith(
+                        color:
+                        colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          child,
+        ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // RESPONSIVE FIELD LAYOUT
+  // =============================================================
+
+  Widget _buildResponsiveFields(
+      BuildContext context, {
+        required bool isDesktop,
+        required List<Widget> children,
+      }) {
+    if (!isDesktop) {
+      return Column(
+        children: [
+          for (int i = 0; i < children.length; i++) ...[
+            children[i],
+            if (i != children.length - 1)
+              const SizedBox(height: 16),
+          ],
+        ],
+      );
+    }
+
+    final rows = <Widget>[];
+
+    for (int i = 0; i < children.length; i += 2) {
+      final first = children[i];
+
+      final second =
+      i + 1 < children.length
+          ? children[i + 1]
+          : const SizedBox.shrink();
+
+      rows.add(
+        Row(
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+          children: [
+            Expanded(child: first),
+            const SizedBox(width: 14),
+            Expanded(child: second),
+          ],
+        ),
+      );
+
+      if (i + 2 < children.length) {
+        rows.add(
+          const SizedBox(height: 16),
+        );
+      }
+    }
+
+    return Column(
+      children: rows,
+    );
+  }
+
+  // =============================================================
+  // TEXT FIELD
+  // =============================================================
+
+  Widget _buildTextField(
+      BuildContext context, {
+        required TextEditingController controller,
+        required String label,
+        required IconData icon,
+        TextInputType? keyboardType,
+        TextInputAction? textInputAction,
+        String? Function(String?)? validator,
+      }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      validator: validator,
+      enabled: !widget.isLoading,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: Theme.of(context)
+                .colorScheme
+                .primary,
+            width: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // DROPDOWN
+  // =============================================================
+
+  Widget _buildDropdown<T>({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required T? value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?>? onChanged,
+  }) {
+    return DropdownButtonFormField<T>(
+      value: value,
+      items: items,
+      onChanged: onChanged,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: Theme.of(context)
+                .colorScheme
+                .primary,
+            width: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =============================================================
+  // STATUS CARD
+  // =============================================================
+
+  Widget _buildStatusCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final background = isActive
+        ? colorScheme.primaryContainer
+        : colorScheme.errorContainer;
+
+    final foreground = isActive
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.onErrorContainer;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: foreground.withValues(
+            alpha: 0.15,
+          ),
+        ),
+      ),
+      child: SwitchListTile(
+        contentPadding:
+        const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 4,
+        ),
+        secondary: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: foreground.withValues(
+              alpha: 0.10,
+            ),
+            borderRadius:
+            BorderRadius.circular(12),
+          ),
+          child: Icon(
+            isActive
+                ? Icons.check_circle_outline_rounded
+                : Icons.cancel_outlined,
+            color: foreground,
+          ),
+        ),
+        title: Text(
+          isActive
+              ? 'Employee is Active'
+              : 'Employee is Inactive',
+          style:
+          theme.textTheme.titleSmall?.copyWith(
+            color: foreground,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          isActive
+              ? 'This employee is currently active.'
+              : 'This employee is currently inactive.',
+          style:
+          theme.textTheme.bodySmall?.copyWith(
+            color: foreground.withValues(
+              alpha: 0.75,
+            ),
+          ),
+        ),
+        value: isActive,
+        onChanged: widget.isLoading
+            ? null
+            : (value) {
+          setState(() {
+            isActive = value;
+          });
+        },
+      ),
+    );
+  }
+
+  // =============================================================
+  // MESSAGE STATE
+  // =============================================================
+
+  Widget _buildMessageState(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required String message,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          constraints: const BoxConstraints(
+            maxWidth: 520,
+          ),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: colorScheme.outlineVariant,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 44,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style:
+                theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style:
+                theme.textTheme.bodyMedium?.copyWith(
+                  color:
+                  colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

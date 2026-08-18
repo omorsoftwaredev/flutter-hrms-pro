@@ -8,7 +8,7 @@
 import 'package:flutter_hrms_pro/features/supervisor/presentation/pages/supervisor_department_assignment_management_page.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/company_dashboard/pages/company_dashboard_page.dart';
+import '../../features/dashboard/pages/company_dashboard_page.dart';
 
 import '../../features/department/domain/entities/department_entity.dart';
 import '../../features/department/presentation/pages/department_form_page.dart';

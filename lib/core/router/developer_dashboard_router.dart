@@ -15,7 +15,7 @@ import '../../features/company_account/domain/entities/company_account_entity.da
 import '../../features/company_account/presentation/pages/company_account_form_page.dart';
 import '../../features/company_account/presentation/pages/company_account_list_page.dart';
 
-import '../../features/developer_dashboard/pages/developer_dashboard_page.dart';
+import '../../features/dashboard/pages/developer_dashboard_page.dart';
 import 'route_names.dart';
 import 'route_paths.dart';
 

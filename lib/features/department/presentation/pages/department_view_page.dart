@@ -30,7 +30,6 @@ class DepartmentViewPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
-
         title: Text(
           'Department Details',
           style: theme.textTheme.titleLarge?.copyWith(
@@ -50,22 +49,108 @@ class DepartmentViewPage extends StatelessWidget {
               constraints,
               ) {
             final width = constraints.maxWidth;
+            final height = constraints.maxHeight;
 
-            // ---------------------------------------------------
-            // RESPONSIVE BREAKPOINTS
-            // ---------------------------------------------------
-
+            final bool isMobile = width < 600;
+            final bool isTablet = width >= 600 && width < 1000;
             final bool isDesktop = width >= 1000;
-            final bool isTablet = width >= 600;
 
-            final double horizontalPadding = isDesktop
-                ? 32
+            final double horizontalPadding = isMobile
+                ? 10
                 : isTablet
-                ? 24
-                : 14;
+                ? 20
+                : 32;
+
+            // ===================================================
+            // MOBILE / TABLET
+            //
+            // 7 PARTS
+            // HEADER  = 2
+            // DETAILS = 5
+            //
+            // ===================================================
+
+            if (!isDesktop) {
+              final double availableHeight =
+              (height - 40 - 32).clamp(0, double.infinity);
+
+              final double onePart =
+                  availableHeight / 7;
+
+              final double headerHeight =
+                  onePart * 2;
+
+              final double detailsHeight =
+                  onePart * 5;
+
+              return SingleChildScrollView(
+                physics:
+                const AlwaysScrollableScrollPhysics(),
+
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  20,
+                  horizontalPadding,
+                  32,
+                ),
+
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 1000,
+                    ),
+
+                    child: Column(
+                      children: [
+                        // =========================================
+                        // HEADER
+                        // 2 PARTS
+                        // =========================================
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: headerHeight,
+                          child: _buildProfileCard(
+                            context,
+                            isMobile: isMobile,
+                            isTablet: isTablet,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // =========================================
+                        // DETAILS
+                        // 5 PARTS
+                        // =========================================
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: detailsHeight,
+                          child: _buildDetailsCard(
+                            context,
+                            isMobile: isMobile,
+                            isTablet: isTablet,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            // ===================================================
+            // DESKTOP
+            //
+            // PROFILE = 4
+            // DETAILS = 6
+            //
+            // ===================================================
 
             return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics:
+              const AlwaysScrollableScrollPhysics(),
 
               padding: EdgeInsets.fromLTRB(
                 horizontalPadding,
@@ -80,11 +165,7 @@ class DepartmentViewPage extends StatelessWidget {
                     maxWidth: 1000,
                   ),
 
-                  child: isDesktop
-                      ? _buildDesktopLayout(
-                    context,
-                  )
-                      : _buildMobileTabletLayout(
+                  child: _buildDesktopLayout(
                     context,
                   ),
                 ),
@@ -97,33 +178,6 @@ class DepartmentViewPage extends StatelessWidget {
   }
 
   // =============================================================
-  // MOBILE / TABLET LAYOUT
-  // =============================================================
-
-  Widget _buildMobileTabletLayout(
-      BuildContext context,
-      ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // =======================================================
-        // PROFILE CARD
-        // =======================================================
-
-        _buildProfileCard(context),
-
-        const SizedBox(height: 16),
-
-        // =======================================================
-        // DETAILS CARD
-        // =======================================================
-
-        _buildDetailsCard(context),
-      ],
-    );
-  }
-
-  // =============================================================
   // DESKTOP LAYOUT
   // =============================================================
 
@@ -131,29 +185,26 @@ class DepartmentViewPage extends StatelessWidget {
       BuildContext context,
       ) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
       children: [
-        // =======================================================
-        // LEFT - PROFILE
-        // =======================================================
-
         Expanded(
           flex: 4,
           child: _buildProfileCard(
             context,
+            isMobile: false,
+            isTablet: false,
           ),
         ),
 
         const SizedBox(width: 20),
 
-        // =======================================================
-        // RIGHT - DETAILS
-        // =======================================================
-
         Expanded(
           flex: 6,
           child: _buildDetailsCard(
             context,
+            isMobile: false,
+            isTablet: false,
           ),
         ),
       ],
@@ -165,80 +216,272 @@ class DepartmentViewPage extends StatelessWidget {
   // =============================================================
 
   Widget _buildProfileCard(
-      BuildContext context,
-      ) {
+      BuildContext context, {
+        required bool isMobile,
+        required bool isTablet,
+      }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return AppCard(
       child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ===================================================
-            // DEPARTMENT ICON
-            // ===================================================
+        padding: EdgeInsets.all(
+          isMobile
+              ? 8
+              : isTablet
+              ? 12
+              : 18,
+        ),
 
-            Container(
-              width: 82,
-              height: 82,
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.apartment_rounded,
-                size: 42,
-                color: colorScheme.onPrimaryContainer,
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            // ===================================================
-            // DEPARTMENT NAME
-            // ===================================================
-
-            Text(
-              department.name,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // ===================================================
-            // SUBTITLE
-            // ===================================================
-
-            Text(
-              'Department',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            // ===================================================
-            // STATUS
-            // ===================================================
-
-            AppStatusChip(
-              isActive: department.isActive,
-            ),
-
-            const SizedBox(height: 12),
-          ],
+        child: isMobile || isTablet
+            ? _buildCompactProfile(
+          context,
+          isMobile: isMobile,
+          isTablet: isTablet,
+        )
+            : _buildDesktopProfile(
+          context,
         ),
       ),
+    );
+  }
+
+  // =============================================================
+  // MOBILE / TABLET PROFILE
+  // =============================================================
+
+  Widget _buildCompactProfile(
+      BuildContext context, {
+        required bool isMobile,
+        required bool isTablet,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return LayoutBuilder(
+      builder: (
+          context,
+          constraints,
+          ) {
+        final double availableHeight =
+            constraints.maxHeight;
+
+        // -------------------------------------------------------
+        // Adaptive sizes
+        // -------------------------------------------------------
+
+        final double iconSize = isMobile
+            ? (availableHeight < 150 ? 42 : 52)
+            : (availableHeight < 180 ? 50 : 60);
+
+        final double iconContainerSize =
+            iconSize + 8;
+
+        final double titleFontSize =
+        isMobile ? 17 : 20;
+
+        return Center(
+          child: SingleChildScrollView(
+            physics:
+            const NeverScrollableScrollPhysics(),
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment:
+              MainAxisAlignment.center,
+
+              children: [
+                // =================================================
+                // ICON
+                // =================================================
+
+                Container(
+                  width: iconContainerSize,
+                  height: iconContainerSize,
+
+                  decoration: BoxDecoration(
+                    color:
+                    colorScheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+
+                  child: Icon(
+                    Icons.apartment_rounded,
+                    size: iconSize,
+                    color:
+                    colorScheme.onPrimaryContainer,
+                  ),
+                ),
+
+                SizedBox(
+                  height: isMobile ? 6 : 8,
+                ),
+
+                // =================================================
+                // NAME
+                // =================================================
+
+                Text(
+                  department.name,
+
+                  textAlign: TextAlign.center,
+
+                  maxLines: 2,
+
+                  overflow:
+                  TextOverflow.ellipsis,
+
+                  style: theme
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(
+                    fontSize: titleFontSize,
+                    fontWeight:
+                    FontWeight.w700,
+                    color:
+                    colorScheme.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                // =================================================
+                // TYPE
+                // =================================================
+
+                Text(
+                  'Department',
+
+                  textAlign:
+                  TextAlign.center,
+
+                  maxLines: 1,
+
+                  overflow:
+                  TextOverflow.ellipsis,
+
+                  style: theme
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                    color: colorScheme
+                        .onSurfaceVariant,
+                  ),
+                ),
+
+                SizedBox(
+                  height: isMobile ? 5 : 7,
+                ),
+
+                // =================================================
+                // STATUS
+                // =================================================
+
+                AppStatusChip(
+                  isActive:
+                  department.isActive,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // =============================================================
+  // DESKTOP PROFILE
+  // =============================================================
+
+  Widget _buildDesktopProfile(
+      BuildContext context,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // =======================================================
+        // ICON
+        // =======================================================
+
+        Container(
+          width: 82,
+          height: 82,
+
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer,
+            shape: BoxShape.circle,
+          ),
+
+          child: Icon(
+            Icons.apartment_rounded,
+            size: 42,
+            color:
+            colorScheme.onPrimaryContainer,
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        // =======================================================
+        // NAME
+        // =======================================================
+
+        Text(
+          department.name,
+
+          textAlign: TextAlign.center,
+
+          maxLines: 3,
+
+          overflow:
+          TextOverflow.ellipsis,
+
+          style: theme
+              .textTheme
+              .headlineSmall
+              ?.copyWith(
+            fontWeight: FontWeight.w700,
+            color:
+            colorScheme.onSurface,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // =======================================================
+        // TYPE
+        // =======================================================
+
+        Text(
+          'Department',
+
+          textAlign: TextAlign.center,
+
+          style: theme
+              .textTheme
+              .bodyMedium
+              ?.copyWith(
+            color:
+            colorScheme.onSurfaceVariant,
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        // =======================================================
+        // STATUS
+        // =======================================================
+
+        AppStatusChip(
+          isActive:
+          department.isActive,
+        ),
+
+        const SizedBox(height: 12),
+      ],
     );
   }
 
@@ -247,70 +490,132 @@ class DepartmentViewPage extends StatelessWidget {
   // =============================================================
 
   Widget _buildDetailsCard(
-      BuildContext context,
-      ) {
+      BuildContext context, {
+        required bool isMobile,
+        required bool isTablet,
+      }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return AppCard(
-      child: Padding(
-        padding: const EdgeInsets.all(4),
+      child: SingleChildScrollView(
+        physics:
+        const AlwaysScrollableScrollPhysics(),
+
+        padding:
+        const EdgeInsets.all(4),
+
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+
           children: [
             // ===================================================
             // SECTION HEADER
             // ===================================================
 
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                12,
+              padding: EdgeInsets.fromLTRB(
+                isMobile ? 8 : 12,
                 8,
-                12,
+                isMobile ? 8 : 12,
                 10,
               ),
+
               child: Row(
                 children: [
+                  // =================================================
+                  // INFO ICON
+                  // =================================================
+
                   Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(11),
+                    width: isMobile
+                        ? 36
+                        : 40,
+
+                    height: isMobile
+                        ? 36
+                        : 40,
+
+                    decoration:
+                    BoxDecoration(
+                      color: colorScheme
+                          .primaryContainer,
+
+                      borderRadius:
+                      BorderRadius
+                          .circular(11),
                     ),
+
                     child: Icon(
-                      Icons.info_outline_rounded,
-                      color: colorScheme.onPrimaryContainer,
-                      size: 21,
+                      Icons
+                          .info_outline_rounded,
+
+                      color: colorScheme
+                          .onPrimaryContainer,
+
+                      size: isMobile
+                          ? 19
+                          : 21,
                     ),
                   ),
 
-                  const SizedBox(width: 11),
+                  const SizedBox(
+                    width: 10,
+                  ),
+
+                  // =================================================
+                  // TITLE
+                  // =================================================
 
                   Expanded(
                     child: Column(
                       crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      CrossAxisAlignment
+                          .start,
+
                       children: [
                         Text(
                           'Department Information',
-                          style:
-                          theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
+
+                          maxLines: 1,
+
+                          overflow:
+                          TextOverflow
+                              .ellipsis,
+
+                          style: theme
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                            fontWeight:
+                            FontWeight
+                                .w700,
+
+                            color: colorScheme
+                                .onSurface,
                           ),
                         ),
 
-                        const SizedBox(height: 2),
+                        const SizedBox(
+                          height: 2,
+                        ),
 
                         Text(
                           'Basic information about this department',
+
                           maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                          theme.textTheme.bodySmall?.copyWith(
-                            color:
-                            colorScheme.onSurfaceVariant,
+
+                          overflow:
+                          TextOverflow
+                              .ellipsis,
+
+                          style: theme
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                            color: colorScheme
+                                .onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -320,9 +625,14 @@ class DepartmentViewPage extends StatelessWidget {
               ),
             ),
 
+            // ===================================================
+            // DIVIDER
+            // ===================================================
+
             Divider(
               height: 1,
-              color: colorScheme.outlineVariant,
+              color:
+              colorScheme.outlineVariant,
             ),
 
             const SizedBox(height: 4),
@@ -332,9 +642,11 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.business_rounded,
+              icon:
+              Icons.business_rounded,
               title: 'Company ID',
-              value: department.companyId,
+              value:
+              department.companyId,
             ),
 
             // ===================================================
@@ -342,9 +654,11 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.apartment_rounded,
+              icon:
+              Icons.apartment_rounded,
               title: 'Department Name',
-              value: department.name,
+              value:
+              department.name,
             ),
 
             // ===================================================
@@ -352,9 +666,14 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.description_outlined,
+              icon:
+              Icons.description_outlined,
               title: 'Description',
-              value: department.description,
+              value:
+              department.description
+                  .isEmpty
+                  ? '-'
+                  : department.description,
             ),
 
             // ===================================================
@@ -362,9 +681,13 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.phone_outlined,
+              icon:
+              Icons.phone_outlined,
               title: 'Phone',
-              value: department.phone,
+              value:
+              department.phone.isEmpty
+                  ? '-'
+                  : department.phone,
             ),
 
             // ===================================================
@@ -372,9 +695,13 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.email_outlined,
+              icon:
+              Icons.email_outlined,
               title: 'Email',
-              value: department.email,
+              value:
+              department.email.isEmpty
+                  ? '-'
+                  : department.email,
             ),
 
             // ===================================================
@@ -382,9 +709,14 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.location_on_outlined,
+              icon:
+              Icons.location_on_outlined,
               title: 'Location',
-              value: department.location,
+              value:
+              department.location
+                  .isEmpty
+                  ? '-'
+                  : department.location,
             ),
 
             // ===================================================
@@ -392,9 +724,12 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.access_time_rounded,
+              icon:
+              Icons.access_time_rounded,
               title: 'Created At',
-              value: department.createdAt.toString(),
+              value:
+              department.createdAt
+                  .toString(),
             ),
 
             // ===================================================
@@ -402,9 +737,12 @@ class DepartmentViewPage extends StatelessWidget {
             // ===================================================
 
             AppDetailTile(
-              icon: Icons.update_rounded,
+              icon:
+              Icons.update_rounded,
               title: 'Updated At',
-              value: department.updatedAt.toString(),
+              value:
+              department.updatedAt
+                  .toString(),
             ),
 
             const SizedBox(height: 8),

@@ -11,29 +11,44 @@ class EmployeeInfoCard extends StatelessWidget {
   });
 
   Widget _item(
-      String title,
-      String value,
-      ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
+      BuildContext context, {
+        required String title,
+        required String value,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           SizedBox(
-            width: 120,
+            width: 125,
             child: Text(
               title,
-              style: const TextStyle(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
-
-          const Text(": "),
-
+          Text(
+            ': ',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
           Expanded(
             child: Text(
               value,
+              textAlign: TextAlign.end,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
         ],
@@ -43,64 +58,102 @@ class EmployeeInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final size = MediaQuery.sizeOf(context);
+
+    final bool isDesktop = size.width >= 900;
+    final bool isTablet = size.width >= 600 && size.width < 900;
+
+    final double padding = isDesktop
+        ? 24
+        : isTablet
+        ? 20
+        : 16;
 
     return Card(
-
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       child: Padding(
-
-        padding: const EdgeInsets.all(16),
-
+        padding: EdgeInsets.all(padding),
         child: Column(
-
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
-
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            const Row(
-
+            // =========================================================
+            // Header
+            // =========================================================
+            Row(
               children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(
+                      alpha: 0.10,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.person_outline_rounded,
+                    color: colorScheme.primary,
+                    size: 22,
+                  ),
+                ),
 
-                Icon(Icons.person),
+                const SizedBox(width: 12),
 
-                SizedBox(width: 8),
-
-                Text(
-                  "Employee Information",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight:
-                    FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'Employee Information',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
             ),
 
-            const Divider(height: 24),
+            const SizedBox(height: 8),
 
+            Divider(
+              height: 20,
+              color: colorScheme.outlineVariant,
+            ),
+
+            const SizedBox(height: 4),
+
+            // =========================================================
+            // Employee Information
+            // =========================================================
             _item(
-              "Employee ID",
-              attendance.employeeId ?? "--",
+              context,
+              title: 'Employee ID',
+              value: attendance.employeeId ?? '--',
             ),
 
             _item(
-              "Department",
-              attendance.departmentId ?? "--",
+              context,
+              title: 'Department',
+              value: attendance.departmentId ?? '--',
             ),
 
             _item(
-              "Designation",
-              attendance.designationId ?? "--",
+              context,
+              title: 'Designation',
+              value: attendance.designationId ?? '--',
             ),
 
             _item(
-              "Shift",
-              attendance.shiftName ?? "--",
+              context,
+              title: 'Shift',
+              value: attendance.shiftName ?? '--',
             ),
 
             _item(
-              "Attendance No",
-              attendance.attendanceNo,
+              context,
+              title: 'Attendance No',
+              value: attendance.attendanceNo,
             ),
           ],
         ),

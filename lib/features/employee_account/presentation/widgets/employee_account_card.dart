@@ -31,44 +31,90 @@ class EmployeeAccountCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final isWide = MediaQuery.sizeOf(context).width >= 600;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
+    // =============================================================
+    // RESPONSIVE
+    // =============================================================
+
+    final bool isCompact = screenWidth < 380;
+    final bool isWide = screenWidth >= 700;
+
+    final double cardPadding = isCompact
+        ? 14
+        : isWide
+        ? 20
+        : 16;
+
+    final double avatarRadius = isCompact
+        ? 23
+        : isWide
+        ? 29
+        : 26;
+
+    final double headerSpacing = isCompact ? 10 : 13;
+
+    final double sectionSpacing = isCompact ? 14 : 18;
+
+    // =============================================================
+    // EMPLOYEE NAME
+    // =============================================================
 
     final employeeName =
     account.employeeName?.trim().isNotEmpty == true
         ? account.employeeName!.trim()
         : 'Unknown Employee';
 
+    // =============================================================
+    // USERNAME
+    // =============================================================
+
     final username =
     account.username.trim().isEmpty
         ? '-'
         : account.username.trim();
 
-    final avatarText =
-    username == '-'
+    // =============================================================
+    // AVATAR TEXT
+    // =============================================================
+
+    final avatarText = username == '-'
         ? '?'
         : username.substring(0, 1).toUpperCase();
 
+    // =============================================================
+    // STATUS
+    // =============================================================
+
+    final bool isActive = account.isActive;
+    final bool canLogin = account.canLogin;
+    final bool isLocked = account.isLocked;
+
+    // =============================================================
+    // CARD
+    // =============================================================
+
     return AppCard(
       child: Padding(
-        padding: EdgeInsets.all(
-          isWide ? 20 : 16,
-        ),
+        padding: EdgeInsets.all(cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // =====================================================
+            // =======================================================
             // HEADER
-            // =====================================================
+            // =======================================================
 
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // ===================================================
+                // AVATAR
+                // ===================================================
+
                 CircleAvatar(
-                  radius: isWide ? 28 : 26,
-                  backgroundColor:
-                  colorScheme.primaryContainer,
-                  foregroundColor:
-                  colorScheme.onPrimaryContainer,
+                  radius: avatarRadius,
+                  backgroundColor: colorScheme.primaryContainer,
+                  foregroundColor: colorScheme.onPrimaryContainer,
                   child: Text(
                     avatarText,
                     style: textTheme.titleMedium?.copyWith(
@@ -77,35 +123,47 @@ class EmployeeAccountCard extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(
-                  width: isWide ? 14 : 12,
-                ),
+                SizedBox(width: headerSpacing),
+
+                // ===================================================
+                // EMPLOYEE + USERNAME
+                // ===================================================
 
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         employeeName,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style:
-                        textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.1,
                         ),
                       ),
 
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
 
-                      Text(
-                        username,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.bodySmall?.copyWith(
-                          color:
-                          colorScheme.onSurfaceVariant,
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.alternate_email_rounded,
+                            size: 14,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              username,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -113,14 +171,15 @@ class EmployeeAccountCard extends StatelessWidget {
 
                 const SizedBox(width: 4),
 
-                // =================================================
+                // ===================================================
                 // MENU
-                // =================================================
+                // ===================================================
 
                 PopupMenuButton<String>(
                   tooltip: 'Account actions',
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.more_vert_rounded,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   onSelected: (value) {
                     switch (value) {
@@ -150,9 +209,9 @@ class EmployeeAccountCard extends StatelessWidget {
                     }
                   },
                   itemBuilder: (_) => [
-                    // ===========================================
+                    // =================================================
                     // VIEW
-                    // ===========================================
+                    // =================================================
 
                     const PopupMenuItem<String>(
                       value: 'view',
@@ -165,9 +224,9 @@ class EmployeeAccountCard extends StatelessWidget {
                       ),
                     ),
 
-                    // ===========================================
+                    // =================================================
                     // EDIT
-                    // ===========================================
+                    // =================================================
 
                     const PopupMenuItem<String>(
                       value: 'edit',
@@ -180,72 +239,72 @@ class EmployeeAccountCard extends StatelessWidget {
                       ),
                     ),
 
-                    // ===========================================
-                    // ACTIVE / DEACTIVE
-                    // ===========================================
+                    // =================================================
+                    // ACTIVE
+                    // =================================================
 
                     PopupMenuItem<String>(
                       value: 'active',
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
-                          account.isActive
+                          isActive
                               ? Icons.toggle_on_rounded
                               : Icons.toggle_off_rounded,
                         ),
                         title: Text(
-                          account.isActive
+                          isActive
                               ? 'Deactivate'
                               : 'Activate',
                         ),
                       ),
                     ),
 
-                    // ===========================================
+                    // =================================================
                     // LOGIN
-                    // ===========================================
+                    // =================================================
 
                     PopupMenuItem<String>(
                       value: 'login',
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
-                          account.canLogin
+                          canLogin
                               ? Icons.login_rounded
                               : Icons.login_outlined,
                         ),
                         title: Text(
-                          account.canLogin
+                          canLogin
                               ? 'Disable Login'
                               : 'Enable Login',
                         ),
                       ),
                     ),
 
-                    // ===========================================
+                    // =================================================
                     // LOCK
-                    // ===========================================
+                    // =================================================
 
                     PopupMenuItem<String>(
                       value: 'lock',
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
-                          account.isLocked
+                          isLocked
                               ? Icons.lock_open_rounded
                               : Icons.lock_outline_rounded,
                         ),
                         title: Text(
-                          account.isLocked
+                          isLocked
                               ? 'Unlock'
                               : 'Lock',
                         ),
                       ),
                     ),
 
-                    // ===========================================
+                    // =================================================
                     // DELETE
-                    // ===========================================
+                    // =================================================
 
                     PopupMenuItem<String>(
                       value: 'delete',
@@ -268,18 +327,15 @@ class EmployeeAccountCard extends StatelessWidget {
               ],
             ),
 
-            SizedBox(
-              height: isWide ? 20 : 16,
-            ),
+            SizedBox(height: sectionSpacing),
 
-            // =====================================================
-            // INFORMATION
-            // =====================================================
+            // =======================================================
+            // INFORMATION SECTION
+            // =======================================================
 
             if (isWide)
               Row(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Column(
@@ -294,7 +350,6 @@ class EmployeeAccountCard extends StatelessWidget {
                               ? account.employeeName!
                               : account.employeeId,
                         ),
-
                         _infoRow(
                           context,
                           Icons.business_outlined,
@@ -309,7 +364,7 @@ class EmployeeAccountCard extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 24),
 
                   Expanded(
                     child: Column(
@@ -324,7 +379,6 @@ class EmployeeAccountCard extends StatelessWidget {
                               ? account.departmentName!
                               : account.departmentId,
                         ),
-
                         _infoRow(
                           context,
                           Icons.account_circle_outlined,
@@ -380,71 +434,86 @@ class EmployeeAccountCard extends StatelessWidget {
               ),
 
             SizedBox(
-              height: isWide ? 12 : 8,
+              height: isCompact ? 6 : 10,
             ),
 
-            // =====================================================
+            // =======================================================
+            // DIVIDER
+            // =======================================================
+
+            Divider(
+              height: 1,
+              color: colorScheme.outlineVariant.withValues(
+                alpha: 0.55,
+              ),
+            ),
+
+            SizedBox(
+              height: isCompact ? 12 : 16,
+            ),
+
+            // =======================================================
             // STATUS CHIPS
-            // =====================================================
+            // =======================================================
 
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                // =================================================
+                // ===================================================
                 // ACTIVE
-                // =================================================
+                // ===================================================
 
                 _statusChip(
                   context: context,
-                  icon: account.isActive
+                  icon: isActive
                       ? Icons.check_circle_outline_rounded
                       : Icons.cancel_outlined,
-                  label: account.isActive
+                  label: isActive
                       ? 'Active'
                       : 'Inactive',
-                  color: account.isActive
+                  color: isActive
                       ? colorScheme.primary
                       : colorScheme.error,
                 ),
 
-                // =================================================
+                // ===================================================
                 // LOGIN
-                // =================================================
+                // ===================================================
 
                 _statusChip(
                   context: context,
-                  icon: account.canLogin
+                  icon: canLogin
                       ? Icons.login_rounded
                       : Icons.login_outlined,
-                  label: account.canLogin
+                  label: canLogin
                       ? 'Login Enabled'
                       : 'Login Disabled',
-                  color: account.canLogin
+                  color: canLogin
                       ? colorScheme.secondary
                       : colorScheme.tertiary,
                 ),
 
-                // =================================================
+                // ===================================================
                 // LOCK
-                // =================================================
+                // ===================================================
 
                 _statusChip(
                   context: context,
-                  icon: account.isLocked
+                  icon: isLocked
                       ? Icons.lock_outline_rounded
                       : Icons.lock_open_outlined,
-                  label: account.isLocked
+                  label: isLocked
                       ? 'Locked'
                       : 'Unlocked',
-                  color: account.isLocked
+                  color: isLocked
                       ? colorScheme.error
                       : colorScheme.primary,
                 ),
 
-                // =================================================
+                // ===================================================
                 // FORCE PASSWORD CHANGE
-                // =================================================
+                // ===================================================
 
                 if (account.forceChangePassword)
                   _statusChip(
@@ -477,27 +546,47 @@ class EmployeeAccountCard extends StatelessWidget {
     text.trim().isEmpty ? '-' : text.trim();
 
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: 10,
-      ),
+      padding: const EdgeInsets.only(bottom: 11),
       child: Row(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: colorScheme.onSurfaceVariant,
+          // =========================================================
+          // ICON CONTAINER
+          // =========================================================
+
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              icon,
+              size: 17,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
 
           const SizedBox(width: 9),
 
+          // =========================================================
+          // VALUE
+          // =========================================================
+
           Expanded(
-            child: Text(
-              value,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+              ),
             ),
           ),
         ],
@@ -517,30 +606,38 @@ class EmployeeAccountCard extends StatelessWidget {
   }) {
     final theme = Theme.of(context);
 
-    return Chip(
-      avatar: Icon(
-        icon,
-        size: 17,
-        color: color,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
       ),
-      label: Text(
-        label,
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.22),
         ),
       ),
-      backgroundColor: color.withValues(
-        alpha: 0.10,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: color,
+          ),
+
+          const SizedBox(width: 6),
+
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
-      side: BorderSide(
-        color: color.withValues(
-          alpha: 0.20,
-        ),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize:
-      MaterialTapTargetSize.shrinkWrap,
     );
   }
 }

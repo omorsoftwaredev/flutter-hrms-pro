@@ -8,7 +8,6 @@ class EmployeeEntity {
     // =============================================================
     // COMPANY / ORGANIZATION
     // =============================================================
-
     this.companyId,
     this.departmentId,
     this.designationId,
@@ -18,16 +17,11 @@ class EmployeeEntity {
     // =============================================================
     // EMPLOYEE IDENTIFICATION
     // =============================================================
-
-    this.employeeCode,
     this.cardNo,
 
     // =============================================================
     // BASIC INFORMATION
     // =============================================================
-
-    required this.firstName,
-    this.lastName,
     required this.fullName,
 
     this.gender,
@@ -36,7 +30,6 @@ class EmployeeEntity {
     // =============================================================
     // PERSONAL INFORMATION
     // =============================================================
-
     this.bloodGroup,
     this.religion,
     this.nationality,
@@ -45,7 +38,6 @@ class EmployeeEntity {
     // =============================================================
     // CONTACT INFORMATION
     // =============================================================
-
     this.mobile,
     this.email,
 
@@ -55,14 +47,12 @@ class EmployeeEntity {
     // =============================================================
     // ADDRESS
     // =============================================================
-
     this.presentAddress,
     this.permanentAddress,
 
     // =============================================================
     // EMPLOYMENT INFORMATION
     // =============================================================
-
     this.joiningDate,
     this.confirmationDate,
 
@@ -72,54 +62,46 @@ class EmployeeEntity {
     // =============================================================
     // IDENTIFICATION DOCUMENTS
     // =============================================================
-
     this.nidNo,
     this.passportNo,
 
     // =============================================================
     // SALARY
     // =============================================================
-
     this.basicSalary = 0,
 
     // =============================================================
     // MEDIA
     // =============================================================
-
     this.photoUrl,
     this.signatureUrl,
 
     // =============================================================
     // STATUS
     // =============================================================
-
     this.isActive = true,
 
     // =============================================================
     // AUDIT
     // =============================================================
-
     this.createdAt,
     this.updatedAt,
 
     // =============================================================
     // AUTH USER
     // =============================================================
-
     this.userId,
 
     // =============================================================
     // CREATED / UPDATED BY
     // =============================================================
-
     this.createdBy,
     this.updatedBy,
 
     // =============================================================
     // LAST LOGIN
     // =============================================================
-
-    this.lastLoginAt,
+    this.lastLoginAt
   });
 
   // =============================================================
@@ -142,15 +124,12 @@ class EmployeeEntity {
   // EMPLOYEE IDENTIFICATION
   // =============================================================
 
-  final String? employeeCode;
   final String? cardNo;
 
   // =============================================================
   // BASIC INFORMATION
   // =============================================================
 
-  final String firstName;
-  final String? lastName;
   final String fullName;
 
   final String? gender;
@@ -254,7 +233,6 @@ class EmployeeEntity {
     // -------------------------------------------------------------
     // COMPANY / ORGANIZATION
     // -------------------------------------------------------------
-
     String? companyId,
     String? departmentId,
     String? designationId,
@@ -264,16 +242,11 @@ class EmployeeEntity {
     // -------------------------------------------------------------
     // EMPLOYEE IDENTIFICATION
     // -------------------------------------------------------------
-
-    String? employeeCode,
     String? cardNo,
 
     // -------------------------------------------------------------
     // BASIC INFORMATION
     // -------------------------------------------------------------
-
-    String? firstName,
-    String? lastName,
     String? fullName,
 
     String? gender,
@@ -282,7 +255,6 @@ class EmployeeEntity {
     // -------------------------------------------------------------
     // PERSONAL INFORMATION
     // -------------------------------------------------------------
-
     String? bloodGroup,
     String? religion,
     String? nationality,
@@ -291,7 +263,6 @@ class EmployeeEntity {
     // -------------------------------------------------------------
     // CONTACT INFORMATION
     // -------------------------------------------------------------
-
     String? mobile,
     String? email,
 
@@ -301,14 +272,12 @@ class EmployeeEntity {
     // -------------------------------------------------------------
     // ADDRESS
     // -------------------------------------------------------------
-
     String? presentAddress,
     String? permanentAddress,
 
     // -------------------------------------------------------------
     // EMPLOYMENT INFORMATION
     // -------------------------------------------------------------
-
     DateTime? joiningDate,
     DateTime? confirmationDate,
 
@@ -318,53 +287,45 @@ class EmployeeEntity {
     // -------------------------------------------------------------
     // IDENTIFICATION DOCUMENTS
     // -------------------------------------------------------------
-
     String? nidNo,
     String? passportNo,
 
     // -------------------------------------------------------------
     // SALARY
     // -------------------------------------------------------------
-
     double? basicSalary,
 
     // -------------------------------------------------------------
     // MEDIA
     // -------------------------------------------------------------
-
     String? photoUrl,
     String? signatureUrl,
 
     // -------------------------------------------------------------
     // STATUS
     // -------------------------------------------------------------
-
     bool? isActive,
 
     // -------------------------------------------------------------
     // AUDIT
     // -------------------------------------------------------------
-
     DateTime? createdAt,
     DateTime? updatedAt,
 
     // -------------------------------------------------------------
     // AUTH USER
     // -------------------------------------------------------------
-
     String? userId,
 
     // -------------------------------------------------------------
     // CREATED / UPDATED BY
     // -------------------------------------------------------------
-
     String? createdBy,
     String? updatedBy,
 
     // -------------------------------------------------------------
     // LAST LOGIN
     // -------------------------------------------------------------
-
     DateTime? lastLoginAt,
   }) {
     return EmployeeEntity(
@@ -373,7 +334,6 @@ class EmployeeEntity {
       // ===========================================================
       // COMPANY / ORGANIZATION
       // ===========================================================
-
       companyId: companyId ?? this.companyId,
       departmentId: departmentId ?? this.departmentId,
       designationId: designationId ?? this.designationId,
@@ -383,148 +343,103 @@ class EmployeeEntity {
       // ===========================================================
       // EMPLOYEE IDENTIFICATION
       // ===========================================================
-
-      employeeCode:
-      employeeCode ?? this.employeeCode,
-
       cardNo: cardNo ?? this.cardNo,
 
       // ===========================================================
       // BASIC INFORMATION
       // ===========================================================
-
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
       fullName: fullName ?? this.fullName,
 
       gender: gender ?? this.gender,
-      dateOfBirth:
-      dateOfBirth ?? this.dateOfBirth,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
 
       // ===========================================================
       // PERSONAL INFORMATION
       // ===========================================================
+      bloodGroup: bloodGroup ?? this.bloodGroup,
 
-      bloodGroup:
-      bloodGroup ?? this.bloodGroup,
+      religion: religion ?? this.religion,
 
-      religion:
-      religion ?? this.religion,
+      nationality: nationality ?? this.nationality,
 
-      nationality:
-      nationality ?? this.nationality,
-
-      maritalStatus:
-      maritalStatus ?? this.maritalStatus,
+      maritalStatus: maritalStatus ?? this.maritalStatus,
 
       // ===========================================================
       // CONTACT INFORMATION
       // ===========================================================
-
       mobile: mobile ?? this.mobile,
       email: email ?? this.email,
 
-      emergencyContactName:
-      emergencyContactName ??
-          this.emergencyContactName,
+      emergencyContactName: emergencyContactName ?? this.emergencyContactName,
 
       emergencyContactMobile:
-      emergencyContactMobile ??
-          this.emergencyContactMobile,
+          emergencyContactMobile ?? this.emergencyContactMobile,
 
       // ===========================================================
       // ADDRESS
       // ===========================================================
+      presentAddress: presentAddress ?? this.presentAddress,
 
-      presentAddress:
-      presentAddress ?? this.presentAddress,
-
-      permanentAddress:
-      permanentAddress ?? this.permanentAddress,
+      permanentAddress: permanentAddress ?? this.permanentAddress,
 
       // ===========================================================
       // EMPLOYMENT INFORMATION
       // ===========================================================
+      joiningDate: joiningDate ?? this.joiningDate,
 
-      joiningDate:
-      joiningDate ?? this.joiningDate,
+      confirmationDate: confirmationDate ?? this.confirmationDate,
 
-      confirmationDate:
-      confirmationDate ??
-          this.confirmationDate,
+      employmentType: employmentType ?? this.employmentType,
 
-      employmentType:
-      employmentType ?? this.employmentType,
-
-      employeeStatus:
-      employeeStatus ?? this.employeeStatus,
+      employeeStatus: employeeStatus ?? this.employeeStatus,
 
       // ===========================================================
       // IDENTIFICATION DOCUMENTS
       // ===========================================================
-
       nidNo: nidNo ?? this.nidNo,
 
-      passportNo:
-      passportNo ?? this.passportNo,
+      passportNo: passportNo ?? this.passportNo,
 
       // ===========================================================
       // SALARY
       // ===========================================================
-
-      basicSalary:
-      basicSalary ?? this.basicSalary,
+      basicSalary: basicSalary ?? this.basicSalary,
 
       // ===========================================================
       // MEDIA
       // ===========================================================
+      photoUrl: photoUrl ?? this.photoUrl,
 
-      photoUrl:
-      photoUrl ?? this.photoUrl,
-
-      signatureUrl:
-      signatureUrl ?? this.signatureUrl,
+      signatureUrl: signatureUrl ?? this.signatureUrl,
 
       // ===========================================================
       // STATUS
       // ===========================================================
-
-      isActive:
-      isActive ?? this.isActive,
+      isActive: isActive ?? this.isActive,
 
       // ===========================================================
       // AUDIT
       // ===========================================================
+      createdAt: createdAt ?? this.createdAt,
 
-      createdAt:
-      createdAt ?? this.createdAt,
-
-      updatedAt:
-      updatedAt ?? this.updatedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
 
       // ===========================================================
       // AUTH USER
       // ===========================================================
-
-      userId:
-      userId ?? this.userId,
+      userId: userId ?? this.userId,
 
       // ===========================================================
       // CREATED / UPDATED BY
       // ===========================================================
+      createdBy: createdBy ?? this.createdBy,
 
-      createdBy:
-      createdBy ?? this.createdBy,
-
-      updatedBy:
-      updatedBy ?? this.updatedBy,
+      updatedBy: updatedBy ?? this.updatedBy,
 
       // ===========================================================
       // LAST LOGIN
       // ===========================================================
-
-      lastLoginAt:
-      lastLoginAt ?? this.lastLoginAt,
+      lastLoginAt: lastLoginAt ?? this.lastLoginAt,
     );
   }
 
@@ -552,7 +467,6 @@ class EmployeeEntity {
     return 'EmployeeEntity('
         'id: $id, '
         'companyId: $companyId, '
-        'employeeCode: $employeeCode, '
         'fullName: $fullName, '
         'roleId: $roleId, '
         'createdBy: $createdBy, '

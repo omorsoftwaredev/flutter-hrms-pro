@@ -1,15 +1,3 @@
-// ===============================================================
-// Flutter HRMS Pro
-// Company Form
-//
-// Based on Original Stable CompanyForm
-//
-// Create / Edit
-// Theme Aware
-// No Responsive Layout Changes
-// No Nested Scroll
-// ===============================================================
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/validators/app_validator.dart';
@@ -125,7 +113,6 @@ class CompanyForm extends StatefulWidget {
 // =================================================================
 
 class _CompanyFormState extends State<CompanyForm> {
-
   // =============================================================
   // FORM
   // =============================================================
@@ -137,23 +124,14 @@ class _CompanyFormState extends State<CompanyForm> {
   // =============================================================
 
   late final TextEditingController _nameController;
-
   late final TextEditingController _emailController;
-
   late final TextEditingController _phoneController;
-
   late final TextEditingController _websiteController;
-
   late final TextEditingController _addressController;
-
   late final TextEditingController _contactPersonController;
-
   late final TextEditingController _logoUrlController;
-
   late final TextEditingController _taxNumberController;
-
   late final TextEditingController _registrationNumberController;
-
   late final TextEditingController _notesController;
 
   // =============================================================
@@ -239,7 +217,6 @@ class _CompanyFormState extends State<CompanyForm> {
   // =============================================================
 
   Future<void> _submit() async {
-
     if (widget.isLoading) {
       return;
     }
@@ -272,26 +249,115 @@ class _CompanyFormState extends State<CompanyForm> {
   }
 
   // =============================================================
+  // SECTION HEADER
+  // =============================================================
+
+  Widget _sectionHeader({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required double iconSize,
+    required double titleSize,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      children: [
+        Container(
+          width: iconSize + 20,
+          height: iconSize + 20,
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(
+              alpha: 0.10,
+            ),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(
+            icon,
+            size: iconSize,
+            color: colorScheme.primary,
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        Text(
+          title,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontSize: titleSize,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // =============================================================
+  // SECTION DIVIDER
+  // =============================================================
+
+  Widget _divider(BuildContext context) {
+    return Divider(
+      height: 1,
+      color: Theme.of(context)
+          .colorScheme
+          .outlineVariant,
+    );
+  }
+
+  // =============================================================
   // BUILD
   // =============================================================
 
   @override
   Widget build(BuildContext context) {
-
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    final colors = theme.colorScheme;
+    final width = MediaQuery.sizeOf(context).width;
+
+    final bool isDesktop = width >= 900;
+    final bool isTablet = width >= 600 && width < 900;
+
+    final double cardPadding = isDesktop
+        ? 22
+        : isTablet
+        ? 20
+        : 16;
+
+    final double titleSize = isDesktop
+        ? 19
+        : 18;
+
+    final double sectionIconSize = isDesktop
+        ? 21
+        : 20;
 
     return Form(
       key: _formKey,
-
       child: Column(
         mainAxisSize: MainAxisSize.min,
-
-        crossAxisAlignment:
-        CrossAxisAlignment.stretch,
-
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // =====================================================
+          // BASIC INFORMATION
+          // =====================================================
+
+          _sectionHeader(
+            context: context,
+            icon: Icons.business_outlined,
+            title: 'Basic Information',
+            iconSize: sectionIconSize,
+            titleSize: titleSize,
+          ),
+
+          const SizedBox(height: 14),
+
+          _divider(context),
+
+          const SizedBox(height: 16),
 
           // =====================================================
           // COMPANY NAME
@@ -299,17 +365,12 @@ class _CompanyFormState extends State<CompanyForm> {
 
           AppTextField(
             controller: _nameController,
-
             label: 'Company Name',
-
-            prefixIcon:
-            Icons.business_outlined,
-
-            validator: (value) =>
-                AppValidator.required(
-                  value,
-                  field: 'Company Name',
-                ),
+            prefixIcon: Icons.business_outlined,
+            validator: (value) => AppValidator.required(
+              value,
+              field: 'Company Name',
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -320,17 +381,10 @@ class _CompanyFormState extends State<CompanyForm> {
 
           AppTextField(
             controller: _emailController,
-
             label: 'Email',
-
-            keyboardType:
-            TextInputType.emailAddress,
-
-            prefixIcon:
-            Icons.email_outlined,
-
-            validator:
-            AppValidator.email,
+            keyboardType: TextInputType.emailAddress,
+            prefixIcon: Icons.email_outlined,
+            validator: AppValidator.email,
           ),
 
           const SizedBox(height: 16),
@@ -341,17 +395,10 @@ class _CompanyFormState extends State<CompanyForm> {
 
           AppTextField(
             controller: _phoneController,
-
             label: 'Phone',
-
-            keyboardType:
-            TextInputType.phone,
-
-            prefixIcon:
-            Icons.phone_outlined,
-
-            validator:
-            AppValidator.phone,
+            keyboardType: TextInputType.phone,
+            prefixIcon: Icons.phone_outlined,
+            validator: AppValidator.phone,
           ),
 
           const SizedBox(height: 16),
@@ -362,15 +409,28 @@ class _CompanyFormState extends State<CompanyForm> {
 
           AppTextField(
             controller: _websiteController,
-
             label: 'Website',
-
-            keyboardType:
-            TextInputType.url,
-
-            prefixIcon:
-            Icons.language_outlined,
+            keyboardType: TextInputType.url,
+            prefixIcon: Icons.language_outlined,
           ),
+
+          const SizedBox(height: 24),
+
+          // =====================================================
+          // CONTACT INFORMATION
+          // =====================================================
+
+          _sectionHeader(
+            context: context,
+            icon: Icons.contact_page_outlined,
+            title: 'Contact Information',
+            iconSize: sectionIconSize,
+            titleSize: titleSize,
+          ),
+
+          const SizedBox(height: 14),
+
+          _divider(context),
 
           const SizedBox(height: 16),
 
@@ -379,13 +439,9 @@ class _CompanyFormState extends State<CompanyForm> {
           // =====================================================
 
           AppTextField(
-            controller:
-            _contactPersonController,
-
+            controller: _contactPersonController,
             label: 'Contact Person',
-
-            prefixIcon:
-            Icons.person_outline,
+            prefixIcon: Icons.person_outline,
           ),
 
           const SizedBox(height: 16),
@@ -395,16 +451,29 @@ class _CompanyFormState extends State<CompanyForm> {
           // =====================================================
 
           AppTextField(
-            controller:
-            _addressController,
-
+            controller: _addressController,
             label: 'Address',
-
             maxLines: 3,
-
-            prefixIcon:
-            Icons.location_on_outlined,
+            prefixIcon: Icons.location_on_outlined,
           ),
+
+          const SizedBox(height: 24),
+
+          // =====================================================
+          // ADDITIONAL INFORMATION
+          // =====================================================
+
+          _sectionHeader(
+            context: context,
+            icon: Icons.folder_outlined,
+            title: 'Additional Information',
+            iconSize: sectionIconSize,
+            titleSize: titleSize,
+          ),
+
+          const SizedBox(height: 14),
+
+          _divider(context),
 
           const SizedBox(height: 16),
 
@@ -413,17 +482,29 @@ class _CompanyFormState extends State<CompanyForm> {
           // =====================================================
 
           AppTextField(
-            controller:
-            _logoUrlController,
-
+            controller: _logoUrlController,
             label: 'Logo URL',
-
-            keyboardType:
-            TextInputType.url,
-
-            prefixIcon:
-            Icons.image_outlined,
+            keyboardType: TextInputType.url,
+            prefixIcon: Icons.image_outlined,
           ),
+
+          const SizedBox(height: 24),
+
+          // =====================================================
+          // LEGAL INFORMATION
+          // =====================================================
+
+          _sectionHeader(
+            context: context,
+            icon: Icons.gavel_outlined,
+            title: 'Legal Information',
+            iconSize: sectionIconSize,
+            titleSize: titleSize,
+          ),
+
+          const SizedBox(height: 14),
+
+          _divider(context),
 
           const SizedBox(height: 16),
 
@@ -432,13 +513,9 @@ class _CompanyFormState extends State<CompanyForm> {
           // =====================================================
 
           AppTextField(
-            controller:
-            _taxNumberController,
-
+            controller: _taxNumberController,
             label: 'Tax Number',
-
-            prefixIcon:
-            Icons.receipt_long_outlined,
+            prefixIcon: Icons.receipt_long_outlined,
           ),
 
           const SizedBox(height: 16),
@@ -448,58 +525,68 @@ class _CompanyFormState extends State<CompanyForm> {
           // =====================================================
 
           AppTextField(
-            controller:
-            _registrationNumberController,
-
-            label:
-            'Registration Number',
-
-            prefixIcon:
-            Icons.badge_outlined,
+            controller: _registrationNumberController,
+            label: 'Registration Number',
+            prefixIcon: Icons.badge_outlined,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
           // =====================================================
           // NOTES
           // =====================================================
 
-          AppTextField(
-            controller:
-            _notesController,
-
-            label: 'Notes',
-
-            maxLines: 4,
-
-            prefixIcon:
-            Icons.notes_outlined,
+          _sectionHeader(
+            context: context,
+            icon: Icons.notes_outlined,
+            title: 'Notes',
+            iconSize: sectionIconSize,
+            titleSize: titleSize,
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
+
+          _divider(context),
+
+          const SizedBox(height: 16),
+
+          AppTextField(
+            controller: _notesController,
+            label: 'Notes',
+            maxLines: 4,
+            prefixIcon: Icons.notes_outlined,
+          ),
+
+          const SizedBox(height: 14),
 
           // =====================================================
           // ACTIVE COMPANY
           // =====================================================
 
-          AppCheckbox(
-            title: 'Active Company',
+          Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: colorScheme.outlineVariant,
+              ),
+            ),
+            child: AppCheckbox(
+              title: 'Active Company',
+              value: _isActive,
+              onChanged: widget.isLoading
+                  ? (_) {}
+                  : (value) {
+                if (!mounted) {
+                  return;
+                }
 
-            value: _isActive,
-
-            onChanged: widget.isLoading
-                ? (_) {}
-                : (value) {
-
-              if (!mounted) {
-                return;
-              }
-
-              setState(() {
-                _isActive =
-                    value ?? true;
-              });
-            },
+                setState(() {
+                  _isActive = value ?? true;
+                });
+              },
+            ),
           ),
 
           const SizedBox(height: 30),
@@ -510,18 +597,12 @@ class _CompanyFormState extends State<CompanyForm> {
 
           AppButton(
             text: 'Save Company',
-
-            icon:
-            Icons.save_outlined,
-
-            isLoading:
-            widget.isLoading,
-
-            onPressed:
-            _submit,
+            icon: Icons.save_outlined,
+            isLoading: widget.isLoading,
+            onPressed: _submit,
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
           // =====================================================
           // HELPER TEXT
@@ -530,15 +611,10 @@ class _CompanyFormState extends State<CompanyForm> {
           Center(
             child: Text(
               'All company information will be securely saved.',
-
-              textAlign:
-              TextAlign.center,
-
-              style: theme.textTheme
-                  .bodySmall
-                  ?.copyWith(
-                color:
-                colors.onSurfaceVariant,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),

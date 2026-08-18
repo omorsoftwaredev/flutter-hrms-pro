@@ -7,10 +7,13 @@
 // Company ID:
 // currentUserProvider → CurrentUser.companyId
 //
-// Company Owner কোনো Company Dropdown ব্যবহার করবে না.
-// Company ID automatically logged-in session থেকে নেওয়া হবে.
+// Design:
+// Theme Aware
+// Responsive Sizing
+// Professional HRMS UI
+// Existing Layout Preserved
 //
-// Version : 2.5.0
+// Version : 3.0.0
 // ===============================================================
 
 import 'package:flutter/material.dart';
@@ -46,12 +49,6 @@ class DepartmentForm extends ConsumerStatefulWidget {
 
   // =============================================================
   // SUBMIT
-  // =============================================================
-  //
-  // companyId automatically currentUserProvider থেকে আসবে।
-  //
-  // Code automatically database trigger generate করবে।
-  //
   // =============================================================
 
   final Future<void> Function(
@@ -136,37 +133,27 @@ class _DepartmentFormState
   // =============================================================
 
   Future<void> _save() async {
-    // -----------------------------------------------------------
-    // Validate Form
-    // -----------------------------------------------------------
+    if (widget.isLoading) {
+      return;
+    }
 
-    if (!_formKey.currentState!.validate()) {
+    FocusScope.of(context).unfocus();
+
+    final form = _formKey.currentState;
+
+    if (form == null) {
+      return;
+    }
+
+    if (!form.validate()) {
       return;
     }
 
     // -----------------------------------------------------------
     // Get Logged-in User
     // -----------------------------------------------------------
-    //
-    // Company Owner login করার সময় AuthRepository:
-    //
-    // company_accounts
-    //       ↓
-    // company_id
-    //       ↓
-    // CurrentUser.companyId
-    //       ↓
-    // currentUserProvider
-    //
-    // এখান থেকেই Company ID নেওয়া হচ্ছে।
-    //
-    // -----------------------------------------------------------
 
     final user = ref.read(currentUserProvider);
-
-    // -----------------------------------------------------------
-    // User Check
-    // -----------------------------------------------------------
 
     if (user == null) {
       _showError(
@@ -181,10 +168,6 @@ class _DepartmentFormState
     // -----------------------------------------------------------
 
     final companyId = user.companyId.trim();
-
-    // -----------------------------------------------------------
-    // Company ID Validation
-    // -----------------------------------------------------------
 
     if (companyId.isEmpty) {
       _showError(
@@ -218,10 +201,91 @@ class _DepartmentFormState
       return;
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
+        backgroundColor: colorScheme.error,
+      ),
+    );
+  }
+
+  // =============================================================
+  // INPUT DECORATION
+  // =============================================================
+
+  InputDecoration _decoration({
+    required BuildContext context,
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(
+        icon,
+        size: 21,
+      ),
+
+      filled: true,
+      fillColor: colorScheme.surfaceContainerLow,
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: colorScheme.primary,
+          width: 1.5,
+        ),
+      ),
+
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: colorScheme.error,
+        ),
+      ),
+
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: colorScheme.error,
+          width: 1.5,
+        ),
+      ),
+
+      labelStyle: theme.textTheme.bodyMedium?.copyWith(
+        color: colorScheme.onSurfaceVariant,
+      ),
+
+      hintStyle: theme.textTheme.bodyMedium?.copyWith(
+        color: colorScheme.onSurfaceVariant.withValues(
+          alpha: 0.65,
+        ),
+      ),
+
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 15,
       ),
     );
   }
@@ -232,9 +296,33 @@ class _DepartmentFormState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final width = MediaQuery.sizeOf(context).width;
+
+    final bool isDesktop = width >= 900;
+    final bool isTablet = width >= 600 && width < 900;
+
+    final double fieldSpacing = isDesktop
+        ? 18
+        : isTablet
+        ? 17
+        : 16;
+
+    final double buttonHeight = isDesktop
+        ? 52
+        : 50;
+
+    final double iconSize = isDesktop
+        ? 22
+        : 21;
+
     return Form(
       key: _formKey,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // =====================================================
           // DEPARTMENT NAME
@@ -242,13 +330,12 @@ class _DepartmentFormState
 
           TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Department Name',
-              hintText: 'Enter department name',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(
-                Icons.apartment_outlined,
-              ),
+            enabled: !widget.isLoading,
+            decoration: _decoration(
+              context: context,
+              label: 'Department Name',
+              hint: 'Enter department name',
+              icon: Icons.apartment_outlined,
             ),
             textInputAction: TextInputAction.next,
             validator: (value) {
@@ -261,7 +348,7 @@ class _DepartmentFormState
             },
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: fieldSpacing),
 
           // =====================================================
           // DESCRIPTION
@@ -269,19 +356,18 @@ class _DepartmentFormState
 
           TextFormField(
             controller: _descriptionController,
-            decoration: const InputDecoration(
-              labelText: 'Description',
-              hintText: 'Enter department description',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(
-                Icons.description_outlined,
-              ),
+            enabled: !widget.isLoading,
+            decoration: _decoration(
+              context: context,
+              label: 'Description',
+              hint: 'Enter department description',
+              icon: Icons.description_outlined,
             ),
             maxLines: 3,
             textInputAction: TextInputAction.newline,
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: fieldSpacing),
 
           // =====================================================
           // PHONE
@@ -289,19 +375,18 @@ class _DepartmentFormState
 
           TextFormField(
             controller: _phoneController,
-            decoration: const InputDecoration(
-              labelText: 'Phone',
-              hintText: 'Enter department phone',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(
-                Icons.phone_outlined,
-              ),
+            enabled: !widget.isLoading,
+            decoration: _decoration(
+              context: context,
+              label: 'Phone',
+              hint: 'Enter department phone',
+              icon: Icons.phone_outlined,
             ),
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.next,
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: fieldSpacing),
 
           // =====================================================
           // EMAIL
@@ -309,13 +394,12 @@ class _DepartmentFormState
 
           TextFormField(
             controller: _emailController,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              hintText: 'Enter department email',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(
-                Icons.email_outlined,
-              ),
+            enabled: !widget.isLoading,
+            decoration: _decoration(
+              context: context,
+              label: 'Email',
+              hint: 'Enter department email',
+              icon: Icons.email_outlined,
             ),
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
@@ -338,7 +422,7 @@ class _DepartmentFormState
             },
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: fieldSpacing),
 
           // =====================================================
           // LOCATION
@@ -346,45 +430,113 @@ class _DepartmentFormState
 
           TextFormField(
             controller: _locationController,
-            decoration: const InputDecoration(
-              labelText: 'Location',
-              hintText: 'Enter department location',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(
-                Icons.location_on_outlined,
-              ),
+            enabled: !widget.isLoading,
+            decoration: _decoration(
+              context: context,
+              label: 'Location',
+              hint: 'Enter department location',
+              icon: Icons.location_on_outlined,
             ),
             textInputAction: TextInputAction.done,
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: fieldSpacing),
 
           // =====================================================
           // ACTIVE STATUS
           // =====================================================
 
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text(
-              'Active',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 16 : 14,
+              vertical: isDesktop ? 12 : 10,
+            ),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: colorScheme.outlineVariant,
               ),
             ),
-            subtitle: const Text(
-              'Enable or disable this department',
+            child: Row(
+              children: [
+                Container(
+                  width: isDesktop ? 42 : 40,
+                  height: isDesktop ? 42 : 40,
+                  decoration: BoxDecoration(
+                    color: _isActive
+                        ? colorScheme.secondaryContainer
+                        : colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    _isActive
+                        ? Icons.check_circle_outline_rounded
+                        : Icons.pause_circle_outline_rounded,
+                    size: iconSize,
+                    color: _isActive
+                        ? colorScheme.onSecondaryContainer
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Active Department',
+                        style:
+                        theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+
+                      const SizedBox(height: 3),
+
+                      Text(
+                        _isActive
+                            ? 'This department is currently active'
+                            : 'This department is currently inactive',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                        theme.textTheme.bodySmall?.copyWith(
+                          color:
+                          colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Switch(
+                  value: _isActive,
+                  onChanged: widget.isLoading
+                      ? null
+                      : (value) {
+                    if (!mounted) {
+                      return;
+                    }
+
+                    setState(() {
+                      _isActive = value;
+                    });
+                  },
+                ),
+              ],
             ),
-            value: _isActive,
-            onChanged: widget.isLoading
-                ? null
-                : (value) {
-              setState(() {
-                _isActive = value;
-              });
-            },
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(
+            height: isDesktop ? 28 : 24,
+          ),
 
           // =====================================================
           // SAVE BUTTON
@@ -392,21 +544,58 @@ class _DepartmentFormState
 
           SizedBox(
             width: double.infinity,
-            height: 48,
-            child: FilledButton(
+            height: buttonHeight,
+            child: FilledButton.icon(
               onPressed:
               widget.isLoading ? null : _save,
-              child: widget.isLoading
-                  ? const SizedBox(
-                height: 20,
-                width: 20,
+              icon: widget.isLoading
+                  ? SizedBox(
+                width: isDesktop ? 21 : 20,
+                height: isDesktop ? 21 : 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
+                  color: colorScheme.onPrimary,
                 ),
               )
-                  : const Text(
-                'Save',
+                  : Icon(
+                Icons.save_outlined,
+                size: iconSize,
               ),
+              label: Text(
+                widget.isLoading
+                    ? 'Saving...'
+                    : 'Save Department',
+                style:
+                theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                disabledBackgroundColor:
+                colorScheme.surfaceContainerHighest,
+                disabledForegroundColor:
+                colorScheme.onSurfaceVariant,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // =====================================================
+          // HELPER TEXT
+          // =====================================================
+
+          Text(
+            'Department information will be securely saved.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],

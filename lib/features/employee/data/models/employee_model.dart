@@ -15,18 +15,15 @@ class EmployeeModel extends EmployeeEntity {
     super.roleId,
 
     // =========================================================
-    // EMPLOYEE CODE / CARD
+    // EMPLOYEE CARD
     // =========================================================
 
-    required super.employeeCode,
     super.cardNo,
 
     // =========================================================
     // NAME
     // =========================================================
 
-    required super.firstName,
-    super.lastName,
     required super.fullName,
 
     // =========================================================
@@ -138,13 +135,6 @@ class EmployeeModel extends EmployeeEntity {
       roleId: json['role_id']?.toString(),
 
       // ---------------------------------------------------------
-      // EMPLOYEE CODE
-      // ---------------------------------------------------------
-
-      employeeCode:
-      json['employee_code']?.toString() ?? '',
-
-      // ---------------------------------------------------------
       // CARD
       // ---------------------------------------------------------
 
@@ -154,11 +144,6 @@ class EmployeeModel extends EmployeeEntity {
       // NAME
       // ---------------------------------------------------------
 
-      firstName:
-      json['first_name']?.toString() ?? '',
-
-      lastName:
-      json['last_name']?.toString(),
 
       fullName:
       json['full_name']?.toString() ?? '',
@@ -348,12 +333,6 @@ class EmployeeModel extends EmployeeEntity {
       'role_id': roleId,
 
       // ---------------------------------------------------------
-      // EMPLOYEE CODE
-      // ---------------------------------------------------------
-
-      'employee_code': employeeCode,
-
-      // ---------------------------------------------------------
       // CARD
       // ---------------------------------------------------------
 
@@ -363,8 +342,6 @@ class EmployeeModel extends EmployeeEntity {
       // NAME
       // ---------------------------------------------------------
 
-      'first_name': firstName,
-      'last_name': lastName,
       'full_name': fullName,
 
       // ---------------------------------------------------------

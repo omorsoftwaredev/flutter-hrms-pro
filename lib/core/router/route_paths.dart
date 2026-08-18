@@ -172,24 +172,13 @@ class RoutePaths {
 
   static const companyAccountDetails = '/company-accounts/details';
 
-  // =============================================================
+// =============================================================
 // SETTINGS
 // =============================================================
-
-  static const String settings =
-      '/settings';
-
-  static const String appearanceSettings =
-      '/settings/appearance';
 
   static const String themeSettings =
       '/settings/theme';
 
-  static const String attendanceSettings =
-      '/settings/attendance';
-
   static const String workingDaysSettings =
       '/settings/attendance/working-days';
-  static const String attendanceRulesSettings =
-      '/settings/attendance/rules';
 }

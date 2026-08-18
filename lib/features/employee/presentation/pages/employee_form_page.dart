@@ -160,7 +160,6 @@ class EmployeeFormPage extends ConsumerWidget {
     debugPrint('User Type     => ${user.userType.name}');
     debugPrint('Company ID    => $companyId');
     debugPrint('Employee ID   => ${employee?.id}');
-    debugPrint('Employee Code => ${employee?.employeeCode}');
 
     debugPrint('==============================================');
 
@@ -212,13 +211,8 @@ class EmployeeFormPage extends ConsumerWidget {
                 // =================================================
                 // BASIC INFORMATION
                 // =================================================
-                initialEmployeeCode: employee?.employeeCode ?? '',
 
                 initialCardNo: employee?.cardNo ?? '',
-
-                initialFirstName: employee?.firstName ?? '',
-
-                initialLastName: employee?.lastName ?? '',
 
                 initialFullName: employee?.fullName ?? '',
 
@@ -260,10 +254,7 @@ class EmployeeFormPage extends ConsumerWidget {
                       designationId,
                       shiftId,
                       roleId,
-                      employeeCode,
                       cardNo,
-                      firstName,
-                      lastName,
                       fullName,
                       mobile,
                       email,
@@ -297,10 +288,6 @@ class EmployeeFormPage extends ConsumerWidget {
                         roleId: roleId,
 
                         cardNo: cardNo.trim(),
-
-                        firstName: firstName.trim(),
-
-                        lastName: lastName?.trim(),
 
                         fullName: fullName.trim(),
 
@@ -375,10 +362,6 @@ class EmployeeFormPage extends ConsumerWidget {
 
                       debugPrint('Employee ID   => ${entity.id}');
 
-                      debugPrint(
-                        'Employee Code => '
-                        '${entity.employeeCode}',
-                      );
 
                       debugPrint(
                         'Name          => '

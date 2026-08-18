@@ -59,229 +59,295 @@ class ShiftCard extends StatelessWidget {
         builder: (context, constraints) {
           final bool isCompact = constraints.maxWidth < 380;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ===================================================
-              // HEADER
-              // ===================================================
+          final double horizontalPadding =
+          isCompact ? 14 : 16;
 
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    backgroundColor:
-                    colorScheme.primaryContainer,
-                    foregroundColor:
-                    colorScheme.onPrimaryContainer,
-                    child: const Icon(
-                      Icons.schedule_rounded,
-                    ),
-                  ),
+          final double avatarRadius =
+          isCompact ? 22 : 24;
 
-                  const SizedBox(width: 12),
+          return Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 4,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // =================================================
+                // HEADER
+                // =================================================
 
-                  Expanded(
-                    child: Text(
-                      shift.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: avatarRadius,
+                      backgroundColor:
+                      colorScheme.primaryContainer,
+                      foregroundColor:
+                      colorScheme.onPrimaryContainer,
+                      child: Icon(
+                        Icons.schedule_rounded,
+                        size: isCompact ? 21 : 23,
                       ),
                     ),
-                  ),
 
-                  const SizedBox(width: 4),
+                    const SizedBox(width: 12),
 
-                  PopupMenuButton<String>(
-                    tooltip: 'More options',
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'view':
-                          onView?.call();
-                          break;
-
-                        case 'edit':
-                          onEdit?.call();
-                          break;
-
-                        case 'status':
-                          onToggleStatus?.call();
-                          break;
-
-                        case 'delete':
-                          onDelete?.call();
-                          break;
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(
-                        value: 'view',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.visibility_outlined,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            shift.name.isEmpty
+                                ? '-'
+                                : shift.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                            theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
                             ),
-                            SizedBox(width: 10),
-                            Text('View'),
-                          ],
-                        ),
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          Text(
+                            shift.isNightShift
+                                ? 'Night Shift'
+                                : 'Day Shift',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                            theme.textTheme.bodySmall?.copyWith(
+                              color:
+                              colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 4),
+
+                    // =============================================
+                    // MENU
+                    // =============================================
+
+                    PopupMenuButton<String>(
+                      tooltip: 'More options',
+
+                      icon: const Icon(
+                        Icons.more_vert_rounded,
                       ),
 
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.edit_outlined,
-                            ),
-                            SizedBox(width: 10),
-                            Text('Edit'),
-                          ],
-                        ),
-                      ),
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'view':
+                            onView?.call();
+                            break;
 
-                      PopupMenuItem(
-                        value: 'status',
-                        child: Row(
-                          children: [
-                            Icon(
-                              shift.isActive
-                                  ? Icons.block
-                                  : Icons.check_circle_outline,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              shift.isActive
-                                  ? 'Deactivate'
-                                  : 'Activate',
-                            ),
-                          ],
-                        ),
-                      ),
+                          case 'edit':
+                            onEdit?.call();
+                            break;
 
-                      const PopupMenuDivider(),
+                          case 'status':
+                            onToggleStatus?.call();
+                            break;
 
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Delete',
-                              style: TextStyle(
-                                color: Colors.red,
+                          case 'delete':
+                            onDelete?.call();
+                            break;
+                        }
+                      },
+
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'view',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.visibility_outlined,
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 10),
+                              Text('View'),
+                            ],
+                          ),
                         ),
+
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.edit_outlined,
+                              ),
+                              SizedBox(width: 10),
+                              Text('Edit'),
+                            ],
+                          ),
+                        ),
+
+                        PopupMenuItem(
+                          value: 'status',
+                          child: Row(
+                            children: [
+                              Icon(
+                                shift.isActive
+                                    ? Icons.block
+                                    : Icons
+                                    .check_circle_outline,
+                                color:
+                                shift.isActive
+                                    ? colorScheme.error
+                                    : colorScheme.primary,
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              Text(
+                                shift.isActive
+                                    ? 'Deactivate'
+                                    : 'Activate',
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const PopupMenuDivider(),
+
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline,
+                                color: colorScheme.error,
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              Text(
+                                'Delete',
+                                style: TextStyle(
+                                  color: colorScheme.error,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // =================================================
+                // SHIFT DETAILS
+                // =================================================
+
+                _InfoRow(
+                  icon: Icons.access_time_rounded,
+                  value:
+                  '${shift.startTime} → ${shift.endTime}',
+                ),
+
+                const SizedBox(height: 11),
+
+                _InfoRow(
+                  icon: Icons.free_breakfast_outlined,
+                  value:
+                  'Break : ${shift.breakMinutes} Minutes',
+                ),
+
+                const SizedBox(height: 11),
+
+                _InfoRow(
+                  icon: Icons.event_outlined,
+                  value:
+                  'Weekly Off : ${_weekDay(shift.weeklyOffDay)}',
+                ),
+
+                // =================================================
+                // DESCRIPTION
+                // =================================================
+
+                if (shift.description.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color:
+                      colorScheme.surfaceContainerHighest
+                          .withValues(alpha: .45),
+                      borderRadius:
+                      BorderRadius.circular(12),
+                      border: Border.all(
+                        color:
+                        colorScheme.outlineVariant,
                       ),
-                    ],
+                    ),
+                    child: Text(
+                      shift.description,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                      theme.textTheme.bodyMedium?.copyWith(
+                        color:
+                        colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
                   ),
                 ],
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // ===================================================
-              // SHIFT TIME
-              // ===================================================
+                // =================================================
+                // TYPE / STATUS
+                // =================================================
 
-              _InfoRow(
-                icon: Icons.access_time_rounded,
-                value:
-                '${shift.startTime} → ${shift.endTime}',
-              ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _StatusChip(
+                      icon: shift.isNightShift
+                          ? Icons.nights_stay_outlined
+                          : Icons.wb_sunny_outlined,
+                      label: shift.isNightShift
+                          ? 'Night Shift'
+                          : 'Day Shift',
+                    ),
 
-              const SizedBox(height: 10),
+                    _StatusChip(
+                      icon: shift.isFlexible
+                          ? Icons.swap_horiz_rounded
+                          : Icons.lock_outline_rounded,
+                      label: shift.isFlexible
+                          ? 'Flexible'
+                          : 'Fixed',
+                    ),
 
-              // ===================================================
-              // BREAK
-              // ===================================================
-
-              _InfoRow(
-                icon: Icons.free_breakfast_outlined,
-                value:
-                'Break : ${shift.breakMinutes} Minutes',
-              ),
-
-              const SizedBox(height: 10),
-
-              // ===================================================
-              // WEEKLY OFF
-              // ===================================================
-
-              _InfoRow(
-                icon: Icons.event_outlined,
-                value:
-                'Weekly Off : ${_weekDay(shift.weeklyOffDay)}',
-              ),
-
-              // ===================================================
-              // DESCRIPTION
-              // ===================================================
-
-              if (shift.description.isNotEmpty) ...[
-                const SizedBox(height: 12),
-
-                Text(
-                  shift.description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.4,
-                  ),
+                    _StatusChip(
+                      icon: shift.isActive
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.cancel_outlined,
+                      label: shift.isActive
+                          ? 'Active'
+                          : 'Inactive',
+                      isStatus: true,
+                      isActive: shift.isActive,
+                    ),
+                  ],
                 ),
               ],
-
-              const SizedBox(height: 16),
-
-              // ===================================================
-              // TYPE / STATUS
-              // ===================================================
-
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _StatusChip(
-                    icon: shift.isNightShift
-                        ? Icons.nights_stay_outlined
-                        : Icons.wb_sunny_outlined,
-                    label: shift.isNightShift
-                        ? 'Night Shift'
-                        : 'Day Shift',
-                  ),
-
-                  _StatusChip(
-                    icon: shift.isFlexible
-                        ? Icons.swap_horiz_rounded
-                        : Icons.lock_outline_rounded,
-                    label: shift.isFlexible
-                        ? 'Flexible'
-                        : 'Fixed',
-                  ),
-
-                  _StatusChip(
-                    icon: shift.isActive
-                        ? Icons.check_circle
-                        : Icons.cancel,
-                    label: shift.isActive
-                        ? 'Active'
-                        : 'Inactive',
-                    isStatus: true,
-                    isActive: shift.isActive,
-                  ),
-                ],
-              ),
-            ],
+            ),
           );
         },
       ),
@@ -310,21 +376,38 @@ class _InfoRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: 18,
-          color: colorScheme.onSurfaceVariant,
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color:
+            colorScheme.secondaryContainer,
+            borderRadius:
+            BorderRadius.circular(9),
+          ),
+          child: Icon(
+            icon,
+            size: 17,
+            color:
+            colorScheme.onSecondaryContainer,
+          ),
         ),
 
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
 
         Expanded(
-          child: Text(
-            value,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurface,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 5,
+            ),
+            child: Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style:
+              theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
         ),
@@ -356,40 +439,68 @@ class _StatusChip extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    Color? backgroundColor;
-    Color? foregroundColor;
+    Color backgroundColor;
+    Color foregroundColor;
+    Color borderColor;
 
     if (isStatus) {
       if (isActive) {
-        backgroundColor = colorScheme.primaryContainer;
-        foregroundColor = colorScheme.onPrimaryContainer;
+        backgroundColor =
+            colorScheme.primaryContainer;
+        foregroundColor =
+            colorScheme.onPrimaryContainer;
+        borderColor =
+            colorScheme.primary.withValues(alpha: .18);
       } else {
-        backgroundColor = colorScheme.errorContainer;
-        foregroundColor = colorScheme.onErrorContainer;
+        backgroundColor =
+            colorScheme.errorContainer;
+        foregroundColor =
+            colorScheme.onErrorContainer;
+        borderColor =
+            colorScheme.error.withValues(alpha: .18);
       }
     } else {
-      backgroundColor = colorScheme.surfaceContainerHighest;
-      foregroundColor = colorScheme.onSurfaceVariant;
+      backgroundColor =
+          colorScheme.surfaceContainerHighest;
+      foregroundColor =
+          colorScheme.onSurfaceVariant;
+      borderColor =
+          colorScheme.outlineVariant;
     }
 
-    return Chip(
-      avatar: Icon(
-        icon,
-        size: 17,
-        color: foregroundColor,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
       ),
-      label: Text(
-        label,
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: foregroundColor,
-          fontWeight: FontWeight.w500,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius:
+        BorderRadius.circular(20),
+        border: Border.all(
+          color: borderColor,
         ),
       ),
-      backgroundColor: backgroundColor,
-      side: BorderSide.none,
-      visualDensity: VisualDensity.compact,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 4,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: foregroundColor,
+          ),
+
+          const SizedBox(width: 6),
+
+          Text(
+            label,
+            style:
+            theme.textTheme.labelMedium?.copyWith(
+              color: foregroundColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -63,7 +63,7 @@ class EmployeeViewPage extends StatelessWidget {
     final employeeName =
     employee.fullName.trim().isNotEmpty
         ? employee.fullName
-        : employee.firstName;
+        : "";
 
     final firstLetter =
     employeeName.trim().isNotEmpty
@@ -173,26 +173,6 @@ class EmployeeViewPage extends StatelessWidget {
                           ),
 
                           const SizedBox(
-                            height: 6,
-                          ),
-
-                          // =========================================
-                          // EMPLOYEE CODE
-                          // =========================================
-
-                          if (employee.employeeCode != null &&
-                              employee.employeeCode!
-                                  .trim()
-                                  .isNotEmpty)
-                            Text(
-                              employee.employeeCode!,
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-
-                          const SizedBox(
                             height: 14,
                           ),
 
@@ -232,14 +212,6 @@ class EmployeeViewPage extends StatelessWidget {
                         ),
 
                         AppDetailTile(
-                          icon: Icons.badge,
-                          title: 'Employee Code',
-                          value: _value(
-                            employee.employeeCode,
-                          ),
-                        ),
-
-                        AppDetailTile(
                           icon: Icons.credit_card,
                           title: 'Card No',
                           value: _value(
@@ -247,21 +219,6 @@ class EmployeeViewPage extends StatelessWidget {
                           ),
                         ),
 
-                        AppDetailTile(
-                          icon: Icons.person,
-                          title: 'First Name',
-                          value: _value(
-                            employee.firstName,
-                          ),
-                        ),
-
-                        AppDetailTile(
-                          icon: Icons.person_outline,
-                          title: 'Last Name',
-                          value: _value(
-                            employee.lastName,
-                          ),
-                        ),
 
                         AppDetailTile(
                           icon: Icons.person,

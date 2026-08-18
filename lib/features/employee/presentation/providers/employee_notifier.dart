@@ -209,15 +209,6 @@ class EmployeeNotifier
       return employee.fullName
           .toLowerCase()
           .contains(query) ||
-          employee.firstName
-              .toLowerCase()
-              .contains(query) ||
-          (employee.lastName ?? '')
-              .toLowerCase()
-              .contains(query) ||
-          (employee.employeeCode ?? '')
-              .toLowerCase()
-              .contains(query) ||
           (employee.mobile ?? '')
               .toLowerCase()
               .contains(query) ||

@@ -20,25 +20,59 @@ Future<bool?> showCompanyAccountDeleteDialog(
     context: context,
     barrierDismissible: false,
     builder: (dialogContext) {
-      final screenWidth =
-          MediaQuery.sizeOf(dialogContext).width;
+      // ===========================================================
+      // RESPONSIVE
+      // ===========================================================
 
-      final dialogWidth =
-      screenWidth >= 600
-          ? 500.0
-          : screenWidth * 0.92;
+      final width = MediaQuery.sizeOf(dialogContext).width;
+
+      final bool isDesktop = width >= 900;
+      final bool isTablet = width >= 600 && width < 900;
+
+      final double dialogWidth = isDesktop
+          ? 500
+          : isTablet
+          ? 480
+          : width * 0.92;
+
+      final double dialogPadding = isDesktop
+          ? 24
+          : isTablet
+          ? 22
+          : 18;
+
+      final double titleSize = isDesktop
+          ? 20
+          : 19;
+
+      final double iconBoxSize = isDesktop
+          ? 64
+          : 60;
+
+      final double iconSize = isDesktop
+          ? 32
+          : 30;
+
+      final double buttonHeight = isDesktop
+          ? 52
+          : 50;
 
       return Dialog(
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: isDesktop
+              ? 24
+              : 16,
+          vertical: 24,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: dialogWidth,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(dialogPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -47,23 +81,26 @@ Future<bool?> showCompanyAccountDeleteDialog(
                 // =================================================
 
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: iconBoxSize,
+                  height: iconBoxSize,
                   decoration: BoxDecoration(
-                    color:
-                    colorScheme.errorContainer,
-                    borderRadius:
-                    BorderRadius.circular(20),
+                    color: colorScheme.errorContainer,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: colorScheme.error.withValues(
+                        alpha: 0.12,
+                      ),
+                    ),
                   ),
+                  alignment: Alignment.center,
                   child: Icon(
                     Icons.delete_outline_rounded,
-                    size: 32,
-                    color:
-                    colorScheme.onErrorContainer,
+                    size: iconSize,
+                    color: colorScheme.onErrorContainer,
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
 
                 // =================================================
                 // TITLE
@@ -72,9 +109,10 @@ Future<bool?> showCompanyAccountDeleteDialog(
                 Text(
                   'Delete Company Account?',
                   textAlign: TextAlign.center,
-                  style:
-                  theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
                   ),
                 ),
 
@@ -88,11 +126,10 @@ Future<bool?> showCompanyAccountDeleteDialog(
                   'You are about to permanently delete this '
                       'company login account.',
                   textAlign: TextAlign.center,
-                  style:
-                  theme.textTheme.bodyMedium?.copyWith(
-                    color:
-                    colorScheme.onSurfaceVariant,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
                     height: 1.45,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
 
@@ -104,15 +141,12 @@ Future<bool?> showCompanyAccountDeleteDialog(
 
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(
-                    color:
-                    colorScheme.surfaceContainerLow,
-                    borderRadius:
-                    BorderRadius.circular(14),
+                    color: colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color:
-                      colorScheme.outlineVariant,
+                      color: colorScheme.outlineVariant,
                     ),
                   ),
                   child: Row(
@@ -121,15 +155,14 @@ Future<bool?> showCompanyAccountDeleteDialog(
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color:
-                          colorScheme.primaryContainer,
-                          borderRadius:
-                          BorderRadius.circular(12),
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(11),
                         ),
+                        alignment: Alignment.center,
                         child: Icon(
                           Icons.person_outline_rounded,
-                          color: colorScheme
-                              .onPrimaryContainer,
+                          size: 20,
+                          color: colorScheme.onPrimaryContainer,
                         ),
                       ),
 
@@ -142,26 +175,24 @@ Future<bool?> showCompanyAccountDeleteDialog(
                           children: [
                             Text(
                               'Account',
-                              style: theme
-                                  .textTheme
-                                  .labelSmall
+                              style: theme.textTheme.labelSmall
                                   ?.copyWith(
-                                color: colorScheme
-                                    .onSurfaceVariant,
+                                color:
+                                colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
+
                             const SizedBox(height: 2),
+
                             Text(
                               fullName,
                               maxLines: 2,
-                              overflow:
-                              TextOverflow.ellipsis,
-                              style: theme
-                                  .textTheme
-                                  .bodyMedium
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodyMedium
                                   ?.copyWith(
-                                fontWeight:
-                                FontWeight.w800,
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
@@ -171,7 +202,7 @@ Future<bool?> showCompanyAccountDeleteDialog(
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // =================================================
                 // WARNING
@@ -181,11 +212,15 @@ Future<bool?> showCompanyAccountDeleteDialog(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color:
-                    colorScheme.errorContainer
-                        .withValues(alpha: 0.55),
-                    borderRadius:
-                    BorderRadius.circular(13),
+                    color: colorScheme.errorContainer.withValues(
+                      alpha: 0.55,
+                    ),
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(
+                      color: colorScheme.error.withValues(
+                        alpha: 0.10,
+                      ),
+                    ),
                   ),
                   child: Row(
                     crossAxisAlignment:
@@ -194,21 +229,19 @@ Future<bool?> showCompanyAccountDeleteDialog(
                       Icon(
                         Icons.warning_amber_rounded,
                         size: 20,
-                        color:
-                        colorScheme.onErrorContainer,
+                        color: colorScheme.onErrorContainer,
                       ),
+
                       const SizedBox(width: 9),
+
                       Expanded(
                         child: Text(
                           'This action cannot be undone.',
-                          style: theme
-                              .textTheme
-                              .bodySmall
+                          style: theme.textTheme.bodySmall
                               ?.copyWith(
-                            color: colorScheme
-                                .onErrorContainer,
-                            fontWeight:
-                            FontWeight.w700,
+                            color:
+                            colorScheme.onErrorContainer,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -225,40 +258,72 @@ Future<bool?> showCompanyAccountDeleteDialog(
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(
-                            dialogContext,
-                            false,
-                          );
-                        },
-                        child:
-                        const Text('Cancel'),
+                      child: SizedBox(
+                        height: buttonHeight,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(
+                              dialogContext,
+                              false,
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor:
+                            colorScheme.onSurface,
+                            side: BorderSide(
+                              color: colorScheme.outline,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                              BorderRadius.circular(13),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: theme.textTheme.labelLarge
+                                ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
 
                     const SizedBox(width: 10),
 
                     Expanded(
-                      child: FilledButton.icon(
-                        style:
-                        FilledButton.styleFrom(
-                          backgroundColor:
-                          colorScheme.error,
-                          foregroundColor:
-                          colorScheme.onError,
+                      child: SizedBox(
+                        height: buttonHeight,
+                        child: FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor:
+                            colorScheme.error,
+                            foregroundColor:
+                            colorScheme.onError,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                              BorderRadius.circular(13),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(
+                              dialogContext,
+                              true,
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            size: 20,
+                          ),
+                          label: Text(
+                            'Delete',
+                            style: theme.textTheme.labelLarge
+                                ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                        onPressed: () {
-                          Navigator.pop(
-                            dialogContext,
-                            true,
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.delete_outline_rounded,
-                        ),
-                        label:
-                        const Text('Delete'),
                       ),
                     ),
                   ],

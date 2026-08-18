@@ -17,9 +17,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../attendance/domain/entities/attendance_report_filter.dart';
-import '../../attendance/presentation/providers/attendance_report_provider.dart';
-import '../../attendance/presentation/widgets/attendance_report_item.dart';
+import '../../domain/entities/attendance_report_filter.dart';
+import '../providers/attendance_report_provider.dart';
+import '../widgets/attendance_report_item.dart';
 
 class SupervisorEmployeeAttendanceReportPage
     extends ConsumerStatefulWidget {

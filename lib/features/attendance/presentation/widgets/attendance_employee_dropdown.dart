@@ -16,29 +16,107 @@ class AttendanceEmployeeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final width = MediaQuery.sizeOf(context).width;
+
+    final bool isDesktop = width >= 900;
+    final bool isTablet = width >= 600 && width < 900;
+
+    final double radius = isDesktop
+        ? 14
+        : isTablet
+        ? 13
+        : 12;
+
     return DropdownButtonFormField<EmployeeEntity>(
       value: value,
       isExpanded: true,
-      decoration: const InputDecoration(
+
+      decoration: InputDecoration(
         labelText: 'Employee',
-        border: OutlineInputBorder(),
+        hintText: 'Select employee',
+        prefixIcon: const Icon(
+          Icons.person_outline_rounded,
+        ),
+
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest
+            .withOpacity(.35),
+
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 15,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+          ),
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+          ),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(
+            color: colorScheme.primary,
+            width: 1.5,
+          ),
+        ),
+
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+          ),
+        ),
+
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+            width: 1.5,
+          ),
+        ),
       ),
+
+      icon: Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: colorScheme.onSurfaceVariant,
+      ),
+
       items: employees
           .map(
-            (e) => DropdownMenuItem(
-          value: e,
+            (employee) => DropdownMenuItem<EmployeeEntity>(
+          value: employee,
           child: Text(
-            '${e.fullName}',
+            employee.fullName,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurface,
+            ),
           ),
         ),
       )
           .toList(),
+
       onChanged: onChanged,
-      validator: (value) {
-        if (value == null) {
+
+      validator: (selectedEmployee) {
+        if (selectedEmployee == null) {
           return 'Please select employee';
         }
+
         return null;
       },
     );

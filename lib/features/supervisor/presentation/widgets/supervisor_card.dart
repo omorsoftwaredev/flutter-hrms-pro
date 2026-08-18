@@ -58,19 +58,25 @@ class SupervisorCard extends StatelessWidget {
     final employeeCode = _value('employee_code');
     final status = _value('status');
 
-    final isActive = status.toLowerCase() == 'active' || status == '-';
+    final isActive =
+        status.toLowerCase() == 'active' || status == '-';
 
-    final statusColor = isActive ? colorScheme.primary : colorScheme.error;
+    final statusColor =
+    isActive ? colorScheme.primary : colorScheme.error;
 
-    final statusBackground = statusColor.withValues(alpha: 0.10);
+    final statusBackground =
+    statusColor.withValues(alpha: 0.10);
 
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
+      color: colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.18)),
+        side: BorderSide(
+          color: colorScheme.outline.withValues(alpha: 0.18),
+        ),
       ),
       child: InkWell(
         onTap: onTap,
@@ -87,22 +93,24 @@ class SupervisorCard extends StatelessWidget {
                   // =================================================
                   // HEADER
                   // =================================================
+
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // =============================================
                       // AVATAR
                       // =============================================
+
                       Container(
                         width: isCompact ? 46 : 52,
                         height: isCompact ? 46 : 52,
                         decoration: BoxDecoration(
-                          color: colorScheme.primary.withValues(alpha: 0.10),
+                          color: colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Icon(
                           Icons.supervisor_account_outlined,
-                          color: colorScheme.primary,
+                          color: colorScheme.onPrimaryContainer,
                           size: isCompact ? 24 : 27,
                         ),
                       ),
@@ -112,29 +120,34 @@ class SupervisorCard extends StatelessWidget {
                       // =============================================
                       // EMPLOYEE INFO
                       // =============================================
+
                       Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
                           children: [
                             Text(
                               name,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleMedium?.copyWith(
+                              style:
+                              theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
+                                color: colorScheme.onSurface,
                               ),
                             ),
 
                             const SizedBox(height: 5),
 
                             Row(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.center,
                               children: [
                                 Icon(
                                   Icons.badge_outlined,
                                   size: 15,
-                                  color: theme.colorScheme.onSurface.withValues(
-                                    alpha: 0.55,
-                                  ),
+                                  color:
+                                  colorScheme.onSurfaceVariant,
                                 ),
 
                                 const SizedBox(width: 5),
@@ -144,12 +157,15 @@ class SupervisorCard extends StatelessWidget {
                                     employeeCode == '-'
                                         ? 'Employee Code: -'
                                         : 'Employee Code: '
-                                              '$employeeCode',
+                                        '$employeeCode',
                                     maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.60),
+                                    overflow:
+                                    TextOverflow.ellipsis,
+                                    style: theme
+                                        .textTheme.bodySmall
+                                        ?.copyWith(
+                                      color: colorScheme
+                                          .onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -164,8 +180,13 @@ class SupervisorCard extends StatelessWidget {
                       // =============================================
                       // MENU
                       // =============================================
+
                       PopupMenuButton<String>(
                         tooltip: 'More options',
+                        icon: Icon(
+                          Icons.more_vert_rounded,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                         onSelected: (value) {
                           switch (value) {
                             case 'edit':
@@ -181,25 +202,33 @@ class SupervisorCard extends StatelessWidget {
                           return [
                             const PopupMenuItem<String>(
                               value: 'edit',
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: Icon(Icons.edit_outlined),
-                                title: Text('Edit'),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.edit_outlined,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text('Edit'),
+                                ],
                               ),
                             ),
 
                             PopupMenuItem<String>(
                               value: 'delete',
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: Icon(
-                                  Icons.delete_outline,
-                                  color: colorScheme.error,
-                                ),
-                                title: Text(
-                                  'Delete',
-                                  style: TextStyle(color: colorScheme.error),
-                                ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete_outline,
+                                    color: colorScheme.error,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      color: colorScheme.error,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ];
@@ -213,6 +242,7 @@ class SupervisorCard extends StatelessWidget {
                   // =================================================
                   // STATUS
                   // =================================================
+
                   Row(
                     children: [
                       Container(
@@ -222,7 +252,8 @@ class SupervisorCard extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: statusBackground,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius:
+                          BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -240,7 +271,9 @@ class SupervisorCard extends StatelessWidget {
 
                             Text(
                               isActive ? 'Active' : status,
-                              style: theme.textTheme.labelMedium?.copyWith(
+                              style: theme
+                                  .textTheme.labelMedium
+                                  ?.copyWith(
                                 color: statusColor,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -251,13 +284,11 @@ class SupervisorCard extends StatelessWidget {
 
                       const Spacer(),
 
-                      // Optional supervisor indicator
                       Icon(
                         Icons.supervisor_account_outlined,
                         size: 18,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.35,
-                        ),
+                        color: colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.55),
                       ),
                     ],
                   ),
@@ -267,9 +298,11 @@ class SupervisorCard extends StatelessWidget {
                   // =================================================
                   // DIVIDER
                   // =================================================
+
                   Divider(
                     height: 1,
-                    color: colorScheme.outline.withValues(alpha: 0.15),
+                    color: colorScheme.outline
+                        .withValues(alpha: 0.15),
                   ),
 
                   const SizedBox(height: 14),
@@ -277,25 +310,46 @@ class SupervisorCard extends StatelessWidget {
                   // =================================================
                   // ACTIONS
                   // =================================================
+
                   if (isCompact)
                     Column(
                       children: [
+                        // ===========================================
+                        // EDIT
+                        // ===========================================
+
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: onEdit,
-                            icon: const Icon(Icons.edit_outlined, size: 19),
-                            label: const Text('Edit Supervisor'),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              size: 19,
+                            ),
+                            label:
+                            const Text('Edit Supervisor'),
+                            style:
+                            OutlinedButton.styleFrom(
+                              foregroundColor:
+                              colorScheme.primary,
+                              padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(12),
                               ),
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 8),
+
+                        // ===========================================
+                        // DELETE
+                        // ===========================================
 
                         SizedBox(
                           width: double.infinity,
@@ -308,16 +362,26 @@ class SupervisorCard extends StatelessWidget {
                             ),
                             label: Text(
                               'Delete',
-                              style: TextStyle(color: colorScheme.error),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: colorScheme.error,
-                              side: BorderSide(
-                                color: colorScheme.error.withValues(alpha: 0.5),
+                              style: TextStyle(
+                                color: colorScheme.error,
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                            ),
+                            style:
+                            OutlinedButton.styleFrom(
+                              foregroundColor:
+                              colorScheme.error,
+                              side: BorderSide(
+                                color: colorScheme.error
+                                    .withValues(alpha: 0.5),
+                              ),
+                              padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(12),
                               ),
                             ),
                           ),
@@ -327,21 +391,41 @@ class SupervisorCard extends StatelessWidget {
                   else
                     Row(
                       children: [
+                        // =========================================
+                        // EDIT
+                        // =========================================
+
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: onEdit,
-                            icon: const Icon(Icons.edit_outlined, size: 19),
-                            label: const Text('Edit Supervisor'),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              size: 19,
+                            ),
+                            label:
+                            const Text('Edit Supervisor'),
+                            style:
+                            OutlinedButton.styleFrom(
+                              foregroundColor:
+                              colorScheme.primary,
+                              padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(12),
                               ),
                             ),
                           ),
                         ),
 
                         const SizedBox(width: 10),
+
+                        // =========================================
+                        // DELETE
+                        // =========================================
 
                         Expanded(
                           child: OutlinedButton.icon(
@@ -353,16 +437,26 @@ class SupervisorCard extends StatelessWidget {
                             ),
                             label: Text(
                               'Delete',
-                              style: TextStyle(color: colorScheme.error),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: colorScheme.error,
-                              side: BorderSide(
-                                color: colorScheme.error.withValues(alpha: 0.5),
+                              style: TextStyle(
+                                color: colorScheme.error,
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                            ),
+                            style:
+                            OutlinedButton.styleFrom(
+                              foregroundColor:
+                              colorScheme.error,
+                              side: BorderSide(
+                                color: colorScheme.error
+                                    .withValues(alpha: 0.5),
+                              ),
+                              padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(12),
                               ),
                             ),
                           ),

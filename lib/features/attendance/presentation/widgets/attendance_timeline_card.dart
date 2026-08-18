@@ -20,63 +20,85 @@ class AttendanceTimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final width = MediaQuery.sizeOf(context).width;
+
+    final bool isDesktop = width >= 900;
+    final bool isTablet = width >= 600 && width < 900;
+
+    final double cardPadding = isDesktop
+        ? 24
+        : isTablet
+        ? 20
+        : 16;
+
     return Card(
       elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          isDesktop ? 18 : 16,
+        ),
+        side: BorderSide(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(cardPadding),
         child: Column(
           children: [
-
             _item(
               context,
-              Icons.login,
-              "Check In",
-              _format(checkInTime),
+              icon: Icons.login_rounded,
+              title: "Check In",
+              value: _format(checkInTime),
             ),
 
-            const Divider(),
+            const Divider(height: 24),
 
             _item(
               context,
-              Icons.logout,
-              "Check Out",
-              _format(checkOutTime),
+              icon: Icons.logout_rounded,
+              title: "Check Out",
+              value: _format(checkOutTime),
             ),
 
-            const Divider(),
+            const Divider(height: 24),
 
             _item(
               context,
-              Icons.timer,
-              "Working Time",
-              "$workMinutes Minutes",
+              icon: Icons.timer_outlined,
+              title: "Working Time",
+              value: "$workMinutes Minutes",
             ),
 
-            const Divider(),
+            const Divider(height: 24),
 
             _item(
               context,
-              Icons.schedule,
-              "Overtime",
-              "$overtimeMinutes Minutes",
+              icon: Icons.schedule_rounded,
+              title: "Overtime",
+              value: "$overtimeMinutes Minutes",
             ),
 
-            const Divider(),
+            const Divider(height: 24),
 
             _item(
               context,
-              Icons.warning_amber_rounded,
-              "Late",
-              "$lateMinutes Minutes",
+              icon: Icons.warning_amber_rounded,
+              title: "Late",
+              value: "$lateMinutes Minutes",
             ),
 
-            const Divider(),
+            const Divider(height: 24),
 
             _item(
               context,
-              Icons.exit_to_app,
-              "Early Exit",
-              "$earlyExitMinutes Minutes",
+              icon: Icons.exit_to_app_rounded,
+              title: "Early Exit",
+              value: "$earlyExitMinutes Minutes",
             ),
           ],
         ),
@@ -85,34 +107,92 @@ class AttendanceTimelineCard extends StatelessWidget {
   }
 
   Widget _item(
-      BuildContext context,
-      IconData icon,
-      String title,
-      String value,
-      ) {
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required String value,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final width = MediaQuery.sizeOf(context).width;
+
+    final bool isDesktop = width >= 900;
+    final bool isTablet = width >= 600 && width < 900;
+
+    final double iconContainerSize = isDesktop
+        ? 42
+        : isTablet
+        ? 40
+        : 38;
+
+    final double iconSize = isDesktop
+        ? 20
+        : 18;
+
+    final double titleSize = isDesktop
+        ? 15
+        : 14;
+
+    final double valueSize = isDesktop
+        ? 15
+        : 14;
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-
-        CircleAvatar(
-          radius: 18,
-          child: Icon(icon, size: 18),
-        ),
-
-        const SizedBox(width: 16),
-
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium,
+        // =========================================================
+        // ICON
+        // =========================================================
+        Container(
+          width: iconContainerSize,
+          height: iconContainerSize,
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(
+              alpha: 0.10,
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: iconSize,
+            color: colorScheme.primary,
           ),
         ),
 
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
+        const SizedBox(width: 14),
+
+        // =========================================================
+        // TITLE
+        // =========================================================
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontSize: titleSize,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // =========================================================
+        // VALUE
+        // =========================================================
+        Flexible(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: valueSize,
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurface,
+            ),
           ),
         ),
       ],

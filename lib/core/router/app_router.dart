@@ -14,8 +14,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 
-import '../../features/employee_dashboard/pages/employee_dashboard_page.dart';
-import '../../features/supervisor_dashboard/pages/supervisor_dashboard_page.dart';
+import '../../features/dashboard/pages/employee_dashboard_page.dart';
+import '../../features/dashboard/pages/supervisor_dashboard_page.dart';
 import 'company_dashboard_router.dart';
 import 'employee_dashboard_router.dart';
 import 'route_names.dart';

@@ -11,99 +11,202 @@ class AttendanceBasicInfoCard extends StatelessWidget {
     required this.attendance,
   });
 
+  // =============================================================
+  // INFO ROW
+  // =============================================================
+
+  Widget _row(
+      BuildContext context,
+      String title,
+      String value,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            title,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        Expanded(
+          flex: 4,
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // =============================================================
+  // DIVIDER
+  // =============================================================
+
+  Widget _divider(BuildContext context) {
+    return Divider(
+      height: 24,
+      color: Theme.of(context)
+          .colorScheme
+          .outlineVariant,
+    );
+  }
+
+  // =============================================================
+  // BUILD
+  // =============================================================
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final width = MediaQuery.sizeOf(context).width;
+
+    final bool isDesktop = width >= 900;
+    final bool isTablet = width >= 600 && width < 900;
+
+    final double cardPadding = isDesktop
+        ? 22
+        : isTablet
+        ? 20
+        : 16;
+
     return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(cardPadding),
         child: Column(
           children: [
+            // =====================================================
+            // ATTENDANCE NO
+            // =====================================================
+
             _row(
-              "Attendance No",
+              context,
+              'Attendance No',
               attendance.attendanceNo,
             ),
 
-            _divider(),
+            _divider(context),
+
+            // =====================================================
+            // DATE
+            // =====================================================
 
             _row(
-              "Date",
+              context,
+              'Date',
               attendance.attendanceDate
                   .toString()
-                  .split(" ")
+                  .split(' ')
                   .first,
             ),
 
-            _divider(),
+            _divider(context),
+
+            // =====================================================
+            // SHIFT
+            // =====================================================
 
             _row(
-              "Shift",
-              attendance.shiftName ?? "--",
+              context,
+              'Shift',
+              attendance.shiftName ?? '--',
             ),
 
-            _divider(),
+            _divider(context),
+
+            // =====================================================
+            // CHECK IN
+            // =====================================================
 
             _row(
-              "Check In",
+              context,
+              'Check In',
               attendance.checkInTime == null
-                  ? "--"
+                  ? '--'
                   : attendance.checkInTime.toString(),
             ),
 
-            _divider(),
+            _divider(context),
+
+            // =====================================================
+            // CHECK OUT
+            // =====================================================
 
             _row(
-              "Check Out",
+              context,
+              'Check Out',
               attendance.checkOutTime == null
-                  ? "--"
+                  ? '--'
                   : attendance.checkOutTime.toString(),
             ),
 
-            _divider(),
+            _divider(context),
+
+            // =====================================================
+            // STATUS
+            // =====================================================
 
             Row(
+              crossAxisAlignment:
+              CrossAxisAlignment.center,
               children: [
-                const Text(
-                  "Status",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Status',
+                    style:
+                    theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ),
 
-                const Spacer(),
+                const SizedBox(width: 16),
 
-                AttendanceStatusChip(
-                  status: attendance.attendanceStatus,
+                Expanded(
+                  flex: 4,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: AttendanceStatusChip(
+                      status:
+                      attendance.attendanceStatus,
+                    ),
+                  ),
                 ),
               ],
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _divider() => const Divider(height: 22);
-
-  Widget _row(String title, String value) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 3,
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 4,
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-          ),
-        ),
-      ],
     );
   }
 }

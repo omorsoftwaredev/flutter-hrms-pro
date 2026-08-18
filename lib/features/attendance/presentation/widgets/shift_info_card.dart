@@ -10,29 +10,64 @@ class ShiftInfoCard extends StatelessWidget {
     required this.attendance,
   });
 
-  Widget _item(
-      String title,
-      String value,
-      ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
+  // =============================================================
+  // Helpers
+  // =============================================================
 
-          SizedBox(
-            width: 130,
+  Widget _item(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required String value,
+      }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: colorScheme.primary,
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            flex: 2,
             child: Text(
               title,
-              style: const TextStyle(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
 
-          const Text(": "),
+          const SizedBox(width: 12),
 
           Expanded(
-            child: Text(value),
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              softWrap: true,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+            ),
           ),
         ],
       ),
@@ -40,78 +75,171 @@ class ShiftInfoCard extends StatelessWidget {
   }
 
   String _formatTime(String? time) {
-    if (time == null || time.isEmpty) {
-      return "--";
+    if (time == null || time.trim().isEmpty) {
+      return '--';
     }
 
     return time;
   }
 
+  // =============================================================
+  // Build
+  // =============================================================
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final size = MediaQuery.sizeOf(context);
+
+    final bool isDesktop = size.width >= 900;
+    final double cardPadding = isDesktop ? 22 : 16;
+
     return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: colorScheme.outlineVariant,
+        ),
+      ),
+
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(cardPadding),
 
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
+            // =====================================================
+            // Header
+            // =====================================================
 
-            const Row(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.schedule_rounded,
+                    color: colorScheme.primary,
+                    size: 22,
+                  ),
+                ),
 
-                Icon(Icons.schedule),
+                const SizedBox(width: 12),
 
-                SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Shift Information',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
 
-                Text(
-                  "Shift Information",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight:
-                    FontWeight.bold,
+                      const SizedBox(height: 2),
+
+                      Text(
+                        'Shift schedule and attendance timing',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
 
-            const Divider(height: 24),
+            const SizedBox(height: 16),
+
+            Divider(
+              height: 1,
+              color: colorScheme.outlineVariant,
+            ),
+
+            const SizedBox(height: 6),
+
+            // =====================================================
+            // Shift Name
+            // =====================================================
 
             _item(
-              "Shift Name",
-              attendance.shiftName ?? "--",
+              context,
+              icon: Icons.badge_outlined,
+              title: 'Shift Name',
+              value: attendance.shiftName ?? '--',
             ),
 
             _item(
-              "Shift Start",
-              _formatTime(attendance.shiftStart),
+              context,
+              icon: Icons.login_rounded,
+              title: 'Shift Start',
+              value: _formatTime(attendance.shiftStart),
             ),
 
             _item(
-              "Shift End",
-              _formatTime(attendance.shiftEnd),
+              context,
+              icon: Icons.logout_rounded,
+              title: 'Shift End',
+              value: _formatTime(attendance.shiftEnd),
+            ),
+
+            // =====================================================
+            // Attendance Metrics
+            // =====================================================
+
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 8,
+                bottom: 4,
+              ),
+              child: Text(
+                'Attendance Metrics',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.primary,
+                ),
+              ),
             ),
 
             _item(
-              "Work Minutes",
-              "${attendance.workMinutes} Minutes",
+              context,
+              icon: Icons.work_history_outlined,
+              title: 'Work Minutes',
+              value: '${attendance.workMinutes} Minutes',
             ),
 
             _item(
-              "Late Minutes",
-              "${attendance.lateMinutes} Minutes",
+              context,
+              icon: Icons.warning_amber_rounded,
+              title: 'Late Minutes',
+              value: '${attendance.lateMinutes} Minutes',
             ),
 
             _item(
-              "Overtime",
-              "${attendance.overtimeMinutes} Minutes",
+              context,
+              icon: Icons.trending_up_rounded,
+              title: 'Overtime',
+              value: '${attendance.overtimeMinutes} Minutes',
             ),
 
             _item(
-              "Early Exit",
-              "${attendance.earlyExitMinutes} Minutes",
+              context,
+              icon: Icons.exit_to_app_rounded,
+              title: 'Early Exit',
+              value: '${attendance.earlyExitMinutes} Minutes',
             ),
           ],
         ),
