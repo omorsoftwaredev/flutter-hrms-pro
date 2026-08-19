@@ -9,8 +9,7 @@ class LocationService {
   /// ===============================
 
   Future<bool> requestPermission() async {
-    bool enabled =
-    await Geolocator.isLocationServiceEnabled();
+    final enabled = await Geolocator.isLocationServiceEnabled();
 
     if (!enabled) {
       return false;
@@ -20,14 +19,11 @@ class LocationService {
     await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
-      permission =
-      await Geolocator.requestPermission();
+      permission = await Geolocator.requestPermission();
     }
 
-    if (permission ==
-        LocationPermission.denied ||
-        permission ==
-            LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       return false;
     }
 
@@ -54,8 +50,7 @@ class LocationService {
     required double latitude,
     required double longitude,
   }) async {
-    final places =
-    await placemarkFromCoordinates(
+    final places = await placemarkFromCoordinates(
       latitude,
       longitude,
     );
@@ -66,11 +61,10 @@ class LocationService {
 
     final place = places.first;
 
-    return
-      '${place.street}, '
-          '${place.subLocality}, '
-          '${place.locality}, '
-          '${place.country}';
+    return '${place.street}, '
+        '${place.subLocality}, '
+        '${place.locality}, '
+        '${place.country}';
   }
 
   /// ===============================
@@ -78,9 +72,9 @@ class LocationService {
   /// ===============================
 
   Future<double> latitude() async {
-    final p = await getCurrentPosition();
+    final position = await getCurrentPosition();
 
-    return p.latitude;
+    return position.latitude;
   }
 
   /// ===============================
@@ -88,43 +82,52 @@ class LocationService {
   /// ===============================
 
   Future<double> longitude() async {
-    final p = await getCurrentPosition();
+    final position = await getCurrentPosition();
 
-    return p.longitude;
+    return position.longitude;
   }
 
   /// ===============================
-  /// Position
+  /// Complete Location
   /// ===============================
+  ///
+  /// Returns:
+  /// - Latitude
+  /// - Longitude
+  /// - Address
+  /// - Accuracy (meters)
+  ///
 
   Future<({
   double latitude,
   double longitude,
   String address,
+  double accuracy,
   })> getLocation() async {
+    // Check permission
+    final permissionGranted = await requestPermission();
 
-    final ok =
-    await requestPermission();
-
-    if (!ok) {
+    if (!permissionGranted) {
       throw Exception(
         'Location permission denied.',
       );
     }
 
-    final position =
-    await getCurrentPosition();
+    // Get current GPS position
+    final position = await getCurrentPosition();
 
-    final address =
-    await getAddress(
+    // Get address from coordinates
+    final address = await getAddress(
       latitude: position.latitude,
       longitude: position.longitude,
     );
 
+    // Return complete location information
     return (
     latitude: position.latitude,
     longitude: position.longitude,
     address: address,
+    accuracy: position.accuracy,
     );
   }
 }

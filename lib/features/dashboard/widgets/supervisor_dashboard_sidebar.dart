@@ -172,10 +172,59 @@ class _SupervisorDashboardSidebarState
                     icon: Icons.fact_check_outlined,
                     color: colorScheme.secondary,
                     children: [
+                      // =============================================
+                      // MOBILE ATTENDANCE
+                      // =============================================
+
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.fingerprint,
+                        title: 'Mobile Attendance',
+                        onTap: () {
+                          _navigate(
+                            context,
+                            RoutePaths.mobileAttendance,
+                          );
+                        },
+                      ),
+
+                      // =============================================
+                      // ATTENDANCE REPORT
+                      // =============================================
+
                       _buildChildMenuItem(
                         context,
                         icon: Icons.assessment_outlined,
-                        title: 'Attendance Report',
+                        title: 'Own Attendance Report',
+                        onTap: () {
+                          Navigator.pop(context);
+
+                          final employeeId =
+                          user.employeeId.trim();
+
+                          if (employeeId.isEmpty) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Employee ID not found.',
+                                ),
+                              ),
+                            );
+
+                            return;
+                          }
+
+                          context.push(
+                            '${RoutePaths.employeeAttendanceReport}'
+                                '?employeeId=$employeeId',
+                          );
+                        },
+                      ),
+                      _buildChildMenuItem(
+                        context,
+                        icon: Icons.assessment_outlined,
+                        title: 'Dept Attendance Report',
                         onTap: () {
                           Navigator.pop(context);
 
@@ -208,7 +257,6 @@ class _SupervisorDashboardSidebarState
                       ),
                     ],
                   ),
-
                   // =================================================
                   // ACCOUNT
                   // =================================================

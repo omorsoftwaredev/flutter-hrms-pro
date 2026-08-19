@@ -540,20 +540,31 @@ class _EmployeeAttendanceReportPageState
   // STATUS FILTER
   // ===========================================================
 
+  // ===========================================================
+// STATUS FILTER
+// ===========================================================
+
   Widget _buildStatusFilter() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      physics:
-      const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
 
       child: Row(
         children: [
+          // -----------------------------------------------------
+          // ALL
+          // -----------------------------------------------------
+
           _radio(
             'All',
             AttendanceReportFilter.all,
           ),
 
           const SizedBox(width: 4),
+
+          // -----------------------------------------------------
+          // ON TIME
+          // -----------------------------------------------------
 
           _radio(
             'On Time',
@@ -562,12 +573,42 @@ class _EmployeeAttendanceReportPageState
 
           const SizedBox(width: 4),
 
+          // -----------------------------------------------------
+          // LATE
+          // -----------------------------------------------------
+
           _radio(
             'Late',
             AttendanceReportFilter.late,
           ),
 
           const SizedBox(width: 4),
+
+          // -----------------------------------------------------
+          // EARLY OUT
+          // -----------------------------------------------------
+
+          _radio(
+            'Early Out',
+            AttendanceReportFilter.earlyOut,
+          ),
+
+          const SizedBox(width: 4),
+
+          // -----------------------------------------------------
+          // LATE & EARLY OUT
+          // -----------------------------------------------------
+
+          _radio(
+            'Late & Early Out',
+            AttendanceReportFilter.lateAndEarlyOut,
+          ),
+
+          const SizedBox(width: 4),
+
+          // -----------------------------------------------------
+          // ABSENT
+          // -----------------------------------------------------
 
           _radio(
             'Absent',
@@ -576,25 +617,31 @@ class _EmployeeAttendanceReportPageState
 
           const SizedBox(width: 4),
 
+          // -----------------------------------------------------
+          // LEAVE
+          // -----------------------------------------------------
+
           _radio(
             'Leave',
             AttendanceReportFilter.leave,
           ),
+
+          const SizedBox(width: 4),
+
         ],
       ),
     );
   }
 
-  // ===========================================================
-  // RADIO
-  // ===========================================================
+// ===========================================================
+// RADIO
+// ===========================================================
 
   Widget _radio(
       String title,
       AttendanceReportFilter value,
       ) {
-    final bool selected =
-        selectedFilter == value;
+    final bool selected = selectedFilter == value;
 
     return Material(
       color: Colors.transparent,
@@ -609,8 +656,9 @@ class _EmployeeAttendanceReportPageState
         },
 
         child: AnimatedContainer(
-          duration:
-          const Duration(milliseconds: 180),
+          duration: const Duration(
+            milliseconds: 180,
+          ),
 
           padding: const EdgeInsets.symmetric(
             horizontal: 9,
@@ -622,8 +670,7 @@ class _EmployeeAttendanceReportPageState
                 ? primaryColor.withOpacity(.10)
                 : Colors.transparent,
 
-            borderRadius:
-            BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
 
             border: Border.all(
               color: selected
@@ -634,6 +681,7 @@ class _EmployeeAttendanceReportPageState
 
           child: Row(
             mainAxisSize: MainAxisSize.min,
+
             children: [
               Radio<AttendanceReportFilter>(
                 value: value,
@@ -650,14 +698,12 @@ class _EmployeeAttendanceReportPageState
                 materialTapTargetSize:
                 MaterialTapTargetSize.shrinkWrap,
 
-                visualDensity:
-                const VisualDensity(
+                visualDensity: const VisualDensity(
                   horizontal: -4,
                   vertical: -4,
                 ),
 
-                activeColor:
-                primaryColor,
+                activeColor: primaryColor,
               ),
 
               const SizedBox(width: 2),

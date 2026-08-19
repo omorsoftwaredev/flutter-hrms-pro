@@ -24,162 +24,122 @@ import '../models/attendance_model.dart';
 ///   through IAttendanceRepository when required.
 /// ===============================================================
 
-class AttendanceRepositoryImpl
-implements IAttendanceRepository {
-// =============================================================
-// DATASOURCE
-// =============================================================
+class AttendanceRepositoryImpl implements IAttendanceRepository {
+  // =============================================================
+  // DATASOURCE
+  // =============================================================
 
-final AttendanceRemoteDataSource remote;
+  final AttendanceRemoteDataSource remote;
 
-// =============================================================
-// CONSTRUCTOR
-// =============================================================
+  // =============================================================
+  // CONSTRUCTOR
+  // =============================================================
 
-const AttendanceRepositoryImpl(
-this.remote,
-);
+  const AttendanceRepositoryImpl(this.remote);
 
-// =============================================================
-// GET ALL
-// =============================================================
+  // =============================================================
+  // GET ALL
+  // =============================================================
 
-@override
-Future<List<AttendanceEntity>> getAll() async {
-return await remote.getAll();
-}
+  @override
+  Future<List<AttendanceEntity>> getAll() async {
+    return await remote.getAll();
+  }
 
-// =============================================================
-// GET BY ID
-// =============================================================
+  // =============================================================
+  // GET BY ID
+  // =============================================================
 
-@override
-Future<AttendanceEntity?> getById(
-String id,
-) async {
-return await remote.getById(id);
-}
+  @override
+  Future<AttendanceEntity?> getById(String id) async {
+    return await remote.getById(id);
+  }
 
-// =============================================================
-// INSERT
-// =============================================================
+  // =============================================================
+  // INSERT
+  // =============================================================
 
-@override
-Future<void> insert(
-AttendanceEntity attendance,
-) async {
-final model =
-AttendanceModel.fromEntity(
-attendance,
-);
+  @override
+  Future<void> insert(AttendanceEntity attendance) async {
+    final model = AttendanceModel.fromEntity(attendance);
 
-await remote.insert(model);
-}
+    await remote.insert(model);
+  }
 
-// =============================================================
-// UPDATE
-// =============================================================
+  // =============================================================
+  // UPDATE
+  // =============================================================
 
-@override
-Future<void> update(
-AttendanceEntity attendance,
-) async {
-final model =
-AttendanceModel.fromEntity(
-attendance,
-);
+  @override
+  Future<void> update(AttendanceEntity attendance) async {
+    final model = AttendanceModel.fromEntity(attendance);
 
-await remote.update(model);
-}
+    await remote.update(model);
+  }
 
-// =============================================================
-// DELETE
-// =============================================================
+  // =============================================================
+  // DELETE
+  // =============================================================
 
-@override
-Future<void> delete(
-String id,
-) async {
-await remote.delete(id);
-}
+  @override
+  Future<void> delete(String id) async {
+    await remote.delete(id);
+  }
 
-// =============================================================
-// SEARCH
-// =============================================================
+  // =============================================================
+  // SEARCH
+  // =============================================================
 
-@override
-Future<List<AttendanceEntity>> search(
-String keyword,
-) async {
-return await remote.search(
-keyword,
-);
-}
+  @override
+  Future<List<AttendanceEntity>> search(String keyword) async {
+    return await remote.search(keyword);
+  }
 
-// =============================================================
-// BY EMPLOYEE
-// =============================================================
+  // =============================================================
+  // BY EMPLOYEE
+  // =============================================================
 
-@override
-Future<List<AttendanceEntity>> byEmployee(
-String employeeId,
-) async {
-return await remote.byEmployee(
-employeeId,
-);
-}
+  @override
+  Future<List<AttendanceEntity>> byEmployee(String employeeId) async {
+    return await remote.byEmployee(employeeId);
+  }
 
-// =============================================================
-// BY DEPARTMENT
-// =============================================================
+  // =============================================================
+  // BY DEPARTMENT
+  // =============================================================
 
-@override
-Future<List<AttendanceEntity>> byDepartment(
-String departmentId,
-) async {
-return await remote.byDepartment(
-departmentId,
-);
-}
+  @override
+  Future<List<AttendanceEntity>> byDepartment(String departmentId) async {
+    return await remote.byDepartment(departmentId);
+  }
 
-// =============================================================
-// BY STATUS
-// =============================================================
+  // =============================================================
+  // BY STATUS
+  // =============================================================
 
-@override
-Future<List<AttendanceEntity>> byStatus(
-String status,
-) async {
-return await remote.byStatus(
-status,
-);
-}
+  @override
+  Future<List<AttendanceEntity>> byStatus(String status) async {
+    return await remote.byStatus(status);
+  }
 
-// =============================================================
-// BY DATE
-// =============================================================
+  // =============================================================
+  // BY DATE
+  // =============================================================
 
-@override
-Future<List<AttendanceEntity>> byDate(
-DateTime date,
-) async {
-return await remote.byDate(
-date,
-);
-}
+  @override
+  Future<List<AttendanceEntity>> byDate(DateTime date) async {
+    return await remote.byDate(date);
+  }
 
-// =============================================================
-// BY DATE RANGE
-// =============================================================
+  // =============================================================
+  // BY DATE RANGE
+  // =============================================================
 
-@override
-Future<List<AttendanceEntity>> byDateRange({
-required DateTime from,
-required DateTime to,
-}) async {
-return await remote.byDateRange(
-from: from,
-to: to,
-);
-}
+  @override
+  Future<List<AttendanceEntity>> byDateRange({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    return await remote.byDateRange(from: from, to: to);
+  }
 }

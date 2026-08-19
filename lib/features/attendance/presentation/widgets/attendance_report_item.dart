@@ -30,11 +30,15 @@ class AttendanceReportItem extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+          color: colorScheme.outlineVariant.withValues(
+            alpha: 0.55,
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.06),
+            color: colorScheme.shadow.withValues(
+              alpha: 0.06,
+            ),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -42,22 +46,25 @@ class AttendanceReportItem extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Responsive layout:
-          // Smaller width -> vertical layout
-          // Larger width -> date/status + time/location side-by-side
-          final bool compact = constraints.maxWidth < 480;
+          final compact = constraints.maxWidth < 480;
 
           if (compact) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildDateSection(context),
+
                 const SizedBox(height: 10),
+
                 Divider(
                   height: 1,
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+                  color: colorScheme.outlineVariant.withValues(
+                    alpha: 0.45,
+                  ),
                 ),
+
                 const SizedBox(height: 10),
+
                 _buildTimeSection(context),
               ],
             );
@@ -67,10 +74,14 @@ class AttendanceReportItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: constraints.maxWidth < 600 ? 120 : 150,
+                width: constraints.maxWidth < 600
+                    ? 120
+                    : 150,
                 child: _buildDateSection(context),
               ),
+
               const SizedBox(width: 12),
+
               Expanded(
                 child: _buildTimeSection(context),
               ),
@@ -81,11 +92,13 @@ class AttendanceReportItem extends StatelessWidget {
     );
   }
 
-  // ===============================================================
+  // ============================================================
   // DATE + STATUS
-  // ===============================================================
+  // ============================================================
 
-  Widget _buildDateSection(BuildContext context) {
+  Widget _buildDateSection(
+      BuildContext context,
+      ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -129,35 +142,108 @@ class AttendanceReportItem extends StatelessWidget {
             ),
           ),
         ),
+
+        // ========================================================
+        // LATE + EARLY OUT SUMMARY
+        // ========================================================
+
+        if (item.lateMinutes > 0) ...[
+          const SizedBox(height: 6),
+          _smallInfo(
+            context,
+            icon: Icons.schedule_rounded,
+            text: 'Late ${item.lateMinutes} min',
+            color: Colors.orange,
+          ),
+        ],
+
+        if (item.earlyExitMinutes > 0) ...[
+          const SizedBox(height: 4),
+          _smallInfo(
+            context,
+            icon: Icons.logout_rounded,
+            text: 'Early Out ${item.earlyExitMinutes} min',
+            color: Theme.of(context).colorScheme.error,
+          ),
+        ],
       ],
     );
   }
 
-  // ===============================================================
-  // TIME SECTION
-  // ===============================================================
+  // ============================================================
+  // SMALL INFO
+  // ============================================================
 
-  Widget _buildTimeSection(BuildContext context) {
+  Widget _smallInfo(
+      BuildContext context, {
+        required IconData icon,
+        required String text,
+        required Color color,
+      }) {
+    final theme = Theme.of(context);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 13,
+          color: color,
+        ),
+
+        const SizedBox(width: 4),
+
+        Flexible(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // TIME SECTION
+  // ============================================================
+
+  Widget _buildTimeSection(
+      BuildContext context,
+      ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    if (item.status == AttendanceReportStatus.dayOff ||
-        item.status == AttendanceReportStatus.absent ||
-        item.status == AttendanceReportStatus.leave ||
-        item.status == AttendanceReportStatus.holiday) {
+    if (item.status ==
+        AttendanceReportStatus.dayOff ||
+        item.status ==
+            AttendanceReportStatus.absent ||
+        item.status ==
+            AttendanceReportStatus.leave ||
+        item.status ==
+            AttendanceReportStatus.holiday) {
       return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.info_outline,
             size: 18,
             color: colorScheme.onSurfaceVariant,
           ),
+
           const SizedBox(width: 8),
-          Text(
-            _statusMessage(),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
+
+          Expanded(
+            child: Text(
+              _statusMessage(),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -186,13 +272,21 @@ class AttendanceReportItem extends StatelessWidget {
           suffix: 'Exit',
           icon: Icons.logout_rounded,
         ),
+
+        // ========================================================
+        // WORK / LATE / EARLY OUT
+        // ========================================================
+
+        const SizedBox(height: 10),
+
+        _buildWorkSummary(context),
       ],
     );
   }
 
-  // ===============================================================
+  // ============================================================
   // TIME ROW
-  // ===============================================================
+  // ============================================================
 
   Widget _timeRow(
       BuildContext context, {
@@ -209,10 +303,13 @@ class AttendanceReportItem extends StatelessWidget {
         ? '-'
         : DateFormat(
       'hh:mm a',
-    ).format(time.toLocal());
+    ).format(
+      time.toLocal(),
+    );
 
     final location =
-    address == null || address.trim().isEmpty
+    address == null ||
+        address.trim().isEmpty
         ? '-'
         : address.trim();
 
@@ -223,7 +320,9 @@ class AttendanceReportItem extends StatelessWidget {
           width: 30,
           height: 30,
           decoration: BoxDecoration(
-            color: colorScheme.primary.withValues(alpha: 0.10),
+            color: colorScheme.primary.withValues(
+              alpha: 0.10,
+            ),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -249,6 +348,7 @@ class AttendanceReportItem extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+
                 TextSpan(
                   text: timeText,
                   style: TextStyle(
@@ -256,12 +356,15 @@ class AttendanceReportItem extends StatelessWidget {
                     color: colorScheme.primary,
                   ),
                 ),
+
                 const TextSpan(
                   text: ' - ',
                 ),
+
                 TextSpan(
                   text: location,
                 ),
+
                 TextSpan(
                   text: ' - $suffix',
                   style: TextStyle(
@@ -277,9 +380,151 @@ class AttendanceReportItem extends StatelessWidget {
     );
   }
 
-  // ===============================================================
+  // ============================================================
+  // WORK SUMMARY
+  // ============================================================
+
+  Widget _buildWorkSummary(
+      BuildContext context,
+      ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final children = <Widget>[];
+
+    // Work time
+    if (item.workMinutes > 0) {
+      children.add(
+        _summaryChip(
+          context,
+          icon: Icons.access_time_rounded,
+          label: 'Work',
+          value: _formatMinutes(
+            item.workMinutes,
+          ),
+          color: colorScheme.primary,
+        ),
+      );
+    }
+
+    // Late
+    if (item.lateMinutes > 0) {
+      children.add(
+        _summaryChip(
+          context,
+          icon: Icons.schedule_rounded,
+          label: 'Late',
+          value: '${item.lateMinutes} min',
+          color: Colors.orange,
+        ),
+      );
+    }
+
+    // Early Out
+    if (item.earlyExitMinutes > 0) {
+      children.add(
+        _summaryChip(
+          context,
+          icon: Icons.logout_rounded,
+          label: 'Early Out',
+          value: '${item.earlyExitMinutes} min',
+          color: colorScheme.error,
+        ),
+      );
+    }
+
+    if (children.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      children: children,
+    );
+  }
+
+  // ============================================================
+  // SUMMARY CHIP
+  // ============================================================
+
+  Widget _summaryChip(
+      BuildContext context, {
+        required IconData icon,
+        required String label,
+        required String value,
+        required Color color,
+      }) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 5,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(
+          alpha: 0.08,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: color,
+          ),
+
+          const SizedBox(width: 4),
+
+          Text(
+            '$label: ',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          Text(
+            value,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // FORMAT MINUTES
+  // ============================================================
+
+  String _formatMinutes(int minutes) {
+    if (minutes <= 0) {
+      return '0 min';
+    }
+
+    final hours = minutes ~/ 60;
+    final remainingMinutes = minutes % 60;
+
+    if (hours == 0) {
+      return '$remainingMinutes min';
+    }
+
+    if (remainingMinutes == 0) {
+      return '${hours}h';
+    }
+
+    return '${hours}h ${remainingMinutes}m';
+  }
+
+  // ============================================================
   // STATUS MESSAGE
-  // ===============================================================
+  // ============================================================
 
   String _statusMessage() {
     switch (item.status) {
@@ -295,14 +540,18 @@ class AttendanceReportItem extends StatelessWidget {
       case AttendanceReportStatus.holiday:
         return 'Holiday';
 
-      default:
+      case AttendanceReportStatus.earlyOut:
+        return 'Early Out';
+
+      case AttendanceReportStatus.present:
+      case AttendanceReportStatus.late:
         return '-';
     }
   }
 
-  // ===============================================================
+  // ============================================================
   // STATUS COLOR
-  // ===============================================================
+  // ============================================================
 
   Color _statusColor(
       BuildContext context,
@@ -316,6 +565,9 @@ class AttendanceReportItem extends StatelessWidget {
 
       case AttendanceReportStatus.late:
         return colorScheme.error;
+
+      case AttendanceReportStatus.earlyOut:
+        return Colors.orange;
 
       case AttendanceReportStatus.absent:
         return colorScheme.error;

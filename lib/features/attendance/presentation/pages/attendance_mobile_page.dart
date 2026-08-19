@@ -31,6 +31,7 @@ class _AttendanceMobilePageState
   double latitude = 0;
 
   double longitude = 0;
+  double accuracy = 0;
 
   // =============================================================
   // LOAD LOCATION
@@ -44,10 +45,13 @@ class _AttendanceMobilePageState
     try {
       final location = await _locationService.getLocation();
 
+      if (!mounted) return;
+
       setState(() {
         latitude = location.latitude;
         longitude = location.longitude;
         address = location.address;
+        accuracy = location.accuracy;
       });
     } catch (e) {
       if (!mounted) return;
@@ -57,11 +61,13 @@ class _AttendanceMobilePageState
           content: Text(e.toString()),
         ),
       );
-    }
+    } finally {
+      if (!mounted) return;
 
-    setState(() {
-      isLoading = false;
-    });
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   // =============================================================
@@ -93,14 +99,15 @@ class _AttendanceMobilePageState
         designationId: employee.designationId,
         employeeId: employee.id,
         shiftId: employee.shiftId,
-        attendanceNo:
-        "ATT-${DateTime.now().millisecondsSinceEpoch}",
+        attendanceNo: "ATT-${DateTime.now().millisecondsSinceEpoch}",
         attendanceDate: DateTime.now(),
         attendanceStatus: "PRESENT",
         checkInTime: DateTime.now(),
         checkInLatitude: location.latitude,
         checkInLongitude: location.longitude,
-        remarks: location.address,
+        remarks: "",
+        checkInAddress: location.address,
+        checkInAccuracy: location.accuracy,
       );
 
       final ok = await _attendanceService.checkIn(

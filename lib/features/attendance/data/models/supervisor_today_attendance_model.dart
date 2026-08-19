@@ -55,6 +55,9 @@ class SupervisorTodayAttendanceModel {
 
       case AttendanceReportStatus.holiday:
         return 'Holiday';
+
+      case AttendanceReportStatus.earlyOut:
+        return 'Early Out';
     }
   }
 }

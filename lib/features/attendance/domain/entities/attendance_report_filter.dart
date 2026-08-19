@@ -4,4 +4,6 @@ enum AttendanceReportFilter {
   late,
   absent,
   leave,
+  earlyOut,
+  lateAndEarlyOut,
 }

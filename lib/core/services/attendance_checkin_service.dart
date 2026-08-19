@@ -330,6 +330,8 @@ class AttendanceCheckInService {
       checkOutTime: now,
       latitude: location.latitude,
       longitude: location.longitude,
+      address : location.address,
+      accuracy : location.accuracy,
     );
 
     // =======================================================

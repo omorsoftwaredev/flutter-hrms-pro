@@ -41,6 +41,8 @@ class AttendanceModel extends AttendanceEntity {
 
     super.checkInAddress,
     super.checkOutAddress,
+    super.checkInAccuracy,
+    super.checkOutAccuracy,
   });
 
   // ============================================================
@@ -143,11 +145,12 @@ class AttendanceModel extends AttendanceEntity {
       )
           : null,
 
-      checkInAddress:
-      map['check_in_address']?.toString(),
+      checkInAddress: map['check_in_address']?.toString(),
 
-      checkOutAddress:
-      map['check_out_address']?.toString(),
+      checkOutAddress: map['check_out_address']?.toString(),
+      checkInAccuracy: map['check_in_accuracy'],
+
+      checkOutAccuracy: map['check_out_accuracy'],
     );
   }
 
@@ -218,11 +221,13 @@ class AttendanceModel extends AttendanceEntity {
       updatedAt:
       entity.updatedAt,
 
-      checkInAddress:
-      entity.checkInAddress,
+      checkInAddress: entity.checkInAddress,
 
-      checkOutAddress:
-      entity.checkOutAddress,
+      checkOutAddress:entity.checkOutAddress,
+
+      checkInAccuracy: entity.checkInAccuracy,
+
+      checkOutAccuracy:entity.checkOutAccuracy,
     );
   }
 
@@ -288,11 +293,12 @@ class AttendanceModel extends AttendanceEntity {
       'created_by': createdBy,
       'updated_by': updatedBy,
 
-      'check_in_address':
-      checkInAddress,
+      'check_in_address': checkInAddress,
 
-      'check_out_address':
-      checkOutAddress,
+      'check_out_address': checkOutAddress,
+      'check_in_accuracy': checkInAccuracy,
+
+      'check_out_accuracy': checkOutAccuracy,
     };
   }
 
@@ -358,11 +364,13 @@ class AttendanceModel extends AttendanceEntity {
       'updated_at':
       DateTime.now().toIso8601String(),
 
-      'check_in_address':
-      checkInAddress,
+      'check_in_address': checkInAddress,
 
-      'check_out_address':
-      checkOutAddress,
+      'check_out_address': checkOutAddress,
+
+      'check_in_accuracy': checkInAccuracy,
+
+      'check_out_accuracy': checkOutAccuracy,
     };
   }
 }

@@ -3,8 +3,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/helpers/database_error_helper.dart';
 import '../../../../core/services/supabase_service.dart';
 
+import '../../../shift/data/models/shift_model.dart';
+
 import '../../domain/entities/attendance_entity.dart';
 import '../../domain/entities/attendance_report_entity.dart';
+
 import '../models/attendance_model.dart';
 import '../models/attendance_report_model.dart';
 
@@ -13,8 +16,7 @@ class AttendanceRepository {
   // CLIENT
   //==============================================================
 
-  final SupabaseClient _supabase =
-      SupabaseService.client;
+  final SupabaseClient _supabase = SupabaseService.client;
 
   static const String _table = 'attendance';
 
@@ -26,6 +28,40 @@ class AttendanceRepository {
     return '${date.year.toString().padLeft(4, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-'
         '${date.day.toString().padLeft(2, '0')}';
+  }
+
+  //==============================================================
+  // GET SHIFT BY ID
+  //==============================================================
+
+  Future<ShiftModel?> _getShiftById(
+      String? shiftId,
+      ) async {
+    try {
+      final id = shiftId?.trim();
+
+      if (id == null || id.isEmpty) {
+        return null;
+      }
+
+      final response = await _supabase
+          .from('shifts')
+          .select()
+          .eq('id', id)
+          .maybeSingle();
+
+      if (response == null) {
+        return null;
+      }
+
+      return ShiftModel.fromJson(response);
+    } on PostgrestException catch (e) {
+      throw Exception(
+        DatabaseErrorHelper.getMessage(e),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   //==============================================================
@@ -47,6 +83,10 @@ class AttendanceRepository {
         );
       }
 
+      //============================================================
+      // NORMALIZE DATE
+      //============================================================
+
       final fromDate = DateTime(
         from.year,
         from.month,
@@ -58,6 +98,10 @@ class AttendanceRepository {
         to.month,
         to.day,
       );
+
+      //============================================================
+      // GET ATTENDANCE
+      //============================================================
 
       final response = await _supabase
           .from(_table)
@@ -79,14 +123,21 @@ class AttendanceRepository {
         ascending: true,
       );
 
+      //============================================================
+      // CONVERT TO MODEL
+      //============================================================
+
       final rows = response
           .map<AttendanceModel>(
             (json) => AttendanceModel.fromMap(json),
       )
           .toList();
 
-      final Map<String, AttendanceModel>
-      attendanceMap = {};
+      //============================================================
+      // ATTENDANCE MAP
+      //============================================================
+
+      final Map<String, AttendanceModel> attendanceMap = {};
 
       for (final attendance in rows) {
         attendanceMap[
@@ -96,53 +147,38 @@ class AttendanceRepository {
         ] = attendance;
       }
 
-      final List<AttendanceReportModel>
-      result = [];
+      //============================================================
+      // RESULT
+      //============================================================
+
+      final List<AttendanceReportModel> result = [];
 
       DateTime current = fromDate;
+
+      //============================================================
+      // DATE LOOP
+      //============================================================
 
       while (!current.isAfter(toDate)) {
         final key = _formatDate(current);
 
-        final attendance =
-        attendanceMap[key];
+        final attendance = attendanceMap[key];
+
+        //==========================================================
+        // WEEKEND
+        // Bangladesh:
+        // Friday + Saturday
+        //==========================================================
 
         final isWeekend =
             current.weekday == DateTime.friday ||
                 current.weekday == DateTime.saturday;
 
-        if (attendance != null) {
-          AttendanceReportStatus status;
+        //==========================================================
+        // NO ATTENDANCE
+        //==========================================================
 
-          // if (
-          // attendance.lateMinutes > 0 ||
-          //     attendance.attendanceStatus
-          //         .toUpperCase() ==
-          //         'LATE') {
-          //   status =
-          //       AttendanceReportStatus.late;
-          // } else {
-            status =
-                AttendanceReportStatus.present;
-          // }
-
-          result.add(
-            AttendanceReportModel(
-              date: current,
-              status: status,
-              checkInTime:
-              attendance.checkInTime,
-              checkOutTime:
-              attendance.checkOutTime,
-              checkInAddress:
-              attendance.checkInAddress,
-              checkOutAddress:
-              attendance.checkOutAddress,
-              workMinutes:
-              attendance.workMinutes,
-            ),
-          );
-        } else {
+        if (attendance == null) {
           final status = isWeekend
               ? AttendanceReportStatus.dayOff
               : AttendanceReportStatus.absent;
@@ -154,7 +190,116 @@ class AttendanceRepository {
               isWeekend: isWeekend,
             ),
           );
+
+          current = current.add(
+            const Duration(days: 1),
+          );
+
+          continue;
         }
+
+        //==========================================================
+        // GET SHIFT
+        //==========================================================
+
+        final shift = await _getShiftById(
+          attendance.shiftId,
+        );
+
+        //==========================================================
+        // CALCULATE LATE
+        //==========================================================
+
+        final lateMinutes = _calculateLateMinutes(
+          attendance: attendance,
+          shift: shift,
+        );
+
+        //==========================================================
+        // CALCULATE EARLY EXIT
+        //==========================================================
+
+        final earlyExitMinutes =
+        _calculateEarlyExitMinutes(
+          attendance: attendance,
+          shift: shift,
+        );
+
+        //==========================================================
+        // STATUS
+        //==========================================================
+
+        AttendanceReportStatus status;
+
+        // ---------------------------------------------------------
+        // EARLY OUT
+        // ---------------------------------------------------------
+        //
+        // যদি employee shift শেষ হওয়ার আগে checkout করে
+        // এবং grace period-এর পরেও early হয়,
+        // তাহলে Early Out.
+        //
+        // ---------------------------------------------------------
+
+        if (earlyExitMinutes > 0) {
+          status = AttendanceReportStatus.earlyOut;
+        }
+
+        // ---------------------------------------------------------
+        // LATE
+        // ---------------------------------------------------------
+
+        else if (lateMinutes > 0) {
+          status = AttendanceReportStatus.late;
+        }
+
+        // ---------------------------------------------------------
+        // PRESENT
+        // ---------------------------------------------------------
+
+        else {
+          status = AttendanceReportStatus.present;
+        }
+
+        //==========================================================
+        // ADD REPORT
+        //==========================================================
+
+        result.add(
+          AttendanceReportModel(
+            date: current,
+
+            status: status,
+
+            checkInTime:
+            attendance.checkInTime,
+
+            checkOutTime:
+            attendance.checkOutTime,
+
+            checkInAddress:
+            attendance.checkInAddress,
+
+            checkOutAddress:
+            attendance.checkOutAddress,
+
+            lateMinutes:
+            lateMinutes,
+
+            earlyExitMinutes:
+            earlyExitMinutes,
+
+            workMinutes:
+            attendance.workMinutes,
+
+            isWeekend:
+            isWeekend,
+          ),
+        );
+
+        //==========================================================
+        // NEXT DATE
+        //==========================================================
 
         current = current.add(
           const Duration(days: 1),
@@ -172,11 +317,246 @@ class AttendanceRepository {
   }
 
   //==============================================================
+  // CALCULATE LATE MINUTES
+  //==============================================================
+
+  int _calculateLateMinutes({
+    required AttendanceModel attendance,
+    required ShiftModel? shift,
+  }) {
+    final checkIn = attendance.checkInTime;
+
+    // No check-in
+    if (checkIn == null) {
+      return 0;
+    }
+
+    // No shift
+    if (shift == null) {
+      return 0;
+    }
+
+    // Flexible shift
+    if (shift.isFlexible) {
+      return 0;
+    }
+
+    //============================================================
+    // SHIFT START
+    //============================================================
+
+    final shiftStart = _combineDateAndTime(
+      attendance.attendanceDate,
+      shift.startTime,
+    );
+
+    if (shiftStart == null) {
+      return 0;
+    }
+
+    //============================================================
+    // CHECK-IN
+    //============================================================
+
+    final actualCheckIn = checkIn.toLocal();
+
+    //============================================================
+    // NIGHT SHIFT
+    //============================================================
+
+    DateTime expectedStart = shiftStart;
+
+    if (shift.isNightShift) {
+      final shiftEnd = _combineDateAndTime(
+        attendance.attendanceDate,
+        shift.endTime,
+      );
+
+      if (shiftEnd != null) {
+        if (!shiftEnd.isAfter(shiftStart)) {
+          // Start today
+          // End tomorrow
+          expectedStart = shiftStart;
+        }
+      }
+    }
+
+    //============================================================
+    // DIFFERENCE
+    //============================================================
+
+    final difference = actualCheckIn.difference(
+      expectedStart,
+    );
+
+    final minutes = difference.inMinutes;
+
+    if (minutes <= 0) {
+      return 0;
+    }
+
+    //============================================================
+    // GRACE IN
+    //============================================================
+
+    final effectiveLateMinutes =
+        minutes - shift.graceInMinutes;
+
+    if (effectiveLateMinutes <= 0) {
+      return 0;
+    }
+
+    //============================================================
+    // LATE THRESHOLD
+    //============================================================
+
+    if (effectiveLateMinutes <
+        shift.lateAfterMinutes) {
+      return 0;
+    }
+
+    return effectiveLateMinutes;
+  }
+
+  //==============================================================
+  // CALCULATE EARLY EXIT MINUTES
+  //==============================================================
+
+  int _calculateEarlyExitMinutes({
+    required AttendanceModel attendance,
+    required ShiftModel? shift,
+  }) {
+    final checkOut = attendance.checkOutTime;
+
+    // No checkout
+    if (checkOut == null) {
+      return 0;
+    }
+
+    // No shift
+    if (shift == null) {
+      return 0;
+    }
+
+    // Flexible shift
+    if (shift.isFlexible) {
+      return 0;
+    }
+
+    //============================================================
+    // SHIFT START
+    //============================================================
+
+    final shiftStart = _combineDateAndTime(
+      attendance.attendanceDate,
+      shift.startTime,
+    );
+
+    //============================================================
+    // SHIFT END
+    //============================================================
+
+    final shiftEnd = _combineDateAndTime(
+      attendance.attendanceDate,
+      shift.endTime,
+    );
+
+    if (shiftStart == null || shiftEnd == null) {
+      return 0;
+    }
+
+    //============================================================
+    // EXPECTED END
+    //============================================================
+
+    DateTime expectedEnd = shiftEnd;
+
+    //============================================================
+    // NIGHT SHIFT
+    //============================================================
+
+    if (shift.isNightShift) {
+      if (!shiftEnd.isAfter(shiftStart)) {
+        expectedEnd = shiftEnd.add(
+          const Duration(days: 1),
+        );
+      }
+    }
+
+    //============================================================
+    // ACTUAL CHECKOUT
+    //============================================================
+
+    final actualCheckOut = checkOut.toLocal();
+
+    //============================================================
+    // DIFFERENCE
+    //============================================================
+
+    final difference = expectedEnd.difference(
+      actualCheckOut,
+    );
+
+    final minutes = difference.inMinutes;
+
+    // Checkout at/after shift end
+    if (minutes <= 0) {
+      return 0;
+    }
+
+    //============================================================
+    // GRACE OUT
+    //============================================================
+
+    final effectiveEarlyMinutes =
+        minutes - shift.graceOutMinutes;
+
+    if (effectiveEarlyMinutes <= 0) {
+      return 0;
+    }
+
+    return effectiveEarlyMinutes;
+  }
+
+  //==============================================================
+  // COMBINE DATE + TIME
+  //==============================================================
+
+  DateTime? _combineDateAndTime(
+      DateTime date,
+      String time,
+      ) {
+    try {
+      final value = time.trim();
+
+      if (value.isEmpty) {
+        return null;
+      }
+
+      final parts = value.split(':');
+
+      if (parts.length < 2) {
+        return null;
+      }
+
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      return DateTime(
+        date.year,
+        date.month,
+        date.day,
+        hour,
+        minute,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  //==============================================================
   // SUPERVISOR
   // TODAY ATTENDANCE BY EMPLOYEES
-  //
-  // Supervisor selected department-এর
-  // employee IDs পাঠাবে।
   //==============================================================
 
   Future<List<AttendanceEntity>>
@@ -220,8 +600,7 @@ class AttendanceRepository {
 
       return response
           .map<AttendanceEntity>(
-            (json) =>
-            AttendanceModel.fromMap(json),
+            (json) => AttendanceModel.fromMap(json),
       )
           .toList();
     } on PostgrestException catch (e) {
@@ -236,12 +615,6 @@ class AttendanceRepository {
   //==============================================================
   // SUPERVISOR
   // TODAY ATTENDANCE BY COMPANY + DEPARTMENT
-  //
-  // All Employees mode-এর জন্য।
-  //
-  // IMPORTANT:
-  // এখানে employees relation ব্যবহার করা হচ্ছে না।
-  // Direct attendance table query।
   //==============================================================
 
   Future<List<AttendanceEntity>>
@@ -250,11 +623,8 @@ class AttendanceRepository {
     required String departmentId,
   }) async {
     try {
-      final company =
-      companyId.trim();
-
-      final department =
-      departmentId.trim();
+      final company = companyId.trim();
+      final department = departmentId.trim();
 
       if (company.isEmpty) {
         throw Exception(
@@ -294,8 +664,7 @@ class AttendanceRepository {
 
       return response
           .map<AttendanceEntity>(
-            (json) =>
-            AttendanceModel.fromMap(json),
+            (json) => AttendanceModel.fromMap(json),
       )
           .toList();
     } on PostgrestException catch (e) {
@@ -310,8 +679,6 @@ class AttendanceRepository {
   //==============================================================
   // SUPERVISOR
   // EMPLOYEE ATTENDANCE DATE RANGE
-  //
-  // Selected Employee mode-এর জন্য।
   //==============================================================
 
   Future<List<AttendanceEntity>>
@@ -321,8 +688,7 @@ class AttendanceRepository {
     required DateTime to,
   }) async {
     try {
-      final employee =
-      employeeId.trim();
+      final employee = employeeId.trim();
 
       if (employee.isEmpty) {
         throw Exception(
@@ -330,11 +696,8 @@ class AttendanceRepository {
         );
       }
 
-      final fromDate =
-      _formatDate(from);
-
-      final toDate =
-      _formatDate(to);
+      final fromDate = _formatDate(from);
+      final toDate = _formatDate(to);
 
       final response = await _supabase
           .from(_table)
@@ -358,8 +721,7 @@ class AttendanceRepository {
 
       return response
           .map<AttendanceEntity>(
-            (json) =>
-            AttendanceModel.fromMap(json),
+            (json) => AttendanceModel.fromMap(json),
       )
           .toList();
     } on PostgrestException catch (e) {
@@ -374,8 +736,6 @@ class AttendanceRepository {
   //==============================================================
   // SUPERVISOR
   // DEPARTMENT DATE RANGE
-  //
-  // Future Supervisor reports/dashboard-এর জন্য।
   //==============================================================
 
   Future<List<AttendanceEntity>>
@@ -386,11 +746,8 @@ class AttendanceRepository {
     required DateTime to,
   }) async {
     try {
-      final company =
-      companyId.trim();
-
-      final department =
-      departmentId.trim();
+      final company = companyId.trim();
+      final department = departmentId.trim();
 
       if (company.isEmpty) {
         throw Exception(
@@ -404,11 +761,8 @@ class AttendanceRepository {
         );
       }
 
-      final fromDate =
-      _formatDate(from);
-
-      final toDate =
-      _formatDate(to);
+      final fromDate = _formatDate(from);
+      final toDate = _formatDate(to);
 
       final response = await _supabase
           .from(_table)
@@ -436,8 +790,7 @@ class AttendanceRepository {
 
       return response
           .map<AttendanceEntity>(
-            (json) =>
-            AttendanceModel.fromMap(json),
+            (json) => AttendanceModel.fromMap(json),
       )
           .toList();
     } on PostgrestException catch (e) {
@@ -553,8 +906,7 @@ class AttendanceRepository {
         );
       }
 
-      final model =
-      AttendanceModel.fromEntity(
+      final model = AttendanceModel.fromEntity(
         attendance,
       );
 
@@ -584,8 +936,7 @@ class AttendanceRepository {
       String id,
       ) async {
     try {
-      final attendanceId =
-      id.trim();
+      final attendanceId = id.trim();
 
       if (attendanceId.isEmpty) {
         throw Exception(
@@ -617,8 +968,7 @@ class AttendanceRepository {
       String keyword,
       ) async {
     try {
-      final value =
-      keyword.trim();
+      final value = keyword.trim();
 
       if (value.isEmpty) {
         return getAll();
@@ -660,8 +1010,7 @@ class AttendanceRepository {
       String employeeId,
       ) async {
     try {
-      final employee =
-      employeeId.trim();
+      final employee = employeeId.trim();
 
       if (employee.isEmpty) {
         return [];
@@ -700,8 +1049,9 @@ class AttendanceRepository {
   Future<List<AttendanceEntity>>
   todayAttendance() async {
     try {
-      final today =
-      _formatDate(DateTime.now());
+      final today = _formatDate(
+        DateTime.now(),
+      );
 
       final response = await _supabase
           .from(_table)
@@ -744,8 +1094,7 @@ class AttendanceRepository {
     double? accuracy,
   }) async {
     try {
-      final id =
-      attendanceId.trim();
+      final id = attendanceId.trim();
 
       if (id.isEmpty) {
         throw Exception(
@@ -758,18 +1107,12 @@ class AttendanceRepository {
           .update({
         'check_in_time':
         checkInTime.toIso8601String(),
-        'check_in_latitude':
-        latitude,
-        'check_in_longitude':
-        longitude,
-        'check_in_address':
-        address,
-        'check_in_accuracy':
-        accuracy,
-        'device_name':
-        deviceName,
-        'device_id':
-        deviceId,
+        'check_in_latitude': latitude,
+        'check_in_longitude': longitude,
+        'check_in_address': address,
+        'check_in_accuracy': accuracy,
+        'device_name': deviceName,
+        'device_id': deviceId,
       })
           .eq(
         'id',
@@ -797,8 +1140,7 @@ class AttendanceRepository {
     double? accuracy,
   }) async {
     try {
-      final id =
-      attendanceId.trim();
+      final id = attendanceId.trim();
 
       if (id.isEmpty) {
         throw Exception(
@@ -811,14 +1153,10 @@ class AttendanceRepository {
           .update({
         'check_out_time':
         checkOutTime.toIso8601String(),
-        'check_out_latitude':
-        latitude,
-        'check_out_longitude':
-        longitude,
-        'check_out_address':
-        address,
-        'check_out_accuracy':
-        accuracy,
+        'check_out_latitude': latitude,
+        'check_out_longitude': longitude,
+        'check_out_address': address,
+        'check_out_accuracy': accuracy,
       })
           .eq(
         'id',
@@ -839,8 +1177,9 @@ class AttendanceRepository {
 
   Future<int> totalPresentToday() async {
     try {
-      final today =
-      _formatDate(DateTime.now());
+      final today = _formatDate(
+        DateTime.now(),
+      );
 
       final response = await _supabase
           .from(_table)
@@ -881,8 +1220,7 @@ class AttendanceRepository {
 
       return response
           .map<AttendanceEntity>(
-            (json) =>
-            AttendanceModel.fromMap(json),
+            (json) => AttendanceModel.fromMap(json),
       )
           .toList();
     } on PostgrestException catch (e) {
@@ -898,20 +1236,19 @@ class AttendanceRepository {
   // TODAY'S ATTENDANCE BY EMPLOYEE
   //==============================================================
 
-  Future<AttendanceEntity?>
-  getTodayAttendance(
+  Future<AttendanceEntity?> getTodayAttendance(
       String employeeId,
       ) async {
     try {
-      final employee =
-      employeeId.trim();
+      final employee = employeeId.trim();
 
       if (employee.isEmpty) {
         return null;
       }
 
-      final today =
-      _formatDate(DateTime.now());
+      final today = _formatDate(
+        DateTime.now(),
+      );
 
       final response = await _supabase
           .from(_table)
@@ -993,13 +1330,11 @@ class AttendanceRepository {
   // BY COMPANY
   //==============================================================
 
-  Future<List<AttendanceEntity>>
-  byCompany(
+  Future<List<AttendanceEntity>> byCompany(
       String companyId,
       ) async {
     try {
-      final company =
-      companyId.trim();
+      final company = companyId.trim();
 
       if (company.isEmpty) {
         return [];
@@ -1040,8 +1375,7 @@ class AttendanceRepository {
       String departmentId,
       ) async {
     try {
-      final department =
-      departmentId.trim();
+      final department = departmentId.trim();
 
       if (department.isEmpty) {
         return [];
@@ -1077,13 +1411,11 @@ class AttendanceRepository {
   // BY STATUS
   //==============================================================
 
-  Future<List<AttendanceEntity>>
-  byStatus(
+  Future<List<AttendanceEntity>> byStatus(
       String status,
       ) async {
     try {
-      final value =
-      status.trim();
+      final value = status.trim();
 
       if (value.isEmpty) {
         return [];
@@ -1119,13 +1451,11 @@ class AttendanceRepository {
   // BY DATE
   //==============================================================
 
-  Future<List<AttendanceEntity>>
-  byDate(
+  Future<List<AttendanceEntity>> byDate(
       DateTime date,
       ) async {
     try {
-      final selectedDate =
-      _formatDate(date);
+      final selectedDate = _formatDate(date);
 
       final response = await _supabase
           .from(_table)
@@ -1163,11 +1493,8 @@ class AttendanceRepository {
     required DateTime to,
   }) async {
     try {
-      final fromDate =
-      _formatDate(from);
-
-      final toDate =
-      _formatDate(to);
+      final fromDate = _formatDate(from);
+      final toDate = _formatDate(to);
 
       final response = await _supabase
           .from(_table)
