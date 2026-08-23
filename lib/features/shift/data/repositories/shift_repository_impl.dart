@@ -22,17 +22,13 @@ class ShiftRepositoryImpl implements ShiftRepository {
     final user = _ref.read(currentUserProvider);
 
     if (user == null) {
-      throw Exception(
-        'Current user information is not available.',
-      );
+      throw Exception('Current user information is not available.');
     }
 
     final userId = user.userId.trim();
 
     if (userId.isEmpty) {
-      throw Exception(
-        'Current user ID is not available.',
-      );
+      throw Exception('Current user ID is not available.');
     }
 
     return userId;
@@ -46,17 +42,13 @@ class ShiftRepositoryImpl implements ShiftRepository {
     final user = _ref.read(currentUserProvider);
 
     if (user == null) {
-      throw Exception(
-        'Current user information is not available.',
-      );
+      throw Exception('Current user information is not available.');
     }
 
     final companyId = user.companyId.trim();
 
     if (companyId.isEmpty) {
-      throw Exception(
-        'Company information is not available for this account.',
-      );
+      throw Exception('Company information is not available for this account.');
     }
 
     return companyId;
@@ -79,9 +71,7 @@ class ShiftRepositoryImpl implements ShiftRepository {
     try {
       final companyId = _currentCompanyId;
 
-      debugPrint(
-        'Shift List Company ID => $companyId',
-      );
+      debugPrint('Shift List Company ID => $companyId');
 
       final response = await _client
           .from('shifts')
@@ -90,28 +80,18 @@ class ShiftRepositoryImpl implements ShiftRepository {
           .order('name');
 
       final shifts = (response as List)
-          .map(
-            (json) => ShiftModel.fromJson(
-          json as Map<String, dynamic>,
-        ),
-      )
+          .map((json) => ShiftModel.fromJson(json as Map<String, dynamic>))
           .toList();
 
-      debugPrint(
-        'Shift List Count => ${shifts.length}',
-      );
+      debugPrint('Shift List Count => ${shifts.length}');
 
       return shifts;
     } on PostgrestException catch (e) {
-      debugPrint(
-        'Get Shifts Postgrest Error: ${e.message}',
-      );
+      debugPrint('Get Shifts Postgrest Error: ${e.message}');
 
       throw Exception(e.message);
     } catch (e) {
-      debugPrint(
-        'Get Shifts Error: $e',
-      );
+      debugPrint('Get Shifts Error: $e');
 
       rethrow;
     }
@@ -126,18 +106,14 @@ class ShiftRepositoryImpl implements ShiftRepository {
   // =============================================================
 
   @override
-  Future<ShiftEntity> getShiftById(
-      String id,
-      ) async {
+  Future<ShiftEntity> getShiftById(String id) async {
     try {
       final companyId = _currentCompanyId;
 
       final shiftId = id.trim();
 
       if (shiftId.isEmpty) {
-        throw Exception(
-          'Shift ID is required.',
-        );
+        throw Exception('Shift ID is required.');
       }
 
       final response = await _client
@@ -147,19 +123,13 @@ class ShiftRepositoryImpl implements ShiftRepository {
           .eq('company_id', companyId)
           .single();
 
-      return ShiftModel.fromJson(
-        response as Map<String, dynamic>,
-      );
+      return ShiftModel.fromJson(response as Map<String, dynamic>);
     } on PostgrestException catch (e) {
-      debugPrint(
-        'Get Shift Postgrest Error: ${e.message}',
-      );
+      debugPrint('Get Shift Postgrest Error: ${e.message}');
 
       throw Exception(e.message);
     } catch (e) {
-      debugPrint(
-        'Get Shift Error: $e',
-      );
+      debugPrint('Get Shift Error: $e');
 
       rethrow;
     }
@@ -178,9 +148,7 @@ class ShiftRepositoryImpl implements ShiftRepository {
   // =============================================================
 
   @override
-  Future<void> createShift(
-      ShiftEntity shift,
-      ) async {
+  Future<void> createShift(ShiftEntity shift) async {
     try {
       final companyId = _currentCompanyId;
       final userId = _currentUserId;
@@ -208,8 +176,7 @@ class ShiftRepositoryImpl implements ShiftRepository {
 
         'late_after_minutes': shift.lateAfterMinutes,
 
-        'half_day_after_minutes':
-        shift.halfDayAfterMinutes,
+        'half_day_after_minutes': shift.halfDayAfterMinutes,
 
         'is_night_shift': shift.isNightShift,
 
@@ -220,19 +187,13 @@ class ShiftRepositoryImpl implements ShiftRepository {
         'created_by': userId,
       });
 
-      debugPrint(
-        'Shift Created Successfully.',
-      );
+      debugPrint('Shift Created Successfully.');
     } on PostgrestException catch (e) {
-      debugPrint(
-        'Create Shift Postgrest Error: ${e.message}',
-      );
+      debugPrint('Create Shift Postgrest Error: ${e.message}');
 
       throw Exception(e.message);
     } catch (e) {
-      debugPrint(
-        'Create Shift Error: $e',
-      );
+      debugPrint('Create Shift Error: $e');
 
       rethrow;
     }
@@ -260,9 +221,7 @@ class ShiftRepositoryImpl implements ShiftRepository {
   // =============================================================
 
   @override
-  Future<void> updateShift(
-      ShiftEntity shift,
-      ) async {
+  Future<void> updateShift(ShiftEntity shift) async {
     try {
       final companyId = _currentCompanyId;
       final userId = _currentUserId;
@@ -270,9 +229,7 @@ class ShiftRepositoryImpl implements ShiftRepository {
       final shiftId = shift.id.trim();
 
       if (shiftId.isEmpty) {
-        throw Exception(
-          'Shift ID is required for update.',
-        );
+        throw Exception('Shift ID is required for update.');
       }
 
       debugPrint('UPDATE SHIFT');
@@ -283,37 +240,36 @@ class ShiftRepositoryImpl implements ShiftRepository {
       final response = await _client
           .from('shifts')
           .update({
-        'name': shift.name.trim(),
+            'name': shift.name.trim(),
 
-        'description': shift.description.trim(),
+            'description': shift.description.trim(),
 
-        'start_time': shift.startTime,
+            'start_time': shift.startTime,
 
-        'end_time': shift.endTime,
+            'end_time': shift.endTime,
 
-        'break_minutes': shift.breakMinutes,
+            'break_minutes': shift.breakMinutes,
 
-        'grace_in_minutes': shift.graceInMinutes,
+            'grace_in_minutes': shift.graceInMinutes,
 
-        'grace_out_minutes': shift.graceOutMinutes,
+            'grace_out_minutes': shift.graceOutMinutes,
 
-        'late_after_minutes': shift.lateAfterMinutes,
+            'late_after_minutes': shift.lateAfterMinutes,
 
-        'half_day_after_minutes':
-        shift.halfDayAfterMinutes,
+            'half_day_after_minutes': shift.halfDayAfterMinutes,
 
-        'is_night_shift': shift.isNightShift,
+            'is_night_shift': shift.isNightShift,
 
-        'is_flexible': shift.isFlexible,
+            'is_flexible': shift.isFlexible,
 
-        'is_active': shift.isActive,
+            'is_active': shift.isActive,
 
-        'updated_by': userId,
+            'updated_by': userId,
 
-        // created_by update করছি না।
-        // code update করছি না।
-        // updated_at trigger handle করবে।
-      })
+            // created_by update করছি না।
+            // code update করছি না।
+            // updated_at trigger handle করবে।
+          })
           .eq('id', shiftId)
           .eq('company_id', companyId)
           .select();
@@ -324,19 +280,13 @@ class ShiftRepositoryImpl implements ShiftRepository {
         );
       }
 
-      debugPrint(
-        'Shift Updated Successfully.',
-      );
+      debugPrint('Shift Updated Successfully.');
     } on PostgrestException catch (e) {
-      debugPrint(
-        'Update Shift Postgrest Error: ${e.message}',
-      );
+      debugPrint('Update Shift Postgrest Error: ${e.message}');
 
       throw Exception(e.message);
     } catch (e) {
-      debugPrint(
-        'Update Shift Error: $e',
-      );
+      debugPrint('Update Shift Error: $e');
 
       rethrow;
     }
@@ -358,9 +308,7 @@ class ShiftRepositoryImpl implements ShiftRepository {
       final shiftId = id.trim();
 
       if (shiftId.isEmpty) {
-        throw Exception(
-          'Shift ID is required.',
-        );
+        throw Exception('Shift ID is required.');
       }
 
       debugPrint('UPDATE SHIFT STATUS');
@@ -371,12 +319,12 @@ class ShiftRepositoryImpl implements ShiftRepository {
       final response = await _client
           .from('shifts')
           .update({
-        'is_active': isActive,
+            'is_active': isActive,
 
-        'updated_by': userId,
+            'updated_by': userId,
 
-        // updated_at trigger handle করবে।
-      })
+            // updated_at trigger handle করবে।
+          })
           .eq('id', shiftId)
           .eq('company_id', companyId)
           .select();
@@ -387,20 +335,16 @@ class ShiftRepositoryImpl implements ShiftRepository {
         );
       }
 
-      debugPrint(
-        'Shift Status Updated => $shiftId',
-      );
+      debugPrint('Shift Status Updated => $shiftId');
     } on PostgrestException catch (e) {
       debugPrint(
         'Update Shift Status Postgrest Error: '
-            '${e.message}',
+        '${e.message}',
       );
 
       throw Exception(e.message);
     } catch (e) {
-      debugPrint(
-        'Update Shift Status Error: $e',
-      );
+      debugPrint('Update Shift Status Error: $e');
 
       rethrow;
     }
@@ -411,18 +355,14 @@ class ShiftRepositoryImpl implements ShiftRepository {
   // =============================================================
 
   @override
-  Future<void> deleteShift(
-      String id,
-      ) async {
+  Future<void> deleteShift(String id) async {
     try {
       final companyId = _currentCompanyId;
 
       final shiftId = id.trim();
 
       if (shiftId.isEmpty) {
-        throw Exception(
-          'Shift ID is required.',
-        );
+        throw Exception('Shift ID is required.');
       }
 
       debugPrint('DELETE SHIFT');
@@ -442,20 +382,16 @@ class ShiftRepositoryImpl implements ShiftRepository {
         );
       }
 
-      debugPrint(
-        'Shift Deleted => $shiftId',
-      );
+      debugPrint('Shift Deleted => $shiftId');
     } on PostgrestException catch (e) {
       debugPrint(
         'Delete Shift Postgrest Error: '
-            '${e.message}',
+        '${e.message}',
       );
 
       throw Exception(e.message);
     } catch (e) {
-      debugPrint(
-        'Delete Shift Error: $e',
-      );
+      debugPrint('Delete Shift Error: $e');
 
       rethrow;
     }

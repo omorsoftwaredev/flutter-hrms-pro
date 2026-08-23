@@ -158,7 +158,7 @@ class _SupervisorAssignmentPageState
 
                                 onChanged: null,
 
-                                hint: const Text('Select supervisor'),
+                                hint: const Text('No supervisors available.r'),
                               ),
 
                               const SizedBox(height: 14),

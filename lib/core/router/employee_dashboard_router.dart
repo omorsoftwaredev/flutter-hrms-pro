@@ -7,8 +7,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/attendance/presentation/pages/attendance_mobile_page.dart';
-import '../../features/attendance/presentation/pages/employee_attendance_report_page.dart';
+import '../../features/attendance/mobile_attendance/presentation/pages/mobile_attendance_page.dart';
+import '../../features/attendance/mobile_attendance/presentation/pages/mobile_attendance_report_page.dart';
 import '../../features/auth/presentation/pages/change_password_page.dart';
 import 'route_paths.dart';
 class EmployeeDashboardRouter {
@@ -23,9 +23,37 @@ class EmployeeDashboardRouter {
         path: RoutePaths.mobileAttendance,
         name: 'mobileAttendance',
         builder: (context, state) {
-          return const AttendanceMobilePage();
+          return const MobileAttendancePage();
         },
       ),
+
+    // ===========================================================
+// Attendance Report
+// ===========================================================
+//     GoRoute(
+//       path: RoutePaths.employeeAttendanceReport,
+//       name: 'employeeAttendanceReport',
+//       builder: (context, state) {
+//         final employeeId =
+//         state.uri.queryParameters['employeeId'];
+//
+//         if (employeeId == null || employeeId.isEmpty) {
+//           return const Scaffold(
+//             body: Center(
+//               child: Text(
+//                 'Employee ID not found.',
+//               ),
+//             ),
+//           );
+//         }
+//
+//         return EmployeeAttendanceReportPage(
+//           employeeId: employeeId,
+//         );
+//       },
+//     ),
+
+
 
     // ===========================================================
 // Attendance Report
@@ -47,7 +75,7 @@ class EmployeeDashboardRouter {
           );
         }
 
-        return EmployeeAttendanceReportPage(
+        return MobileAttendanceReportPage(
           employeeId: employeeId,
         );
       },

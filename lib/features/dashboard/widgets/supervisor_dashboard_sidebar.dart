@@ -231,11 +231,11 @@ class _SupervisorDashboardSidebarState
                           final supervisorEmployeeId =
                               user.employeeId;
 
-                          if (supervisorEmployeeId
-                              .trim()
-                              .isEmpty) {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(
+                          final companyId =
+                              user.companyId;
+
+                          if (supervisorEmployeeId.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
                                   'Supervisor Employee ID not available.',
@@ -246,11 +246,23 @@ class _SupervisorDashboardSidebarState
                             return;
                           }
 
+                          if (companyId.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Company ID not available.',
+                                ),
+                              ),
+                            );
+
+                            return;
+                          }
+
                           context.pushNamed(
                             'supervisorEmployeeAttendanceReport',
                             queryParameters: {
-                              'supervisorEmployeeId':
-                              supervisorEmployeeId,
+                              'supervisorEmployeeId': supervisorEmployeeId,
+                              'companyId': companyId,
                             },
                           );
                         },

@@ -123,6 +123,8 @@ class RoutePaths {
   static const String employeeAttendanceReport = '/employee-attendance-report';
   static const String supervisorEmployeeAttendanceReport =
       '/superviosr-employee-attendance-report';
+  static const String CompanysupervisorEmployeeAttendanceReport =
+      '/Company-superviosr-employee-attendance-report';
   static const attendance = '/attendance';
   static const mobileAttendance = '/attendance/mobile';
   static const attendanceHistory = '/attendance/history';
