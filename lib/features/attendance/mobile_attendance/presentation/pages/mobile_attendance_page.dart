@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../../utils/DeviceInfoService.dart';
 import '../../../../auth/presentation/providers/current_employee_provider.dart';
 import '../../../../../core/services/location_service.dart';
 import '../../domain/entities/mobile_attendance_entity.dart';
@@ -98,7 +99,9 @@ class _MobileAttendancePageState
 
       final now =
       DateTime.now();
+      final String? deviceId = await DeviceInfoService.instance.getDeviceId();
 
+      print('DEVICE ID: $deviceId');
       final attendance =
       MobileAttendanceEntity(
         companyId:
@@ -124,8 +127,8 @@ class _MobileAttendancePageState
         location.longitude,
         checkInAddress:
         location.address,
-        checkInAccuracy:
-        location.accuracy,
+        checkInAccuracy:location.accuracy,
+        deviceId : deviceId
       );
 
       final success =

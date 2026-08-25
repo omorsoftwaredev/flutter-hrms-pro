@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/attendance/mobile_attendance/data/models/mobile_attendance_model.dart';
 import '../../features/attendance/mobile_attendance/data/repositories/mobile_attendance_repository.dart';
 import '../../features/attendance/mobile_attendance/domain/entities/mobile_attendance_entity.dart';
+import '../../utils/DeviceInfoService.dart';
 import 'location_service.dart';
 
 class MobileAttendanceCheckInService {
@@ -82,7 +83,10 @@ class MobileAttendanceCheckInService {
 
     final deviceName =
     await _getDeviceName();
+    final String? deviceId =
+    await DeviceInfoService.instance.getDeviceId();
 
+    print('DEVICE ID: $deviceId');
     // ------------------------------------------------------------
     // CREATE CHECK-IN ENTITY
     //
@@ -108,8 +112,8 @@ class MobileAttendanceCheckInService {
       checkInAccuracy:
       location.accuracy,
 
-      deviceName:
-      deviceName,
+      deviceName: deviceName,
+      deviceId: deviceId
     );
 
     // ------------------------------------------------------------

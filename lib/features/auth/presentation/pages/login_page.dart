@@ -39,9 +39,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // _usernameController.text = 'waltonomor';
     // _passwordController.text = 'waltonomor';
 
-    // City Company owner login
-    _usernameController.text = 'cityomor';
-    _passwordController.text = 'cityomor';
+    // // City Company owner login
+    // _usernameController.text = 'cityomor';
+    // _passwordController.text = 'cityomor';
 
     // // Walton Employee login
     // _usernameController.text = 'omoromor';
@@ -55,9 +55,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // _usernameController.text = 'mowser';
     // _passwordController.text = 'mowser';
 
-    // // City Supervisor login
-    // _usernameController.text = 'manikbhai';
-    // _passwordController.text = 'manik123456';
+    // City Supervisor login
+    _usernameController.text = 'manikbhai';
+    _passwordController.text = 'manik123456';
 
     final username = _usernameController.text.trim();
     final passwordHash = _passwordController.text;

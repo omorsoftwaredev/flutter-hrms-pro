@@ -9,8 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hrms_pro/features/supervisor/presentation/pages/supervisor_department_assignment_management_page.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/attendance/mobile_attendance/presentation/pages/company_supervisor_mobile_attendance_datewise_report_page.dart';
-import '../../features/attendance/mobile_attendance/presentation/pages/company_supervisor_mobile_attendance_today_report_page.dart';
+import '../../features/attendance/mobile_attendance/presentation/pages/company_supervisor_attendance_report.dart';
 import '../../features/dashboard/pages/company_dashboard_page.dart';
 
 import '../../features/department/domain/entities/department_entity.dart';
@@ -302,28 +301,7 @@ class CompanyDashboardRouter {
           );
         }
 
-        return CompanySupervisorMobileAttendanceTodayReportPage(
-          companyId: companyId,
-        );
-      },
-    ),
-    GoRoute(
-      path: RoutePaths.CompanyDatewiseAttendanceReport,
-      name: 'CompanyDatewiseAttendanceReport',
-      builder: (context, state) {
-        final companyId = state.uri.queryParameters['companyId'];
-
-        if (companyId == null || companyId.trim().isEmpty) {
-          return const Scaffold(
-            body: Center(
-              child: Text(
-                'Company ID not found.',
-              ),
-            ),
-          );
-        }
-
-        return CompanySupervisorMobileAttendanceDatewiseReportPage(
+        return CompanySuperviosrAttendanceReport(
           companyId: companyId,
         );
       },

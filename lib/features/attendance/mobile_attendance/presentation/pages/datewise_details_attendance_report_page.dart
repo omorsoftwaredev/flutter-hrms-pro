@@ -4,27 +4,22 @@
 //
 // Version : Final
 //
-// Purpose:
-// - Show employee-wise attendance details for selected date range
-// - Company + Supervisor + Department + Employee scope
-// - Show From Date + To Date
-// - Show attendance summary
-// - Show employee attendance details
-// - Show Check In / Check Out
-// - Show Actual Time
-// - Show Shift Start Time
-// - Show Shift End Time
-// - Show Check-in / Check-out Location
-// - Calculate AH / WH / OT
-// - Calculate Present / Absent / Late / Early Out
-// - Calculate combined LATE + EARLY OUT
-// - Handle OFF DAY / HOLIDAY / LEAVE
-// - Material 3
-// - Responsive Mobile / Tablet / Desktop
-// - Pull to refresh
-// - Riverpod
+// Scope:
+// - Company
+// - Supervisor
+// - Department
+// - Selected Employee
+// - Date Range
 //
-// SUMMARY STATUS RULE:
+// IMPORTANT:
+// This page does NOT modify the supervisor-scoped implementation.
+//
+// Report loading:
+// - Provider loads company + supervisor + department date-range reports.
+// - This page filters the loaded reports by widget.employeeId.
+// - Therefore existing provider method signature remains unchanged.
+//
+// STATUS:
 // - PRESENT
 // - ABSENT
 // - LATE
@@ -34,29 +29,29 @@
 // - OFF DAY
 // - HOLIDAY
 //
-// IMPORTANT:
+// IMPORTANT STATUS RULE:
 // If employee is both LATE and EARLY OUT:
-// - Do NOT count in Late
-// - Do NOT count in Early Out
-// - Count ONLY in Late + Early Out
+// - Late count = 0
+// - Early Out count = 0
+// - Late + Early Out count = 1
 //
 // EXACT TIME FIELDS:
-//   actualTime
-//   shiftStartTime
-//   shiftEndTime
+// - actualTime
+// - shiftStartTime
+// - shiftEndTime
 //
 // ATTENDANCE FIELDS:
-//   checkInTime
-//   checkOutTime
-//   attendanceDate
-//   checkInLocation
-//   checkOutLocation
-//   employeeName
-//   employeeCode
-//   attendanceStatus
-//   graceInMinutes
-//   graceOutMinutes
-//   isAbsent
+// - checkInTime
+// - checkOutTime
+// - attendanceDate
+// - checkInLocation
+// - checkOutLocation
+// - employeeName
+// - employeeCode
+// - attendanceStatus
+// - graceInMinutes
+// - graceOutMinutes
+// - isAbsent
 //
 // NO candidate-field detection.
 // NO raw JSON printing.
@@ -81,8 +76,6 @@ class DatewiseDetailsAttendanceReportPage extends ConsumerStatefulWidget {
     required this.supervisorName,
     required this.departmentId,
     required this.departmentName,
-    required this.employeeId,
-    required this.employeeName,
     required this.fromDate,
     required this.toDate,
   });
@@ -90,10 +83,12 @@ class DatewiseDetailsAttendanceReportPage extends ConsumerStatefulWidget {
   final String companyId;
   final String supervisorId;
   final String supervisorName;
+
   final String departmentId;
   final String departmentName;
-  final String employeeId;
-  final String employeeName;
+
+
+
   final DateTime fromDate;
   final DateTime toDate;
 
@@ -108,6 +103,9 @@ class DatewiseDetailsAttendanceReportPage extends ConsumerStatefulWidget {
 
 class _DatewiseDetailsAttendanceReportPageState
     extends ConsumerState<DatewiseDetailsAttendanceReportPage> {
+
+  String? employeeId;
+  String? employeeName;
   // ==========================================================================
   // INIT
   // ==========================================================================
@@ -122,7 +120,7 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
-  // LOAD
+  // LOAD REPORT
   // ==========================================================================
 
   Future<void> _loadReport() async {
@@ -156,6 +154,22 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
+  // SELECTED EMPLOYEE REPORTS
+  //
+  // Provider returns department-level records.
+  // This page displays only the selected employee.
+  //
+  // We intentionally use the entity's employeeId directly.
+  // ==========================================================================
+
+  List<CompanySupervisorMobileAttendanceReportEntity>
+  _getSelectedEmployeeReports(
+      CompanySupervisorMobileAttendanceReportProvider provider,
+      ) {
+    return provider.reports;
+  }
+
+  // ==========================================================================
   // BUILD
   // ==========================================================================
 
@@ -164,24 +178,41 @@ class _DatewiseDetailsAttendanceReportPageState
     final provider =
     ref.watch(companySupervisorMobileAttendanceReportProvider);
 
-    final ThemeData theme = Theme.of(context);
+    final ThemeData theme =
+    Theme.of(context);
+
+    final List<CompanySupervisorMobileAttendanceReportEntity> reports =
+    _getSelectedEmployeeReports(provider);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor:
+      theme.colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Datewise Attendance'),
+        title: const Text(
+          'Datewise Attendance',
+        ),
         centerTitle: false,
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            onPressed: provider.isBusy ? null : _refresh,
-            icon: const Icon(Icons.refresh_rounded),
+            onPressed:
+            provider.isBusy
+                ? null
+                : _refresh,
+            icon: const Icon(
+              Icons.refresh_rounded,
+            ),
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        child: _buildBody(context, theme, provider),
+        child: _buildBody(
+          context,
+          theme,
+          provider,
+          reports,
+        ),
       ),
     );
   }
@@ -194,37 +225,66 @@ class _DatewiseDetailsAttendanceReportPageState
       BuildContext context,
       ThemeData theme,
       CompanySupervisorMobileAttendanceReportProvider provider,
+      List<CompanySupervisorMobileAttendanceReportEntity> reports,
       ) {
-    if (provider.isLoading && !provider.hasReports) {
-      return const Center(
-        child: CircularProgressIndicator(),
+    if (provider.isLoading &&
+        !provider.hasReports) {
+      return ListView(
+        physics:
+        AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(height: 180),
+          Center(
+            child:
+            CircularProgressIndicator(),
+          ),
+        ],
       );
     }
 
-    if (provider.error != null && !provider.hasReports) {
+    if (provider.error != null &&
+        !provider.hasReports) {
       return _buildError(
         theme,
         provider.error!,
       );
     }
 
-    if (!provider.hasReports) {
-      return _buildEmpty(theme);
+    if (provider.hasReports &&
+        reports.isEmpty &&
+        !provider.isLoading) {
+      return _buildNoEmployeeRecords(
+        theme,
+      );
+    }
+
+    if (reports.isEmpty) {
+      return _buildEmpty(
+        theme,
+      );
     }
 
     return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool isDesktop = constraints.maxWidth >= 1000;
-        final bool isTablet = constraints.maxWidth >= 650;
+      builder: (
+          context,
+          constraints,
+          ) {
+        final bool isDesktop =
+            constraints.maxWidth >= 1000;
 
-        final double horizontalPadding = isDesktop
+        final bool isTablet =
+            constraints.maxWidth >= 650;
+
+        final double horizontalPadding =
+        isDesktop
             ? 28
             : isTablet
             ? 20
             : 12;
 
         return ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics:
+          const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
             12,
@@ -234,11 +294,13 @@ class _DatewiseDetailsAttendanceReportPageState
           children: [
             Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
+                constraints:
+                const BoxConstraints(
                   maxWidth: 1400,
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.stretch,
                   children: [
                     _buildHeader(
                       theme,
@@ -251,25 +313,27 @@ class _DatewiseDetailsAttendanceReportPageState
                     const SizedBox(height: 10),
                     _buildSummary(
                       theme,
-                      provider,
-                      isDesktop: isDesktop,
-                      isTablet: isTablet,
+                      reports,
+                      isDesktop:
+                      isDesktop,
+                      isTablet:
+                      isTablet,
                     ),
                     const SizedBox(height: 16),
                     _buildSectionTitle(
                       theme,
-                      provider.reports.length,
+                      reports.length,
                     ),
                     const SizedBox(height: 8),
                     if (isDesktop)
                       _buildDesktopList(
                         theme,
-                        provider,
+                        reports,
                       )
                     else
                       _buildMobileList(
                         theme,
-                        provider,
+                        reports,
                       ),
                   ],
                 ),
@@ -290,19 +354,24 @@ class _DatewiseDetailsAttendanceReportPageState
       CompanySupervisorMobileAttendanceReportProvider provider,
       ) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding:
+      const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primaryContainer,
             theme.colorScheme.surfaceContainerLow,
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin:
+          Alignment.topLeft,
+          end:
+          Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius:
+        BorderRadius.circular(18),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
       ),
       child: Row(
@@ -310,43 +379,66 @@ class _DatewiseDetailsAttendanceReportPageState
           Container(
             width: 46,
             height: 46,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
-              borderRadius: BorderRadius.circular(13),
+            decoration:
+            BoxDecoration(
+              color:
+              theme.colorScheme.primary,
+              borderRadius:
+              BorderRadius.circular(13),
             ),
             child: Icon(
               Icons.date_range_rounded,
-              color: theme.colorScheme.onPrimary,
+              color:
+              theme.colorScheme.onPrimary,
               size: 23,
             ),
           ),
           const SizedBox(width: 11),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
                 Text(
                   'Datewise Attendance',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
+                  style: theme
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(
+                    fontWeight:
+                    FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${_formatDate(widget.fromDate)} - ${_formatDate(widget.toDate)}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
+                  '${_formatDate(widget.fromDate)} - '
+                      '${_formatDate(widget.toDate)}',
+                  style: theme
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                    color: theme
+                        .colorScheme
+                        .onSurfaceVariant,
+                    fontWeight:
+                    FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.employeeName} • ${widget.departmentName}',
+                      '${widget.departmentName}',
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w800,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style: theme
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(
+                    color: theme
+                        .colorScheme
+                        .primary,
+                    fontWeight:
+                    FontWeight.w800,
                   ),
                 ),
               ],
@@ -356,7 +448,8 @@ class _DatewiseDetailsAttendanceReportPageState
             const SizedBox(
               width: 19,
               height: 19,
-              child: CircularProgressIndicator(
+              child:
+              CircularProgressIndicator(
                 strokeWidth: 2,
               ),
             ),
@@ -366,19 +459,80 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
+  // EMPLOYEE INFO
+  // ==========================================================================
+  //
+  // Widget _buildEmployeeInfo(
+  //     ThemeData theme,
+  //     List<CompanySupervisorMobileAttendanceReportEntity> reports,
+  //     ) {
+  //   final String employeeCode =
+  //   reports.isNotEmpty
+  //       ? _getEmployeeCode(
+  //     reports.first,
+  //   )
+  //       : '';
+  //
+  //   return Container(
+  //     padding:
+  //     const EdgeInsets.all(12),
+  //     decoration: BoxDecoration(
+  //       color:
+  //       theme.colorScheme.surfaceContainerLow,
+  //       borderRadius:
+  //       BorderRadius.circular(16),
+  //       border: Border.all(
+  //         color:
+  //         theme.colorScheme.outlineVariant,
+  //       ),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Container(
+  //           width: 38,
+  //           height: 38,
+  //           decoration:
+  //           BoxDecoration(
+  //             color:
+  //             theme.colorScheme.primaryContainer,
+  //             borderRadius:
+  //             BorderRadius.circular(11),
+  //           ),
+  //           child: Icon(
+  //             Icons.person_rounded,
+  //             size: 20,
+  //             color: theme
+  //                 .colorScheme
+  //                 .onPrimaryContainer,
+  //           ),
+  //         ),
+  //         const SizedBox(width: 9),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  // ==========================================================================
   // DATE RANGE INFO
   // ==========================================================================
 
-  Widget _buildDateRangeInfo(ThemeData theme) {
-    final int days = _dateRangeDays;
+  Widget _buildDateRangeInfo(
+      ThemeData theme,
+      ) {
+    final int days =
+        _dateRangeDays;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding:
+      const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
+        color:
+        theme.colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(16),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
       ),
       child: Row(
@@ -386,52 +540,79 @@ class _DatewiseDetailsAttendanceReportPageState
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(10),
+            decoration:
+            BoxDecoration(
+              color:
+              theme.colorScheme.primaryContainer,
+              borderRadius:
+              BorderRadius.circular(10),
             ),
             child: Icon(
               Icons.calendar_month_rounded,
               size: 18,
-              color: theme.colorScheme.onPrimaryContainer,
+              color: theme
+                  .colorScheme
+                  .onPrimaryContainer,
             ),
           ),
           const SizedBox(width: 9),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
                 Text(
                   'Selected Date Range',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
+                  style: theme
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(
+                    fontWeight:
+                    FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  '${_formatDate(widget.fromDate)} → ${_formatDate(widget.toDate)}',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
+                  '${_formatDate(widget.fromDate)} → '
+                      '${_formatDate(widget.toDate)}',
+                  style: theme
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(
+                    color: theme
+                        .colorScheme
+                        .onSurfaceVariant,
+                    fontWeight:
+                    FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(
+            padding:
+            const EdgeInsets.symmetric(
               horizontal: 9,
               vertical: 6,
             ),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(30),
+            decoration:
+            BoxDecoration(
+              color:
+              theme.colorScheme.primaryContainer,
+              borderRadius:
+              BorderRadius.circular(30),
             ),
             child: Text(
               '$days Day${days == 1 ? '' : 's'}',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.w900,
+              style: theme
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(
+                color: theme
+                    .colorScheme
+                    .onPrimaryContainer,
+                fontWeight:
+                FontWeight.w900,
               ),
             ),
           ),
@@ -445,74 +626,87 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   int get _dateRangeDays {
-    final DateTime start = DateTime(
+    final DateTime start =
+    DateTime(
       widget.fromDate.year,
       widget.fromDate.month,
       widget.fromDate.day,
     );
 
-    final DateTime end = DateTime(
+    final DateTime end =
+    DateTime(
       widget.toDate.year,
       widget.toDate.month,
       widget.toDate.day,
     );
 
-    final int days = end.difference(start).inDays + 1;
+    final int days =
+        end.difference(start).inDays + 1;
 
-    return days < 1 ? 1 : days;
+    return days < 1
+        ? 1
+        : days;
   }
 
   // ==========================================================================
   // SUMMARY
-  //
-  // EXACTLY SAME STATUS GROUPING AS TODAY PAGE.
   // ==========================================================================
 
   Widget _buildSummary(
       ThemeData theme,
-      CompanySupervisorMobileAttendanceReportProvider provider, {
+      List<CompanySupervisorMobileAttendanceReportEntity>
+      reports, {
         required bool isDesktop,
         required bool isTablet,
       }) {
-    final int total = provider.reports.length;
+    final int total =
+        reports.length;
 
-    final int present = _countStatus(
-      provider,
+    final int present =
+    _countStatus(
+      reports,
       'PRESENT',
     );
 
-    final int absent = _countStatus(
-      provider,
+    final int absent =
+    _countStatus(
+      reports,
       'ABSENT',
     );
 
-    final int late = _countStatus(
-      provider,
+    final int late =
+    _countStatus(
+      reports,
       'LATE',
     );
 
-    final int earlyOut = _countStatus(
-      provider,
+    final int earlyOut =
+    _countStatus(
+      reports,
       'EARLY OUT',
     );
 
-    final int lateAndEarlyOut = _countStatus(
-      provider,
+    final int lateAndEarlyOut =
+    _countStatus(
+      reports,
       'LATE + EARLY OUT',
     );
 
-    final int leave = _countStatus(
-      provider,
+    final int leave =
+    _countStatus(
+      reports,
       'LEAVE',
     );
 
-    final int offDay = _countStatus(
-      provider,
+    final int offDay =
+    _countStatus(
+      reports,
       'OFF DAY',
     );
 
-    final int holiday = _countStatus(
-      provider,
+    final int holiday =
+    _countStatus(
+      reports,
       'HOLIDAY',
     );
 
@@ -520,132 +714,185 @@ class _DatewiseDetailsAttendanceReportPageState
       _SummaryItem(
         title: 'Total',
         value: total,
-        icon: Icons.groups_rounded,
-        color: theme.colorScheme.primary,
+        icon:
+        Icons.groups_rounded,
+        color:
+        theme.colorScheme.primary,
       ),
       _SummaryItem(
         title: 'Present',
         value: present,
-        icon: Icons.check_circle_rounded,
-        color: theme.colorScheme.primary,
+        icon:
+        Icons.check_circle_rounded,
+        color:
+        theme.colorScheme.primary,
       ),
       _SummaryItem(
         title: 'Absent',
         value: absent,
-        icon: Icons.cancel_rounded,
-        color: theme.colorScheme.error,
+        icon:
+        Icons.cancel_rounded,
+        color:
+        theme.colorScheme.error,
       ),
       _SummaryItem(
         title: 'Late',
         value: late,
-        icon: Icons.schedule_rounded,
-        color: theme.colorScheme.tertiary,
+        icon:
+        Icons.schedule_rounded,
+        color:
+        theme.colorScheme.tertiary,
       ),
       _SummaryItem(
         title: 'Early Out',
         value: earlyOut,
-        icon: Icons.logout_rounded,
-        color: theme.colorScheme.secondary,
+        icon:
+        Icons.logout_rounded,
+        color:
+        theme.colorScheme.secondary,
       ),
       _SummaryItem(
         title: 'Late + Early Out',
         value: lateAndEarlyOut,
-        icon: Icons.warning_amber_rounded,
-        color: Colors.deepOrange,
+        icon:
+        Icons.warning_amber_rounded,
+        color:
+        Colors.deepOrange,
       ),
       _SummaryItem(
         title: 'Leave',
         value: leave,
-        icon: Icons.event_busy_rounded,
-        color: theme.colorScheme.tertiary,
+        icon:
+        Icons.event_busy_rounded,
+        color:
+        theme.colorScheme.tertiary,
       ),
       _SummaryItem(
         title: 'Off Day',
         value: offDay,
-        icon: Icons.weekend_rounded,
-        color: theme.colorScheme.secondary,
+        icon:
+        Icons.weekend_rounded,
+        color:
+        theme.colorScheme.secondary,
       ),
       _SummaryItem(
         title: 'Holiday',
         value: holiday,
-        icon: Icons.celebration_rounded,
-        color: theme.colorScheme.tertiary,
+        icon:
+        Icons.celebration_rounded,
+        color:
+        theme.colorScheme.tertiary,
       ),
     ];
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding:
+      const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
+        color:
+        theme.colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(16),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment:
+        CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               Container(
                 width: 34,
                 height: 34,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(10),
+                decoration:
+                BoxDecoration(
+                  color:
+                  theme.colorScheme.primaryContainer,
+                  borderRadius:
+                  BorderRadius.circular(10),
                 ),
                 child: Icon(
                   Icons.analytics_rounded,
                   size: 18,
-                  color: theme.colorScheme.onPrimaryContainer,
+                  color: theme
+                      .colorScheme
+                      .onPrimaryContainer,
                 ),
               ),
               const SizedBox(width: 9),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Attendance Summary',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
+                      style: theme
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(
+                        fontWeight:
+                        FontWeight.w900,
                       ),
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Date range overview',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
+                      'Selected dept date range overview',
+                      style: theme
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(
+                        color: theme
+                            .colorScheme
+                            .onSurfaceVariant,
+                        fontWeight:
+                        FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
+                padding:
+                const EdgeInsets.symmetric(
                   horizontal: 9,
                   vertical: 6,
                 ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(30),
+                decoration:
+                BoxDecoration(
+                  color:
+                  theme.colorScheme.primaryContainer,
+                  borderRadius:
+                  BorderRadius.circular(30),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize:
+                  MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.people_alt_rounded,
+                      Icons
+                          .assignment_turned_in_rounded,
                       size: 14,
-                      color: theme.colorScheme.onPrimaryContainer,
+                      color: theme
+                          .colorScheme
+                          .onPrimaryContainer,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '$total Records',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w900,
+                      style: theme
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(
+                        color: theme
+                            .colorScheme
+                            .onPrimaryContainer,
+                        fontWeight:
+                        FontWeight.w900,
                       ),
                     ),
                   ],
@@ -656,12 +903,15 @@ class _DatewiseDetailsAttendanceReportPageState
           const SizedBox(height: 11),
           Divider(
             height: 1,
-            color: theme.colorScheme.outlineVariant,
+            color:
+            theme.colorScheme.outlineVariant,
           ),
           const SizedBox(height: 11),
           LayoutBuilder(
-            builder: (context, constraints) {
-              final double width = constraints.maxWidth;
+            builder:
+                (context, constraints) {
+              final double width =
+                  constraints.maxWidth;
 
               final int columns;
 
@@ -678,15 +928,21 @@ class _DatewiseDetailsAttendanceReportPageState
               const double spacing = 7;
 
               final double itemWidth =
-                  (width - ((columns - 1) * spacing)) / columns;
+                  (width -
+                      ((columns - 1) *
+                          spacing)) /
+                      columns;
 
               return Wrap(
                 spacing: spacing,
                 runSpacing: spacing,
-                children: items.map((item) {
+                children:
+                items.map((item) {
                   return SizedBox(
-                    width: itemWidth,
-                    child: _buildSummaryItem(
+                    width:
+                    itemWidth,
+                    child:
+                    _buildSummaryItem(
                       theme,
                       item,
                     ),
@@ -709,18 +965,24 @@ class _DatewiseDetailsAttendanceReportPageState
       _SummaryItem item,
       ) {
     return Container(
-      constraints: const BoxConstraints(
+      constraints:
+      const BoxConstraints(
         minHeight: 34,
       ),
-      padding: const EdgeInsets.symmetric(
+      padding:
+      const EdgeInsets.symmetric(
         horizontal: 9,
         vertical: 8,
       ),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(11),
+      decoration:
+      BoxDecoration(
+        color:
+        theme.colorScheme.surface,
+        borderRadius:
+        BorderRadius.circular(11),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
       ),
       child: Row(
@@ -728,9 +990,14 @@ class _DatewiseDetailsAttendanceReportPageState
           Container(
             width: 30,
             height: 30,
-            decoration: BoxDecoration(
-              color: item.color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(8),
+            decoration:
+            BoxDecoration(
+              color:
+              item.color.withValues(
+                alpha: 0.10,
+              ),
+              borderRadius:
+              BorderRadius.circular(8),
             ),
             child: Icon(
               item.icon,
@@ -738,30 +1005,43 @@ class _DatewiseDetailsAttendanceReportPageState
               color: item.color,
             ),
           ),
+          const SizedBox(width: 7),
           Expanded(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment:
+              MainAxisAlignment.center,
               children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+                Flexible(
+                  child: Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow:
+                    TextOverflow.ellipsis,
+                    style: theme
+                        .textTheme
+                        .labelSmall
+                        ?.copyWith(
+                      color: theme
+                          .colorScheme
+                          .onSurfaceVariant,
+                      fontWeight:
+                      FontWeight.w700,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 7),
                 Text(
                   '${item.value}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
+                  style: theme
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(
+                    fontWeight:
+                    FontWeight.w900,
                     fontSize: 12,
-                    color: item.color,
+                    color:
+                    item.color,
                   ),
                 ),
               ],
@@ -785,31 +1065,46 @@ class _DatewiseDetailsAttendanceReportPageState
         Icon(
           Icons.people_alt_rounded,
           size: 19,
-          color: theme.colorScheme.primary,
+          color:
+          theme.colorScheme.primary,
         ),
         const SizedBox(width: 7),
         Expanded(
           child: Text(
             'Attendance Details',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w900,
+            style: theme
+                .textTheme
+                .titleMedium
+                ?.copyWith(
+              fontWeight:
+              FontWeight.w900,
             ),
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(
+          padding:
+          const EdgeInsets.symmetric(
             horizontal: 9,
             vertical: 4,
           ),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(30),
+          decoration:
+          BoxDecoration(
+            color:
+            theme.colorScheme.primaryContainer,
+            borderRadius:
+            BorderRadius.circular(30),
           ),
           child: Text(
             '$count Records',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimaryContainer,
-              fontWeight: FontWeight.w800,
+            style: theme
+                .textTheme
+                .labelSmall
+                ?.copyWith(
+              color: theme
+                  .colorScheme
+                  .onPrimaryContainer,
+              fontWeight:
+              FontWeight.w800,
             ),
           ),
         ),
@@ -823,19 +1118,24 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildMobileList(
       ThemeData theme,
-      CompanySupervisorMobileAttendanceReportProvider provider,
+      List<CompanySupervisorMobileAttendanceReportEntity>
+      reports,
       ) {
     return ListView.separated(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: provider.reports.length,
-      separatorBuilder: (_, __) {
-        return const SizedBox(height: 10);
-      },
-      itemBuilder: (context, index) {
+      physics:
+      const NeverScrollableScrollPhysics(),
+      itemCount: reports.length,
+      separatorBuilder:
+          (_, __) =>
+      const SizedBox(
+        height: 10,
+      ),
+      itemBuilder:
+          (context, index) {
         return _buildAttendanceCard(
           theme,
-          provider.reports[index],
+          reports[index],
           index,
         );
       },
@@ -848,46 +1148,54 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildAttendanceCard(
       ThemeData theme,
-      CompanySupervisorMobileAttendanceReportEntity report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       int index,
       ) {
-    final String status = _getCalculatedStatus(report);
+    final String status =
+    _getCalculatedStatus(
+      report,
+    );
 
-    final Color statusColor = _getStatusColor(
+    final Color statusColor =
+    _getStatusColor(
       theme,
       status,
     );
 
-    final bool isAbsent =
-        status.toLowerCase() == 'absent';
-
-    final bool isHoliday =
-        status.toLowerCase() == 'holiday';
-
-    final bool isLeave =
-        status.toLowerCase() == 'leave';
-
     final bool hideAttendanceDetails =
-        isAbsent || isHoliday || isLeave;
+        status == 'ABSENT' ||
+            status == 'HOLIDAY' ||
+            status == 'LEAVE' ||
+            status == 'OFF DAY';
 
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
+      decoration:
+      BoxDecoration(
+        color:
+        theme.colorScheme.surface,
+        borderRadius:
+        BorderRadius.circular(18),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withValues(
+            color: theme
+                .colorScheme
+                .shadow
+                .withValues(
               alpha: 0.04,
             ),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset:
+            const Offset(0, 4),
           ),
         ],
       ),
-      clipBehavior: Clip.antiAlias,
+      clipBehavior:
+      Clip.antiAlias,
       child: Column(
         children: [
           Container(
@@ -895,9 +1203,11 @@ class _DatewiseDetailsAttendanceReportPageState
             color: statusColor,
           ),
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding:
+            const EdgeInsets.all(14),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment:
+              CrossAxisAlignment.stretch,
               children: [
                 Row(
                   children: [
@@ -905,57 +1215,99 @@ class _DatewiseDetailsAttendanceReportPageState
                       theme,
                       index,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Expanded(
-                      child: _buildEmployeeIdentity(
+                      child:
+                      _buildEmployeeIdentity(
                         theme,
                         report,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(
+                  height: 8,
+                ),
                 _buildDateLine(
                   theme,
                   report,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(
+                  height: 12,
+                ),
                 _buildStatusBadge(
                   theme,
                   report,
                 ),
                 if (!hideAttendanceDetails) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(
+                    height: 12,
+                  ),
                   Row(
                     children: [
                       Expanded(
-                        child: _buildDetailCell(
+                        child:
+                        _buildDetailCell(
                           theme,
-                          icon: Icons.login_rounded,
-                          label: 'Check In',
-                          value: _getCheckInTime(report),
+                          icon:
+                          Icons.login_rounded,
+                          label:
+                          'Check In',
+                          value:
+                          _getCheckInTime(
+                            report,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(
+                        width: 8,
+                      ),
                       Expanded(
-                        child: _buildDetailCell(
+                        child:
+                        _buildDetailCell(
                           theme,
-                          icon: Icons.logout_rounded,
-                          label: 'Check Out',
-                          value: _getCheckOutTime(report),
+                          icon:
+                          Icons.logout_rounded,
+                          label:
+                          'Check Out',
+                          value:
+                          _getCheckOutTime(
+                            report,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   _buildActualWorkingOvertimeRow(
                     theme,
-                    _getShiftStartTime(report),
-                    _getShiftEndTime(report),
-                    _getCheckInTime(report),
-                    _getCheckOutTime(report),
+                    _getShiftStartTime(
+                      report,
+                    ),
+                    _getShiftEndTime(
+                      report,
+                    ),
+                    _getCheckInTime(
+                      report,
+                    ),
+                    _getCheckOutTime(
+                      report,
+                    ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  _buildTimeInformation(
+                    theme,
+                    report,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   _buildLocationSection(
                     theme,
                     report,
@@ -970,32 +1322,145 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
+  // TIME INFORMATION
+  // ==========================================================================
+
+  Widget _buildTimeInformation(
+      ThemeData theme,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
+      ) {
+    return Container(
+      padding:
+      const EdgeInsets.all(10),
+      decoration:
+      BoxDecoration(
+        color:
+        theme.colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(12),
+        border: Border.all(
+          color:
+          theme.colorScheme.outlineVariant,
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildInfoLine(
+            theme,
+            'Actual Time',
+            _getActualTime(
+              report,
+            ),
+            Icons.timer_rounded,
+          ),
+          const SizedBox(
+            height: 7,
+          ),
+          _buildInfoLine(
+            theme,
+            'Shift Start',
+            _getShiftStartTime(
+              report,
+            ),
+            Icons.login_rounded,
+          ),
+          const SizedBox(
+            height: 7,
+          ),
+          _buildInfoLine(
+            theme,
+            'Shift End',
+            _getShiftEndTime(
+              report,
+            ),
+            Icons.logout_rounded,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // INFO LINE
+  // ==========================================================================
+
+  Widget _buildInfoLine(
+      ThemeData theme,
+      String label,
+      String value,
+      IconData icon,
+      ) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color:
+          theme.colorScheme.primary,
+        ),
+        const SizedBox(width: 7),
+        SizedBox(
+          width: 85,
+          child: Text(
+            label,
+            style: theme
+                .textTheme
+                .labelSmall
+                ?.copyWith(
+              color: theme
+                  .colorScheme
+                  .onSurfaceVariant,
+              fontWeight:
+              FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Text(
+            value,
+            style: theme
+                .textTheme
+                .bodySmall
+                ?.copyWith(
+              fontWeight:
+              FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================================================
   // LOCATION SECTION
   // ==========================================================================
 
   Widget _buildLocationSection(
       ThemeData theme,
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    final String checkInAddress =
-    _getCheckInLocation(report);
-
-    final String checkOutAddress =
-    _getCheckOutLocation(report);
-
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
+      decoration:
+      BoxDecoration(
+        color:
+        theme.colorScheme.surfaceContainerLow,
+        borderRadius:
+        BorderRadius.circular(14),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment:
+        CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(
+            padding:
+            const EdgeInsets.fromLTRB(
               12,
               9,
               12,
@@ -1006,22 +1471,34 @@ class _DatewiseDetailsAttendanceReportPageState
                 Container(
                   width: 31,
                   height: 31,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(8),
+                  decoration:
+                  BoxDecoration(
+                    color: theme
+                        .colorScheme
+                        .secondaryContainer,
+                    borderRadius:
+                    BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.location_on_rounded,
                     size: 16,
-                    color: theme.colorScheme.onSecondaryContainer,
+                    color: theme
+                        .colorScheme
+                        .onSecondaryContainer,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(
+                  width: 8,
+                ),
                 Expanded(
                   child: Text(
                     'Attendance Location',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
+                    style: theme
+                        .textTheme
+                        .labelLarge
+                        ?.copyWith(
+                      fontWeight:
+                      FontWeight.w900,
                     ),
                   ),
                 ),
@@ -1030,30 +1507,45 @@ class _DatewiseDetailsAttendanceReportPageState
           ),
           Divider(
             height: 1,
-            color: theme.colorScheme.outlineVariant,
+            color:
+            theme.colorScheme.outlineVariant,
           ),
           _buildLocationRow(
             theme,
-            label: 'Check-in Address',
-            value: checkInAddress,
-            icon: Icons.login_rounded,
-            color: theme.colorScheme.primary,
+            label:
+            'Check-in Address',
+            value:
+            _getCheckInLocation(
+              report,
+            ),
+            icon:
+            Icons.login_rounded,
+            color:
+            theme.colorScheme.primary,
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(
+            padding:
+            const EdgeInsets.symmetric(
               horizontal: 12,
             ),
             child: Divider(
               height: 1,
-              color: theme.colorScheme.outlineVariant,
+              color:
+              theme.colorScheme.outlineVariant,
             ),
           ),
           _buildLocationRow(
             theme,
-            label: 'Check-out Address',
-            value: checkOutAddress,
-            icon: Icons.logout_rounded,
-            color: theme.colorScheme.secondary,
+            label:
+            'Check-out Address',
+            value:
+            _getCheckOutLocation(
+              report,
+            ),
+            icon:
+            Icons.logout_rounded,
+            color:
+            theme.colorScheme.secondary,
           ),
         ],
       ),
@@ -1072,16 +1564,23 @@ class _DatewiseDetailsAttendanceReportPageState
         required Color color,
       }) {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding:
+      const EdgeInsets.all(12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
         children: [
           Container(
             width: 31,
             height: 31,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(8),
+            decoration:
+            BoxDecoration(
+              color:
+              color.withValues(
+                alpha: 0.10,
+              ),
+              borderRadius:
+              BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
@@ -1092,22 +1591,36 @@ class _DatewiseDetailsAttendanceReportPageState
           const SizedBox(width: 8),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
+                  style: theme
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(
+                    color: theme
+                        .colorScheme
+                        .onSurfaceVariant,
+                    fontWeight:
+                    FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(
+                  height: 2,
+                ),
                 Text(
                   value,
                   maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style: theme
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                    fontWeight:
+                    FontWeight.w700,
                     height: 1.35,
                   ),
                 ),
@@ -1130,16 +1643,26 @@ class _DatewiseDetailsAttendanceReportPageState
     return Container(
       width: 38,
       height: 38,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
+      alignment:
+      Alignment.center,
+      decoration:
+      BoxDecoration(
+        color:
+        theme.colorScheme.primaryContainer,
+        borderRadius:
+        BorderRadius.circular(12),
       ),
       child: Text(
         '${index + 1}',
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: theme.colorScheme.onPrimaryContainer,
-          fontWeight: FontWeight.w900,
+        style: theme
+            .textTheme
+            .labelMedium
+            ?.copyWith(
+          color: theme
+              .colorScheme
+              .onPrimaryContainer,
+          fontWeight:
+          FontWeight.w900,
         ),
       ),
     );
@@ -1151,20 +1674,30 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildEmployeeIdentity(
       ThemeData theme,
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    final String name = _getEmployeeName(report);
-    final String code = _getEmployeeCode(report);
+    final String? name =
+    _getEmployeeName(report);
+
+    final String code =
+    _getEmployeeCode(report);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
       children: [
         Text(
-          name,
+          name!,
           maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w900,
+          overflow:
+          TextOverflow.ellipsis,
+          style: theme
+              .textTheme
+              .titleSmall
+              ?.copyWith(
+            fontWeight:
+            FontWeight.w900,
           ),
         ),
         if (code.isNotEmpty) ...[
@@ -1172,10 +1705,17 @@ class _DatewiseDetailsAttendanceReportPageState
           Text(
             code,
             maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
+            overflow:
+            TextOverflow.ellipsis,
+            style: theme
+                .textTheme
+                .labelSmall
+                ?.copyWith(
+              color: theme
+                  .colorScheme
+                  .onSurfaceVariant,
+              fontWeight:
+              FontWeight.w600,
             ),
           ),
         ],
@@ -1189,21 +1729,30 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildDateLine(
       ThemeData theme,
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
     return Row(
       children: [
         Icon(
           Icons.calendar_month_rounded,
           size: 16,
-          color: theme.colorScheme.onSurfaceVariant,
+          color: theme
+              .colorScheme
+              .onSurfaceVariant,
         ),
         const SizedBox(width: 6),
         Text(
           _getAttendanceDate(report),
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
+          style: theme
+              .textTheme
+              .labelSmall
+              ?.copyWith(
+            color: theme
+                .colorScheme
+                .onSurfaceVariant,
+            fontWeight:
+            FontWeight.w700,
           ),
         ),
       ],
@@ -1221,15 +1770,20 @@ class _DatewiseDetailsAttendanceReportPageState
         required String value,
       }) {
     return Container(
-      padding: const EdgeInsets.symmetric(
+      padding:
+      const EdgeInsets.symmetric(
         horizontal: 10,
         vertical: 9,
       ),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(11),
+      decoration:
+      BoxDecoration(
+        color:
+        theme.colorScheme.surface,
+        borderRadius:
+        BorderRadius.circular(11),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
       ),
       child: Row(
@@ -1237,30 +1791,44 @@ class _DatewiseDetailsAttendanceReportPageState
           Icon(
             icon,
             size: 17,
-            color: theme.colorScheme.primary,
+            color:
+            theme.colorScheme.primary,
           ),
           const SizedBox(width: 7),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style: theme
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(
                     fontSize: 9,
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
+                    color: theme
+                        .colorScheme
+                        .onSurfaceVariant,
+                    fontWeight:
+                    FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w900,
+                  overflow:
+                  TextOverflow.ellipsis,
+                  style: theme
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                    fontWeight:
+                    FontWeight.w900,
                   ),
                 ),
               ],
@@ -1277,37 +1845,58 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildStatusBadge(
       ThemeData theme,
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
     final String status =
     _getCalculatedStatus(report);
 
     final Color color =
-    _getStatusColor(theme, status);
+    _getStatusColor(
+      theme,
+      status,
+    );
 
     return Center(
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 180,
+        constraints:
+        const BoxConstraints(
+          maxWidth: 190,
         ),
-        padding: const EdgeInsets.symmetric(
+        padding:
+        const EdgeInsets.symmetric(
           horizontal: 9,
           vertical: 6,
         ),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(30),
+        decoration:
+        BoxDecoration(
+          color:
+          color.withValues(
+            alpha: 0.10,
+          ),
+          borderRadius:
+          BorderRadius.circular(30),
           border: Border.all(
-            color: color.withValues(alpha: 0.20),
+            color:
+            color.withValues(
+              alpha: 0.20,
+            ),
           ),
         ),
         child: Text(
-          status.isEmpty ? 'UNKNOWN' : status,
+          status.isEmpty
+              ? 'UNKNOWN'
+              : status,
           maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.labelSmall?.copyWith(
+          overflow:
+          TextOverflow.ellipsis,
+          style: theme
+              .textTheme
+              .labelSmall
+              ?.copyWith(
             color: color,
-            fontWeight: FontWeight.w900,
+            fontWeight:
+            FontWeight.w900,
           ),
         ),
       ),
@@ -1320,34 +1909,48 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildDesktopList(
       ThemeData theme,
-      CompanySupervisorMobileAttendanceReportProvider provider,
+      List<CompanySupervisorMobileAttendanceReportEntity>
+      reports,
       ) {
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
+      decoration:
+      BoxDecoration(
+        color:
+        theme.colorScheme.surface,
+        borderRadius:
+        BorderRadius.circular(18),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant,
+          color:
+          theme.colorScheme.outlineVariant,
         ),
       ),
-      clipBehavior: Clip.antiAlias,
+      clipBehavior:
+      Clip.antiAlias,
       child: Column(
         children: [
-          _buildDesktopHeader(theme),
+          _buildDesktopHeader(
+            theme,
+          ),
           ListView.separated(
             shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: provider.reports.length,
-            separatorBuilder: (_, __) {
+            physics:
+            const NeverScrollableScrollPhysics(),
+            itemCount:
+            reports.length,
+            separatorBuilder:
+                (_, __) {
               return Divider(
                 height: 1,
-                color: theme.colorScheme.outlineVariant,
+                color: theme
+                    .colorScheme
+                    .outlineVariant,
               );
             },
-            itemBuilder: (context, index) {
+            itemBuilder:
+                (context, index) {
               return _buildDesktopRow(
                 theme,
-                provider.reports[index],
+                reports[index],
                 index,
               );
             },
@@ -1365,15 +1968,21 @@ class _DatewiseDetailsAttendanceReportPageState
       ThemeData theme,
       ) {
     return Container(
-      padding: const EdgeInsets.symmetric(
+      padding:
+      const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 13,
       ),
-      color: theme.colorScheme.surfaceContainerLow,
+      color:
+      theme.colorScheme.surfaceContainerLow,
       child: Row(
         children: [
-          const SizedBox(width: 42),
-          const SizedBox(width: 12),
+          const SizedBox(
+            width: 42,
+          ),
+          const SizedBox(
+            width: 12,
+          ),
           Expanded(
             flex: 3,
             child: _tableHeader(
@@ -1441,11 +2050,24 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildDesktopRow(
       ThemeData theme,
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       int index,
       ) {
+    final String status =
+    _getCalculatedStatus(
+      report,
+    );
+
+    final bool hideAttendanceDetails =
+        status == 'ABSENT' ||
+            status == 'HOLIDAY' ||
+            status == 'LEAVE' ||
+            status == 'OFF DAY';
+
     return Padding(
-      padding: const EdgeInsets.symmetric(
+      padding:
+      const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 13,
       ),
@@ -1455,10 +2077,13 @@ class _DatewiseDetailsAttendanceReportPageState
             theme,
             index,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(
+            width: 12,
+          ),
           Expanded(
             flex: 3,
-            child: _buildEmployeeIdentity(
+            child:
+            _buildEmployeeIdentity(
               theme,
               report,
             ),
@@ -1466,15 +2091,22 @@ class _DatewiseDetailsAttendanceReportPageState
           Expanded(
             flex: 2,
             child: Text(
-              _getAttendanceDate(report),
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w700,
+              _getAttendanceDate(
+                report,
+              ),
+              style: theme
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(
+                fontWeight:
+                FontWeight.w700,
               ),
             ),
           ),
           Expanded(
             flex: 2,
-            child: _buildStatusBadge(
+            child:
+            _buildStatusBadge(
               theme,
               report,
             ),
@@ -1482,42 +2114,71 @@ class _DatewiseDetailsAttendanceReportPageState
           Expanded(
             flex: 2,
             child: Text(
-              _getCheckInTime(report),
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w700,
+              hideAttendanceDetails
+                  ? '--'
+                  : _getCheckInTime(
+                report,
+              ),
+              style: theme
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(
+                fontWeight:
+                FontWeight.w700,
               ),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              _getCheckOutTime(report),
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w700,
+              hideAttendanceDetails
+                  ? '--'
+                  : _getCheckOutTime(
+                report,
+              ),
+              style: theme
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(
+                fontWeight:
+                FontWeight.w700,
               ),
             ),
           ),
           Expanded(
             flex: 4,
-            child: _buildDesktopAttendanceTime(
+            child:
+            hideAttendanceDetails
+                ? const Text('--')
+                : _buildDesktopAttendanceTime(
               theme,
               report,
             ),
           ),
           Expanded(
             flex: 4,
-            child: _buildDesktopLocation(
+            child:
+            hideAttendanceDetails
+                ? const Text('--')
+                : _buildDesktopLocation(
               theme,
-              _getCheckInLocation(report),
+              _getCheckInLocation(
+                report,
+              ),
               Icons.login_rounded,
               theme.colorScheme.primary,
             ),
           ),
           Expanded(
             flex: 4,
-            child: _buildDesktopLocation(
+            child:
+            hideAttendanceDetails
+                ? const Text('--')
+                : _buildDesktopLocation(
               theme,
-              _getCheckOutLocation(report),
+              _getCheckOutLocation(
+                report,
+              ),
               Icons.logout_rounded,
               theme.colorScheme.secondary,
             ),
@@ -1533,7 +2194,8 @@ class _DatewiseDetailsAttendanceReportPageState
 
   Widget _buildDesktopAttendanceTime(
       ThemeData theme,
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
     final String actualTime =
     _getActualTime(report);
@@ -1545,7 +2207,8 @@ class _DatewiseDetailsAttendanceReportPageState
     _getShiftEndTime(report);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
       children: [
         _buildDesktopTimeValue(
           theme,
@@ -1556,7 +2219,8 @@ class _DatewiseDetailsAttendanceReportPageState
         _buildDesktopTimeValue(
           theme,
           'Shift',
-          '$shiftStartTime - $shiftEndTime',
+          '$shiftStartTime - '
+              '$shiftEndTime',
         ),
       ],
     );
@@ -1577,9 +2241,15 @@ class _DatewiseDetailsAttendanceReportPageState
           width: 45,
           child: Text(
             label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w900,
+            style: theme
+                .textTheme
+                .labelSmall
+                ?.copyWith(
+              color: theme
+                  .colorScheme
+                  .primary,
+              fontWeight:
+              FontWeight.w900,
             ),
           ),
         ),
@@ -1587,9 +2257,14 @@ class _DatewiseDetailsAttendanceReportPageState
           child: Text(
             value,
             maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w800,
+            overflow:
+            TextOverflow.ellipsis,
+            style: theme
+                .textTheme
+                .bodySmall
+                ?.copyWith(
+              fontWeight:
+              FontWeight.w800,
             ),
           ),
         ),
@@ -1608,7 +2283,8 @@ class _DatewiseDetailsAttendanceReportPageState
       Color color,
       ) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
       children: [
         Icon(
           icon,
@@ -1620,10 +2296,17 @@ class _DatewiseDetailsAttendanceReportPageState
           child: Text(
             value,
             maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
+            overflow:
+            TextOverflow.ellipsis,
+            style: theme
+                .textTheme
+                .bodySmall
+                ?.copyWith(
+              color: theme
+                  .colorScheme
+                  .onSurfaceVariant,
+              fontWeight:
+              FontWeight.w600,
               height: 1.3,
             ),
           ),
@@ -1639,19 +2322,23 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   int _countStatus(
-      CompanySupervisorMobileAttendanceReportProvider provider,
+      List<CompanySupervisorMobileAttendanceReportEntity>
+      reports,
       String status,
       ) {
-    int count = 0;
-
     final String normalizedStatus =
     _normalizeStatus(status);
 
-    for (final dynamic report in provider.reports) {
-      final String currentStatus =
-      _getCalculatedStatus(report);
+    int count = 0;
 
-      if (currentStatus == normalizedStatus) {
+    for (final report in reports) {
+      final String currentStatus =
+      _getCalculatedStatus(
+        report,
+      );
+
+      if (currentStatus ==
+          normalizedStatus) {
         count++;
       }
     }
@@ -1660,11 +2347,12 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
-  // CALCULATED ATTENDANCE STATUS
+  // CALCULATED STATUS
   // ==========================================================================
 
   String _getCalculatedStatus(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
     try {
       final String sourceStatus =
@@ -1672,27 +2360,52 @@ class _DatewiseDetailsAttendanceReportPageState
         report.attendanceStatus,
       );
 
-      if (_isOffDayStatus(sourceStatus)) {
+      // ----------------------------------------------------------------------
+      // OFF DAY
+      // ----------------------------------------------------------------------
+
+      if (_isOffDayStatus(
+        sourceStatus,
+      )) {
         return 'OFF DAY';
       }
 
-      if (sourceStatus == 'HOLIDAY') {
+      // ----------------------------------------------------------------------
+      // HOLIDAY
+      // ----------------------------------------------------------------------
+
+      if (sourceStatus ==
+          'HOLIDAY') {
         return 'HOLIDAY';
       }
 
-      if (sourceStatus == 'LEAVE') {
+      // ----------------------------------------------------------------------
+      // LEAVE
+      // ----------------------------------------------------------------------
+
+      if (sourceStatus ==
+          'LEAVE') {
         return 'LEAVE';
       }
 
-      if (report.isAbsent == true) {
+      // ----------------------------------------------------------------------
+      // ABSENT
+      // ----------------------------------------------------------------------
+
+      if (report.isAbsent ==
+          true) {
         return 'ABSENT';
       }
 
       final DateTime? checkIn =
-      _toDateTime(report.checkInTime);
+      _toDateTime(
+        report.checkInTime,
+      );
 
       final DateTime? checkOut =
-      _toDateTime(report.checkOutTime);
+      _toDateTime(
+        report.checkOutTime,
+      );
 
       final bool hasCheckIn =
           checkIn != null;
@@ -1700,21 +2413,34 @@ class _DatewiseDetailsAttendanceReportPageState
       final bool hasCheckOut =
           checkOut != null;
 
-      if (!hasCheckIn && !hasCheckOut) {
+      if (!hasCheckIn &&
+          !hasCheckOut) {
         return 'ABSENT';
       }
 
+      // ----------------------------------------------------------------------
+      // SHIFT
+      // ----------------------------------------------------------------------
+
       final String shiftStart =
-      _getShiftStartTime(report);
+      _getShiftStartTime(
+        report,
+      );
 
       final String shiftEnd =
-      _getShiftEndTime(report);
+      _getShiftEndTime(
+        report,
+      );
 
       final int graceIn =
-      _safeGrace(report.graceInMinutes);
+      _safeGrace(
+        report.graceInMinutes,
+      );
 
       final int graceOut =
-      _safeGrace(report.graceOutMinutes);
+      _safeGrace(
+        report.graceOutMinutes,
+      );
 
       final DateTime referenceDate =
           checkIn ??
@@ -1738,6 +2464,10 @@ class _DatewiseDetailsAttendanceReportPageState
       bool isLate = false;
       bool isEarlyOut = false;
 
+      // ----------------------------------------------------------------------
+      // LATE
+      // ----------------------------------------------------------------------
+
       if (checkIn != null &&
           shiftStartDate != null) {
         final DateTime allowedCheckIn =
@@ -1752,6 +2482,10 @@ class _DatewiseDetailsAttendanceReportPageState
               allowedCheckIn,
             );
       }
+
+      // ----------------------------------------------------------------------
+      // EARLY OUT
+      // ----------------------------------------------------------------------
 
       if (checkOut != null &&
           shiftEndDate != null) {
@@ -1768,17 +2502,34 @@ class _DatewiseDetailsAttendanceReportPageState
             );
       }
 
-      if (isLate && isEarlyOut) {
+      // ----------------------------------------------------------------------
+      // BOTH
+      // ----------------------------------------------------------------------
+
+      if (isLate &&
+          isEarlyOut) {
         return 'LATE + EARLY OUT';
       }
+
+      // ----------------------------------------------------------------------
+      // LATE ONLY
+      // ----------------------------------------------------------------------
 
       if (isLate) {
         return 'LATE';
       }
 
+      // ----------------------------------------------------------------------
+      // EARLY OUT ONLY
+      // ----------------------------------------------------------------------
+
       if (isEarlyOut) {
         return 'EARLY OUT';
       }
+
+      // ----------------------------------------------------------------------
+      // PRESENT
+      // ----------------------------------------------------------------------
 
       return 'PRESENT';
     } catch (_) {
@@ -1838,14 +2589,18 @@ class _DatewiseDetailsAttendanceReportPageState
       dynamic value,
       ) {
     if (value is int) {
-      return value < 0 ? 0 : value;
+      return value < 0
+          ? 0
+          : value;
     }
 
     if (value is num) {
       final int result =
       value.toInt();
 
-      return result < 0 ? 0 : result;
+      return result < 0
+          ? 0
+          : result;
     }
 
     final int result =
@@ -1854,7 +2609,9 @@ class _DatewiseDetailsAttendanceReportPageState
         ) ??
             0;
 
-    return result < 0 ? 0 : result;
+    return result < 0
+        ? 0
+        : result;
   }
 
   // ==========================================================================
@@ -1865,7 +2622,8 @@ class _DatewiseDetailsAttendanceReportPageState
       ThemeData theme,
       String status,
       ) {
-    switch (status.trim().toUpperCase()) {
+    switch (
+    status.trim().toUpperCase()) {
       case 'PRESENT':
         return theme.colorScheme.primary;
 
@@ -1896,45 +2654,42 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
+  // EMPLOYEE ID
+  // ==========================================================================
+
+  String _getReportEmployeeId(
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
+      ) {
+    return report.employeeId
+        .toString()
+        .trim();
+  }
+
+  // ==========================================================================
   // EMPLOYEE NAME
   // ==========================================================================
 
-  String _getEmployeeName(
-      dynamic report,
+  String? _getEmployeeName(
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      final dynamic value =
-          report.employeeName;
+    final String result =
+    report.employeeName
+        .toString()
+        .trim();
 
-      if (value == null) {
-        return widget.employeeName
-            .trim()
-            .isEmpty
-            ? 'Employee'
-            : widget.employeeName;
-      }
-
-      final String result =
-      value.toString().trim();
-
-      if (result.isEmpty ||
-          result.toLowerCase() ==
-              'null') {
-        return widget.employeeName
-            .trim()
-            .isEmpty
-            ? 'Employee'
-            : widget.employeeName;
-      }
-
-      return result;
-    } catch (_) {
-      return widget.employeeName
+    if (result.isEmpty ||
+        result.toLowerCase() ==
+            'null') {
+      return employeeName!
           .trim()
           .isEmpty
           ? 'Employee'
-          : widget.employeeName;
+          : employeeName;
     }
+
+    return result;
   }
 
   // ==========================================================================
@@ -1942,29 +2697,21 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   String _getEmployeeCode(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      final dynamic value =
-          report.employeeCode;
+    final String result =
+    report.employeeCode
+        .toString()
+        .trim();
 
-      if (value == null) {
-        return '';
-      }
-
-      final String result =
-      value.toString().trim();
-
-      if (result.isEmpty ||
-          result.toLowerCase() ==
-              'null') {
-        return '';
-      }
-
-      return result;
-    } catch (_) {
+    if (result.isEmpty ||
+        result.toLowerCase() ==
+            'null') {
       return '';
     }
+
+    return result;
   }
 
   // ==========================================================================
@@ -1972,46 +2719,45 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   String _getAttendanceDate(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      final dynamic value =
-          report.attendanceDate;
+    final dynamic value =
+        report.attendanceDate;
 
-      if (value == null) {
-        return _formatDate(
-          DateTime.now(),
-        );
-      }
-
-      if (value is DateTime) {
-        return _formatDate(value);
-      }
-
-      final String raw =
-      value.toString().trim();
-
-      if (raw.isEmpty ||
-          raw.toLowerCase() ==
-              'null') {
-        return _formatDate(
-          DateTime.now(),
-        );
-      }
-
-      final DateTime? parsed =
-      DateTime.tryParse(raw);
-
-      if (parsed != null) {
-        return _formatDate(parsed);
-      }
-
-      return raw;
-    } catch (_) {
+    if (value == null) {
       return _formatDate(
         DateTime.now(),
       );
     }
+
+    if (value is DateTime) {
+      return _formatDate(
+        value,
+      );
+    }
+
+    final String raw =
+    value.toString().trim();
+
+    if (raw.isEmpty ||
+        raw.toLowerCase() ==
+            'null') {
+      return _formatDate(
+        DateTime.now(),
+      );
+    }
+
+    final DateTime? parsed =
+    DateTime.tryParse(raw);
+
+    if (parsed != null) {
+      return _formatDate(
+        parsed,
+      );
+    }
+
+    return raw;
   }
 
   // ==========================================================================
@@ -2019,15 +2765,12 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   String _getCheckInTime(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      return _formatTimeValue(
-        report.checkInTime,
-      );
-    } catch (_) {
-      return '--';
-    }
+    return _formatTimeValue(
+      report.checkInTime,
+    );
   }
 
   // ==========================================================================
@@ -2035,15 +2778,12 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   String _getCheckOutTime(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      return _formatTimeValue(
-        report.checkOutTime,
-      );
-    } catch (_) {
-      return '--';
-    }
+    return _formatTimeValue(
+      report.checkOutTime,
+    );
   }
 
   // ==========================================================================
@@ -2054,28 +2794,31 @@ class _DatewiseDetailsAttendanceReportPageState
       dynamic report,
       ) {
     try {
-      return _formatTimeValue(
-        report.actualTime,
+      final String shiftStart =
+      _getShiftStartTime(report);
+
+      final String shiftEnd =
+      _getShiftEndTime(report);
+
+      return _calculateShiftDuration(
+        shiftStart,
+        shiftEnd,
       );
     } catch (_) {
       return '--';
     }
   }
-
   // ==========================================================================
   // SHIFT START
   // ==========================================================================
 
   String _getShiftStartTime(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      return _formatTimeValue(
-        report.shiftStartTime,
-      );
-    } catch (_) {
-      return '--';
-    }
+    return _formatTimeValue(
+      report.shiftStartTime,
+    );
   }
 
   // ==========================================================================
@@ -2083,15 +2826,12 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   String _getShiftEndTime(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      return _formatTimeValue(
-        report.shiftEndTime,
-      );
-    } catch (_) {
-      return '--';
-    }
+    return _formatTimeValue(
+      report.shiftEndTime,
+    );
   }
 
   // ==========================================================================
@@ -2099,15 +2839,12 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   String _getCheckInLocation(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      return _formatTextValue(
-        report.checkInLocation,
-      );
-    } catch (_) {
-      return '--';
-    }
+    return _formatTextValue(
+      report.checkInLocation,
+    );
   }
 
   // ==========================================================================
@@ -2115,19 +2852,16 @@ class _DatewiseDetailsAttendanceReportPageState
   // ==========================================================================
 
   String _getCheckOutLocation(
-      dynamic report,
+      CompanySupervisorMobileAttendanceReportEntity
+      report,
       ) {
-    try {
-      return _formatTextValue(
-        report.checkOutLocation,
-      );
-    } catch (_) {
-      return '--';
-    }
+    return _formatTextValue(
+      report.checkOutLocation,
+    );
   }
 
   // ==========================================================================
-  // TEXT FORMAT
+  // TEXT VALUE
   // ==========================================================================
 
   String _formatTextValue(
@@ -2150,7 +2884,7 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
-  // TIME FORMAT
+  // TIME VALUE
   // ==========================================================================
 
   String _formatTimeValue(
@@ -2180,13 +2914,13 @@ class _DatewiseDetailsAttendanceReportPageState
       return _formatTime(parsed);
     }
 
-    final RegExp timePattern =
+    final RegExp pattern =
     RegExp(
       r'^(\d{1,2}):(\d{2})(?::(\d{2}))?$',
     );
 
     final Match? match =
-    timePattern.firstMatch(raw);
+    pattern.firstMatch(raw);
 
     if (match != null) {
       final int hour =
@@ -2208,16 +2942,15 @@ class _DatewiseDetailsAttendanceReportPageState
         return raw;
       }
 
-      final DateTime time =
-      DateTime(
-        2026,
-        1,
-        1,
-        hour,
-        minute,
+      return _formatTime(
+        DateTime(
+          2026,
+          1,
+          1,
+          hour,
+          minute,
+        ),
       );
-
-      return _formatTime(time);
     }
 
     return raw;
@@ -2237,14 +2970,18 @@ class _DatewiseDetailsAttendanceReportPageState
         value.minute;
 
     final String period =
-    hour >= 12 ? 'PM' : 'AM';
+    hour >= 12
+        ? 'PM'
+        : 'AM';
 
     final int displayHour =
     hour % 12 == 0
         ? 12
         : hour % 12;
 
-    return '$displayHour:${minute.toString().padLeft(2, '0')} $period';
+    return '$displayHour:'
+        '${minute.toString().padLeft(2, '0')} '
+        '$period';
   }
 
   // ==========================================================================
@@ -2271,7 +3008,9 @@ class _DatewiseDetailsAttendanceReportPageState
       return null;
     }
 
-    return DateTime.tryParse(raw);
+    return DateTime.tryParse(
+      raw,
+    );
   }
 
   // ==========================================================================
@@ -2393,7 +3132,9 @@ class _DatewiseDetailsAttendanceReportPageState
   String _formatDate(
       DateTime value,
       ) {
-    return '${value.day} ${_monthName(value.month)} ${value.year}';
+    return '${value.day} '
+        '${_monthName(value.month)} '
+        '${value.year}';
   }
 
   // ==========================================================================
@@ -2407,10 +3148,17 @@ class _DatewiseDetailsAttendanceReportPageState
     return Text(
       text,
       maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: theme.textTheme.labelSmall?.copyWith(
-        color: theme.colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.w900,
+      overflow:
+      TextOverflow.ellipsis,
+      style: theme
+          .textTheme
+          .labelSmall
+          ?.copyWith(
+        color: theme
+            .colorScheme
+            .onSurfaceVariant,
+        fontWeight:
+        FontWeight.w900,
       ),
     );
   }
@@ -2424,35 +3172,59 @@ class _DatewiseDetailsAttendanceReportPageState
       String message,
       ) {
     return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(24),
+      physics:
+      const AlwaysScrollableScrollPhysics(),
+      padding:
+      const EdgeInsets.all(24),
       children: [
-        const SizedBox(height: 90),
+        const SizedBox(
+          height: 90,
+        ),
         Icon(
           Icons.error_outline_rounded,
           size: 64,
-          color: theme.colorScheme.error,
+          color:
+          theme.colorScheme.error,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(
+          height: 18,
+        ),
         Text(
           'Unable to load attendance',
-          textAlign: TextAlign.center,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w900,
+          textAlign:
+          TextAlign.center,
+          style: theme
+              .textTheme
+              .titleLarge
+              ?.copyWith(
+            fontWeight:
+            FontWeight.w900,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(
+          height: 8,
+        ),
         Text(
           message,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+          textAlign:
+          TextAlign.center,
+          style: theme
+              .textTheme
+              .bodyMedium
+              ?.copyWith(
+            color: theme
+                .colorScheme
+                .onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(
+          height: 22,
+        ),
         Center(
-          child: FilledButton.icon(
-            onPressed: _loadReport,
+          child:
+          FilledButton.icon(
+            onPressed:
+            _loadReport,
             icon: const Icon(
               Icons.refresh_rounded,
             ),
@@ -2473,35 +3245,59 @@ class _DatewiseDetailsAttendanceReportPageState
       ThemeData theme,
       ) {
     return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(24),
+      physics:
+      const AlwaysScrollableScrollPhysics(),
+      padding:
+      const EdgeInsets.all(24),
       children: [
-        const SizedBox(height: 90),
+        const SizedBox(
+          height: 90,
+        ),
         Icon(
           Icons.event_available_rounded,
           size: 68,
-          color: theme.colorScheme.outline,
+          color:
+          theme.colorScheme.outline,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(
+          height: 18,
+        ),
         Text(
           'No Attendance Records',
-          textAlign: TextAlign.center,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w900,
+          textAlign:
+          TextAlign.center,
+          style: theme
+              .textTheme
+              .titleLarge
+              ?.copyWith(
+            fontWeight:
+            FontWeight.w900,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(
+          height: 8,
+        ),
         Text(
           'No mobile attendance records were found for the selected date range.',
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+          textAlign:
+          TextAlign.center,
+          style: theme
+              .textTheme
+              .bodyMedium
+              ?.copyWith(
+            color: theme
+                .colorScheme
+                .onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(
+          height: 22,
+        ),
         Center(
-          child: OutlinedButton.icon(
-            onPressed: _loadReport,
+          child:
+          OutlinedButton.icon(
+            onPressed:
+            _loadReport,
             icon: const Icon(
               Icons.refresh_rounded,
             ),
@@ -2515,7 +3311,80 @@ class _DatewiseDetailsAttendanceReportPageState
   }
 
   // ==========================================================================
-  // MONTH
+  // NO SELECTED EMPLOYEE RECORDS
+  // ==========================================================================
+
+  Widget _buildNoEmployeeRecords(
+      ThemeData theme,
+      ) {
+    return ListView(
+      physics:
+      const AlwaysScrollableScrollPhysics(),
+      padding:
+      const EdgeInsets.all(24),
+      children: [
+        const SizedBox(
+          height: 80,
+        ),
+        Icon(
+          Icons.person_off_rounded,
+          size: 68,
+          color:
+          theme.colorScheme.outline,
+        ),
+        const SizedBox(
+          height: 18,
+        ),
+        Text(
+          'No Records For Selected Employee',
+          textAlign:
+          TextAlign.center,
+          style: theme
+              .textTheme
+              .titleLarge
+              ?.copyWith(
+            fontWeight:
+            FontWeight.w900,
+          ),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Text(
+          '${employeeName} has no attendance records in the selected date range.',
+          textAlign:
+          TextAlign.center,
+          style: theme
+              .textTheme
+              .bodyMedium
+              ?.copyWith(
+            color: theme
+                .colorScheme
+                .onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(
+          height: 22,
+        ),
+        Center(
+          child:
+          OutlinedButton.icon(
+            onPressed:
+            _loadReport,
+            icon: const Icon(
+              Icons.refresh_rounded,
+            ),
+            label: const Text(
+              'Refresh',
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================================================
+  // MONTH NAME
   // ==========================================================================
 
   String _monthName(
@@ -2546,7 +3415,7 @@ class _DatewiseDetailsAttendanceReportPageState
 }
 
 // ============================================================================
-// AH / WH / OT ROW
+// AH / WH / OT
 //
 // AH = Shift Start -> Shift End
 // WH = Check-in -> Check-out
@@ -2582,43 +3451,60 @@ Widget _buildActualWorkingOvertimeRow(
 
   return Container(
     width: double.infinity,
-    padding: const EdgeInsets.symmetric(
+    padding:
+    const EdgeInsets.symmetric(
       horizontal: 8,
       vertical: 9,
     ),
-    decoration: BoxDecoration(
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
+    decoration:
+    BoxDecoration(
+      color: theme
+          .colorScheme
+          .surfaceContainerLow,
+      borderRadius:
+      BorderRadius.circular(12),
       border: Border.all(
-        color: theme.colorScheme.outlineVariant,
+        color: theme
+            .colorScheme
+            .outlineVariant,
       ),
     ),
     child: Row(
       children: [
         Expanded(
-          child: _buildCompactTimeItemGlobal(
+          child:
+          _buildCompactTimeItemGlobal(
             theme,
             label: 'AH',
             value: actualHours,
-            icon: Icons.timer_outlined,
+            icon:
+            Icons.timer_outlined,
           ),
         ),
-        _buildTimeDividerGlobal(theme),
+        _buildTimeDividerGlobal(
+          theme,
+        ),
         Expanded(
-          child: _buildCompactTimeItemGlobal(
+          child:
+          _buildCompactTimeItemGlobal(
             theme,
             label: 'WH',
             value: workingHours,
-            icon: Icons.work_history_outlined,
+            icon:
+            Icons.work_history_outlined,
           ),
         ),
-        _buildTimeDividerGlobal(theme),
+        _buildTimeDividerGlobal(
+          theme,
+        ),
         Expanded(
-          child: _buildCompactTimeItemGlobal(
+          child:
+          _buildCompactTimeItemGlobal(
             theme,
             label: 'OT',
             value: overtimeHours,
-            icon: Icons.more_time_rounded,
+            icon:
+            Icons.more_time_rounded,
           ),
         ),
       ],
@@ -2637,35 +3523,54 @@ Widget _buildCompactTimeItemGlobal(
       required IconData icon,
     }) {
   return Column(
-    mainAxisSize: MainAxisSize.min,
+    mainAxisSize:
+    MainAxisSize.min,
     children: [
       Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment:
+        MainAxisAlignment.center,
         children: [
           Icon(
             icon,
             size: 14,
-            color: theme.colorScheme.primary,
+            color:
+            theme.colorScheme.primary,
           ),
-          const SizedBox(width: 3),
+          const SizedBox(
+            width: 3,
+          ),
           Text(
             label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w900,
+            style: theme
+                .textTheme
+                .labelSmall
+                ?.copyWith(
+              color: theme
+                  .colorScheme
+                  .primary,
+              fontWeight:
+              FontWeight.w900,
               fontSize: 10,
             ),
           ),
         ],
       ),
-      const SizedBox(height: 3),
+      const SizedBox(
+        height: 3,
+      ),
       Text(
         value,
         maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: theme.textTheme.bodySmall?.copyWith(
-          fontWeight: FontWeight.w900,
+        overflow:
+        TextOverflow.ellipsis,
+        textAlign:
+        TextAlign.center,
+        style: theme
+            .textTheme
+            .bodySmall
+            ?.copyWith(
+          fontWeight:
+          FontWeight.w900,
           fontSize: 11,
         ),
       ),
@@ -2683,10 +3588,12 @@ Widget _buildTimeDividerGlobal(
   return Container(
     width: 1,
     height: 29,
-    margin: const EdgeInsets.symmetric(
+    margin:
+    const EdgeInsets.symmetric(
       horizontal: 3,
     ),
-    color: theme.colorScheme.outlineVariant,
+    color:
+    theme.colorScheme.outlineVariant,
   );
 }
 
@@ -2699,10 +3606,14 @@ String _calculateShiftDuration(
     String? endTime,
     ) {
   final DateTime? start =
-  _parseTimeString(startTime);
+  _parseTimeString(
+    startTime,
+  );
 
   final DateTime? end =
-  _parseTimeString(endTime);
+  _parseTimeString(
+    endTime,
+  );
 
   if (start == null ||
       end == null) {
@@ -2710,13 +3621,17 @@ String _calculateShiftDuration(
   }
 
   int minutes =
-      end.difference(start).inMinutes;
+      end.difference(
+        start,
+      ).inMinutes;
 
   if (minutes < 0) {
     minutes += 24 * 60;
   }
 
-  return _formatMinutes(minutes);
+  return _formatMinutes(
+    minutes,
+  );
 }
 
 // ============================================================================
@@ -2728,10 +3643,14 @@ String _calculateAttendanceDuration(
     String? checkOutTime,
     ) {
   final DateTime? start =
-  _parseTimeString(checkInTime);
+  _parseTimeString(
+    checkInTime,
+  );
 
   final DateTime? end =
-  _parseTimeString(checkOutTime);
+  _parseTimeString(
+    checkOutTime,
+  );
 
   if (start == null ||
       end == null) {
@@ -2739,13 +3658,17 @@ String _calculateAttendanceDuration(
   }
 
   int minutes =
-      end.difference(start).inMinutes;
+      end.difference(
+        start,
+      ).inMinutes;
 
   if (minutes < 0) {
     minutes += 24 * 60;
   }
 
-  return _formatMinutes(minutes);
+  return _formatMinutes(
+    minutes,
+  );
 }
 
 // ============================================================================
@@ -2786,14 +3709,18 @@ String _calculateOvertime(
   }
 
   int shiftMinutes =
-      shiftEnd.difference(
+      shiftEnd
+          .difference(
         shiftStart,
-      ).inMinutes;
+      )
+          .inMinutes;
 
   int attendanceMinutes =
-      checkOut.difference(
+      checkOut
+          .difference(
         checkIn,
-      ).inMinutes;
+      )
+          .inMinutes;
 
   if (shiftMinutes < 0) {
     shiftMinutes += 24 * 60;

@@ -2,45 +2,42 @@
 // Flutter HRMS Pro
 // Company Supervisor Mobile Attendance Report Page
 //
-// Purpose:
-// - Load active supervisors for a company
-// - Read supervisor name from employees.full_name
-// - Select supervisor
-// - Load assigned departments
-// - Load employees from selected department
-// - Select employee
-// - Select From Date / To Date
-// - Generate datewise attendance report
-// - Open separate datewise report page
+// Version : 12.0.0
+//
+// Flow:
+//
+// Supervisor
+//      ↓
+// Department
+//      ↓
+// ┌───────────────┬────────────────┐
+// │     Today     │    Date Wise   │
+// └───────────────┴────────────────┘
+//
+// Today:
+// - Employee dropdown does NOT exist.
+// - Date range does NOT exist.
+// - Today report opens directly.
+//
+// Date Wise:
+// - No employee dropdown.
+// - From Date
+// - To Date
+// - Generate Report
+// - Report is generated for the ENTIRE selected department.
 //
 // Architecture:
 // - Clean Architecture
 // - Riverpod
 // - Material 3
-//
-// Flow:
-//
-// Supervisor
-//     ↓
-// Department
-//     ↓
-// Employee
-//     ↓
-// From Date / To Date
-//     ↓
-// Generate Report
-//     ↓
-// Separate Datewise Report Page
+// - Supabase
 //
 // Important:
-// - No popup/dialog is used for datewise configuration.
-// - Department can always be changed.
-// - Employee list changes according to selected department.
-// - Supervisor change clears department and employee.
-// - Department change clears employee.
-// - Async department/employee requests are protected against stale responses.
-//
-// Version : 10.0.0
+// - Existing Supervisor loading logic preserved.
+// - Existing Department loading logic preserved.
+// - Employee selection completely removed.
+// - Employee query completely removed.
+// - Company Owner views attendance department-wise.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -49,14 +46,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../providers/supervisor_mobile_attendance_report_provider.dart';
+import 'today_details_attendance_report_page.dart';
 
 // ============================================================================
 // PAGE
 // ============================================================================
 
-class CompanySupervisorMobileAttendanceDatewiseReportPage
-    extends ConsumerStatefulWidget {
-  const CompanySupervisorMobileAttendanceDatewiseReportPage({
+class CompanySuperviosrAttendanceReport extends ConsumerStatefulWidget {
+  const CompanySuperviosrAttendanceReport({
     super.key,
     required this.companyId,
   });
@@ -64,7 +61,7 @@ class CompanySupervisorMobileAttendanceDatewiseReportPage
   final String companyId;
 
   @override
-  ConsumerState<CompanySupervisorMobileAttendanceDatewiseReportPage> createState() =>
+  ConsumerState<CompanySuperviosrAttendanceReport> createState() =>
       _CompanySupervisorMobileAttendanceReportPageState();
 }
 
@@ -73,7 +70,7 @@ class CompanySupervisorMobileAttendanceDatewiseReportPage
 // ============================================================================
 
 class _CompanySupervisorMobileAttendanceReportPageState
-    extends ConsumerState<CompanySupervisorMobileAttendanceDatewiseReportPage> {
+    extends ConsumerState<CompanySuperviosrAttendanceReport> {
   // ==========================================================================
   // SUPABASE
   // ==========================================================================
@@ -109,18 +106,18 @@ class _CompanySupervisorMobileAttendanceReportPageState
   String? _selectedDepartmentName;
 
   // ==========================================================================
-  // EMPLOYEE
+  // REPORT MODE
+  //
+  // null      = no mode selected
+  // today     = Today selected
+  // dateWise  = Date Wise selected
   // ==========================================================================
 
-  bool _isLoadingEmployees = false;
+  String? _reportMode;
 
-  String? _employeeError;
+  static const String _modeToday = 'today';
 
-  List<Map<String, dynamic>> _employees = [];
-
-  String? _selectedEmployeeId;
-
-  String? _selectedEmployeeName;
+  static const String _modeDateWise = 'dateWise';
 
   // ==========================================================================
   // DATE RANGE
@@ -141,8 +138,6 @@ class _CompanySupervisorMobileAttendanceReportPageState
   // ==========================================================================
 
   int _departmentRequestVersion = 0;
-
-  int _employeeRequestVersion = 0;
 
   // ==========================================================================
   // COMPANY
@@ -176,7 +171,6 @@ class _CompanySupervisorMobileAttendanceReportPageState
   @override
   void dispose() {
     _departmentRequestVersion++;
-    _employeeRequestVersion++;
 
     super.dispose();
   }
@@ -216,15 +210,13 @@ class _CompanySupervisorMobileAttendanceReportPageState
         _selectedSupervisorName = null;
 
         _departments = [];
+
         _selectedDepartmentId = null;
         _selectedDepartmentName = null;
 
-        _employees = [];
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
-
         _departmentError = null;
-        _employeeError = null;
+
+        _reportMode = null;
 
         _fromDate = null;
         _toDate = null;
@@ -236,7 +228,6 @@ class _CompanySupervisorMobileAttendanceReportPageState
     }
 
     _departmentRequestVersion++;
-    _employeeRequestVersion++;
 
     if (mounted) {
       setState(() {
@@ -250,15 +241,13 @@ class _CompanySupervisorMobileAttendanceReportPageState
         _selectedSupervisorName = null;
 
         _departments = [];
+
         _selectedDepartmentId = null;
         _selectedDepartmentName = null;
 
-        _employees = [];
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
-
         _departmentError = null;
-        _employeeError = null;
+
+        _reportMode = null;
 
         _fromDate = null;
         _toDate = null;
@@ -322,33 +311,24 @@ class _CompanySupervisorMobileAttendanceReportPageState
           continue;
         }
 
-        final dynamic employeeData =
-        supervisor['employees'];
+        final dynamic employeeData = supervisor['employees'];
 
-        String supervisorName =
-            'Unknown Supervisor';
+        String supervisorName = 'Unknown Supervisor';
 
         if (employeeData is Map) {
           final String employeeName =
-              employeeData['full_name']
-                  ?.toString()
-                  .trim() ??
-                  '';
+              employeeData['full_name']?.toString().trim() ?? '';
 
           if (employeeName.isNotEmpty) {
             supervisorName = employeeName;
           }
         } else if (employeeData is List &&
             employeeData.isNotEmpty) {
-          final dynamic firstEmployee =
-              employeeData.first;
+          final dynamic firstEmployee = employeeData.first;
 
           if (firstEmployee is Map) {
             final String employeeName =
-                firstEmployee['full_name']
-                    ?.toString()
-                    .trim() ??
-                    '';
+                firstEmployee['full_name']?.toString().trim() ?? '';
 
             if (employeeName.isNotEmpty) {
               supervisorName = employeeName;
@@ -356,8 +336,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
           }
         }
 
-        supervisor['supervisor_name'] =
-            supervisorName;
+        supervisor['supervisor_name'] = supervisorName;
 
         supervisors.add(supervisor);
       }
@@ -408,18 +387,15 @@ class _CompanySupervisorMobileAttendanceReportPageState
 
         _departments = [];
 
-        _departmentError =
-        'Supervisor is required.';
+        _departmentError = 'Supervisor is required.';
 
         _selectedDepartmentId = null;
         _selectedDepartmentName = null;
 
-        _employees = [];
+        _reportMode = null;
 
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
-
-        _employeeError = null;
+        _fromDate = null;
+        _toDate = null;
       });
 
       return;
@@ -427,8 +403,6 @@ class _CompanySupervisorMobileAttendanceReportPageState
 
     final int requestVersion =
     ++_departmentRequestVersion;
-
-    _employeeRequestVersion++;
 
     if (mounted) {
       setState(() {
@@ -441,28 +415,25 @@ class _CompanySupervisorMobileAttendanceReportPageState
         _selectedDepartmentId = null;
         _selectedDepartmentName = null;
 
-        _employees = [];
+        _reportMode = null;
 
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
-
-        _employeeError = null;
+        _fromDate = null;
+        _toDate = null;
       });
     }
 
     try {
-      final List<dynamic> assignments =
-      await _supabase
+      final List<dynamic> assignments = await _supabase
           .from('supervisor_departments')
           .select('''
-                id,
-                company_id,
-                supervisor_id,
-                department_id,
-                created_at,
-                created_by,
-                updated_by
-              ''')
+            id,
+            company_id,
+            supervisor_id,
+            department_id,
+            created_at,
+            created_by,
+            updated_by
+          ''')
           .eq(
         'company_id',
         companyId,
@@ -476,8 +447,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
         ascending: true,
       );
 
-      if (requestVersion !=
-          _departmentRequestVersion) {
+      if (requestVersion != _departmentRequestVersion) {
         return;
       }
 
@@ -497,14 +467,12 @@ class _CompanySupervisorMobileAttendanceReportPageState
         return;
       }
 
-      final List<Map<String, dynamic>>
-      departments = [];
+      final List<Map<String, dynamic>> departments = [];
 
       final Set<String> departmentIds = {};
 
       for (final dynamic item in assignments) {
-        if (requestVersion !=
-            _departmentRequestVersion) {
+        if (requestVersion != _departmentRequestVersion) {
           return;
         }
 
@@ -531,20 +499,16 @@ class _CompanySupervisorMobileAttendanceReportPageState
           continue;
         }
 
-        if (!departmentIds.add(
-          departmentId,
-        )) {
+        if (!departmentIds.add(departmentId)) {
           continue;
         }
 
         if (assignmentCompanyId.isNotEmpty &&
-            assignmentCompanyId !=
-                companyId) {
+            assignmentCompanyId != companyId) {
           continue;
         }
 
-        final Map<String, dynamic>?
-        departmentResponse =
+        final Map<String, dynamic>? departmentResponse =
         await _supabase
             .from('departments')
             .select('''
@@ -572,8 +536,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
         )
             .maybeSingle();
 
-        if (requestVersion !=
-            _departmentRequestVersion) {
+        if (requestVersion != _departmentRequestVersion) {
           return;
         }
 
@@ -593,8 +556,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
                 '';
 
         if (departmentCompanyId.isNotEmpty &&
-            departmentCompanyId !=
-                companyId) {
+            departmentCompanyId != companyId) {
           continue;
         }
 
@@ -615,8 +577,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
         return;
       }
 
-      if (requestVersion !=
-          _departmentRequestVersion) {
+      if (requestVersion != _departmentRequestVersion) {
         return;
       }
 
@@ -632,8 +593,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
         return;
       }
 
-      if (requestVersion !=
-          _departmentRequestVersion) {
+      if (requestVersion != _departmentRequestVersion) {
         return;
       }
 
@@ -647,173 +607,10 @@ class _CompanySupervisorMobileAttendanceReportPageState
         _selectedDepartmentId = null;
         _selectedDepartmentName = null;
 
-        _employees = [];
+        _reportMode = null;
 
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
-
-        _employeeError = null;
-      });
-    }
-  }
-
-  // ==========================================================================
-  // LOAD EMPLOYEES
-  // ==========================================================================
-
-  Future<void> _loadEmployeesForDepartment(
-      String departmentId,
-      ) async {
-    final String normalizedDepartmentId =
-    departmentId.trim();
-
-    if (normalizedDepartmentId.isEmpty) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isLoadingEmployees = false;
-
-        _employees = [];
-
-        _employeeError =
-        'Department is required.';
-
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
-      });
-
-      return;
-    }
-
-    final int requestVersion =
-    ++_employeeRequestVersion;
-
-    if (mounted) {
-      setState(() {
-        _isLoadingEmployees = true;
-
-        _employeeError = null;
-
-        _employees = [];
-
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
-      });
-    }
-
-    try {
-      final List<dynamic> response =
-      await _supabase
-          .from('employees')
-          .select('''
-                id,
-                company_id,
-                department_id,
-                employee_code,
-                full_name,             
-                is_active,
-                created_at,
-                updated_at
-              ''')
-          .eq(
-        'company_id',
-        companyId,
-      )
-          .eq(
-        'department_id',
-        normalizedDepartmentId,
-      )
-          .eq(
-        'is_active',
-        true,
-      )
-          .order(
-        'full_name',
-        ascending: true,
-      );
-
-      if (requestVersion !=
-          _employeeRequestVersion) {
-        return;
-      }
-
-      final List<Map<String, dynamic>>
-      employees = [];
-
-      final Set<String> employeeIds = {};
-
-      for (final dynamic item in response) {
-        if (requestVersion !=
-            _employeeRequestVersion) {
-          return;
-        }
-
-        if (item is! Map) {
-          continue;
-        }
-
-        final Map<String, dynamic> employee =
-        Map<String, dynamic>.from(item);
-
-        final String employeeId =
-            employee['id']?.toString().trim() ??
-                '';
-
-        final String employeeName =
-            employee['full_name']
-                ?.toString()
-                .trim() ??
-                '';
-
-        if (employeeId.isEmpty ||
-            employeeName.isEmpty) {
-          continue;
-        }
-
-        if (!employeeIds.add(employeeId)) {
-          continue;
-        }
-
-        employees.add(employee);
-      }
-
-      if (!mounted) {
-        return;
-      }
-
-      if (requestVersion !=
-          _employeeRequestVersion) {
-        return;
-      }
-
-      setState(() {
-        _employees = employees;
-
-        _isLoadingEmployees = false;
-
-        _employeeError = null;
-      });
-    } catch (e) {
-      if (!mounted) {
-        return;
-      }
-
-      if (requestVersion !=
-          _employeeRequestVersion) {
-        return;
-      }
-
-      setState(() {
-        _isLoadingEmployees = false;
-
-        _employees = [];
-
-        _employeeError = _cleanError(e);
-
-        _selectedEmployeeId = null;
-        _selectedEmployeeName = null;
+        _fromDate = null;
+        _toDate = null;
       });
     }
   }
@@ -838,10 +635,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
     for (final Map<String, dynamic> supervisor
     in _supervisors) {
       final String id =
-          supervisor['id']
-              ?.toString()
-              .trim() ??
-              '';
+          supervisor['id']?.toString().trim() ?? '';
 
       if (id == normalizedSupervisorId) {
         selectedSupervisor = supervisor;
@@ -860,23 +654,18 @@ class _CompanySupervisorMobileAttendanceReportPageState
             'Supervisor';
 
     _departmentRequestVersion++;
-    _employeeRequestVersion++;
 
     final reportProvider = ref.read(
       supervisorMobileAttendanceReportProvider,
     );
 
-    reportProvider.setCompanyId(
-      companyId,
-    );
+    reportProvider.setCompanyId(companyId);
 
     reportProvider.setSupervisorId(
       normalizedSupervisorId,
     );
 
-    reportProvider.setDepartmentId(
-      null,
-    );
+    reportProvider.setDepartmentId(null);
 
     if (!mounted) {
       return;
@@ -890,19 +679,17 @@ class _CompanySupervisorMobileAttendanceReportPageState
           supervisorName;
 
       _selectedDepartmentId = null;
+
       _selectedDepartmentName = null;
 
       _departments = [];
 
-      _selectedEmployeeId = null;
-      _selectedEmployeeName = null;
-
-      _employees = [];
-
       _departmentError = null;
-      _employeeError = null;
+
+      _reportMode = null;
 
       _fromDate = null;
+
       _toDate = null;
     });
 
@@ -915,9 +702,9 @@ class _CompanySupervisorMobileAttendanceReportPageState
   // DEPARTMENT SELECTED
   // ==========================================================================
 
-  Future<void> _onDepartmentSelected(
+  void _onDepartmentSelected(
       String? departmentId,
-      ) async {
+      ) {
     if (departmentId == null ||
         departmentId.trim().isEmpty) {
       return;
@@ -931,10 +718,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
     for (final Map<String, dynamic> department
     in _departments) {
       final String id =
-          department['id']
-              ?.toString()
-              .trim() ??
-              '';
+          department['id']?.toString().trim() ?? '';
 
       if (id == normalizedDepartmentId) {
         selectedDepartment = department;
@@ -956,14 +740,10 @@ class _CompanySupervisorMobileAttendanceReportPageState
       supervisorMobileAttendanceReportProvider,
     );
 
-    reportProvider.setCompanyId(
-      companyId,
-    );
+    reportProvider.setCompanyId(companyId);
 
     if (_selectedSupervisorId != null &&
-        _selectedSupervisorId!
-            .trim()
-            .isNotEmpty) {
+        _selectedSupervisorId!.trim().isNotEmpty) {
       reportProvider.setSupervisorId(
         _selectedSupervisorId!.trim(),
       );
@@ -972,8 +752,6 @@ class _CompanySupervisorMobileAttendanceReportPageState
     reportProvider.setDepartmentId(
       normalizedDepartmentId,
     );
-
-    _employeeRequestVersion++;
 
     if (!mounted) {
       return;
@@ -986,77 +764,207 @@ class _CompanySupervisorMobileAttendanceReportPageState
       _selectedDepartmentName =
           departmentName;
 
-      _employees = [];
-
-      _selectedEmployeeId = null;
-      _selectedEmployeeName = null;
-
-      _employeeError = null;
+      // Reset report mode whenever department changes.
+      _reportMode = null;
 
       _fromDate = null;
+
       _toDate = null;
     });
-
-    await _loadEmployeesForDepartment(
-      normalizedDepartmentId,
-    );
   }
 
   // ==========================================================================
-  // EMPLOYEE SELECTED
+  // REPORT MODE SELECTED
   // ==========================================================================
 
-  void _onEmployeeSelected(
-      String? employeeId,
+  void _onReportModeSelected(
+      String mode,
       ) {
-    if (employeeId == null ||
-        employeeId.trim().isEmpty) {
+    if (_isGeneratingReport) {
       return;
     }
 
-    final String normalizedEmployeeId =
-    employeeId.trim();
+    if (_selectedDepartmentId == null ||
+        _selectedDepartmentId!.trim().isEmpty) {
+      _showSnackBar(
+        'Please select a department.',
+        isError: true,
+      );
 
-    Map<String, dynamic>? selectedEmployee;
+      return;
+    }
 
-    for (final Map<String, dynamic> employee
-    in _employees) {
-      final String id =
-          employee['id']
-              ?.toString()
-              .trim() ??
-              '';
+    // ------------------------------------------------------------------------
+    // TODAY
+    // ------------------------------------------------------------------------
 
-      if (id == normalizedEmployeeId) {
-        selectedEmployee = employee;
-        break;
+    if (mode == _modeToday) {
+      _openTodayReport();
+
+      return;
+    }
+
+    // ------------------------------------------------------------------------
+    // DATE WISE
+    // ------------------------------------------------------------------------
+
+    if (mode == _modeDateWise) {
+      if (!mounted) {
+        return;
       }
+
+      setState(() {
+        _reportMode = _modeDateWise;
+
+        _fromDate = null;
+
+        _toDate = null;
+      });
+    }
+  }
+
+  // ==========================================================================
+  // CONFIGURE REPORT PROVIDER
+  // ==========================================================================
+
+  bool _configureReportProvider() {
+    final String normalizedCompanyId =
+        companyId;
+
+    final String? supervisorId =
+        _selectedSupervisorId;
+
+    final String? departmentId =
+        _selectedDepartmentId;
+
+    if (normalizedCompanyId.isEmpty) {
+      _showSnackBar(
+        'Company ID is required.',
+        isError: true,
+      );
+
+      return false;
     }
 
-    if (selectedEmployee == null) {
+    if (supervisorId == null ||
+        supervisorId.trim().isEmpty) {
+      _showSnackBar(
+        'Please select a supervisor.',
+        isError: true,
+      );
+
+      return false;
+    }
+
+    if (departmentId == null ||
+        departmentId.trim().isEmpty) {
+      _showSnackBar(
+        'Please select a department.',
+        isError: true,
+      );
+
+      return false;
+    }
+
+    final provider = ref.read(
+      supervisorMobileAttendanceReportProvider,
+    );
+
+    provider.setCompanyId(
+      normalizedCompanyId,
+    );
+
+    provider.setSupervisorId(
+      supervisorId.trim(),
+    );
+
+    provider.setDepartmentId(
+      departmentId.trim(),
+    );
+
+    return true;
+  }
+
+  // ==========================================================================
+  // TODAY REPORT
+  // ==========================================================================
+
+  Future<void> _openTodayReport() async {
+    if (_isGeneratingReport) {
       return;
     }
 
-    final String employeeName =
-        selectedEmployee['full_name']
-            ?.toString()
-            .trim() ??
-            'Employee';
-
-    if (!mounted) {
+    if (!_configureReportProvider()) {
       return;
     }
 
-    setState(() {
-      _selectedEmployeeId =
-          normalizedEmployeeId;
+    final String supervisorId =
+    _selectedSupervisorId!.trim();
 
-      _selectedEmployeeName =
-          employeeName;
+    final String departmentId =
+    _selectedDepartmentId!.trim();
 
-      _fromDate = null;
-      _toDate = null;
-    });
+    final String supervisorName =
+        _selectedSupervisorName ??
+            'Supervisor';
+
+    final String departmentName =
+        _selectedDepartmentName ??
+            'Department';
+
+    final provider = ref.read(
+      supervisorMobileAttendanceReportProvider,
+    );
+
+    if (mounted) {
+      setState(() {
+        _reportMode = _modeToday;
+
+        _isGeneratingReport = true;
+      });
+    }
+
+    try {
+      await provider.loadTodayReports(
+        companyId: companyId,
+        supervisorId: supervisorId,
+        departmentId: departmentId,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              TodayDetailsAttendanceReportPage(
+                companyId: companyId,
+                supervisorId: supervisorId,
+                supervisorName: supervisorName,
+                departmentId: departmentId,
+                departmentName: departmentName,
+              ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      _showSnackBar(
+        _cleanError(e),
+        isError: true,
+      );
+    } finally {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isGeneratingReport = false;
+      });
+    }
   }
 
   // ==========================================================================
@@ -1064,9 +972,13 @@ class _CompanySupervisorMobileAttendanceReportPageState
   // ==========================================================================
 
   Future<void> _selectFromDate() async {
-    if (_selectedEmployeeId == null) {
+    if (_reportMode != _modeDateWise) {
+      return;
+    }
+
+    if (_selectedDepartmentId == null) {
       _showSnackBar(
-        'Please select an employee first.',
+        'Please select a department first.',
         isError: true,
       );
 
@@ -1075,15 +987,13 @@ class _CompanySupervisorMobileAttendanceReportPageState
 
     final DateTime now = DateTime.now();
 
-    final DateTime firstDate =
-    DateTime(
+    final DateTime firstDate = DateTime(
       now.year - 5,
       1,
       1,
     );
 
-    final DateTime lastDate =
-    DateTime(
+    final DateTime lastDate = DateTime(
       now.year,
       now.month,
       now.day,
@@ -1097,13 +1007,9 @@ class _CompanySupervisorMobileAttendanceReportPageState
     final DateTime? selected =
     await showDatePicker(
       context: context,
-      initialDate: initialDate.isBefore(
-        firstDate,
-      )
+      initialDate: initialDate.isBefore(firstDate)
           ? firstDate
-          : initialDate.isAfter(
-        lastDate,
-      )
+          : initialDate.isAfter(lastDate)
           ? lastDate
           : initialDate,
       firstDate: firstDate,
@@ -1136,9 +1042,13 @@ class _CompanySupervisorMobileAttendanceReportPageState
   // ==========================================================================
 
   Future<void> _selectToDate() async {
-    if (_selectedEmployeeId == null) {
+    if (_reportMode != _modeDateWise) {
+      return;
+    }
+
+    if (_selectedDepartmentId == null) {
       _showSnackBar(
-        'Please select an employee first.',
+        'Please select a department first.',
         isError: true,
       );
 
@@ -1156,34 +1066,27 @@ class _CompanySupervisorMobileAttendanceReportPageState
 
     final DateTime now = DateTime.now();
 
-    final DateTime firstDate =
-    DateTime(
+    final DateTime firstDate = DateTime(
       _fromDate!.year,
       _fromDate!.month,
       _fromDate!.day,
     );
 
-    final DateTime lastDate =
-    DateTime(
+    final DateTime lastDate = DateTime(
       now.year,
       now.month,
       now.day,
     );
 
     final DateTime initialDate =
-        _toDate ??
-            _fromDate!;
+        _toDate ?? _fromDate!;
 
     final DateTime? selected =
     await showDatePicker(
       context: context,
-      initialDate: initialDate.isBefore(
-        firstDate,
-      )
+      initialDate: initialDate.isBefore(firstDate)
           ? firstDate
-          : initialDate.isAfter(
-        lastDate,
-      )
+          : initialDate.isAfter(lastDate)
           ? lastDate
           : initialDate,
       firstDate: firstDate,
@@ -1208,6 +1111,9 @@ class _CompanySupervisorMobileAttendanceReportPageState
 
   // ==========================================================================
   // GENERATE DATEWISE REPORT
+  //
+  // Department-wise.
+  // No employee required.
   // ==========================================================================
 
   Future<void> _generateDatewiseReport() async {
@@ -1215,39 +1121,11 @@ class _CompanySupervisorMobileAttendanceReportPageState
       return;
     }
 
-    if (_selectedSupervisorId == null ||
-        _selectedSupervisorId!
-            .trim()
-            .isEmpty) {
-      _showSnackBar(
-        'Please select a supervisor.',
-        isError: true,
-      );
-
+    if (_reportMode != _modeDateWise) {
       return;
     }
 
-    if (_selectedDepartmentId == null ||
-        _selectedDepartmentId!
-            .trim()
-            .isEmpty) {
-      _showSnackBar(
-        'Please select a department.',
-        isError: true,
-      );
-
-      return;
-    }
-
-    if (_selectedEmployeeId == null ||
-        _selectedEmployeeId!
-            .trim()
-            .isEmpty) {
-      _showSnackBar(
-        'Please select an employee.',
-        isError: true,
-      );
-
+    if (!_configureReportProvider()) {
       return;
     }
 
@@ -1292,18 +1170,9 @@ class _CompanySupervisorMobileAttendanceReportPageState
         _selectedDepartmentName ??
             'Department';
 
-    final String employeeId =
-    _selectedEmployeeId!.trim();
+    final DateTime fromDate = _fromDate!;
 
-    final String employeeName =
-        _selectedEmployeeName ??
-            'Employee';
-
-    final DateTime fromDate =
-    _fromDate!;
-
-    final DateTime toDate =
-    _toDate!;
+    final DateTime toDate = _toDate!;
 
     final provider = ref.read(
       supervisorMobileAttendanceReportProvider,
@@ -1316,9 +1185,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
     }
 
     try {
-      provider.setCompanyId(
-        companyId,
-      );
+      provider.setCompanyId(companyId);
 
       provider.setSupervisorId(
         supervisorId,
@@ -1328,32 +1195,47 @@ class _CompanySupervisorMobileAttendanceReportPageState
         departmentId,
       );
 
-      // --------------------------------------------------------------
-      // Open separate datewise report page.
-      //
-      // The actual datewise data loading remains inside the report page.
-      // --------------------------------------------------------------
-
       if (!mounted) {
         return;
       }
 
+      debugPrint('======================================================');
+      debugPrint('🚀 NAVIGATING TO DatewiseDetailsAttendanceReportPage');
+      debugPrint('======================================================');
+
+      debugPrint('📌 companyId      : "$companyId"');
+      debugPrint('📌 supervisorId   : "$supervisorId"');
+      debugPrint('📌 supervisorName : "$supervisorName"');
+      debugPrint('📌 departmentId   : "$departmentId"');
+      debugPrint('📌 departmentName : "$departmentName"');
+      debugPrint('📌 fromDate       : "$fromDate"');
+      debugPrint('📌 toDate         : "$toDate"');
+
+      debugPrint('======================================================');
+
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) =>
-              DatewiseDetailsAttendanceReportPage(
-                companyId: companyId,
-                supervisorId: supervisorId,
-                supervisorName: supervisorName,
-                departmentId: departmentId,
-                departmentName: departmentName,
-                employeeId: employeeId,
-                employeeName: employeeName,
-                fromDate: fromDate,
-                toDate: toDate,
-              ),
+          builder: (_) {
+            debugPrint(
+              '✅ Building DatewiseDetailsAttendanceReportPage',
+            );
+
+            return DatewiseDetailsAttendanceReportPage(
+              companyId: companyId,
+              supervisorId: supervisorId,
+              supervisorName: supervisorName,
+              departmentId: departmentId,
+              departmentName: departmentName,
+              fromDate: fromDate,
+              toDate: toDate,
+            );
+          },
         ),
       );
+
+      debugPrint('======================================================');
+      debugPrint('⬅️ Returned from DatewiseDetailsAttendanceReportPage');
+      debugPrint('======================================================');
     } catch (e) {
       if (!mounted) {
         return;
@@ -1399,7 +1281,11 @@ class _CompanySupervisorMobileAttendanceReportPageState
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Datewise Report',
+          'Supervisor Attendance Report',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         actions: [
           IconButton(
@@ -1462,15 +1348,12 @@ class _CompanySupervisorMobileAttendanceReportPageState
             constraints.maxWidth >= 700;
 
         final double contentWidth =
-        isWide
-            ? 650
-            : constraints.maxWidth;
+        isWide ? 650 : constraints.maxWidth;
 
         return ListView(
           physics:
           const AlwaysScrollableScrollPhysics(),
-          padding:
-          EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal:
             isWide ? 24 : 12,
             vertical: 18,
@@ -1512,9 +1395,9 @@ class _CompanySupervisorMobileAttendanceReportPageState
           height: 14,
         ),
 
-        // --------------------------------------------------------------
-        // 1. SUPERVISOR
-        // --------------------------------------------------------------
+        // ----------------------------------------------------------------------
+        // SUPERVISOR
+        // ----------------------------------------------------------------------
 
         _buildSupervisorDropdown(theme),
 
@@ -1522,28 +1405,32 @@ class _CompanySupervisorMobileAttendanceReportPageState
           height: 10,
         ),
 
-        // --------------------------------------------------------------
-        // 2. DEPARTMENT
-        // --------------------------------------------------------------
+        // ----------------------------------------------------------------------
+        // DEPARTMENT
+        // ----------------------------------------------------------------------
 
         _buildDepartmentDropdown(theme),
 
-        // --------------------------------------------------------------
-        // 3. EMPLOYEE
-        // --------------------------------------------------------------
+        // ----------------------------------------------------------------------
+        // REPORT MODE
+        // ----------------------------------------------------------------------
 
         if (_selectedDepartmentId != null) ...[
           const SizedBox(
-            height: 10,
+            height: 12,
           ),
-          _buildEmployeeDropdown(theme),
+          _buildReportModeButtons(theme),
         ],
 
-        // --------------------------------------------------------------
-        // 4. DATE RANGE
-        // --------------------------------------------------------------
+        // ----------------------------------------------------------------------
+        // DATE RANGE
+        //
+        // IMPORTANT:
+        // Only Date Wise mode.
+        // No employee dropdown.
+        // ----------------------------------------------------------------------
 
-        if (_selectedEmployeeId != null) ...[
+        if (_reportMode == _modeDateWise) ...[
           const SizedBox(
             height: 16,
           ),
@@ -1553,12 +1440,16 @@ class _CompanySupervisorMobileAttendanceReportPageState
             height: 16,
           ),
 
-          // ------------------------------------------------------------
-          // 5. GENERATE
-          // ------------------------------------------------------------
-
           _buildGenerateButton(theme),
         ],
+
+        // ----------------------------------------------------------------------
+        // TODAY
+        //
+        // NOTHING IS SHOWN HERE.
+        //
+        // Today button directly opens the report page.
+        // ----------------------------------------------------------------------
       ],
     );
   }
@@ -1602,15 +1493,13 @@ class _CompanySupervisorMobileAttendanceReportPageState
               BorderRadius.circular(
                 14,
               ),
-              color: theme
-                  .colorScheme
-                  .primary,
+              color:
+              theme.colorScheme.primary,
             ),
             child: Icon(
               Icons.assignment_rounded,
-              color: theme
-                  .colorScheme
-                  .onPrimary,
+              color:
+              theme.colorScheme.onPrimary,
             ),
           ),
           const SizedBox(
@@ -1638,7 +1527,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
                   height: 3,
                 ),
                 Text(
-                  'Select supervisor, department, employee and date range',
+                  'View attendance department-wise',
                   maxLines: 2,
                   overflow:
                   TextOverflow.ellipsis,
@@ -1678,8 +1567,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
         : null;
 
     return Container(
-      decoration:
-      BoxDecoration(
+      decoration: BoxDecoration(
         borderRadius:
         BorderRadius.circular(14),
         border: Border.all(
@@ -1693,7 +1581,8 @@ class _CompanySupervisorMobileAttendanceReportPageState
       child:
       DropdownButtonFormField<String>(
         key: ValueKey<String?>(
-          'supervisor-$_selectedSupervisorId',
+          'supervisor-'
+              '$_selectedSupervisorId',
         ),
         value: selectedValue,
         isExpanded: true,
@@ -1713,8 +1602,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
           ),
         ),
         icon: const Padding(
-          padding:
-          EdgeInsets.only(
+          padding: EdgeInsets.only(
             right: 10,
           ),
           child: Icon(
@@ -1722,7 +1610,8 @@ class _CompanySupervisorMobileAttendanceReportPageState
                 .keyboard_arrow_down_rounded,
           ),
         ),
-        items: _supervisors.map(
+        items:
+        _supervisors.map(
               (supervisor) {
             final String id =
                 supervisor['id']
@@ -1744,7 +1633,8 @@ class _CompanySupervisorMobileAttendanceReportPageState
                     .trim() ??
                     '';
 
-            return DropdownMenuItem<String>(
+            return DropdownMenuItem<
+                String>(
               value: id,
               child: Row(
                 children: [
@@ -1773,7 +1663,8 @@ class _CompanySupervisorMobileAttendanceReportPageState
                           : '$name • $code',
                       maxLines: 1,
                       overflow:
-                      TextOverflow.ellipsis,
+                      TextOverflow
+                          .ellipsis,
                     ),
                   ),
                 ],
@@ -1799,8 +1690,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
     if (_selectedSupervisorId == null) {
       return _buildDisabledSelector(
         theme,
-        label:
-        'Select Department',
+        label: 'Select Department',
         icon:
         Icons.account_tree_outlined,
         message:
@@ -1819,8 +1709,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
     if (_departmentError != null) {
       return _buildErrorSelector(
         theme,
-        message:
-        _departmentError!,
+        message: _departmentError!,
         onRetry:
         _selectedSupervisorId ==
             null
@@ -1836,8 +1725,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
     if (_departments.isEmpty) {
       return _buildDisabledSelector(
         theme,
-        label:
-        'Select Department',
+        label: 'Select Department',
         icon:
         Icons.account_tree_outlined,
         message:
@@ -1857,8 +1745,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
         : null;
 
     return Container(
-      decoration:
-      BoxDecoration(
+      decoration: BoxDecoration(
         borderRadius:
         BorderRadius.circular(14),
         border: Border.all(
@@ -1891,7 +1778,6 @@ class _CompanySupervisorMobileAttendanceReportPageState
         InputDecoration(
           labelText:
           'Select Department',
-          helperMaxLines: 1,
           prefixIcon: Icon(
             Icons
                 .account_tree_outlined,
@@ -1906,14 +1792,14 @@ class _CompanySupervisorMobileAttendanceReportPageState
           border:
           InputBorder.none,
           contentPadding:
-          const EdgeInsets.symmetric(
+          const EdgeInsets
+              .symmetric(
             horizontal: 14,
             vertical: 11,
           ),
         ),
         icon: const Padding(
-          padding:
-          EdgeInsets.only(
+          padding: EdgeInsets.only(
             right: 10,
           ),
           child: Icon(
@@ -1921,7 +1807,8 @@ class _CompanySupervisorMobileAttendanceReportPageState
                 .keyboard_arrow_down_rounded,
           ),
         ),
-        items: _departments.map(
+        items:
+        _departments.map(
               (department) {
             final String id =
                 department['id']
@@ -1941,7 +1828,8 @@ class _CompanySupervisorMobileAttendanceReportPageState
                     .trim() ??
                     '';
 
-            return DropdownMenuItem<String>(
+            return DropdownMenuItem<
+                String>(
               value: id,
               child: Text(
                 code.isEmpty
@@ -1957,233 +1845,90 @@ class _CompanySupervisorMobileAttendanceReportPageState
         onChanged:
         _isGeneratingReport
             ? null
-            : (value) {
-          _onDepartmentSelected(
-            value,
-          );
-        },
+            : _onDepartmentSelected,
       ),
     );
   }
 
   // ==========================================================================
-  // EMPLOYEE DROPDOWN
+  // REPORT MODE BUTTONS
   // ==========================================================================
 
-  Widget _buildEmployeeDropdown(
+  Widget _buildReportModeButtons(
       ThemeData theme,
       ) {
-    if (_isLoadingEmployees) {
-      return _buildLoadingSelector(
-        theme,
-        label:
-        'Loading Employees...',
-      );
-    }
+    final bool isToday =
+        _reportMode == _modeToday;
 
-    if (_employeeError != null) {
-      return _buildErrorSelector(
-        theme,
-        message:
-        _employeeError!,
-        onRetry:
-        _selectedDepartmentId ==
-            null
-            ? null
-            : () {
-          _loadEmployeesForDepartment(
-            _selectedDepartmentId!,
-          );
-        },
-      );
-    }
+    final bool isDateWise =
+        _reportMode == _modeDateWise;
 
-    if (_employees.isEmpty) {
-      return _buildDisabledSelector(
-        theme,
-        label:
-        'Select Employee',
-        icon:
-        Icons.badge_outlined,
-        message:
-        'No active employees found',
-      );
-    }
-
-    final String? selectedValue =
-    _employees.any(
-          (item) =>
-      item['id']
-          ?.toString()
-          .trim() ==
-          _selectedEmployeeId,
-    )
-        ? _selectedEmployeeId
-        : null;
-
-    return Container(
-      decoration:
-      BoxDecoration(
-        borderRadius:
-        BorderRadius.circular(14),
-        border: Border.all(
-          color:
-          _selectedEmployeeId !=
-              null
-              ? theme
-              .colorScheme
-              .primary
-              .withValues(
-            alpha: 0.45,
-          )
-              : theme
-              .colorScheme
-              .outlineVariant,
-        ),
-        color:
-        theme.colorScheme.surface,
-      ),
-      child:
-      DropdownButtonFormField<String>(
-        key: ValueKey<String?>(
-          'employee-'
-              '$_selectedDepartmentId-'
-              '$_selectedEmployeeId',
-        ),
-        value: selectedValue,
-        isExpanded: true,
-        decoration:
-        InputDecoration(
-          labelText:
-          'Select Employee',
-          prefixIcon: Icon(
-            Icons.badge_outlined,
-            color:
-            _selectedEmployeeId !=
-                null
-                ? theme
-                .colorScheme
-                .primary
-                : null,
-          ),
-          border:
-          InputBorder.none,
-          contentPadding:
-          const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 11,
+    return Row(
+      children: [
+        Expanded(
+          child: _buildModeButton(
+            theme: theme,
+            title: 'Today',
+            icon:
+            Icons.today_rounded,
+            selected: isToday,
+            onPressed: () {
+              _onReportModeSelected(
+                _modeToday,
+              );
+            },
           ),
         ),
-        icon: const Padding(
-          padding:
-          EdgeInsets.only(
-            right: 10,
-          ),
-          child: Icon(
-            Icons
-                .keyboard_arrow_down_rounded,
+        const SizedBox(
+          width: 10,
+        ),
+        Expanded(
+          child: _buildModeButton(
+            theme: theme,
+            title: 'Date Wise',
+            icon:
+            Icons.date_range_rounded,
+            selected: isDateWise,
+            onPressed: () {
+              _onReportModeSelected(
+                _modeDateWise,
+              );
+            },
           ),
         ),
-        items: _employees.map(
-              (employee) {
-            final String id =
-                employee['id']
-                    ?.toString()
-                    .trim() ??
-                    '';
+      ],
+    );
+  }
 
-            final String name =
-                employee['full_name']
-                    ?.toString()
-                    .trim() ??
-                    'Employee';
+  // ==========================================================================
+  // MODE BUTTON
+  // ==========================================================================
 
-            final String code =
-                employee['employee_code']
-                    ?.toString()
-                    .trim() ??
-                    '';
-
-            final String designation =
-                employee['designation_name']
-                    ?.toString()
-                    .trim() ??
-                    '';
-
-            String displayText = name;
-
-            if (code.isNotEmpty) {
-              displayText =
-              '$name • $code';
-            }
-
-            return DropdownMenuItem<String>(
-              value: id,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 17,
-                    child: Text(
-                      _getInitials(
-                        name,
-                      ),
-                      style: theme
-                          .textTheme
-                          .labelMedium
-                          ?.copyWith(
-                        fontWeight:
-                        FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment:
-                      MainAxisAlignment
-                          .center,
-                      crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
-                      children: [
-                        Text(
-                          displayText,
-                          maxLines: 1,
-                          overflow:
-                          TextOverflow
-                              .ellipsis,
-                        ),
-                        if (designation
-                            .isNotEmpty)
-                          Text(
-                            designation,
-                            maxLines: 1,
-                            overflow:
-                            TextOverflow
-                                .ellipsis,
-                            style: theme
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                              color: theme
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ).toList(),
-        onChanged:
+  Widget _buildModeButton({
+    required ThemeData theme,
+    required String title,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 50,
+      child: selected
+          ? FilledButton.icon(
+        onPressed:
         _isGeneratingReport
             ? null
-            : _onEmployeeSelected,
+            : onPressed,
+        icon: Icon(icon),
+        label: Text(title),
+      )
+          : OutlinedButton.icon(
+        onPressed:
+        _isGeneratingReport
+            ? null
+            : onPressed,
+        icon: Icon(icon),
+        label: Text(title),
       ),
     );
   }
@@ -2244,8 +1989,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
               Expanded(
                 child: Column(
                   crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+                  CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Date Range',
@@ -2261,7 +2005,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
                       height: 2,
                     ),
                     Text(
-                      'Select the attendance report period',
+                      'Select attendance period for the entire department',
                       style: theme
                           .textTheme
                           .labelSmall
@@ -2295,8 +2039,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
                       child:
                       _buildDateButton(
                         theme: theme,
-                        title:
-                        'From Date',
+                        title: 'From Date',
                         date: _fromDate,
                         icon: Icons
                             .calendar_today_rounded,
@@ -2313,8 +2056,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
                       child:
                       _buildDateButton(
                         theme: theme,
-                        title:
-                        'To Date',
+                        title: 'To Date',
                         date: _toDate,
                         icon: Icons
                             .event_rounded,
@@ -2414,8 +2156,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
           Expanded(
             child: Column(
               crossAxisAlignment:
-              CrossAxisAlignment
-                  .start,
+              CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
@@ -2442,8 +2183,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
                       .textTheme
                       .bodyMedium
                       ?.copyWith(
-                    fontWeight:
-                    hasDate
+                    fontWeight: hasDate
                         ? FontWeight.w700
                         : FontWeight.w500,
                     color: hasDate
@@ -2480,7 +2220,10 @@ class _CompanySupervisorMobileAttendanceReportPageState
       ThemeData theme,
       ) {
     final bool enabled =
-        _selectedEmployeeId != null &&
+        _reportMode ==
+            _modeDateWise &&
+            _selectedDepartmentId !=
+                null &&
             _fromDate != null &&
             _toDate != null &&
             !_isGeneratingReport;
@@ -2502,13 +2245,12 @@ class _CompanySupervisorMobileAttendanceReportPageState
           ),
         )
             : const Icon(
-          Icons
-              .assessment_rounded,
+          Icons.assessment_rounded,
         ),
         label: Text(
           _isGeneratingReport
               ? 'Opening Report...'
-              : 'Generate Report',
+              : 'Generate Department Report',
         ),
       ),
     );
@@ -2528,8 +2270,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
       const EdgeInsets.symmetric(
         horizontal: 14,
       ),
-      decoration:
-      BoxDecoration(
+      decoration: BoxDecoration(
         borderRadius:
         BorderRadius.circular(14),
         border: Border.all(
@@ -2583,8 +2324,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
       const EdgeInsets.symmetric(
         horizontal: 14,
       ),
-      decoration:
-      BoxDecoration(
+      decoration: BoxDecoration(
         borderRadius:
         BorderRadius.circular(14),
         border: Border.all(
@@ -2611,8 +2351,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
               mainAxisAlignment:
               MainAxisAlignment.center,
               crossAxisAlignment:
-              CrossAxisAlignment
-                  .start,
+              CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
@@ -2675,8 +2414,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
         horizontal: 14,
         vertical: 8,
       ),
-      decoration:
-      BoxDecoration(
+      decoration: BoxDecoration(
         borderRadius:
         BorderRadius.circular(14),
         border: Border.all(
@@ -2722,8 +2460,7 @@ class _CompanySupervisorMobileAttendanceReportPageState
               VisualDensity.compact,
               tooltip: 'Retry',
               onPressed:
-              _isLoadingDepartments ||
-                  _isLoadingEmployees
+              _isLoadingDepartments
                   ? null
                   : onRetry,
               icon: const Icon(
@@ -2754,7 +2491,8 @@ class _CompanySupervisorMobileAttendanceReportPageState
           height: 90,
         ),
         Icon(
-          Icons.error_outline_rounded,
+          Icons
+              .error_outline_rounded,
           size: 60,
           color:
           theme.colorScheme.error,

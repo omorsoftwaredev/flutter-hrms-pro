@@ -431,7 +431,7 @@ class _CompanyDashboardSidebarState
                       _buildChildMenuItem(
                         context,
                         icon: Icons.fact_check_outlined,
-                        title: 'Today Attendance Report',
+                        title: 'Supervisor Wise Attendance Report',
                         onTap: () {
                           _openAttendanceMobileTodayReport(context, user);
                         },
@@ -439,9 +439,9 @@ class _CompanyDashboardSidebarState
                       _buildChildMenuItem(
                         context,
                         icon: Icons.fact_check_outlined,
-                        title: 'Date Wise Attendance Report',
+                        title: 'Dept Wise Attendance Report',
                         onTap: () {
-                          _openAttendanceMobileDateWiseReport(context, user);
+                          _openAttendanceMobileTodayReport(context, user);
                         },
                       ),
                     ],
