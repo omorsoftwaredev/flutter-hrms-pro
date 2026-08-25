@@ -219,8 +219,8 @@ class SupervisorMobileAttendanceReportProvider extends ChangeNotifier {
   // SET SUPERVISOR
   //=================================================================
 
-  void setSupervisorId(String supervisorId) {
-    final id = supervisorId.trim();
+  void setSupervisorId(String? supervisorId) {
+    final id = supervisorId!.trim();
 
     if (id.isEmpty) {
       _supervisorId = null;
